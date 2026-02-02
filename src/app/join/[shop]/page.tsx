@@ -5,20 +5,7 @@ import { useMemo, useState } from "react";
 const SHOP_PRESETS: Record<
   string,
   { displayName: string; dealText: string; minPurchase: number; maxPerDay: number }
-> = {
-  "brewed-awakenings": {
-    displayName: "Brewed Awakenings",
-    dealText: "Buy 5 coffees, get 1 free.",
-    minPurchase: 3,
-    maxPerDay: 1,
-  },
-  "govans-tobacco": {
-    displayName: "Govans Tobacco & Groceries",
-    dealText: "Buy 5 visits, get 1 free.",
-    minPurchase: 3,
-    maxPerDay: 1,
-  },
-};
+> = {};
 
 function toTitleCase(slug: string) {
   return slug
