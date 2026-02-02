@@ -34,7 +34,7 @@ export default function MerchantPage() {
             <input
               value={shopName}
               onChange={(e) => setShopName(e.target.value)}
-              placeholder="Example: Govans Tobacco & Groceries"
+              placeholder="Example: Govans Groceries"
               style={{
                 width: "100%",
                 padding: 12,
