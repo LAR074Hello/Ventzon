@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 
 const SHOP_PRESETS: Record<
   string,
@@ -15,8 +16,18 @@ function toTitleCase(slug: string) {
     .join(" ");
 }
 
-export default function ShopJoinPage({ params }: { params: { shop: string } }) {
-  const shopSlug = (params.shop || "").toLowerCase();
+export default function ShopJoinPage({ params }: { params?: { shop?: string } }) {
+  // NOTE: In some Next.js setups, `params` may not populate for a client page.
+  // We fall back to `useParams()` so the slug always comes from the URL.
+  const routeParams = useParams() as { shop?: string | string[] };
+
+  const rawShop =
+    (params?.shop as string | undefined) ??
+    (Array.isArray(routeParams?.shop)
+      ? routeParams.shop[0]
+      : (routeParams?.shop as string | undefined));
+
+  const shopSlug = (rawShop || "").toLowerCase().trim();
 
   const shop = useMemo(() => {
     return (
@@ -40,6 +51,12 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
 
   async function handleSubmit() {
     setError("");
+
+    // If someone hits /join (no slug), this prevents a confusing API error.
+    if (!shopSlug) {
+      setError("Missing shop link. Use a link like /join/govans-groceries");
+      return;
+    }
 
     const digits = cleanPhone(phone);
 
@@ -174,7 +191,7 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
 
         <p style={{ fontSize: 12, marginTop: 10, color: "#666" }}>
           Shop link:{" "}
-          <span style={{ fontFamily: "monospace" }}>/join/{shopSlug}</span>
+          <span style={{ fontFamily: "monospace" }}>/join/{shopSlug || "(missing)"}</span>
         </p>
       </div>
     </main>
