@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type StatsResponse = {
@@ -17,7 +17,7 @@ function maskPhone(phone: string) {
   return `***-***-${last4}`;
 }
 
-export default function MerchantPage() {
+function MerchantInner() {
   const searchParams = useSearchParams();
 
   const shopSlug = useMemo(() => {
@@ -165,10 +165,7 @@ export default function MerchantPage() {
               <h2 className="text-lg font-semibold">Latest signups</h2>
               <button
                 className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm hover:bg-neutral-900"
-                onClick={() => {
-                  // quick refresh
-                  window.location.reload();
-                }}
+                onClick={() => window.location.reload()}
               >
                 Refresh
               </button>
@@ -212,12 +209,27 @@ export default function MerchantPage() {
             </div>
 
             <p className="mt-3 text-xs text-neutral-500">
-              Tip: If you want “today” to mean local time (not UTC), we can switch that
-              logic next.
+              Tip: If you want “today” to mean local time (not UTC), we can switch
+              that next.
             </p>
           </section>
         </>
       )}
     </main>
+  );
+}
+
+export default function MerchantPage() {
+  // This Suspense wrapper is what fixes the Vercel build error for useSearchParams().
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-3xl px-6 py-10 text-neutral-100">
+          <div className="text-sm text-neutral-400">Loading…</div>
+        </main>
+      }
+    >
+      <MerchantInner />
+    </Suspense>
   );
 }
