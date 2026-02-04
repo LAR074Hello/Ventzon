@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 
 type StatsResponse = {
@@ -25,63 +26,76 @@ function formatTime(iso: string) {
   }
 }
 
-export default function MerchantShopPage({
-  params,
-}: {
-  params: { shop: string };
-}) {
-  const shopSlug = useMemo(
-    () => String(params?.shop ?? "").trim().toLowerCase(),
-    [params]
-  );
+export default function MerchantShopPage() {
+  const params = useParams() as { shop?: string };
+
+  const shopSlug = useMemo(() => {
+    return String(params?.shop ?? "").trim().toLowerCase();
+  }, [params?.shop]);
 
   const [data, setData] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<string>("");
 
   const joinUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
+    if (!shopSlug) return "";
     return `${window.location.origin}/join/${shopSlug}`;
   }, [shopSlug]);
 
   const statsUrl = useMemo(() => {
     if (!shopSlug) return "";
-    // This hits: src/app/merchant/stats/route.ts (GET)
     return `/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`;
   }, [shopSlug]);
+
+  async function loadStats() {
+    try {
+      setLoading(true);
+      setLoadError("");
+
+      if (!statsUrl) {
+        setLoadError("Missing shop slug");
+        setData(null);
+        return;
+      }
+
+      const res = await fetch(statsUrl, { cache: "no-store" });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json?.error ?? "Failed to load stats");
+      }
+
+      setData(json as StatsResponse);
+      setLastUpdated(new Date().toLocaleTimeString());
+    } catch (e: any) {
+      setLoadError(e?.message ?? "Failed to load stats");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      try {
-        setLoading(true);
-        setLoadError("");
-        setData(null);
-
-        if (!statsUrl) {
-          setLoadError("Missing shop slug");
-          return;
-        }
-
-        const res = await fetch(statsUrl, { cache: "no-store" });
-        const json = (await res.json()) as any;
-
-        if (!res.ok) {
-          throw new Error(json?.error ?? "Failed to load stats");
-        }
-
-        if (!cancelled) setData(json as StatsResponse);
-      } catch (e: any) {
-        if (!cancelled) setLoadError(e?.message ?? "Failed to load stats");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      if (cancelled) return;
+      await loadStats();
     })();
+
+    // Auto-refresh every 5 seconds (so new signups appear without you doing anything)
+    const id = setInterval(() => {
+      if (cancelled) return;
+      loadStats();
+    }, 5000);
 
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsUrl]);
 
   async function copyJoinLink() {
@@ -110,9 +124,7 @@ export default function MerchantShopPage({
         {!shopSlug ? (
           <section className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
             <div className="text-sm text-neutral-300">Missing shop slug</div>
-            <div className="mt-2 text-sm text-neutral-400">
-              Open this page like:
-            </div>
+            <div className="mt-2 text-sm text-neutral-400">Open this page like:</div>
             <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4 font-mono text-sm text-neutral-200">
               /merchant/govans-groceries
             </div>
@@ -121,7 +133,6 @@ export default function MerchantShopPage({
           <>
             {/* TOP ROW */}
             <section className="grid gap-6 md:grid-cols-3">
-              {/* Stats */}
               <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
                 <div className="text-sm text-neutral-400">Total signups</div>
                 <div className="mt-2 text-4xl font-semibold">
@@ -146,14 +157,14 @@ export default function MerchantShopPage({
                   </div>
 
                   <div className="min-w-0">
-                    <div className="text-sm text-neutral-200 font-medium">
+                    <div className="text-sm font-medium text-neutral-200">
                       Print & place near checkout
                     </div>
                     <div className="mt-1 break-all rounded-lg border border-neutral-800 bg-neutral-950 p-2 font-mono text-xs text-neutral-300">
                       {joinUrl}
                     </div>
 
-                    <div className="mt-3 flex gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         onClick={copyJoinLink}
                         className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
@@ -166,13 +177,22 @@ export default function MerchantShopPage({
                       >
                         Print
                       </button>
+                      <button
+                        onClick={loadStats}
+                        className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
+                      >
+                        Refresh
+                      </button>
+                    </div>
+
+                    <div className="mt-2 text-xs text-neutral-500">
+                      {lastUpdated ? `Last updated: ${lastUpdated}` : ""}
                     </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* ERROR */}
             {loadError ? (
               <div className="mt-6 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-200">
                 {loadError}
@@ -252,6 +272,12 @@ export default function MerchantShopPage({
           main .print-area,
           main .print-area * {
             visibility: visible;
+          }
+          main .print-area {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            right: 24px;
           }
         }
       `}</style>
