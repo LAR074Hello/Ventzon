@@ -6,6 +6,7 @@ type StatsResponse = {
   shop_slug: string;
   totals: { total: number; today: number };
   latest: Array<{ phone: string; created_at: string }>;
+  error?: string;
 };
 
 function maskPhone(phone: string) {
@@ -18,10 +19,45 @@ function maskPhone(phone: string) {
 function formatTime(iso: string) {
   try {
     const d = new Date(iso);
-    return d.toLocaleString();
+    // show local time but label as "Local" to avoid confusion
+    return d.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   } catch {
     return iso;
   }
+}
+
+function StatCard({
+  label,
+  value,
+  sublabel,
+  loading,
+}: {
+  label: string;
+  value: string;
+  sublabel?: string;
+  loading: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+      <div className="text-sm text-neutral-400">{label}</div>
+      <div className="mt-2 text-4xl font-semibold text-neutral-100">
+        {loading ? (
+          <div className="h-10 w-24 animate-pulse rounded-lg bg-neutral-800" />
+        ) : (
+          value
+        )}
+      </div>
+      {sublabel ? (
+        <div className="mt-2 text-xs text-neutral-500">{sublabel}</div>
+      ) : null}
+    </div>
+  );
 }
 
 export default function MerchantShopPage({
@@ -29,141 +65,176 @@ export default function MerchantShopPage({
 }: {
   params: { shop: string };
 }) {
-  const shopSlug = useMemo(() => String(params?.shop ?? "").trim().toLowerCase(), [params]);
+  const shopSlug = useMemo(
+    () => String(params?.shop ?? "").trim().toLowerCase(),
+    [params]
+  );
 
-  const [data, setData] = useState<StatsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string>("");
+  const statsUrl = useMemo(() => {
+    if (!shopSlug) return "";
+    // this matches your stats route that expects ?shop_slug=
+    return `/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`;
+  }, [shopSlug]);
 
   const joinUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
+    if (!shopSlug) return "";
     return `${window.location.origin}/join/${shopSlug}`;
   }, [shopSlug]);
 
-  const qrUrl = useMemo(() => {
-    if (!joinUrl) return "";
-    // MVP-friendly: uses a public QR generator
-    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(joinUrl)}`;
-  }, [joinUrl]);
+  const [data, setData] = useState<StatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string>("");
 
-  async function load() {
+  async function loadStats() {
+    if (!statsUrl) return;
     setLoading(true);
-    setErr("");
+    setLoadError("");
     try {
-      const res = await fetch(`/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`, {
-        cache: "no-store",
-      });
-      const json = await res.json();
+      const res = await fetch(statsUrl, { cache: "no-store" });
+      const json = (await res.json()) as StatsResponse;
+
       if (!res.ok) {
-        setErr(json?.error ?? "Failed to load stats");
         setData(null);
-      } else {
-        setData(json);
+        setLoadError(json?.error || "Failed to load stats");
+        return;
       }
+
+      setData(json);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to load stats");
       setData(null);
+      setLoadError(e?.message || "Failed to load stats");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (!shopSlug) return;
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shopSlug]);
+    let cancelled = false;
 
-  async function copy(text: string) {
+    (async () => {
+      if (!statsUrl) return;
+      setLoading(true);
+      setLoadError("");
+
+      try {
+        const res = await fetch(statsUrl, { cache: "no-store" });
+        const json = (await res.json()) as StatsResponse;
+
+        if (cancelled) return;
+
+        if (!res.ok) {
+          setData(null);
+          setLoadError(json?.error || "Failed to load stats");
+          return;
+        }
+
+        setData(json);
+      } catch (e: any) {
+        if (cancelled) return;
+        setData(null);
+        setLoadError(e?.message || "Failed to load stats");
+      } finally {
+        if (cancelled) return;
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [statsUrl]);
+
+  async function copyJoinLink() {
+    if (!joinUrl) return;
     try {
-      await navigator.clipboard.writeText(text);
-      alert("Copied!");
+      await navigator.clipboard.writeText(joinUrl);
+      alert("Copied join link!");
     } catch {
-      alert("Couldn’t copy — try selecting and copying manually.");
+      // fallback
+      prompt("Copy this link:", joinUrl);
     }
   }
 
   return (
     <main className="min-h-screen bg-neutral-950 text-neutral-100">
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        <header className="flex flex-col gap-2">
-          <div className="text-sm text-neutral-400">Ventzon Rewards</div>
-          <h1 className="text-2xl font-semibold">Merchant Dashboard</h1>
-          <div className="text-neutral-300">
-            Shop: <span className="font-mono text-neutral-100">{shopSlug || "—"}</span>
+      <div className="mx-auto w-full max-w-4xl px-6 py-10">
+        <header className="mb-8">
+          <div className="text-xs uppercase tracking-widest text-neutral-500">
+            Ventzon Rewards
           </div>
+          <h1 className="mt-2 text-3xl font-semibold">Merchant Dashboard</h1>
+          <p className="mt-2 text-sm text-neutral-400">
+            View signups and share your shop’s join link.
+          </p>
         </header>
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-2">
+        {!shopSlug ? (
           <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-            <div className="text-sm text-neutral-400">Total signups</div>
-            <div className="mt-2 text-4xl font-semibold">
-              {loading ? "…" : err ? "—" : data?.totals?.total ?? 0}
+            <div className="text-sm text-neutral-300">Missing shop slug</div>
+            <div className="mt-2 text-xs text-neutral-500">
+              Open this page like:
+            </div>
+            <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-3 font-mono text-xs text-neutral-200">
+              /merchant/govans-groceries
             </div>
           </div>
+        ) : (
+          <>
+            <section className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-sm text-neutral-400">Shop</div>
+                  <div className="mt-1 font-mono text-sm text-neutral-200">
+                    {shopSlug}
+                  </div>
+                </div>
 
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-            <div className="text-sm text-neutral-400">Signups today</div>
-            <div className="mt-2 text-4xl font-semibold">
-              {loading ? "…" : err ? "—" : data?.totals?.today ?? 0}
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-sm text-neutral-400">Join link for customers</div>
-              <div className="mt-1 font-mono text-sm text-neutral-100 break-all">
-                {joinUrl || "(loading…)"}
+                <div className="flex gap-2">
+                  <button
+                    onClick={copyJoinLink}
+                    className="inline-flex items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm font-medium text-neutral-100 hover:bg-neutral-900"
+                  >
+                    Copy Join Link
+                  </button>
+                  <button
+                    onClick={loadStats}
+                    className="inline-flex items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm font-medium text-neutral-100 hover:bg-neutral-900"
+                  >
+                    Refresh
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="flex gap-2">
-              <button
-                className="rounded-xl border border-neutral-800 px-4 py-2 text-sm hover:bg-neutral-900"
-                onClick={() => joinUrl && copy(joinUrl)}
-                disabled={!joinUrl}
-              >
-                Copy link
-              </button>
-              <button
-                className="rounded-xl border border-neutral-800 px-4 py-2 text-sm hover:bg-neutral-900"
-                onClick={() => load()}
-              >
-                Refresh
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 sm:items-start">
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4">
-              <div className="text-sm text-neutral-400">QR code (scan to join)</div>
-              <div className="mt-3 flex items-center justify-center">
-                {qrUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={qrUrl}
-                    alt="QR code"
-                    className="rounded-xl bg-white p-2"
-                    width={240}
-                    height={240}
-                  />
-                ) : (
-                  <div className="text-neutral-500">Loading…</div>
-                )}
+              <div className="mt-4 text-xs text-neutral-500">
+                Customer link:
+                <span className="ml-2 select-all rounded-lg border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-neutral-200">
+                  {joinUrl || "(loading...)"}
+                </span>
               </div>
-              <div className="mt-3 text-xs text-neutral-500">
-                Tip: print this and tape it at checkout.
-              </div>
-            </div>
+            </section>
 
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4">
+            <section className="mt-6 grid gap-4 sm:grid-cols-2">
+              <StatCard
+                label="Total signups"
+                value={String(data?.totals?.total ?? 0)}
+                sublabel="All-time"
+                loading={loading}
+              />
+              <StatCard
+                label="Signups today"
+                value={String(data?.totals?.today ?? 0)}
+                sublabel="Resets daily (UTC)"
+                loading={loading}
+              />
+            </section>
+
+            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
               <div className="flex items-center justify-between">
-                <div className="text-sm font-semibold">Latest signups</div>
+                <h2 className="text-lg font-semibold">Latest signups</h2>
                 <a
-                  className="text-sm text-neutral-400 underline hover:text-neutral-200"
-                  href={`/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`}
+                  href={statsUrl}
+                  className="text-xs text-neutral-400 underline hover:text-neutral-200"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -171,40 +242,42 @@ export default function MerchantShopPage({
                 </a>
               </div>
 
-              {err ? (
-                <div className="mt-3 rounded-xl border border-red-900/40 bg-red-950/30 p-3 text-sm text-red-200">
-                  {err}
+              {loadError ? (
+                <div className="mt-4 rounded-xl border border-red-900/40 bg-red-950/30 p-4 text-sm text-red-200">
+                  {loadError}
                 </div>
               ) : null}
 
               <div className="mt-4 overflow-hidden rounded-xl border border-neutral-800">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-neutral-900/60 text-neutral-200">
-                    <tr>
+                  <thead className="bg-neutral-950">
+                    <tr className="text-neutral-400">
                       <th className="px-4 py-3 font-medium">Phone</th>
                       <th className="px-4 py-3 font-medium">Time</th>
                     </tr>
                   </thead>
+
                   <tbody className="divide-y divide-neutral-800">
                     {loading ? (
                       <tr>
-                        <td className="px-4 py-3 text-neutral-400" colSpan={2}>
+                        <td className="px-4 py-4 text-neutral-400" colSpan={2}>
                           Loading…
                         </td>
                       </tr>
                     ) : (data?.latest ?? []).length === 0 ? (
                       <tr>
-                        <td className="px-4 py-3 text-neutral-400" colSpan={2}>
-                          No signups yet.
+                        <td className="px-4 py-4 text-neutral-400" colSpan={2}>
+                          No signups yet — share your join link to get your
+                          first customer.
                         </td>
                       </tr>
                     ) : (
                       (data?.latest ?? []).map((row, idx) => (
                         <tr key={`${row.phone}-${row.created_at}-${idx}`}>
-                          <td className="px-4 py-3 font-mono text-neutral-100">
+                          <td className="px-4 py-3 font-mono text-neutral-200">
                             {maskPhone(row.phone)}
                           </td>
-                          <td className="px-4 py-3 font-mono text-neutral-400">
+                          <td className="px-4 py-3 text-neutral-300">
                             {formatTime(row.created_at)}
                           </td>
                         </tr>
@@ -215,19 +288,26 @@ export default function MerchantShopPage({
               </div>
 
               <div className="mt-4 text-xs text-neutral-500">
-                Rule reminder: show the QR only after purchase. Limit: max 1 reward/day.
+                Tip: Keep the phone masked for privacy. If a shop ever needs full
+                numbers, we’ll add a “verified merchant login” later.
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-          <div className="text-sm font-semibold">Quick start</div>
-          <div className="mt-2 text-sm text-neutral-300">
-            Send customers here:{" "}
-            <span className="font-mono text-neutral-100">{`/join/${shopSlug}`}</span>
-          </div>
-        </section>
+            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="text-sm text-neutral-300">Quick start</div>
+              <div className="mt-2 text-sm text-neutral-400">
+                Put this on the counter or show it at checkout:
+              </div>
+              <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-3 font-mono text-xs text-neutral-200">
+                {joinUrl || "/join/your-shop"}
+              </div>
+              <div className="mt-3 text-xs text-neutral-500">
+                Rules: max 1 signup/day per phone. (We’ll customize rules per
+                shop later.)
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </main>
   );
