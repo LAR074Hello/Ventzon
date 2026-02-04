@@ -1,109 +1,223 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-function slugify(input: string) {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+type StatsResponse = {
+  shop_slug: string;
+  totals: { total: number; today: number };
+  latest: { phone: string; created_at: string }[];
+  error?: string;
+};
+
+function maskPhone(phone: string) {
+  const digits = String(phone || "").replace(/[^\d]/g, "");
+  if (digits.length < 4) return phone;
+  const last4 = digits.slice(-4);
+  return `***-***-${last4}`;
 }
 
 export default function MerchantPage() {
-  const [shopName, setShopName] = useState("");
-  const slug = useMemo(() => slugify(shopName), [shopName]);
+  const searchParams = useSearchParams();
 
-  const joinPath = slug ? `/join/${slug}` : "/join/your-shop-name";
-  const joinUrl = typeof window !== "undefined" ? `${window.location.origin}${joinPath}` : joinPath;
+  const shopSlug = useMemo(() => {
+    // support both ?shop_slug= and ?shop=
+    const raw = searchParams.get("shop_slug") || searchParams.get("shop") || "";
+    return raw.trim().toLowerCase();
+  }, [searchParams]);
+
+  const joinUrl = useMemo(() => {
+    if (!shopSlug) return "";
+    return `${window.location.origin}/join/${shopSlug}`;
+  }, [shopSlug]);
+
+  const statsUrl = useMemo(() => {
+    if (!shopSlug) return "";
+    return `/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`;
+  }, [shopSlug]);
+
+  const [data, setData] = useState<StatsResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string>("");
+
+  useEffect(() => {
+    if (!shopSlug) {
+      setData(null);
+      setLoadError("");
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setLoadError("");
+
+        const res = await fetch(statsUrl, { cache: "no-store" });
+        const json = (await res.json()) as StatsResponse;
+
+        if (cancelled) return;
+
+        if (!res.ok || json.error) {
+          setData(null);
+          setLoadError(json.error || `Request failed (${res.status})`);
+          return;
+        }
+
+        setData(json);
+      } catch (e: any) {
+        if (cancelled) return;
+        setData(null);
+        setLoadError(e?.message || "Failed to load stats");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shopSlug, statsUrl]);
+
+  async function copyJoinLink() {
+    if (!joinUrl) return;
+    await navigator.clipboard.writeText(joinUrl);
+    alert("Copied join link!");
+  }
 
   return (
-    <main style={{ minHeight: "100vh", display: "flex", justifyContent: "center", padding: "60px 16px" }}>
-      <div style={{ width: 720, maxWidth: "100%" }}>
-        <div style={{ fontSize: 12, color: "#666", marginBottom: 10 }}>Ventzon</div>
-
-        <h1 style={{ fontSize: 34, fontWeight: 900, marginBottom: 10 }}>Merchant Setup</h1>
-        <p style={{ color: "#666", marginBottom: 28 }}>
-          Give customers a QR code → they join rewards in seconds.
+    <main className="mx-auto max-w-3xl px-6 py-10 text-neutral-100">
+      <div className="mb-8">
+        <div className="text-xs text-neutral-400">Merchant Dashboard</div>
+        <h1 className="mt-1 text-3xl font-semibold">Rewards</h1>
+        <p className="mt-2 text-sm text-neutral-400">
+          View signups + share your shop join link.
         </p>
+      </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 12, padding: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>1) Enter your shop name</h2>
-
-            <input
-              value={shopName}
-              onChange={(e) => setShopName(e.target.value)}
-              placeholder="Example: Govans Groceries"
-              style={{
-                width: "100%",
-                padding: 12,
-                fontSize: 16,
-                borderRadius: 10,
-                border: "1px solid #ccc",
-                marginBottom: 10,
-              }}
-            />
-
-            <div style={{ fontSize: 13, color: "#666", marginBottom: 6 }}>Your shop link (this becomes your QR destination):</div>
-            <div style={{ fontFamily: "monospace", fontSize: 13, padding: 10, borderRadius: 10, border: "1px solid #eee" }}>
-              {joinUrl}
-            </div>
-
-            <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-              <button
-                onClick={() => navigator.clipboard.writeText(joinUrl)}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid #ddd",
-                  background: "white",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
-              >
-                Copy Link
-              </button>
-
-              <a
-                href={joinPath}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "none",
-                  background: "black",
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: 800,
-                }}
-              >
-                Preview Customer Page
-              </a>
-            </div>
-          </div>
-
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 12, padding: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>2) Cashier rules (laminated sign)</h2>
-
-            <div style={{ fontSize: 14, lineHeight: 1.5 }}>
-              <b>Rule:</b> Only show the QR after a purchase of <b>$3+</b>.<br />
-              <b>Limit:</b> Max <b>1 reward per customer per day</b>.<br />
-              <b>How:</b> Keep the sign face-down. If purchase qualifies, flip it over and show the QR.
-            </div>
-
-            <div style={{ marginTop: 14, fontSize: 13, color: "#666" }}>
-              (Next step: we’ll add real tracking + SMS so rewards can’t be faked.)
-            </div>
-          </div>
-
-          <div style={{ border: "1px solid #e5e5e5", borderRadius: 12, padding: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>3) What the customer sees</h2>
-            <div style={{ fontSize: 14, lineHeight: 1.5 }}>
-              Customer scans QR → enters phone number → taps Join → sees “You’re in!”
+      {!shopSlug && (
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+          <div className="text-sm text-neutral-200">Missing shop slug</div>
+          <div className="mt-2 text-sm text-neutral-400">
+            Open this page like:
+            <div className="mt-2 rounded-lg border border-neutral-800 bg-neutral-950 p-3 font-mono text-xs">
+              /merchant?shop_slug=govans-groceries
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {shopSlug && (
+        <>
+          <section className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-xs text-neutral-400">Shop</div>
+                <div className="mt-1 font-mono text-sm text-neutral-200">
+                  {shopSlug}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="inline-flex items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm hover:bg-neutral-900"
+                  onClick={copyJoinLink}
+                >
+                  Copy join link
+                </button>
+
+                <a
+                  className="inline-flex items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2 text-sm text-neutral-300 underline-offset-4 hover:bg-neutral-900 hover:underline"
+                  href={statsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View raw stats
+                </a>
+              </div>
+            </div>
+
+            <div className="mt-3 text-xs text-neutral-500">
+              Join link:{" "}
+              <span className="font-mono text-neutral-300">{joinUrl}</span>
+            </div>
+          </section>
+
+          <section className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="text-sm text-neutral-400">Total signups</div>
+              <div className="mt-2 text-4xl font-semibold">
+                {loading ? "…" : data?.totals?.total ?? 0}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="text-sm text-neutral-400">Signups today (UTC)</div>
+              <div className="mt-2 text-4xl font-semibold">
+                {loading ? "…" : data?.totals?.today ?? 0}
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Latest signups</h2>
+              <button
+                className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm hover:bg-neutral-900"
+                onClick={() => {
+                  // quick refresh
+                  window.location.reload();
+                }}
+              >
+                Refresh
+              </button>
+            </div>
+
+            {loadError && (
+              <div className="mt-3 rounded-xl border border-red-900/40 bg-red-950/30 p-3 text-sm text-red-200">
+                {loadError}
+              </div>
+            )}
+
+            <div className="mt-4 overflow-hidden rounded-xl border border-neutral-800">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-neutral-950">
+                  <tr className="text-neutral-300">
+                    <th className="px-4 py-3 font-medium">Phone</th>
+                    <th className="px-4 py-3 font-medium">Time (UTC)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-800">
+                  {(data?.latest ?? []).length === 0 ? (
+                    <tr>
+                      <td className="px-4 py-4 text-neutral-400" colSpan={2}>
+                        {loading ? "Loading…" : "No signups yet"}
+                      </td>
+                    </tr>
+                  ) : (
+                    (data?.latest ?? []).map((row, idx) => (
+                      <tr key={`${row.phone}-${row.created_at}-${idx}`}>
+                        <td className="px-4 py-3 font-mono text-neutral-200">
+                          {maskPhone(row.phone)}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-neutral-400">
+                          {row.created_at}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-3 text-xs text-neutral-500">
+              Tip: If you want “today” to mean local time (not UTC), we can switch that
+              logic next.
+            </p>
+          </section>
+        </>
+      )}
     </main>
   );
 }
