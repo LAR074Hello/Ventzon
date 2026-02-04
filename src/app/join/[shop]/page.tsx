@@ -32,12 +32,13 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
   const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function cleanPhone(input: string) {
     return input.replace(/[^\d]/g, "");
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     setError("");
 
     const digits = cleanPhone(phone);
@@ -47,14 +48,43 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
       return;
     }
 
-    // For now, we’re not saving it anywhere.
-    // Next step will be: store to Supabase + send SMS.
-    setSubmitted(true);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: digits,
+          shop_slug: shopSlug,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data?.error || "Something went wrong. Try again.");
+        setLoading(false);
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Network error. Try again.");
+      setLoading(false);
+    }
   }
 
   if (submitted) {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <div style={{ width: 360 }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 10 }}>
             You’re in ✅
@@ -71,7 +101,14 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
   }
 
   return (
-    <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <div style={{ width: 360 }}>
         <div style={{ marginBottom: 14, fontSize: 12, color: "#666" }}>
           Ventzon Rewards
@@ -81,9 +118,7 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
           {shop.displayName}
         </h1>
 
-        <p style={{ marginBottom: 18 }}>
-          {shop.dealText}
-        </p>
+        <p style={{ marginBottom: 18 }}>{shop.dealText}</p>
 
         <input
           value={phone}
@@ -108,6 +143,7 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
 
         <button
           onClick={handleSubmit}
+          disabled={loading}
           style={{
             width: "100%",
             padding: 12,
@@ -117,18 +153,28 @@ export default function ShopJoinPage({ params }: { params: { shop: string } }) {
             border: "none",
             backgroundColor: "black",
             color: "white",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
           }}
         >
-          Join Rewards
+          {loading ? "Joining..." : "Join Rewards"}
         </button>
 
-        <p style={{ fontSize: 12, marginTop: 14, color: "#666", lineHeight: 1.4 }}>
-          Rules: max {shop.maxPerDay} reward/day. ${shop.minPurchase}+ minimum purchase.
+        <p
+          style={{
+            fontSize: 12,
+            marginTop: 14,
+            color: "#666",
+            lineHeight: 1.4,
+          }}
+        >
+          Rules: max {shop.maxPerDay} reward/day. ${shop.minPurchase}+ minimum
+          purchase.
         </p>
 
         <p style={{ fontSize: 12, marginTop: 10, color: "#666" }}>
-          Shop link: <span style={{ fontFamily: "monospace" }}>/join/{shopSlug}</span>
+          Shop link:{" "}
+          <span style={{ fontFamily: "monospace" }}>/join/{shopSlug}</span>
         </p>
       </div>
     </main>
