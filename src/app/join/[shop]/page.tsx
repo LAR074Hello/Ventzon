@@ -1,116 +1,86 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
 
-const SHOP_PRESETS: Record<
-  string,
-  { displayName: string; dealText: string; minPurchase: number; maxPerDay: number }
-> = {};
-
-function toTitleCase(slug: string) {
-  return slug
-    .split("-")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-export default function ShopJoinPage({ params }: { params?: { shop?: string } }) {
-  // NOTE: In some Next.js setups, `params` may not populate for a client page.
-  // We fall back to `useParams()` so the slug always comes from the URL.
-  const routeParams = useParams() as { shop?: string | string[] };
-
-  const rawShop =
-    (params?.shop as string | undefined) ??
-    (Array.isArray(routeParams?.shop)
-      ? routeParams.shop[0]
-      : (routeParams?.shop as string | undefined));
-
-  const shopSlug = (rawShop || "").toLowerCase().trim();
-
-  const shop = useMemo(() => {
-    return (
-      SHOP_PRESETS[shopSlug] || {
-        displayName: toTitleCase(shopSlug) || "Rewards",
-        dealText: "Buy 5, get 1 free.",
-        minPurchase: 3,
-        maxPerDay: 1,
-      }
-    );
-  }, [shopSlug]);
+export default function JoinShopPage({
+  params,
+}: {
+  params: { shop: string };
+}) {
+  const shopSlug = useMemo(
+    () => String(params?.shop ?? "").trim().toLowerCase(),
+    [params]
+  );
 
   const [phone, setPhone] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success">("idle");
+  const [error, setError] = useState<string>("");
 
-  function cleanPhone(input: string) {
-    return input.replace(/[^\d]/g, "");
-  }
+  const cleanedDigits = useMemo(() => phone.replace(/[^\d]/g, ""), [phone]);
+  const isValid = cleanedDigits.length >= 10;
 
-  async function handleSubmit() {
+  async function onJoin() {
     setError("");
-
-    // If someone hits /join (no slug), this prevents a confusing API error.
     if (!shopSlug) {
-      setError("Missing shop link. Use a link like /join/govans-groceries");
+      setError("Missing shop.");
       return;
     }
-
-    const digits = cleanPhone(phone);
-
-    if (digits.length < 10) {
-      setError("Please enter a valid phone number.");
+    if (!isValid) {
+      setError("Enter a valid phone number.");
       return;
     }
-
-    setLoading(true);
 
     try {
+      setLoading(true);
+
       const res = await fetch("/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: digits,
-          shop_slug: shopSlug,
-        }),
+        // your /signup route expects: phone + shop_slug
+        body: JSON.stringify({ phone: cleanedDigits, shop_slug: shopSlug }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const json = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setError(data?.error || "Something went wrong. Try again.");
-        setLoading(false);
-        return;
-      }
+      if (!res.ok) throw new Error(json?.error ?? "Failed to join");
 
-      setSubmitted(true);
-    } catch {
-      setError("Network error. Try again.");
+      // success page
+      setStatus("success");
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to join");
+    } finally {
       setLoading(false);
     }
   }
 
-  if (submitted) {
+  // Nice formatting while typing (optional)
+  function onPhoneChange(v: string) {
+    // keep raw, but limit length so it doesn’t get insane
+    const next = v.slice(0, 24);
+    setPhone(next);
+  }
+
+  const titleShopName = useMemo(() => {
+    if (!shopSlug) return "Ventzon Rewards";
+    // turn "govans-groceries" into "Govans Groceries"
+    return shopSlug
+      .split("-")
+      .filter(Boolean)
+      .map((w) => w[0]?.toUpperCase() + w.slice(1))
+      .join(" ");
+  }, [shopSlug]);
+
+  if (!shopSlug) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ width: 360 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 10 }}>
-            You’re in ✅
-          </h1>
-          <p style={{ marginBottom: 10 }}>
-            You joined <b>{shop.displayName}</b> rewards.
-          </p>
-          <p style={{ color: "#666", fontSize: 13 }}>
-            Next: we’ll connect SMS + points tracking.
+      <main className="min-h-screen bg-neutral-950 text-neutral-100">
+        <div className="mx-auto max-w-xl px-6 py-16">
+          <div className="text-xs tracking-[0.35em] text-neutral-400">
+            VENTZON REWARDS
+          </div>
+          <h1 className="mt-3 text-3xl font-semibold">Missing shop</h1>
+          <p className="mt-3 text-neutral-300">
+            Open a link like <span className="font-mono">/join/govans-groceries</span>
           </p>
         </div>
       </main>
@@ -118,81 +88,91 @@ export default function ShopJoinPage({ params }: { params?: { shop?: string } })
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div style={{ width: 360 }}>
-        <div style={{ marginBottom: 14, fontSize: 12, color: "#666" }}>
-          Ventzon Rewards
-        </div>
+    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+      {/* subtle premium glow */}
+      <div className="pointer-events-none fixed inset-0 opacity-60">
+        <div className="absolute left-1/2 top-[-200px] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-neutral-800 blur-3xl" />
+        <div className="absolute right-[-220px] top-[140px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
+        <div className="absolute left-[-220px] bottom-[80px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
+      </div>
 
-        <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-          {shop.displayName}
-        </h1>
-
-        <p style={{ marginBottom: 18 }}>{shop.dealText}</p>
-
-        <input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          type="tel"
-          placeholder="Enter your phone number"
-          style={{
-            width: "100%",
-            padding: 12,
-            fontSize: 16,
-            marginBottom: 10,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-          }}
-        />
-
-        {error ? (
-          <div style={{ color: "#b00020", fontSize: 13, marginBottom: 10 }}>
-            {error}
+      <div className="relative mx-auto flex min-h-screen max-w-xl items-center px-6 py-14">
+        <div className="w-full">
+          <div className="mb-8 text-center">
+            <div className="text-xs tracking-[0.35em] text-neutral-400">
+              VENTZON REWARDS
+            </div>
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+              {titleShopName}
+            </h1>
+            <p className="mt-2 text-neutral-300">
+              Join rewards with your phone number.
+            </p>
           </div>
-        ) : null}
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: 12,
-            fontSize: 16,
-            fontWeight: 700,
-            borderRadius: 8,
-            border: "none",
-            backgroundColor: "black",
-            color: "white",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? "Joining..." : "Join Rewards"}
-        </button>
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
+            {status === "success" ? (
+              <div className="py-10 text-center">
+                <div className="text-2xl font-semibold">You’re in ✅</div>
+                <p className="mt-2 text-neutral-300">
+                  You joined <span className="font-medium">{titleShopName}</span> rewards.
+                </p>
+                <p className="mt-3 text-sm text-neutral-500">
+                  Next: we’ll connect SMS + points tracking.
+                </p>
 
-        <p
-          style={{
-            fontSize: 12,
-            marginTop: 14,
-            color: "#666",
-            lineHeight: 1.4,
-          }}
-        >
-          Rules: max {shop.maxPerDay} reward/day. ${shop.minPurchase}+ minimum
-          purchase.
-        </p>
+                <div className="mt-8 flex justify-center gap-2">
+                  <a
+                    href={`/join/${shopSlug}`}
+                    className="rounded-xl border border-neutral-800 px-4 py-2 text-sm hover:bg-neutral-900"
+                  >
+                    Back
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <>
+                <label className="block text-sm text-neutral-300">
+                  Phone number
+                </label>
 
-        <p style={{ fontSize: 12, marginTop: 10, color: "#666" }}>
-          Shop link:{" "}
-          <span style={{ fontFamily: "monospace" }}>/join/{shopSlug || "(missing)"}</span>
-        </p>
+                <input
+                  value={phone}
+                  onChange={(e) => onPhoneChange(e.target.value)}
+                  inputMode="tel"
+                  placeholder="Enter your phone number"
+                  className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-600"
+                />
+
+                <button
+                  onClick={onJoin}
+                  disabled={loading || !isValid}
+                  className="mt-4 w-full rounded-xl bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? "Joining…" : "Join Rewards"}
+                </button>
+
+                {error ? (
+                  <div className="mt-4 rounded-xl border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-200">
+                    {error}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 text-center text-xs text-neutral-500">
+                  No spam. You can opt out anytime.
+                </div>
+
+                <div className="mt-3 text-center text-xs text-neutral-600">
+                  Shop link: <span className="font-mono">/join/{shopSlug}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="mt-6 text-center text-xs text-neutral-600">
+            Powered by Ventzon
+          </div>
+        </div>
       </div>
     </main>
   );
