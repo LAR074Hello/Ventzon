@@ -112,7 +112,7 @@ export default function MerchantShopPage({
         <div className="absolute left-[-220px] bottom-[80px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-5xl px-6 py-12">
+      <div className="relative mx-auto max-w-4xl px-6 py-12">
         {/* Header */}
         <div className="mb-10">
           <div className="text-xs tracking-[0.35em] text-neutral-400">
@@ -128,7 +128,7 @@ export default function MerchantShopPage({
         </div>
 
         {isMissingShop ? (
-          <section className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+          <section className="rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
             <div className="text-sm text-neutral-300">Missing shop slug</div>
             <div className="mt-2 text-sm text-neutral-400">
               Open this page like:
@@ -142,7 +142,7 @@ export default function MerchantShopPage({
             {/* Top row */}
             <section className="grid gap-6 lg:grid-cols-3">
               {/* Total */}
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
                 <div className="text-sm text-neutral-400">Total signups</div>
                 <div className="mt-2 text-5xl font-semibold tracking-tight">
                   {loading ? "…" : data?.totals?.total ?? 0}
@@ -150,7 +150,7 @@ export default function MerchantShopPage({
               </div>
 
               {/* Today */}
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
                 <div className="text-sm text-neutral-400">Signups today</div>
                 <div className="mt-2 text-5xl font-semibold tracking-tight">
                   {loading ? "…" : data?.totals?.today ?? 0}
@@ -158,7 +158,7 @@ export default function MerchantShopPage({
               </div>
 
               {/* QR / print area */}
-              <div className="print-area rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+              <div className="print-area rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm text-neutral-400">Join link (QR)</div>
                   {copied ? (
@@ -182,7 +182,7 @@ export default function MerchantShopPage({
                       <div className="text-[11px] uppercase tracking-widest text-neutral-500">
                         Join URL
                       </div>
-                      <div className="mt-2 max-h-16 overflow-auto break-all font-mono text-xs text-neutral-200">
+                      <div className="mt-2 max-h-16 overflow-x-auto whitespace-nowrap font-mono text-xs text-neutral-200">
                         {joinUrl}
                       </div>
                     </div>
@@ -230,7 +230,7 @@ export default function MerchantShopPage({
             ) : null}
 
             {/* Latest signups */}
-            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold">Latest signups</h2>
                 <a
@@ -244,7 +244,7 @@ export default function MerchantShopPage({
               </div>
 
               <div className="mt-4 overflow-hidden rounded-xl border border-neutral-800">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-xs">
                   <thead className="bg-neutral-950">
                     <tr className="text-neutral-300">
                       <th className="px-4 py-3 font-medium">Phone</th>
@@ -254,14 +254,17 @@ export default function MerchantShopPage({
 
                   <tbody className="divide-y divide-neutral-800">
                     {(data?.latest ?? []).length === 0 ? (
-                      <tr>
+                      <tr className="hover:bg-neutral-950/60">
                         <td className="px-4 py-4 text-neutral-400" colSpan={2}>
                           {loading ? "Loading…" : "No signups yet."}
                         </td>
                       </tr>
                     ) : (
                       (data?.latest ?? []).map((row, idx) => (
-                        <tr key={`${row.phone}-${row.created_at}-${idx}`}>
+                        <tr
+                          key={`${row.phone}-${row.created_at}-${idx}`}
+                          className="hover:bg-neutral-950/60"
+                        >
                           <td className="px-4 py-3 font-mono text-neutral-200">
                             {maskPhone(row.phone)}
                           </td>
@@ -277,7 +280,7 @@ export default function MerchantShopPage({
             </section>
 
             {/* Quick start */}
-            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
               <div className="text-sm text-neutral-400">Quick start</div>
               <div className="mt-2 text-sm text-neutral-200">
                 Your customer join page:
