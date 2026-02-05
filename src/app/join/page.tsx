@@ -1,13 +1,10 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import JoinInner from "./JoinInner";
 
-export default function JoinShopPage({
-  params,
-}: {
-  params: { shop: string };
-}) {
-  const shopSlug = String(params?.shop ?? "").trim().toLowerCase();
-
-  if (!shopSlug) redirect("/join");
-
-  redirect(`/join?shop_slug=${encodeURIComponent(shopSlug)}`);
+export default function JoinPage() {
+  return (
+    <Suspense fallback={null}>
+      <JoinInner />
+    </Suspense>
+  );
 }
