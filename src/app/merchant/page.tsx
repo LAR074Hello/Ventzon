@@ -7,18 +7,19 @@ export default function MerchantIndexPage({
 }) {
   const shopSlug = String(searchParams?.shop_slug ?? "").trim().toLowerCase();
 
-  // If someone visits /merchant?shop_slug=govans-groceries -> send to /merchant/govans-groceries
-  if (shopSlug) {
-    redirect(`/merchant/${shopSlug}`);
-  }
+  // /merchant?shop_slug=govans-groceries -> /merchant/govans-groceries
+  if (shopSlug) redirect(`/merchant/${shopSlug}`);
 
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="mx-auto max-w-3xl px-6 py-16">
-        <div className="tracking-[0.2em] text-xs text-neutral-400">VENTZON REWARDS</div>
+        <div className="tracking-[0.2em] text-xs text-neutral-400">
+          VENTZON REWARDS
+        </div>
         <h1 className="mt-4 text-4xl font-semibold">Merchant Dashboard</h1>
         <p className="mt-2 text-neutral-300">
-          This is the merchant view for your rewards program. You’ll open your shop page to see today’s signups and your join link.
+          Open your shop dashboard to see signups and share your join link.
+          <span className="text-neutral-400"> Daily totals follow New York time.</span>
         </p>
 
         <div className="mt-10 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
@@ -28,7 +29,7 @@ export default function MerchantIndexPage({
             /merchant/govans-groceries
           </div>
           <div className="mt-3 text-xs text-neutral-500">
-            If you don’t know your shop slug yet, it’s usually the shop name in lowercase with hyphens.
+            If you don’t know your shop slug, it’s usually the shop name in lowercase with hyphens.
           </div>
         </div>
       </div>

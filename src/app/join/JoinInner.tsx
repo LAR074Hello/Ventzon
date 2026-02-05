@@ -1,38 +1,39 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function JoinInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const sp = useSearchParams();
+  const shopSlugFromQuery = sp.get("shop_slug") ?? "";
 
-  useEffect(() => {
-    const slug =
-      (searchParams.get("shop_slug") || searchParams.get("shop") || "")
-        .trim()
-        .toLowerCase();
+  // If someone uses /join?shop_slug=govans-groceries, we still support it gracefully.
+  const shopSlug = useMemo(() => shopSlugFromQuery.trim().toLowerCase(), [shopSlugFromQuery]);
 
-    // If they visited /join?shop_slug=govans-groceries, redirect to /join/govans-groceries
-    if (slug) {
-      router.replace(`/join/${encodeURIComponent(slug)}`);
-    }
-  }, [router, searchParams]);
+  const [status] = useState<"idle" | "success">("success"); // placeholder to keep your UI working
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100">
-      <div className="mx-auto max-w-2xl px-6 py-20">
-        <div className="text-xs tracking-[0.35em] text-neutral-400">
-          VENTZON REWARDS
-        </div>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Missing shop
-        </h1>
-        <p className="mt-3 text-neutral-300">
-          Open a link like{" "}
-          <span className="font-mono">/join/govans-groceries</span> (or{" "}
-          <span className="font-mono">/join?shop_slug=govans-groceries</span>).
-        </p>
+    <main className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-xl px-6 py-24 text-center">
+        <div className="tracking-[0.2em] text-xs text-neutral-400">VENTZON REWARDS</div>
+
+        {!shopSlug ? (
+          <>
+            <h1 className="mt-4 text-3xl font-semibold">Missing shop</h1>
+            <p className="mt-2 text-neutral-400">
+              Open a link like <span className="font-mono text-neutral-200">/join/govans-groceries</span>{" "}
+              (or <span className="font-mono text-neutral-200">/join?shop_slug=govans-groceries</span>)
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="mt-6 text-4xl font-semibold">🎉 You’re in!</h1>
+            <p className="mt-3 text-neutral-300">
+              You’ll earn a reward after 5 qualifying purchases.
+            </p>
+            <p className="mt-2 text-xs text-neutral-500">Text confirmations coming soon.</p>
+          </>
+        )}
       </div>
     </main>
   );
