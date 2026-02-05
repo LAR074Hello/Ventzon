@@ -4,13 +4,22 @@ import { useMemo, useState } from "react";
 
 export default function JoinShopPage({
   params,
+  searchParams,
 }: {
-  params: { shop: string };
+  params?: { shop?: string };
+  searchParams?: Record<string, string | string[] | undefined>;
 }) {
-  const shopSlug = useMemo(
-    () => String(params?.shop ?? "").trim().toLowerCase(),
-    [params]
-  );
+  const shopSlug = useMemo(() => {
+    const fromParams = String(params?.shop ?? "").trim();
+    const fromQueryShop = Array.isArray(searchParams?.shop)
+      ? String(searchParams?.shop?.[0] ?? "").trim()
+      : String(searchParams?.shop ?? "").trim();
+    const fromQueryShopSlug = Array.isArray(searchParams?.shop_slug)
+      ? String(searchParams?.shop_slug?.[0] ?? "").trim()
+      : String(searchParams?.shop_slug ?? "").trim();
+
+    return (fromParams || fromQueryShop || fromQueryShopSlug).toLowerCase();
+  }, [params, searchParams]);
 
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -80,7 +89,7 @@ export default function JoinShopPage({
           </div>
           <h1 className="mt-3 text-3xl font-semibold">Missing shop</h1>
           <p className="mt-3 text-neutral-300">
-            Open a link like <span className="font-mono">/join/govans-groceries</span>
+            Open a link like <span className="font-mono">/join/govans-groceries</span> (or <span className="font-mono">/join?shop_slug=govans-groceries</span>)
           </p>
         </div>
       </main>
