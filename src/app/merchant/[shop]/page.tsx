@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+// @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
 
 type StatsResponse = {
@@ -26,21 +26,24 @@ function formatTime(iso: string) {
   }
 }
 
-export default function MerchantShopPage() {
-  const params = useParams() as { shop?: string };
-
-  const shopSlug = useMemo(() => {
-    return String(params?.shop ?? "").trim().toLowerCase();
-  }, [params?.shop]);
+export default function MerchantShopPage({
+  params,
+}: {
+  params: { shop: string };
+}) {
+  const shopSlug = useMemo(
+    () => String(params?.shop ?? "").trim().toLowerCase(),
+    [params]
+  );
 
   const [data, setData] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
   const joinUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
-    if (!shopSlug) return "";
     return `${window.location.origin}/join/${shopSlug}`;
   }, [shopSlug]);
 
@@ -56,22 +59,18 @@ export default function MerchantShopPage() {
 
       if (!statsUrl) {
         setLoadError("Missing shop slug");
-        setData(null);
         return;
       }
 
       const res = await fetch(statsUrl, { cache: "no-store" });
-      const json = await res.json();
+      const json = (await res.json()) as any;
 
-      if (!res.ok) {
-        throw new Error(json?.error ?? "Failed to load stats");
-      }
+      if (!res.ok) throw new Error(json?.error ?? "Failed to load stats");
 
       setData(json as StatsResponse);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (e: any) {
       setLoadError(e?.message ?? "Failed to load stats");
-      setData(null);
     } finally {
       setLoading(false);
     }
@@ -85,15 +84,8 @@ export default function MerchantShopPage() {
       await loadStats();
     })();
 
-    // Auto-refresh every 5 seconds (so new signups appear without you doing anything)
-    const id = setInterval(() => {
-      if (cancelled) return;
-      loadStats();
-    }, 5000);
-
     return () => {
       cancelled = true;
-      clearInterval(id);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsUrl]);
@@ -101,67 +93,98 @@ export default function MerchantShopPage() {
   async function copyJoinLink() {
     if (!joinUrl) return;
     await navigator.clipboard.writeText(joinUrl);
-    alert("Copied join link!");
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
   }
 
   function printQr() {
     window.print();
   }
 
+  const isMissingShop = !shopSlug;
+
   return (
     <main className="min-h-screen bg-neutral-950 text-neutral-100">
-      <div className="mx-auto max-w-4xl px-6 py-12">
-        <div className="mb-8">
-          <div className="text-xs tracking-widest text-neutral-400">
+      {/* subtle premium glow */}
+      <div className="pointer-events-none fixed inset-0 opacity-60">
+        <div className="absolute left-1/2 top-[-200px] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-neutral-800 blur-3xl" />
+        <div className="absolute right-[-220px] top-[140px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
+        <div className="absolute left-[-220px] bottom-[80px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-5xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-10">
+          <div className="text-xs tracking-[0.35em] text-neutral-400">
             VENTZON REWARDS
           </div>
-          <h1 className="mt-2 text-3xl font-semibold">Merchant Dashboard</h1>
-          <p className="mt-2 text-neutral-300">
-            View signups and share your shop’s join link.
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+            Merchant Dashboard
+          </h1>
+          <p className="mt-3 max-w-2xl text-neutral-300">
+            View signups and share your shop’s join link. Daily totals follow New
+            York time.
           </p>
         </div>
 
-        {!shopSlug ? (
+        {isMissingShop ? (
           <section className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
             <div className="text-sm text-neutral-300">Missing shop slug</div>
-            <div className="mt-2 text-sm text-neutral-400">Open this page like:</div>
+            <div className="mt-2 text-sm text-neutral-400">
+              Open this page like:
+            </div>
             <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4 font-mono text-sm text-neutral-200">
               /merchant/govans-groceries
             </div>
           </section>
         ) : (
           <>
-            {/* TOP ROW */}
-            <section className="grid gap-6 md:grid-cols-3">
+            {/* Top row */}
+            <section className="grid gap-6 lg:grid-cols-3">
+              {/* Total */}
               <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
                 <div className="text-sm text-neutral-400">Total signups</div>
-                <div className="mt-2 text-4xl font-semibold">
+                <div className="mt-2 text-5xl font-semibold tracking-tight">
                   {loading ? "…" : data?.totals?.total ?? 0}
                 </div>
               </div>
 
+              {/* Today */}
               <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
                 <div className="text-sm text-neutral-400">Signups today</div>
-                <div className="mt-2 text-4xl font-semibold">
+                <div className="mt-2 text-5xl font-semibold tracking-tight">
                   {loading ? "…" : data?.totals?.today ?? 0}
                 </div>
               </div>
 
-              {/* QR + link */}
+              {/* QR / print area */}
               <div className="print-area rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-                <div className="text-sm text-neutral-400">Join link (QR)</div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm text-neutral-400">Join link (QR)</div>
+                  {copied ? (
+                    <div className="text-xs text-neutral-200">Copied ✓</div>
+                  ) : (
+                    <div className="text-xs text-neutral-500">
+                      Print & place near checkout
+                    </div>
+                  )}
+                </div>
 
-                <div className="mt-4 flex items-center gap-4">
-                  <div className="rounded-xl bg-white p-3">
-                    <QRCodeCanvas value={joinUrl || " "} size={140} />
+                <div className="mt-4 grid gap-4 sm:grid-cols-[160px_1fr] sm:items-start">
+                  <div className="flex justify-center sm:justify-start">
+                    <div className="rounded-2xl bg-white p-3 shadow-sm">
+                      <QRCodeCanvas value={joinUrl || " "} size={140} />
+                    </div>
                   </div>
 
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-neutral-200">
-                      Print & place near checkout
-                    </div>
-                    <div className="mt-1 break-all rounded-lg border border-neutral-800 bg-neutral-950 p-2 font-mono text-xs text-neutral-300">
-                      {joinUrl}
+                    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3">
+                      <div className="text-[11px] uppercase tracking-widest text-neutral-500">
+                        Join URL
+                      </div>
+                      <div className="mt-2 max-h-16 overflow-auto break-all font-mono text-xs text-neutral-200">
+                        {joinUrl}
+                      </div>
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -171,35 +194,42 @@ export default function MerchantShopPage() {
                       >
                         Copy link
                       </button>
+
                       <button
                         onClick={printQr}
                         className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-black hover:bg-neutral-200"
                       >
                         Print
                       </button>
+
                       <button
                         onClick={loadStats}
                         className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
                       >
                         Refresh
                       </button>
-                    </div>
 
-                    <div className="mt-2 text-xs text-neutral-500">
-                      {lastUpdated ? `Last updated: ${lastUpdated}` : ""}
+                      <div className="ml-auto flex items-center text-xs text-neutral-500">
+                        {lastUpdated ? (
+                          <span>Last updated: {lastUpdated}</span>
+                        ) : (
+                          <span>&nbsp;</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </section>
 
+            {/* Error */}
             {loadError ? (
               <div className="mt-6 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-200">
                 {loadError}
               </div>
             ) : null}
 
-            {/* LATEST SIGNUPS */}
+            {/* Latest signups */}
             <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold">Latest signups</h2>
@@ -246,7 +276,7 @@ export default function MerchantShopPage() {
               </div>
             </section>
 
-            {/* QUICK START */}
+            {/* Quick start */}
             <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
               <div className="text-sm text-neutral-400">Quick start</div>
               <div className="mt-2 text-sm text-neutral-200">
@@ -260,10 +290,13 @@ export default function MerchantShopPage() {
         )}
       </div>
 
-      {/* Print styling: only show the QR section when printing */}
+      {/* Print styling: only show the QR panel when printing */}
       <style jsx global>{`
         @media print {
           body {
+            background: white !important;
+          }
+          main {
             background: white !important;
           }
           main * {
@@ -275,9 +308,15 @@ export default function MerchantShopPage() {
           }
           main .print-area {
             position: absolute;
-            top: 24px;
             left: 24px;
-            right: 24px;
+            top: 24px;
+            width: calc(100% - 48px);
+            border: 1px solid #e5e5e5 !important;
+            background: white !important;
+            color: black !important;
+          }
+          main .print-area .bg-white {
+            box-shadow: none !important;
           }
         }
       `}</style>
