@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
 
@@ -26,15 +27,23 @@ function formatTime(iso: string) {
   }
 }
 
-export default function MerchantShopPage({
-  params,
-}: {
-  params: { shop: string };
-}) {
-  const shopSlug = useMemo(
-    () => String(params?.shop ?? "").trim().toLowerCase(),
-    [params]
-  );
+export default function MerchantShopPage() {
+  const params = useParams<{ shop?: string }>();
+
+  const shopSlug = useMemo(() => {
+    // Primary: Next.js dynamic route param
+    const fromParams = String(params?.shop ?? "").trim();
+
+    // Fallback: parse from the current path (helps if params is briefly empty)
+    let fromPath = "";
+    if (typeof window !== "undefined") {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      // expected: ["merchant", "<slug>"]
+      if (parts[0] === "merchant" && parts[1]) fromPath = parts[1];
+    }
+
+    return (fromParams || fromPath).toLowerCase();
+  }, [params]);
 
   const [data, setData] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);

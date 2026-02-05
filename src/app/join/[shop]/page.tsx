@@ -1,56 +1,54 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { QRCodeCanvas } from "qrcode.react";
 
-export default function JoinShopPage() {
+type Stats = {
+  shop_slug: string;
+  totals?: { total?: number; today?: number };
+  latest?: { phone: string; created_at: string }[];
+};
+
+export default function MerchantShopPage() {
   const params = useParams<{ shop?: string }>();
 
-  const shopSlug = useMemo(() => {
-    return String(params?.shop ?? "").trim().toLowerCase();
-  }, [params?.shop]);
+  const shopSlug = useMemo(
+    () => String(params?.shop ?? "").trim().toLowerCase(),
+    [params]
+  );
 
-  const [phone, setPhone] = useState("");
+  const joinUrl = useMemo(() => {
+    if (!shopSlug) return "";
+    return `${typeof window !== "undefined" ? window.location.origin : ""}/join/${encodeURIComponent(shopSlug)}`;
+  }, [shopSlug]);
+
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success">("idle");
-  const [error, setError] = useState<string>("");
+  const [err, setErr] = useState("");
 
-  const cleanedDigits = useMemo(() => phone.replace(/[^\d]/g, ""), [phone]);
-  const isValid = cleanedDigits.length >= 10;
-
-  async function onJoin() {
-    setError("");
-    if (!shopSlug) return setError("Missing shop.");
-    if (!isValid) return setError("Enter a valid phone number.");
-
-    try {
-      setLoading(true);
-      const res = await fetch("/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: cleanedDigits, shop_slug: shopSlug }),
-      });
-
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error ?? "Failed to join");
-      setStatus("success");
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to join");
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    if (!shopSlug) return;
+    setLoading(true);
+    setErr("");
+    fetch(`/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`)
+      .then(async (r) => {
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j?.error ?? "Failed to load stats");
+        setStats(j);
+      })
+      .catch((e) => setErr(e?.message ?? "Failed to load stats"))
+      .finally(() => setLoading(false));
+  }, [shopSlug]);
 
   if (!shopSlug) {
     return (
       <main className="min-h-screen bg-neutral-950 text-neutral-100">
-        <div className="mx-auto max-w-xl px-6 py-16">
-          <div className="text-xs tracking-[0.35em] text-neutral-400">
-            VENTZON REWARDS
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold">Missing shop</h1>
+        <div className="mx-auto max-w-3xl px-6 py-16">
+          <div className="text-xs tracking-[0.35em] text-neutral-400">VENTZON REWARDS</div>
+          <h1 className="mt-3 text-3xl font-semibold">Missing shop slug</h1>
           <p className="mt-3 text-neutral-300">
-            Open a link like <span className="font-mono">/join/govans-groceries</span>
+            Open this page like: <span className="font-mono">/merchant/govans-groceries</span>
           </p>
         </div>
       </main>
@@ -59,33 +57,62 @@ export default function JoinShopPage() {
 
   return (
     <main className="min-h-screen bg-neutral-950 text-neutral-100">
-      <div className="relative mx-auto flex min-h-screen max-w-xl items-center px-6 py-14">
-        <div className="w-full rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-          {status === "success" ? (
-            <div className="py-10 text-center">
-              <div className="text-2xl font-semibold">You’re in ✅</div>
-              <p className="mt-2 text-neutral-300">Joined {shopSlug}</p>
+      <div className="mx-auto max-w-5xl px-6 py-16">
+        <div className="text-xs tracking-[0.35em] text-neutral-400">VENTZON REWARDS</div>
+        <h1 className="mt-3 text-4xl font-semibold">Merchant Dashboard</h1>
+        <p className="mt-2 text-neutral-300">
+          View signups and share your shop’s join link. Daily totals follow New York time.
+        </p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <div className="text-sm text-neutral-300">Join link</div>
+            <div className="mt-2 break-all rounded-xl border border-neutral-800 bg-black px-4 py-3 font-mono text-sm">
+              {joinUrl || `/join/${shopSlug}`}
             </div>
-          ) : (
-            <>
-              <label className="block text-sm text-neutral-300">Phone number</label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.slice(0, 24))}
-                inputMode="tel"
-                placeholder="Enter your phone number"
-                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3"
-              />
-              <button
-                onClick={onJoin}
-                disabled={loading || !isValid}
-                className="mt-4 w-full rounded-xl bg-white px-4 py-3 text-sm font-medium text-black disabled:opacity-60"
-              >
-                {loading ? "Joining…" : "Join Rewards"}
-              </button>
-              {error ? <div className="mt-4 text-sm text-red-300">{error}</div> : null}
-            </>
-          )}
+
+            <div className="mt-6 flex items-center justify-center rounded-2xl border border-neutral-800 bg-black p-4">
+              <QRCodeCanvas value={joinUrl || `/join/${shopSlug}`} size={180} includeMargin />
+            </div>
+
+            <div className="mt-3 text-xs text-neutral-500">
+              Print this QR code and place it at checkout.
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <div className="text-sm text-neutral-300">Totals</div>
+
+            {loading ? (
+              <div className="mt-4 text-neutral-400">Loading…</div>
+            ) : err ? (
+              <div className="mt-4 text-red-300">{err}</div>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="rounded-xl border border-neutral-800 bg-black p-4">
+                  <div className="text-xs text-neutral-500">Today</div>
+                  <div className="mt-1 text-3xl font-semibold">{stats?.totals?.today ?? 0}</div>
+                </div>
+                <div className="rounded-xl border border-neutral-800 bg-black p-4">
+                  <div className="text-xs text-neutral-500">All time</div>
+                  <div className="mt-1 text-3xl font-semibold">{stats?.totals?.total ?? 0}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 text-sm text-neutral-300">Latest signups</div>
+            <div className="mt-3 space-y-2">
+              {(stats?.latest ?? []).slice(0, 8).map((s, idx) => (
+                <div key={idx} className="rounded-xl border border-neutral-800 bg-black px-4 py-3">
+                  <div className="font-mono text-sm">{s.phone}</div>
+                  <div className="text-xs text-neutral-500">{s.created_at}</div>
+                </div>
+              ))}
+              {!loading && !err && (stats?.latest?.length ?? 0) === 0 ? (
+                <div className="text-neutral-500 text-sm">No signups yet.</div>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </main>
