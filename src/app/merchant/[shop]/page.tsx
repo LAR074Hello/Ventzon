@@ -182,7 +182,7 @@ export default function MerchantShopPage({
                       <div className="text-[11px] uppercase tracking-widest text-neutral-500">
                         Join URL
                       </div>
-                      <div className="mt-2 max-h-16 overflow-x-auto whitespace-nowrap font-mono text-xs text-neutral-200">
+                      <div className="mt-2 max-h-24 overflow-auto whitespace-normal break-all font-mono text-xs text-neutral-200">
                         {joinUrl}
                       </div>
                     </div>
@@ -285,8 +285,26 @@ export default function MerchantShopPage({
               <div className="mt-2 text-sm text-neutral-200">
                 Your customer join page:
               </div>
-              <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4 font-mono text-sm text-neutral-200">
-                /join/{shopSlug}
+              <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                <div className="text-[11px] uppercase tracking-widest text-neutral-500">Customer join link</div>
+                <div className="mt-2 font-mono text-sm text-neutral-200 break-all">{joinUrl}</div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    href={joinUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
+                  >
+                    Open join page
+                  </a>
+                  <button
+                    onClick={copyJoinLink}
+                    className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
+                  >
+                    Copy link
+                  </button>
+                </div>
               </div>
             </section>
           </>
