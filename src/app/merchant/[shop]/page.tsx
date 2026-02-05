@@ -286,8 +286,12 @@ export default function MerchantShopPage({
                 Your customer join page:
               </div>
               <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                <div className="text-[11px] uppercase tracking-widest text-neutral-500">Customer join link</div>
-                <div className="mt-2 font-mono text-sm text-neutral-200 break-all">{joinUrl}</div>
+                <div className="text-[11px] uppercase tracking-widest text-neutral-500">
+                  Customer join link
+                </div>
+                <div className="mt-2 break-all font-mono text-sm text-neutral-200">
+                  {joinUrl}
+                </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   <a

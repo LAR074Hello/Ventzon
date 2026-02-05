@@ -1,80 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function JoinPage() {
-  const [phone, setPhone] = useState("");
-  const [joined, setJoined] = useState(false);
+export default function JoinIndexPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const slug = (searchParams.get("shop_slug") || "").trim().toLowerCase();
+    if (slug) router.replace(`/join/${encodeURIComponent(slug)}`);
+  }, [router, searchParams]);
 
   return (
-    <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ width: 320 }}>
-        {!joined ? (
-          <>
-            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12 }}>
-              Join Rewards ☕
-            </h1>
-
-            <p style={{ marginBottom: 20 }}>
-              Buy 5 coffees, get 1 free.
-            </p>
-
-            <input
-              type="tel"
-              placeholder="Enter your phone number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 12,
-                fontSize: 16,
-                marginBottom: 12,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-              }}
-            />
-
-            <button
-              onClick={() => {
-                if (phone.length >= 10) {
-                  setJoined(true);
-                } else {
-                  alert("Please enter a valid phone number");
-                }
-              }}
-              style={{
-                width: "100%",
-                padding: 12,
-                fontSize: 16,
-                fontWeight: 600,
-                borderRadius: 6,
-                border: "none",
-                backgroundColor: "black",
-                color: "white",
-              }}
-            >
-              Join Rewards
-            </button>
-
-            <p style={{ fontSize: 12, marginTop: 16, color: "#666" }}>
-              Max 1 reward per day. $3 minimum purchase.
-            </p>
-          </>
-        ) : (
-          <>
-            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12 }}>
-              🎉 You’re in!
-            </h1>
-
-            <p>
-              You’ll earn a reward after 5 qualifying purchases.
-            </p>
-
-            <p style={{ marginTop: 12, fontSize: 12, color: "#666" }}>
-              Text confirmations coming soon.
-            </p>
-          </>
-        )}
+    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+      <div className="mx-auto max-w-2xl px-6 py-20">
+        <div className="text-xs tracking-[0.35em] text-neutral-400">VENTZON REWARDS</div>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Missing shop</h1>
+        <p className="mt-3 text-neutral-300">
+          Open a link like <span className="font-mono">/join/govans-groceries</span> (or{" "}
+          <span className="font-mono">/join?shop_slug=govans-groceries</span>).
+        </p>
       </div>
     </main>
   );
