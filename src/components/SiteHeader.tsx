@@ -19,7 +19,7 @@ export default function SiteHeader() {
           <Link href="/pricing" className="text-sm text-neutral-300 hover:text-white">
             Pricing
           </Link>
-          <Link href="/merchant" className="text-sm text-neutral-300 hover:text-white">
+          <Link href="/merchant/dashboard" className="text-sm text-neutral-300 hover:text-white">
             Merchant
           </Link>
         </nav>

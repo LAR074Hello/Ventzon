@@ -33,7 +33,7 @@ function LoginForm() {
     setLoading(false);
     if (error) return setErr(error.message);
 
-    router.push("/merchant");
+    router.push("/merchant/dashboard");
     router.refresh();
   }
 

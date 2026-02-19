@@ -132,7 +132,7 @@ export default function HowItWorksPage() {
             {/* CTA row */}
             <div className="mt-7 flex flex-wrap gap-3">
               <a
-                href="/merchant"
+                href="/merchant/dashboard"
                 className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black hover:bg-white/90"
               >
                 Merchant dashboard

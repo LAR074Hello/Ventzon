@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const code = url.searchParams.get("code");
 
   // where to send the user after we establish the session
-  const next = url.searchParams.get("next") ?? "/get-started";
+  const next = url.searchParams.get("next") ?? "/merchant/dashboard";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=missing_code", url.origin));
