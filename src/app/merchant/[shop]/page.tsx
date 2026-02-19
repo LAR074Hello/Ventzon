@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
-import { createClient } from "@supabase/supabase-js";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type StatsResponse = {
   shop_slug: string;
@@ -95,17 +95,9 @@ export default function MerchantShopPage() {
     (async () => {
       try {
         setShopLoadError("");
-
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-        if (!url || !anon) {
-          // If env isn't present, fall back to locked state rather than crashing.
-          return;
-        }
         if (!shopSlug) return;
 
-        const supabase = createClient(url, anon);
+        const supabase = createSupabaseBrowserClient();
 
         const { data: shopRow, error } = await supabase
           .from("shops")
