@@ -77,28 +77,33 @@ export async function POST(req: Request) {
 
     if (shopErr) return NextResponse.json({ error: shopErr.message }, { status: 400 });
 
-    // 5) Link user to shop (multi-shop ready)
+    // 5) Link user to shop via shop_members (best-effort; dashboard
+    //    queries shops.user_id directly so this is not critical)
     const { error: memberErr } = await supabase.from("shop_members").insert({
       shop_id: shopRow.id,
       user_id: user.id,
       role: "owner",
     });
-    if (memberErr) return NextResponse.json({ error: memberErr.message }, { status: 400 });
+    if (memberErr) {
+      console.warn("shop_members insert failed (non-fatal):", memberErr.message);
+    }
 
-    // 5.5) Create default shop settings (prevents FK error on dashboard)
-    // IMPORTANT: this assumes shop_settings has a "shop_slug" column FK -> shops.slug
-    // If your table uses shop_id instead, tell me and I’ll adjust.
+    // 5.5) Create default shop_settings row so the dashboard doesn't need
+    //      to lazy-create one. Uses the real column names from the table.
+    const defaultShopName = shopName; // the user-provided display name
     const { error: settingsErr } = await supabase.from("shop_settings").insert({
       shop_slug: shopRow.slug,
-      // put whatever defaults your UI expects:
-      goal: "collect_phone", // example default
-      offer_text: "",
-      welcome_text: "",
-      terms_text: "",
+      shop_name: defaultShopName,
+      deal_title: null,
+      deal_details: null,
+      welcome_sms_template: null,
+      reward_sms_template: null,
+      reward_goal: 5,
     });
 
     if (settingsErr) {
-      return NextResponse.json({ error: settingsErr.message }, { status: 400 });
+      // Non-fatal — the /api/join/settings endpoint auto-creates a default row
+      console.warn("shop_settings insert failed (non-fatal):", settingsErr.message);
     }
 
     // 6) Done
