@@ -1,10 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function MerchantSubscribePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SubscribeInner />
+    </Suspense>
+  );
+}
+
+function SubscribeInner() {
   const searchParams = useSearchParams();
 
   const shopSlug = useMemo(() => {
