@@ -15,21 +15,20 @@ export default async function MerchantIndexPage() {
     redirect("/login");
   }
 
-  // 2) Find shops the user belongs to (supports multi-shop users)
-  // shop_members: { user_id -> auth.users.id, shop_id -> shops.id }
-  const { data: memberships, error } = await supabase
-    .from("shop_members")
-    .select("shop:shops(id, slug)")
+  // 2) Find shops owned by this user
+  const { data: shopRows, error } = await supabase
+    .from("shops")
+    .select("id, slug")
     .eq("user_id", user.id);
 
   if (error) {
-    console.error("Failed to load shop memberships:", error);
+    console.error("Failed to load shops:", error);
     redirect("/error");
   }
 
-  const shops = (memberships ?? [])
-    .map((m: any) => m?.shop)
-    .filter((s: any) => s && typeof s.slug === "string" && s.slug.length > 0);
+  const shops = (shopRows ?? []).filter(
+    (s: any) => s && typeof s.slug === "string" && s.slug.length > 0
+  );
 
   // 3) 0 shops -> send them to create
   if (shops.length === 0) {
