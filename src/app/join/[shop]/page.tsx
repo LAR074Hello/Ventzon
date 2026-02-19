@@ -10,6 +10,16 @@ type ShopSettings = {
   deal_details: string | null;
 };
 
+type CheckinResponse = {
+  ok: boolean;
+  status: "progress" | "reward";
+  visits: number;
+  goal: number;
+  remaining: number;
+  reset: boolean;
+  message: string;
+};
+
 function normalizePhone(raw: string) {
   const digits = String(raw || "").replace(/\D/g, "");
   if (digits.length === 10) return `+1${digits}`;
@@ -32,7 +42,7 @@ export default function CustomerJoinPage() {
   const [phoneRaw, setPhoneRaw] = useState("");
   const [pin, setPin] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<CheckinResponse | null>(null);
 
   useEffect(() => {
     if (!shopSlug) return;
@@ -72,25 +82,23 @@ export default function CustomerJoinPage() {
       return;
     }
 
-    if (!/^\d{4}$/.test(pin)) {
-      setErr("Enter a 4-digit PIN.");
+    if (pin && !/^\d{6}$/.test(pin)) {
+      setErr("PIN must be exactly 6 digits.");
       return;
     }
 
     setSubmitting(true);
     try {
-      // PREVIEW MODE ONLY — backend check-in will come next
-      const res = await fetch("/api/join/signup", {
+      const res = await fetch("/api/join/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, phone, pin }),
+        body: JSON.stringify({ shop_slug: shopSlug, phone, ...(pin ? { pin } : {}) }),
       });
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Join failed");
+      const json = (await res.json()) as any;
+      if (!res.ok) throw new Error(json?.error || "Check-in failed");
 
-      // Preview success message
-      setResult("You're checked in 🎉 We'll text you when you earn your reward.");
+      setResult(json as CheckinResponse);
     } catch (e: any) {
       setErr(e?.message ?? "Unknown error");
     } finally {
@@ -137,10 +145,22 @@ export default function CustomerJoinPage() {
 
         {result ? (
           <div className="mt-5 rounded-xl border border-green-900 bg-green-950/40 p-4">
-            <div className="font-semibold">{result}</div>
-            <div className="mt-1 text-sm text-neutral-200">
-              You can scan this QR again on your next visit.
+            <div className="font-semibold">{result.message}</div>
+
+            <div className="mt-2 text-sm text-neutral-200">
+              Visits: <span className="font-mono">{result.visits}/{result.goal}</span>
+              {" "}• Remaining: <span className="font-mono">{result.remaining}</span>
             </div>
+
+            {result.status === "reward" ? (
+              <div className="mt-2 text-sm font-semibold text-green-200">
+                ✅ REDEEM NOW — show this text to the cashier
+              </div>
+            ) : (
+              <div className="mt-2 text-xs text-neutral-300">
+                (Limit: 1 check-in text per day. Your progress resets after you redeem.)
+              </div>
+            )}
           </div>
         ) : (
           <form onSubmit={onSubmit} className="mt-5 space-y-3">
@@ -155,15 +175,15 @@ export default function CustomerJoinPage() {
             </label>
 
             <label className="block">
-              <div className="text-sm text-neutral-300">4-digit PIN</div>
+              <div className="text-sm text-neutral-300">6-digit PIN <span className="text-neutral-500">(optional)</span></div>
               <input
                 value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                placeholder="1234"
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="123456"
                 className="mt-2 w-full rounded-xl border border-neutral-800 bg-black px-4 py-3 text-white outline-none focus:border-neutral-600"
               />
               <div className="mt-1 text-xs text-neutral-500">
-                Used to quickly check in on future visits.
+                Set a PIN to secure your check-ins. Not required for QR check-ins.
               </div>
             </label>
 

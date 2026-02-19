@@ -33,7 +33,7 @@ export default function SiteHeader() {
             Login
           </Link>
           <Link
-            href="/start"
+            href="/signup"
             className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-black hover:bg-neutral-200"
           >
             Get started

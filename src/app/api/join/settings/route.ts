@@ -24,17 +24,51 @@ export async function GET(req: Request) {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data, error } = await supabase
+    // 1) Try to read settings (new shops may not have a row yet)
+    const { data: existing, error: readErr } = await supabase
       .from("shop_settings")
-      .select("shop_slug, shop_name, deal_title, deal_details, welcome_sms_template")
+      .select(
+        "shop_slug, shop_name, deal_title, deal_details, welcome_sms_template"
+      )
       .eq("shop_slug", shop_slug)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 404 });
+    if (readErr) {
+      return NextResponse.json({ error: readErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, settings: data }, { status: 200 });
+    // 2) If missing, create a default settings row (so callers never crash on .single())
+    if (!existing) {
+      const defaultShopName = shop_slug
+        .split("-")
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+
+      const defaultRow = {
+        shop_slug,
+        shop_name: defaultShopName || shop_slug,
+        deal_title: "",
+        deal_details: "",
+        welcome_sms_template: "Thanks for joining! Reply STOP to unsubscribe.",
+      };
+
+      const { data: inserted, error: upsertErr } = await supabase
+        .from("shop_settings")
+        .upsert(defaultRow, { onConflict: "shop_slug" })
+        .select(
+          "shop_slug, shop_name, deal_title, deal_details, welcome_sms_template"
+        )
+        .single();
+
+      if (upsertErr) {
+        return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+      }
+
+      return NextResponse.json({ ok: true, settings: inserted }, { status: 200 });
+    }
+
+    return NextResponse.json({ ok: true, settings: existing }, { status: 200 });
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message ?? "Unknown error" },

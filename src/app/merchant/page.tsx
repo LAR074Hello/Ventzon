@@ -1,37 +1,74 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
-export default function MerchantIndexPage({
-  searchParams,
-}: {
-  searchParams?: { shop_slug?: string };
-}) {
-  const shopSlug = String(searchParams?.shop_slug ?? "").trim().toLowerCase();
+export default async function MerchantIndexPage() {
+  // NOTE: this can be async depending on your cookie bridge implementation
+  const supabase = await createSupabaseServerClient();
 
-  // /merchant?shop_slug=govans-groceries -> /merchant/govans-groceries
-  if (shopSlug) redirect(`/merchant/${shopSlug}`);
+  // 1) Must be logged in
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
+  if (!user) {
+    redirect("/login");
+  }
+
+  // 2) Find shops the user belongs to (supports multi-shop users)
+  // shop_members: { user_id -> auth.users.id, shop_id -> shops.id }
+  const { data: memberships, error } = await supabase
+    .from("shop_members")
+    .select("shop:shops(id, slug)")
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Failed to load shop memberships:", error);
+    redirect("/error");
+  }
+
+  const shops = (memberships ?? [])
+    .map((m: any) => m?.shop)
+    .filter((s: any) => s && typeof s.slug === "string" && s.slug.length > 0);
+
+  // 3) 0 shops -> send them to create
+  if (shops.length === 0) {
+    redirect("/merchant/create");
+  }
+
+  // 4) 1 shop -> go straight there
+  if (shops.length === 1) {
+    redirect(`/merchant/${shops[0].slug}`);
+  }
+
+  // 5) Multiple shops -> show a selector (no redirect so we don't 404/loop)
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <div className="tracking-[0.2em] text-xs text-neutral-400">
-          VENTZON REWARDS
-        </div>
-        <h1 className="mt-4 text-4xl font-semibold">Merchant Dashboard</h1>
-        <p className="mt-2 text-neutral-300">
-          Open your shop dashboard to see signups and share your join link.
-          <span className="text-neutral-400"> Daily totals follow New York time.</span>
-        </p>
+    <main className="mx-auto max-w-3xl px-6 py-12">
+      <h1 className="text-2xl font-semibold">Choose a shop</h1>
+      <p className="mt-2 text-sm text-neutral-400">
+        Your account has access to multiple shops. Pick one to open its dashboard.
+      </p>
 
-        <div className="mt-10 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
-          <div className="text-sm text-neutral-200">Open your shop dashboard</div>
-          <div className="mt-2 text-xs text-neutral-400">Example:</div>
-          <div className="mt-2 rounded-xl border border-neutral-800 bg-black px-4 py-3 font-mono text-sm text-neutral-200">
-            /merchant/govans-groceries
-          </div>
-          <div className="mt-3 text-xs text-neutral-500">
-            If you don’t know your shop slug, it’s usually the shop name in lowercase with hyphens.
-          </div>
-        </div>
+      <div className="mt-6 grid gap-3">
+        {shops.map((shop: any) => (
+          <Link
+            key={shop.id ?? shop.slug}
+            href={`/merchant/${shop.slug}`}
+            className="rounded-xl border border-neutral-800 bg-neutral-950/60 px-4 py-3 hover:bg-neutral-900"
+          >
+            <div className="text-sm text-neutral-400">Shop</div>
+            <div className="text-lg font-medium text-white">{shop.slug}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <Link
+          href="/merchant/create"
+          className="inline-flex items-center rounded-xl bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
+        >
+          Create another shop
+        </Link>
       </div>
     </main>
   );
