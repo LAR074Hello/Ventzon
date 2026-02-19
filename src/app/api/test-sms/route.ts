@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sendSms } from "@/lib/sms";
+import twilio from "twilio";
 
 /**
  * GET /api/test-sms?to=+14105551234
@@ -49,11 +49,16 @@ export async function GET(req: Request) {
       );
     }
 
-    const messageSid = await sendSms(to, "Ventzon test SMS — your Twilio setup is working!");
+    const client = twilio(sid, token);
+    const msg = await client.messages.create({
+      to,
+      from,
+      body: "Ventzon test SMS — your Twilio setup is working!",
+    });
 
     return NextResponse.json({
       ok: true,
-      message_sid: messageSid,
+      message_sid: msg.sid,
       sent_to: to,
     });
   } catch (err: any) {

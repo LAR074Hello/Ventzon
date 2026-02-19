@@ -1,22 +1,106 @@
 import twilio from "twilio";
+import { SupabaseClient } from "@supabase/supabase-js";
 
-/** Replace {{shop_name}} and {{deal_title}} in a template string. */
-export function renderTemplate(
-  template: string,
-  vars: { shop_name: string; deal_title: string }
-): string {
-  return template
-    .replaceAll("{{shop_name}}", vars.shop_name)
-    .replaceAll("{{deal_title}}", vars.deal_title);
+type SmsType = "transactional" | "marketing";
+
+interface SendSmsParams {
+  supabase: SupabaseClient;
+  shopId: string;
+  toPhone: string;
+  body: string;
+  type: SmsType;
+  checkinId?: string;
+  promotionId?: string;
 }
 
-/** Send a transactional SMS. Returns the message SID on success. */
-export async function sendSms(to: string, body: string): Promise<string> {
-  const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID!,
-    process.env.TWILIO_AUTH_TOKEN!
-  );
-  const from = process.env.TWILIO_PHONE_NUMBER!;
-  const msg = await client.messages.create({ to, from, body });
-  return msg.sid;
+interface SendSmsResult {
+  ok: boolean;
+  messageId?: string;
+  twilioSid?: string;
+  skipped?: "opted_out" | "sms_disabled";
+  error?: string;
+}
+
+export async function sendSms(params: SendSmsParams): Promise<SendSmsResult> {
+  const { supabase, shopId, toPhone, body, type, checkinId, promotionId } =
+    params;
+
+  // 1. Opt-out check
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("opted_out")
+    .eq("phone", toPhone)
+    .eq("shop_id", shopId)
+    .single();
+
+  if (customer?.opted_out) {
+    return { ok: true, skipped: "opted_out" };
+  }
+
+  const fromPhone = process.env.TWILIO_PHONE_NUMBER ?? "";
+  const smsEnabled = process.env.SMS_ENABLED !== "false";
+
+  // 2. Log the attempt before sending
+  const { data: logRow, error: logErr } = await supabase
+    .from("messages")
+    .insert({
+      shop_id: shopId,
+      to_phone: toPhone,
+      from_phone: fromPhone,
+      body,
+      type,
+      status: "queued",
+      checkin_id: checkinId ?? null,
+      promotion_id: promotionId ?? null,
+    })
+    .select("id")
+    .single();
+
+  if (logErr || !logRow) {
+    console.error("[sms] failed to log message", logErr);
+    return { ok: false, error: logErr?.message ?? "Failed to log message" };
+  }
+
+  const messageId = logRow.id as string;
+
+  // 3. Skip Twilio when SMS_ENABLED=false
+  if (!smsEnabled) {
+    await supabase
+      .from("messages")
+      .update({ status: "skipped" })
+      .eq("id", messageId);
+
+    return { ok: true, messageId, skipped: "sms_disabled" };
+  }
+
+  // 4. Send via Twilio
+  try {
+    const client = twilio(
+      process.env.TWILIO_ACCOUNT_SID!,
+      process.env.TWILIO_AUTH_TOKEN!
+    );
+
+    const msg = await client.messages.create({
+      to: toPhone,
+      from: fromPhone,
+      body,
+    });
+
+    await supabase
+      .from("messages")
+      .update({ status: "sent", twilio_sid: msg.sid })
+      .eq("id", messageId);
+
+    return { ok: true, messageId, twilioSid: msg.sid };
+  } catch (err: any) {
+    const errMsg: string = err?.message ?? "Twilio error";
+
+    await supabase
+      .from("messages")
+      .update({ status: "failed", error_message: errMsg })
+      .eq("id", messageId);
+
+    console.error("[sms] twilio send failed", errMsg);
+    return { ok: false, messageId, error: errMsg };
+  }
 }

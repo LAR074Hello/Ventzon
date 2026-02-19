@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendSms, renderTemplate } from "@/lib/sms";
+import { sendSms } from "@/lib/sms";
+
+export const runtime = "nodejs";
 
 function isE164(phone: string) {
   return /^\+\d{10,15}$/.test(phone);
+}
+
+function renderTemplate(
+  template: string,
+  vars: Record<string, string | number>
+) {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) =>
+    key in vars ? String(vars[key]) : `{{${key}}}`
+  );
 }
 
 export async function POST(req: Request) {
@@ -27,131 +38,145 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Upsert customer into signups (insert if new, otherwise fetch existing)
-    const { data: existing, error: lookupErr } = await supabase
-      .from("signups")
-      .select("id, phone, shop_slug, visits")
+    // --- Resolve shop by slug ---
+    const { data: shop, error: shopErr } = await supabase
+      .from("shops")
+      .select("id, slug")
+      .eq("slug", shop_slug)
+      .single();
+
+    if (shopErr || !shop) {
+      return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+    }
+
+    const shopId: string = shop.id;
+
+    // --- Load shop settings for SMS templates ---
+    const { data: settings } = await supabase
+      .from("shop_settings")
+      .select("shop_name, reward_goal, welcome_sms_template, reward_sms_template")
       .eq("shop_slug", shop_slug)
+      .single();
+
+    const shopName: string = settings?.shop_name ?? shop_slug;
+    const rewardGoal: number = settings?.reward_goal ?? 10;
+    const welcomeTemplate: string =
+      settings?.welcome_sms_template ||
+      "Welcome to {{shop_name}}! You've checked in. Visit {{goal}} times to earn your reward.";
+    const rewardTemplate: string =
+      settings?.reward_sms_template ||
+      "Congrats! You've reached {{visits}} visits at {{shop_name}} — you've earned your reward! Show this to redeem.";
+
+    // --- Upsert customer ---
+    let { data: customer, error: fetchErr } = await supabase
+      .from("customers")
+      .select("id, total_visits, opted_out")
+      .eq("shop_id", shopId)
       .eq("phone", phone)
       .maybeSingle();
 
-    if (lookupErr) {
-      return NextResponse.json({ error: lookupErr.message }, { status: 500 });
+    if (fetchErr) {
+      return NextResponse.json({ error: fetchErr.message }, { status: 500 });
     }
 
+    let customerId: string;
+    let newVisitCount: number;
     let isNewCustomer = false;
-    let visits: number;
-    let signupId: number;
 
-    if (!existing) {
-      // New customer — insert into signups with visits = 1
+    if (!customer) {
+      // First visit — insert
       isNewCustomer = true;
       const { data: inserted, error: insertErr } = await supabase
-        .from("signups")
-        .insert({ shop_slug, phone, visits: 1 })
-        .select("id, visits")
+        .from("customers")
+        .insert({
+          shop_id: shopId,
+          phone,
+          total_visits: 1,
+          opted_out: false,
+          last_checkin_at: new Date().toISOString(),
+        })
+        .select("id, total_visits")
         .single();
 
-      if (insertErr) {
-        // Race condition: another request inserted between our lookup and insert
-        if (insertErr.code === "23505" || /duplicate key/i.test(insertErr.message)) {
-          // Retry as an existing customer
-          const { data: retry, error: retryErr } = await supabase
-            .from("signups")
-            .select("id, visits")
-            .eq("shop_slug", shop_slug)
-            .eq("phone", phone)
-            .single();
-
-          if (retryErr || !retry) {
-            return NextResponse.json({ error: "Failed to resolve customer" }, { status: 500 });
-          }
-
-          isNewCustomer = false;
-          signupId = retry.id;
-          visits = retry.visits ?? 0;
-        } else {
-          return NextResponse.json({ error: insertErr.message }, { status: 500 });
-        }
-      } else {
-        signupId = inserted.id;
-        visits = inserted.visits;
+      if (insertErr || !inserted) {
+        return NextResponse.json(
+          { error: insertErr?.message ?? "Failed to create customer" },
+          { status: 500 }
+        );
       }
-    } else {
-      signupId = existing.id;
-      visits = (existing.visits ?? 0) + 1;
 
-      // Increment visits
+      customerId = inserted.id;
+      newVisitCount = 1;
+    } else {
+      // Returning customer — increment visits
+      customerId = customer.id;
+      newVisitCount = (customer.total_visits ?? 0) + 1;
+
       const { error: updateErr } = await supabase
-        .from("signups")
-        .update({ visits })
-        .eq("id", signupId);
+        .from("customers")
+        .update({
+          total_visits: newVisitCount,
+          last_checkin_at: new Date().toISOString(),
+        })
+        .eq("id", customerId);
 
       if (updateErr) {
         return NextResponse.json({ error: updateErr.message }, { status: 500 });
       }
     }
 
-    // 2. Log the checkin
-    const { error: checkinErr } = await supabase
+    // --- Log checkin ---
+    const { data: checkin, error: checkinErr } = await supabase
       .from("checkins")
-      .insert({ shop_slug, phone });
-
-    if (checkinErr) {
-      return NextResponse.json({ error: checkinErr.message }, { status: 500 });
-    }
-
-    // 3. Load shop settings for SMS templates + reward_goal
-    const { data: settings } = await supabase
-      .from("shop_settings")
-      .select("shop_name, deal_title, welcome_sms_template, reward_sms_template, reward_goal")
-      .eq("shop_slug", shop_slug)
+      .insert({
+        shop_id: shopId,
+        customer_id: customerId,
+        visit_number: newVisitCount,
+      })
+      .select("id")
       .single();
 
-    const shopName = settings?.shop_name || shop_slug;
-    const dealTitle = settings?.deal_title || "";
-    const rewardGoal: number = settings?.reward_goal ?? 5;
-    const earnedReward = visits >= rewardGoal;
+    if (checkinErr || !checkin) {
+      return NextResponse.json(
+        { error: checkinErr?.message ?? "Failed to log checkin" },
+        { status: 500 }
+      );
+    }
 
-    // 4. Send SMS
-    let smsSent = false;
-    try {
-      if (isNewCustomer && settings?.welcome_sms_template) {
-        // Welcome SMS for first-time customer
-        const msg = renderTemplate(settings.welcome_sms_template, {
-          shop_name: shopName,
-          deal_title: dealTitle,
-        });
-        await sendSms(phone, msg);
-        smsSent = true;
-      } else if (earnedReward && settings?.reward_sms_template) {
-        // Reward SMS when they hit the goal
-        const msg = renderTemplate(settings.reward_sms_template, {
-          shop_name: shopName,
-          deal_title: dealTitle,
-        });
-        await sendSms(phone, msg);
-        smsSent = true;
+    // --- Determine SMS message ---
+    const isRewardVisit = newVisitCount % rewardGoal === 0;
+    const template = isRewardVisit ? rewardTemplate : welcomeTemplate;
+    const smsBody = renderTemplate(template, {
+      shop_name: shopName,
+      visits: newVisitCount,
+      goal: rewardGoal,
+    });
 
-        // Reset visits after earning reward
-        await supabase
-          .from("signups")
-          .update({ visits: 0 })
-          .eq("id", signupId);
-        visits = 0;
-      }
-    } catch (smsErr: any) {
-      // Log but don't fail the checkin if SMS fails
-      console.error("SMS send failed:", smsErr?.message);
+    // --- Send transactional SMS ---
+    const smsResult = await sendSms({
+      supabase,
+      shopId,
+      toPhone: phone,
+      body: smsBody,
+      type: "transactional",
+      checkinId: checkin.id,
+    });
+
+    if (!smsResult.ok && !smsResult.skipped) {
+      console.error("[checkin] SMS failed", smsResult.error);
     }
 
     return NextResponse.json({
       ok: true,
-      is_new: isNewCustomer,
-      visits,
-      reward_goal: rewardGoal,
-      earned_reward: earnedReward,
-      sms_sent: smsSent,
+      customer_id: customerId,
+      checkin_id: checkin.id,
+      visit_number: newVisitCount,
+      is_reward_visit: isRewardVisit,
+      is_new_customer: isNewCustomer,
+      sms: {
+        skipped: smsResult.skipped ?? null,
+        twilio_sid: smsResult.twilioSid ?? null,
+      },
     });
   } catch (err: any) {
     return NextResponse.json(
