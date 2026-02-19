@@ -1,12 +1,5 @@
 import twilio from "twilio";
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID!,
-  process.env.TWILIO_AUTH_TOKEN!
-);
-
-const FROM = process.env.TWILIO_PHONE_NUMBER!;
-
 /** Replace {{shop_name}} and {{deal_title}} in a template string. */
 export function renderTemplate(
   template: string,
@@ -19,6 +12,11 @@ export function renderTemplate(
 
 /** Send a transactional SMS. Returns the message SID on success. */
 export async function sendSms(to: string, body: string): Promise<string> {
-  const msg = await client.messages.create({ to, from: FROM, body });
+  const client = twilio(
+    process.env.TWILIO_ACCOUNT_SID!,
+    process.env.TWILIO_AUTH_TOKEN!
+  );
+  const from = process.env.TWILIO_PHONE_NUMBER!;
+  const msg = await client.messages.create({ to, from, body });
   return msg.sid;
 }

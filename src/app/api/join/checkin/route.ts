@@ -2,17 +2,17 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendSms, renderTemplate } from "@/lib/sms";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 function isE164(phone: string) {
   return /^\+\d{10,15}$/.test(phone);
 }
 
 export async function POST(req: Request) {
   try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     const body = await req.json().catch(() => ({}));
     const shop_slug = String(body?.shop_slug || "").trim().toLowerCase();
     const phone = String(body?.phone || "").trim();

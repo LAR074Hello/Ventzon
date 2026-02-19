@@ -2,15 +2,14 @@ import Stripe from "stripe";
 
 export const runtime = "nodejs";
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-if (!STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY env var");
-}
-
-const stripe = new Stripe(STRIPE_SECRET_KEY);
-
 export async function POST(req: Request) {
   try {
+    const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+    if (!STRIPE_SECRET_KEY) {
+      return Response.json({ error: "Missing STRIPE_SECRET_KEY env var" }, { status: 500 });
+    }
+    const stripe = new Stripe(STRIPE_SECRET_KEY);
+
     const body = await req.json();
     const shop_slug = String(body.shop_slug ?? body.shop ?? "").trim();
     const planRaw = String(body.plan ?? "monthly").trim().toLowerCase();
