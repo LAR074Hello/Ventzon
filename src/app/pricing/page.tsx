@@ -1,9 +1,17 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 export default function PricingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PricingInner />
+    </Suspense>
+  );
+}
+
+function PricingInner() {
   const searchParams = useSearchParams();
   const shop = searchParams.get("shop");
 
