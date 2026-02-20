@@ -65,10 +65,30 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: upsertErr.message }, { status: 500 });
       }
 
-      return NextResponse.json({ ok: true, settings: inserted }, { status: 200 });
+      // Fetch logo_url from shops table
+      const { data: shopRowNew } = await supabase
+        .from("shops")
+        .select("logo_url")
+        .eq("slug", shop_slug)
+        .maybeSingle();
+
+      return NextResponse.json(
+        { ok: true, settings: { ...inserted, logo_url: shopRowNew?.logo_url ?? null } },
+        { status: 200 }
+      );
     }
 
-    return NextResponse.json({ ok: true, settings: existing }, { status: 200 });
+    // Fetch logo_url from shops table
+    const { data: shopRow } = await supabase
+      .from("shops")
+      .select("logo_url")
+      .eq("slug", shop_slug)
+      .maybeSingle();
+
+    return NextResponse.json(
+      { ok: true, settings: { ...existing, logo_url: shopRow?.logo_url ?? null } },
+      { status: 200 }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message ?? "Unknown error" },

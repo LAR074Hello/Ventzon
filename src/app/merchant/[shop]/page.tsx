@@ -112,7 +112,7 @@ function MerchantShopPage() {
     const supabase = createSupabaseBrowserClient();
     const { data: shopRow, error } = await supabase
       .from("shops")
-      .select("is_paid,subscription_status")
+      .select("is_paid,subscription_status,logo_url")
       .eq("slug", shopSlug)
       .maybeSingle();
     if (error) throw error;
@@ -143,6 +143,7 @@ function MerchantShopPage() {
         const isPaid = Boolean((shopRow as any).is_paid);
         setPaid(isPaid);
         setSubscriptionStatus(String((shopRow as any).subscription_status ?? "inactive"));
+        setLogoUrl((shopRow as any).logo_url || null);
 
         // If we're waiting for payment and it's now paid, stop polling
         if (isPaid) {
@@ -201,6 +202,9 @@ function MerchantShopPage() {
   const [loadError, setLoadError] = useState("");
   const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoMsg, setLogoMsg] = useState<string>("");
 
   const joinUrl = useMemo(() => {
     if (!origin || !shopSlug) return "";
@@ -305,6 +309,32 @@ function MerchantShopPage() {
     }
   }
 
+  async function uploadLogo(file: File) {
+    if (!shopSlug) return;
+    setLogoUploading(true);
+    setLogoMsg("");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("shop_slug", shopSlug);
+
+      const res = await fetch("/api/merchant/logo", {
+        method: "POST",
+        body: form,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Upload failed");
+
+      setLogoUrl(json.logo_url);
+      setLogoMsg("Uploaded ✓");
+      window.setTimeout(() => setLogoMsg(""), 2000);
+    } catch (e: any) {
+      setLogoMsg(e?.message ?? "Upload failed");
+    } finally {
+      setLogoUploading(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -337,6 +367,25 @@ function MerchantShopPage() {
 
   function printQr() {
     window.print();
+  }
+
+  const [portalLoading, setPortalLoading] = useState(false);
+  async function openBillingPortal() {
+    if (!shopSlug) return;
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to open billing portal");
+      window.location.href = data.url;
+    } catch (e: any) {
+      alert(e.message || "Could not open billing portal");
+      setPortalLoading(false);
+    }
   }
 
   const isMissingShop = !shopSlug;
@@ -380,6 +429,15 @@ function MerchantShopPage() {
                 ? ` • ${subscriptionStatus}`
                 : ""}
             </span>
+            {paid && (
+              <button
+                onClick={openBillingPortal}
+                disabled={portalLoading}
+                className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-300 hover:border-neutral-600 hover:text-neutral-100 disabled:opacity-50"
+              >
+                {portalLoading ? "Opening..." : "Manage subscription"}
+              </button>
+            )}
             {shopLoadError ? (
               <span className="text-xs text-neutral-400">
                 {shopLoadError}
@@ -595,6 +653,58 @@ function MerchantShopPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </section>
+
+            {/* Store Logo */}
+            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
+              <h2 className="text-lg font-semibold">Store Logo</h2>
+              <p className="mt-1 text-sm text-neutral-400">
+                Displayed on your customer check-in page.
+              </p>
+
+              <div className="mt-4 flex items-center gap-6">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt="Store logo"
+                    className="h-20 w-20 rounded-xl border border-neutral-800 object-contain bg-white"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-neutral-700 bg-neutral-900 text-xs text-neutral-500">
+                    No logo
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    className={`inline-flex cursor-pointer items-center rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900 ${
+                      !paid || logoUploading ? "pointer-events-none opacity-60" : ""
+                    }`}
+                  >
+                    {logoUploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      disabled={!paid || logoUploading}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadLogo(f);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+
+                  {logoMsg && (
+                    <span className="text-xs text-neutral-400">{logoMsg}</span>
+                  )}
+                  {!paid && (
+                    <span className="text-xs text-neutral-500">
+                      Activate subscription to upload
+                    </span>
+                  )}
+                </div>
               </div>
             </section>
 

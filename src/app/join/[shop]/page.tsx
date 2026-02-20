@@ -8,6 +8,7 @@ type ShopSettings = {
   shop_name: string | null;
   deal_title: string | null;
   deal_details: string | null;
+  logo_url: string | null;
 };
 
 type CheckinResponse = {
@@ -133,6 +134,13 @@ export default function CustomerJoinPage() {
     <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="max-w-md w-full rounded-2xl border border-neutral-800 bg-neutral-950 p-6">
         <div className="text-xs text-neutral-400">Ventzon Rewards</div>
+        {settings?.logo_url ? (
+          <img
+            src={settings.logo_url}
+            alt={shopName}
+            className="mt-3 h-16 max-w-[200px] object-contain"
+          />
+        ) : null}
         <h1 className="mt-2 text-2xl font-semibold">{shopName}</h1>
 
         <div className="mt-4 rounded-xl border border-neutral-800 bg-black p-4">

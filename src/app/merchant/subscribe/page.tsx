@@ -33,7 +33,7 @@ function SubscribeContent() {
             /merchant/subscribe?shop=govans-groceries
           </div>
           <div className="mt-3 text-xs text-neutral-500">
-            Debug: shop = {JSON.stringify(searchParams?.get("shop"))}
+            <a href="/get-started" className="underline hover:text-neutral-300">Create a shop</a> to get started.
           </div>
         </div>
       ) : (

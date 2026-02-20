@@ -81,6 +81,12 @@ export default function LoginPage() {
       </Suspense>
 
       <LoginForm />
+
+      <div className="mt-4 text-sm text-neutral-500">
+        <a href="/forgot-password" className="underline hover:text-neutral-300">
+          Forgot your password?
+        </a>
+      </div>
     </main>
   );
 }

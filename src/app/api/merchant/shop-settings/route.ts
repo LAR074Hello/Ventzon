@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 // PATCH /api/merchant/shop-settings
 // Updates a shop's configurable settings (merchant-controlled).
-// NOTE: Auth is not implemented here yet; this assumes trusted usage during development.
 
 const MIN_GOAL = 2;
 const MAX_GOAL = 31;
@@ -26,6 +26,13 @@ export async function PATCH(req: Request) {
       );
     }
 
+    // Auth check: verify the user owns this shop
+    const supabaseAuth = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
 
     const shop_slug = String(body.shop_slug ?? "")
@@ -34,6 +41,19 @@ export async function PATCH(req: Request) {
 
     if (!shop_slug) {
       return NextResponse.json({ error: "Missing shop_slug" }, { status: 400 });
+    }
+
+    // Verify ownership: user must own a shop with this slug
+    const supabaseCheck = createClient(supabaseUrl, serviceRoleKey);
+    const { data: shopRow } = await supabaseCheck
+      .from("shops")
+      .select("id")
+      .eq("slug", shop_slug)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!shopRow) {
+      return NextResponse.json({ error: "Shop not found or you don't own it" }, { status: 403 });
     }
 
     // Optional fields
