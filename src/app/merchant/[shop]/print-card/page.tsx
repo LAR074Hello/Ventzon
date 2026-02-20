@@ -96,14 +96,20 @@ export default function PrintCardPage() {
               </h1>
             </div>
 
-            {/* QR Code */}
-            <div className="flex items-center justify-center">
+            {/* QR Code + fallback URL */}
+            <div className="flex flex-col items-center justify-center gap-3">
               <div
                 className="bg-white border border-stone-200 flex items-center justify-center"
                 style={{ width: "180px", height: "180px" }}
               >
                 <QRCodeCanvas value={joinUrl} size={160} />
               </div>
+              <p
+                className="text-[9px] tracking-widest text-stone-400"
+                style={{ letterSpacing: "0.12em" }}
+              >
+                {`ventzon.com/join/${shopSlug}`}
+              </p>
             </div>
 
             {/* Powered By Text */}
