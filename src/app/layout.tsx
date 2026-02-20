@@ -1,11 +1,12 @@
 import SiteHeader from "@/components/SiteHeader";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter_Tight, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
+  weight: ["200", "300", "400", "500"],
 });
 
 const geistMono = Geist_Mono({
@@ -44,9 +45,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark bg-white dark:bg-neutral-950">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100`}
+        className={`${interTight.variable} ${geistMono.variable} antialiased`}
       >
         <SiteHeader />
         {children}

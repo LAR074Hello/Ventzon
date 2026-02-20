@@ -1,302 +1,165 @@
 import Link from "next/link";
-import {
-  QrCode,
-  Smartphone,
-  MessageSquare,
-  Zap,
-  Shield,
-  TrendingUp,
-  CreditCard,
-  Check,
-  ArrowRight,
-  Star,
-} from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import AnimatedStats from "@/components/AnimatedStats";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-neutral-950 text-white">
+    <main className="min-h-screen bg-black text-[#ededed]">
       {/* ============================================================
-          SECTION 1 — HERO
+          SECTION 1 — HERO (full-screen video)
+          ============================================================
+          VIDEO SETUP:
+          1. Place your video at  /public/hero.mp4  (or hero.webm)
+          2. Place a fallback poster image at  /public/hero-poster.jpg
+          3. The video is hidden on mobile (<md) and replaced by the poster
           ============================================================ */}
-      <section className="relative overflow-hidden px-6 py-28 sm:py-36">
-        {/* Animated background glows */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="animate-glow-pulse absolute left-1/2 top-[-160px] h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
-          <div className="animate-glow-pulse absolute right-[-200px] top-[100px] h-[400px] w-[400px] rounded-full bg-emerald-500/8 blur-3xl [animation-delay:2s]" />
+      <section className="relative flex h-screen items-center justify-center overflow-hidden">
+        {/* Background video (desktop) */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/hero-poster.jpg"
+          className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover md:block"
+        >
+          <source src="/hero.mp4" type="video/mp4" />
+        </video>
+
+        {/* Fallback poster image (mobile) */}
+        <div
+          className="absolute inset-0 bg-cover bg-center md:hidden"
+          style={{ backgroundImage: "url('/hero-poster.jpg')" }}
+        />
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/55" />
+
+        {/* Hero content */}
+        <div className="relative z-10 mx-auto max-w-3xl px-8 text-center">
+          {/*
+            LOGO: To show a logo above the headline, uncomment and update:
+            <Image
+              src="/logo.svg"
+              alt="Ventzon"
+              width={120}
+              height={30}
+              className="mx-auto mb-12 animate-fade-in opacity-0"
+              priority
+            />
+          */}
+
+          <p className="animate-fade-in anim-delay-200 text-[10px] font-light tracking-[0.5em] text-[#999] opacity-0">
+            CUSTOMER REWARDS PLATFORM
+          </p>
+
+          <h1 className="animate-fade-in-up anim-delay-400 mt-8 text-4xl font-extralight leading-[1.15] tracking-[-0.02em] text-[#ededed] opacity-0 sm:text-5xl lg:text-6xl">
+            Turn every visit
+            <br />
+            into a lasting relationship.
+          </h1>
+
+          <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-lg text-base font-light leading-relaxed text-[#999] opacity-0">
+            The simplest loyalty program for local businesses. Customers scan,
+            check in, and earn rewards via SMS. No app required.
+          </p>
+
+          <div className="animate-fade-in-up anim-delay-800 mt-12 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+            >
+              Begin
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+            <Link
+              href="/how-it-works"
+              className="text-[12px] font-light tracking-[0.15em] text-[#666] transition-colors duration-500 hover:text-[#ededed]"
+            >
+              Discover how it works
+            </Link>
+          </div>
         </div>
 
-        <div className="relative mx-auto max-w-5xl">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            {/* Left — Copy */}
-            <div>
-              <div className="animate-fade-in-up inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900/60 px-4 py-1.5 text-xs tracking-wide text-neutral-300">
-                <MessageSquare className="h-3.5 w-3.5" />
-                SMS-based loyalty rewards
-              </div>
-
-              <h1 className="animate-fade-in-up anim-delay-100 mt-8 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-                Turn every visit into a lasting relationship.
-              </h1>
-
-              <p className="animate-fade-in-up anim-delay-200 mt-6 max-w-xl text-lg leading-relaxed text-neutral-300">
-                The simplest loyalty program for local businesses. Customers
-                scan your QR code, check in with their phone number, and earn
-                rewards via SMS. No app download. Ready in 5 minutes.
-              </p>
-
-              <div className="animate-fade-in-up anim-delay-300 mt-10 flex flex-wrap gap-4">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition-transform hover:scale-[1.02]"
-                >
-                  Start free trial
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/how-it-works"
-                  className="rounded-xl border border-neutral-700 px-6 py-3 text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-900"
-                >
-                  See how it works
-                </Link>
-              </div>
-            </div>
-
-            {/* Right — Floating phone mockup */}
-            <div className="animate-fade-in-up anim-delay-400 flex justify-center lg:justify-end">
-              <div className="animate-float">
-                <div className="rounded-[2.5rem] border border-neutral-700 bg-neutral-900 p-3 shadow-2xl shadow-neutral-950/80">
-                  <div className="w-[260px] rounded-[2rem] bg-white px-6 py-8 text-center">
-                    {/* Notch */}
-                    <div className="mx-auto mb-5 h-1.5 w-16 rounded-full bg-stone-200" />
-                    {/* Logo circle */}
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-stone-100 to-stone-200">
-                      <span className="text-lg font-semibold text-stone-400">B</span>
-                    </div>
-                    {/* Store name */}
-                    <div className="mt-3 text-sm font-medium tracking-widest text-stone-800">
-                      BREW HOUSE
-                    </div>
-                    {/* Phone input */}
-                    <div className="mt-8 border border-stone-300 px-4 py-3.5 text-left text-xs text-stone-400">
-                      (555) 123-4567
-                    </div>
-                    {/* Check in button */}
-                    <div className="mt-4 bg-stone-900 py-3.5 text-xs font-medium tracking-widest text-white">
-                      CHECK IN
-                    </div>
-                    {/* Fine print */}
-                    <div className="mt-5 text-[8px] leading-relaxed text-stone-400">
-                      By checking in you agree to receive
-                      <br />
-                      SMS messages. Reply STOP to opt out.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Scroll indicator */}
+        <div className="animate-fade-in anim-delay-1200 absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0">
+          <div className="h-10 w-[1px] bg-gradient-to-b from-transparent via-[#444] to-transparent" />
         </div>
       </section>
 
       {/* ============================================================
-          SECTION 2 — STATS / SOCIAL PROOF BAR
+          SECTION 2 — STATS
           ============================================================ */}
-      <section className="border-t border-neutral-800 px-6 py-16">
+      <section className="px-8 py-28 sm:py-36">
+        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
         <div className="mx-auto max-w-4xl">
           <AnimatedStats />
         </div>
       </section>
 
       {/* ============================================================
-          SECTION 3 — PRODUCT DEMO — "See it in action"
+          SECTION 3 — HOW IT WORKS
           ============================================================ */}
-      <section className="border-t border-neutral-800 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <div className="text-xs tracking-[0.35em] text-neutral-400">
-              THE PRODUCT
-            </div>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
-              See it in action
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-neutral-400">
-              From a printed QR card at your register to a real-time dashboard
-              on your phone — here&rsquo;s what you and your customers get.
-            </p>
-          </div>
-
-          <div className="mt-16 grid gap-12 md:grid-cols-3">
-            {/* Mockup A: The QR Loyalty Card */}
-            <div className="animate-fade-in-up anim-delay-100">
-              <div className="mx-auto flex aspect-[2/3] w-full max-w-[240px] flex-col items-center justify-between rounded-xl border border-neutral-800 bg-stone-50 px-6 py-8 shadow-lg">
-                <div className="text-center">
-                  <div className="text-lg font-light tracking-[0.2em] text-stone-800">
-                    BREW HOUSE
-                  </div>
-                </div>
-                <div className="flex h-28 w-28 items-center justify-center rounded border border-stone-200 bg-white">
-                  <QrCode className="h-20 w-20 text-stone-300" />
-                </div>
-                <div className="text-[8px] tracking-[0.15em] text-stone-500">
-                  POWERED BY VENTZON REWARDS
-                </div>
-              </div>
-              <div className="mt-4 text-center text-sm text-neutral-400">
-                Print-ready loyalty card
-              </div>
-            </div>
-
-            {/* Mockup B: Customer check-in (phone frame) */}
-            <div className="animate-fade-in-up anim-delay-300">
-              <div className="mx-auto max-w-[240px]">
-                <div className="rounded-[2rem] border border-neutral-700 bg-neutral-900 p-2.5 shadow-xl">
-                  <div className="rounded-[1.5rem] bg-white p-5 text-center">
-                    <div className="mx-auto mb-4 h-1.5 w-16 rounded-full bg-stone-200" />
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-stone-100 to-stone-200">
-                      <span className="text-base font-semibold text-stone-400">B</span>
-                    </div>
-                    <div className="mt-2 text-xs font-medium tracking-widest text-stone-800">
-                      BREW HOUSE
-                    </div>
-                    <div className="mt-5 border border-stone-300 px-3 py-2.5 text-left text-[10px] text-stone-400">
-                      (555) 123-4567
-                    </div>
-                    <div className="mt-3 bg-stone-900 py-2.5 text-[10px] font-medium tracking-widest text-white">
-                      CHECK IN
-                    </div>
-                    <div className="mt-3 text-[7px] leading-relaxed text-stone-400">
-                      By checking in you agree to receive SMS messages.
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 text-center text-sm text-neutral-400">
-                Customer check-in page
-              </div>
-            </div>
-
-            {/* Mockup C: Merchant Dashboard */}
-            <div className="animate-fade-in-up anim-delay-500">
-              <div className="mx-auto max-w-[280px] rounded-xl border border-neutral-800 bg-neutral-950 p-4 shadow-xl">
-                <div className="text-[9px] tracking-[0.35em] text-neutral-500">
-                  VENTZON REWARDS
-                </div>
-                <div className="mt-1 text-sm font-semibold text-neutral-100">
-                  Merchant Dashboard
-                </div>
-                {/* Stat cards */}
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-                    <div className="text-[9px] text-neutral-500">Total signups</div>
-                    <div className="mt-1 text-xl font-semibold text-white">247</div>
-                  </div>
-                  <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-                    <div className="text-[9px] text-neutral-500">Today</div>
-                    <div className="mt-1 text-xl font-semibold text-white">12</div>
-                  </div>
-                </div>
-                {/* QR section */}
-                <div className="mt-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-                  <div className="text-[9px] text-neutral-500">Join link (QR)</div>
-                  <div className="mx-auto mt-2 flex h-16 w-16 items-center justify-center rounded bg-white">
-                    <QrCode className="h-12 w-12 text-stone-300" />
-                  </div>
-                  <div className="mt-2 rounded bg-neutral-950 px-2 py-1 text-center font-mono text-[8px] text-neutral-400">
-                    ventzon.com/join/brew-house
-                  </div>
-                </div>
-                {/* Recent signups */}
-                <div className="mt-3 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-                  <div className="text-[9px] text-neutral-500">Latest signups</div>
-                  <div className="mt-2 space-y-1.5">
-                    {[
-                      { phone: "***-***-4521", time: "2m ago" },
-                      { phone: "***-***-8834", time: "15m ago" },
-                      { phone: "***-***-2201", time: "1h ago" },
-                    ].map((r) => (
-                      <div key={r.phone} className="flex justify-between text-[9px]">
-                        <span className="font-mono text-neutral-300">{r.phone}</span>
-                        <span className="text-neutral-500">{r.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 text-center text-sm text-neutral-400">
-                Real-time merchant dashboard
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          SECTION 4 — HOW IT WORKS (premium photo-driven)
-          ============================================================ */}
-      <section className="border-t border-neutral-800 px-6 py-24 sm:py-32">
+      <section className="px-8 py-28 sm:py-36">
         <div className="mx-auto max-w-6xl">
           {/* Section header */}
           <ScrollReveal className="text-center">
-            <div className="text-xs tracking-[0.35em] text-neutral-400">
+            <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
               HOW IT WORKS
-            </div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-              Three steps. Five minutes. Done.
-            </h2>
-            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-neutral-400">
-              No complicated setup, no app downloads, no learning curve.
-              Here&rsquo;s how Ventzon works for you and your customers.
             </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+              Three steps. Five minutes.
+            </h2>
           </ScrollReveal>
 
           {/* Steps */}
-          <div className="mt-20 space-y-28 lg:space-y-36">
+          <div className="mt-28 space-y-36 lg:space-y-44">
             {/* ── Step 1 ── */}
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
-                <div className="overflow-hidden rounded-2xl">
+                <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=800&q=80&auto=format&fit=crop"
-                    alt="Retail store checkout counter with QR code display"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-105"
+                    src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=900&q=80&auto=format&fit=crop"
+                    alt="Retail store checkout counter"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2}>
-                <div className="font-mono text-sm tracking-widest text-neutral-500">
+                <p className="font-mono text-[11px] tracking-[0.3em] text-[#555]">
                   01
-                </div>
-                <h3 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+                </p>
+                <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
                   Print your QR code
                 </h3>
-                <p className="mt-4 text-base leading-relaxed text-neutral-400">
+                <p className="mt-5 text-[15px] font-light leading-[1.8] text-[#888]">
                   Sign up, name your shop, set your reward. Print the loyalty
-                  card and place it near your register. Takes under 5&nbsp;minutes.
+                  card and place it near your register.
+                  Takes&nbsp;under&nbsp;five&nbsp;minutes.
                 </p>
               </ScrollReveal>
             </div>
 
             {/* ── Step 2 ── */}
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal className="order-1 lg:order-2">
-                <div className="overflow-hidden rounded-2xl">
+                <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=900&q=80&auto=format&fit=crop"
                     alt="Customer using their phone to check in"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-105"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2} className="order-2 lg:order-1">
-                <div className="font-mono text-sm tracking-widest text-neutral-500">
+                <p className="font-mono text-[11px] tracking-[0.3em] text-[#555]">
                   02
-                </div>
-                <h3 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+                </p>
+                <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
                   Customers check in
                 </h3>
-                <p className="mt-4 text-base leading-relaxed text-neutral-400">
+                <p className="mt-5 text-[15px] font-light leading-[1.8] text-[#888]">
                   They enter their phone number. One check-in per day keeps it
                   fair and simple.
                 </p>
@@ -304,24 +167,24 @@ export default function Home() {
             </div>
 
             {/* ── Step 3 ── */}
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
-                <div className="overflow-hidden rounded-2xl">
+                <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80&auto=format&fit=crop"
-                    alt="Small business owner smiling behind the counter"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-700 hover:scale-105"
+                    src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80&auto=format&fit=crop"
+                    alt="Small business owner smiling"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2}>
-                <div className="font-mono text-sm tracking-widest text-neutral-500">
+                <p className="font-mono text-[11px] tracking-[0.3em] text-[#555]">
                   03
-                </div>
-                <h3 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+                </p>
+                <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
                   They earn rewards via SMS
                 </h3>
-                <p className="mt-4 text-base leading-relaxed text-neutral-400">
+                <p className="mt-5 text-[15px] font-light leading-[1.8] text-[#888]">
                   After enough visits they get a text with their reward. You set
                   the goal, you set the offer. It&rsquo;s that simple.
                 </p>
@@ -332,293 +195,264 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          SECTION 5 — FEATURES (Why Ventzon)
+          SECTION 4 — FEATURES (Why Ventzon)
           ============================================================ */}
-      <section className="border-t border-neutral-800 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <div className="text-xs tracking-[0.35em] text-neutral-400">
+      <section className="px-8 py-28 sm:py-36">
+        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal className="text-center">
+            <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
               WHY VENTZON
-            </div>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
-              Everything you need. Nothing you don&rsquo;t.
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+              Everything you need.
+              <br className="hidden sm:block" />
+              Nothing you don&rsquo;t.
             </h2>
-          </div>
+          </ScrollReveal>
 
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-24 grid gap-px sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                icon: <Smartphone className="h-6 w-6" />,
                 title: "No app download",
-                desc: "Works with any phone camera and SMS. Zero friction — customers scan and check in in seconds.",
-                delay: "anim-delay-100",
+                desc: "Works with any phone camera and SMS. Zero friction for your customers.",
               },
               {
-                icon: <Zap className="h-6 w-6" />,
-                title: "Ready in 5 minutes",
-                desc: "Sign up, name your shop, set your reward, print the QR. Your loyalty program is live.",
-                delay: "anim-delay-200",
+                title: "Ready in five minutes",
+                desc: "Sign up, name your shop, set your reward, print the QR. You\u2019re live.",
               },
               {
-                icon: <MessageSquare className="h-6 w-6" />,
-                title: "SMS — the direct channel",
-                desc: "Messages go straight to your customers. No algorithm, no middleman, no noise.",
-                delay: "anim-delay-300",
+                title: "SMS \u2014 the direct channel",
+                desc: "Messages go straight to your customers. No algorithm, no noise.",
               },
               {
-                icon: <Shield className="h-6 w-6" />,
                 title: "One check-in per day",
-                desc: "Built-in fraud protection. Each customer can only check in once every 24 hours per shop.",
-                delay: "anim-delay-400",
+                desc: "Built-in fraud protection. Each customer checks in once every 24 hours.",
               },
               {
-                icon: <TrendingUp className="h-6 w-6" />,
                 title: "Track everything",
-                desc: "Real-time dashboard shows signups, check-ins, and reward redemptions as they happen.",
-                delay: "anim-delay-500",
+                desc: "Real-time dashboard shows signups, check-ins, and redemptions.",
               },
               {
-                icon: <CreditCard className="h-6 w-6" />,
                 title: "Simple, flat pricing",
-                desc: "$49.99/month. No hidden fees, no per-message charges. Cancel anytime.",
-                delay: "anim-delay-600",
+                desc: "$49.99 per month. No hidden fees, no per-message charges.",
               },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className={`animate-fade-in-up ${feature.delay} group rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-700`}
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-700 bg-white/5 text-neutral-400 transition-colors group-hover:text-white">
-                  {feature.icon}
+            ].map((feature, i) => (
+              <ScrollReveal key={feature.title} delay={i < 3 ? 1 : 2}>
+                <div className="border-b border-[#161616] px-2 py-10 lg:px-6">
+                  <h3 className="text-[13px] font-normal tracking-[0.05em] text-[#ededed]">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-3 text-[13px] font-light leading-[1.8] text-[#666]">
+                    {feature.desc}
+                  </p>
                 </div>
-                <h3 className="mt-4 text-base font-medium">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-                  {feature.desc}
-                </p>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ============================================================
-          SECTION 6 — TESTIMONIALS
+          SECTION 5 — TESTIMONIALS
           ============================================================ */}
-      <section className="border-t border-neutral-800 px-6 py-20">
+      <section className="px-8 py-28 sm:py-36">
+        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
         <div className="mx-auto max-w-5xl">
-          <div className="text-center">
-            <div className="text-xs tracking-[0.35em] text-neutral-400">
-              WHAT MERCHANTS SAY
-            </div>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
-              Trusted by local businesses everywhere
+          <ScrollReveal className="text-center">
+            <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
+              VOICES
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+              Trusted by local businesses
             </h2>
-          </div>
+          </ScrollReveal>
 
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="mt-24 grid gap-16 md:grid-cols-3 md:gap-12">
             {[
               {
-                initials: "MR",
-                gradient: "from-amber-600 to-orange-500",
                 quote:
-                  "We went from handing out paper punch cards to getting 200+ signups in our first month. Customers actually come back more often now.",
+                  "We went from paper punch cards to 200+ signups in our first month. Customers actually come back more often now.",
                 name: "Maria Rodriguez",
                 biz: "The Daily Grind",
-                type: "Coffee Shop",
-                delay: "anim-delay-100",
               },
               {
-                initials: "JT",
-                gradient: "from-emerald-600 to-teal-500",
                 quote:
-                  "The setup took me literally 4 minutes. I printed the QR, stuck it by the register, and had my first check-in within the hour.",
+                  "The setup took me four minutes. I printed the QR, stuck it by the register, and had my first check-in within the hour.",
                 name: "James Thompson",
                 biz: "Fresh Cuts Barbershop",
-                type: "Barber",
-                delay: "anim-delay-300",
               },
               {
-                initials: "SK",
-                gradient: "from-violet-600 to-purple-500",
                 quote:
-                  "My regulars love the SMS rewards. They feel like VIPs without having to download yet another app on their phone.",
+                  "My regulars love the SMS rewards. They feel like VIPs without downloading yet another app.",
                 name: "Sarah Kim",
                 biz: "Sunrise Bakery",
-                type: "Bakery",
-                delay: "anim-delay-500",
               },
-            ].map((t) => (
-              <div
-                key={t.name}
-                className={`animate-fade-in-up ${t.delay} rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6`}
-              >
-                {/* Stars */}
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                </div>
-                {/* Quote */}
-                <p className="mt-4 text-sm leading-relaxed text-neutral-300">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                {/* Author */}
-                <div className="mt-6 flex items-center gap-3">
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${t.gradient} text-xs font-semibold text-white`}
-                  >
-                    {t.initials}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{t.name}</div>
-                    <div className="text-xs text-neutral-500">
-                      {t.biz} &middot; {t.type}
+            ].map((t, i) => (
+              <ScrollReveal key={t.name} delay={i === 0 ? 1 : i === 1 ? 2 : 3}>
+                <blockquote>
+                  <p className="text-[14px] font-light leading-[1.9] text-[#999]">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <footer className="mt-8">
+                    <div className="text-[12px] font-normal tracking-[0.05em] text-[#ededed]">
+                      {t.name}
                     </div>
-                  </div>
-                </div>
-              </div>
+                    <div className="mt-1 text-[11px] font-light tracking-[0.1em] text-[#555]">
+                      {t.biz}
+                    </div>
+                  </footer>
+                </blockquote>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ============================================================
-          SECTION 7 — PRICING
+          SECTION 6 — PRICING
           ============================================================ */}
-      <section className="border-t border-neutral-800 px-6 py-20">
+      <section className="px-8 py-28 sm:py-36">
+        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
         <div className="mx-auto max-w-3xl">
-          <div className="text-center">
-            <div className="text-xs tracking-[0.35em] text-neutral-400">
+          <ScrollReveal className="text-center">
+            <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
               PRICING
-            </div>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
               One plan. Everything included.
             </h2>
-            <p className="mt-3 text-neutral-400">
+            <p className="mt-5 text-[14px] font-light text-[#666]">
               No hidden fees. No per-message charges. Cancel anytime.
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          <div className="mt-20 grid gap-8 sm:grid-cols-2">
             {/* Monthly */}
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-              <div className="text-lg font-medium">Monthly</div>
-              <div className="mt-2 text-4xl font-semibold">
-                $49.99
-                <span className="text-lg font-normal text-neutral-400">
-                  /mo
-                </span>
+            <ScrollReveal delay={1}>
+              <div className="rounded-lg border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
+                <p className="text-[11px] font-light tracking-[0.2em] text-[#666]">
+                  MONTHLY
+                </p>
+                <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
+                  $49.99
+                  <span className="text-lg font-light text-[#555]">/mo</span>
+                </div>
+                <ul className="mt-8 space-y-4 text-[13px] font-light text-[#888]">
+                  {[
+                    "QR code + join page",
+                    "Unlimited customer check-ins",
+                    "Custom rewards & SMS",
+                    "Real-time dashboard",
+                    "Cancel anytime",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#444]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/signup"
+                  className="mt-10 block rounded-full border border-[#333] py-3.5 text-center text-[11px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
+                >
+                  Get started
+                </Link>
               </div>
-              <ul className="mt-6 space-y-3 text-sm text-neutral-300">
-                {[
-                  "QR code + join page",
-                  "Unlimited customer check-ins",
-                  "Custom rewards & SMS templates",
-                  "Real-time merchant dashboard",
-                  "Cancel anytime",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/signup"
-                className="mt-8 block rounded-xl border border-neutral-700 py-3 text-center text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-900"
-              >
-                Get started
-              </Link>
-            </div>
+            </ScrollReveal>
 
-            {/* Yearly — highlighted */}
-            <div className="relative rounded-2xl border border-emerald-700/40 bg-neutral-950/40 p-6 shadow-lg shadow-emerald-500/5">
-              <div className="absolute -top-3 left-6 rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-semibold tracking-wider text-white">
-                MOST POPULAR
+            {/* Yearly */}
+            <ScrollReveal delay={2}>
+              <div className="relative rounded-lg border border-[#2a2a2a] p-8 transition-colors duration-500 hover:border-[#444]">
+                <div className="absolute -top-3 left-8 rounded-full bg-[#ededed] px-4 py-1 text-[9px] font-normal tracking-[0.2em] text-black">
+                  SAVE $120
+                </div>
+                <p className="text-[11px] font-light tracking-[0.2em] text-[#666]">
+                  YEARLY
+                </p>
+                <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
+                  $479.99
+                  <span className="text-lg font-light text-[#555]">/yr</span>
+                </div>
+                <ul className="mt-8 space-y-4 text-[13px] font-light text-[#888]">
+                  {[
+                    "Everything in Monthly",
+                    "Two months free",
+                    "Priority support",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#444]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/signup"
+                  className="mt-10 block rounded-full border border-[#ededed] py-3.5 text-center text-[11px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+                >
+                  Get started
+                </Link>
               </div>
-              <div className="text-lg font-medium">Yearly</div>
-              <div className="mt-2 text-4xl font-semibold">
-                $479.99
-                <span className="text-lg font-normal text-neutral-400">
-                  /yr
-                </span>
-              </div>
-              <div className="mt-1 text-sm text-emerald-400">
-                Save $120/year
-              </div>
-              <ul className="mt-6 space-y-3 text-sm text-neutral-300">
-                {[
-                  "Everything in Monthly",
-                  "2 months free",
-                  "Priority support",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/signup"
-                className="mt-8 block rounded-xl bg-white py-3 text-center text-sm font-semibold text-black transition-transform hover:scale-[1.02]"
-              >
-                Get started
-              </Link>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
       {/* ============================================================
-          SECTION 8 — FINAL CTA
+          SECTION 7 — FINAL CTA
           ============================================================ */}
-      <section className="relative overflow-hidden border-t border-neutral-800 px-6 py-24">
-        {/* Background glows */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="animate-glow-pulse absolute left-1/3 top-0 h-[400px] w-[400px] rounded-full bg-indigo-500/10 blur-3xl" />
-          <div className="animate-glow-pulse absolute right-1/4 bottom-0 h-[300px] w-[300px] rounded-full bg-emerald-500/8 blur-3xl [animation-delay:2s]" />
-        </div>
-
-        <div className="relative mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold sm:text-4xl">
-            Ready to turn first-timers into regulars?
+      <section className="px-8 py-36 sm:py-44">
+        <ScrollReveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+            Ready to begin?
           </h2>
-          <p className="mt-4 text-neutral-300">
-            Set up your SMS rewards program in under 5 minutes. No credit card
-            required.
+          <p className="mt-6 text-[15px] font-light leading-relaxed text-[#666]">
+            Set up your SMS rewards program in under five minutes.
+            <br className="hidden sm:block" />
+            No credit card required.
           </p>
           <Link
             href="/signup"
-            className="mt-10 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-black transition-transform hover:scale-[1.02]"
+            className="mt-14 inline-flex items-center gap-3 rounded-full border border-[#ededed] px-10 py-4 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
           >
-            Create your free account
-            <ArrowRight className="h-4 w-4" />
+            Create your account
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* ============================================================
-          SECTION 9 — FOOTER
+          SECTION 8 — FOOTER
           ============================================================ */}
-      <footer className="border-t border-neutral-800 px-6 py-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="text-xs tracking-[0.25em] text-neutral-500">
+      <footer className="px-8 pb-12 pt-20">
+        <div className="luxury-divider mx-auto mb-12 max-w-xs" />
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 sm:flex-row">
+          <div className="text-[10px] font-light tracking-[0.4em] text-[#444]">
             VENTZON
           </div>
-          <div className="flex gap-6 text-sm text-neutral-500">
-            <Link href="/how-it-works" className="hover:text-neutral-300">
+          <div className="flex gap-8 text-[11px] font-light tracking-[0.1em] text-[#444]">
+            <Link
+              href="/how-it-works"
+              className="transition-colors duration-300 hover:text-[#999]"
+            >
               How it works
             </Link>
-            <Link href="/pricing" className="hover:text-neutral-300">
+            <Link
+              href="/pricing"
+              className="transition-colors duration-300 hover:text-[#999]"
+            >
               Pricing
             </Link>
-            <Link href="/privacy-policy" className="hover:text-neutral-300">
+            <Link
+              href="/privacy-policy"
+              className="transition-colors duration-300 hover:text-[#999]"
+            >
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-neutral-300">
+            <Link
+              href="/terms"
+              className="transition-colors duration-300 hover:text-[#999]"
+            >
               Terms
             </Link>
           </div>

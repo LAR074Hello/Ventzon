@@ -14,7 +14,7 @@ const STATS: Stat[] = [
   { value: 98, suffix: "%", label: "Customer return rate" },
 ];
 
-function useCountUp(target: number, started: boolean, duration = 2000) {
+function useCountUp(target: number, started: boolean, duration = 2200) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -42,11 +42,13 @@ function StatItem({ stat, started }: { stat: Stat; started: boolean }) {
 
   return (
     <div className="text-center">
-      <div className="text-4xl font-semibold tracking-tight sm:text-5xl">
+      <div className="text-4xl font-extralight tracking-tight text-[#ededed] sm:text-5xl">
         {started ? count.toLocaleString() : "0"}
-        <span className="text-neutral-400">{stat.suffix}</span>
+        <span className="text-[#555]">{stat.suffix}</span>
       </div>
-      <div className="mt-2 text-sm text-neutral-400">{stat.label}</div>
+      <div className="mt-3 text-[11px] font-light tracking-[0.2em] text-[#666]">
+        {stat.label}
+      </div>
     </div>
   );
 }
@@ -71,7 +73,7 @@ export default function AnimatedStats() {
   }, []);
 
   return (
-    <div ref={ref} className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+    <div ref={ref} className="grid grid-cols-1 gap-12 sm:grid-cols-3">
       {STATS.map((stat) => (
         <StatItem key={stat.label} stat={stat} started={started} />
       ))}
