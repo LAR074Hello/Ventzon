@@ -48,7 +48,6 @@ export default function CustomerJoinPage() {
   const [err, setErr] = useState<string | null>(null);
 
   const [phoneRaw, setPhoneRaw] = useState("");
-  const [pin, setPin] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CheckinResponse | null>(null);
 
@@ -90,17 +89,12 @@ export default function CustomerJoinPage() {
       return;
     }
 
-    if (pin && !/^\d{6}$/.test(pin)) {
-      setErr("PIN must be exactly 6 digits.");
-      return;
-    }
-
     setSubmitting(true);
     try {
       const res = await fetch("/api/join/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, phone, ...(pin ? { pin } : {}) }),
+        body: JSON.stringify({ shop_slug: shopSlug, phone }),
       });
 
       const json = (await res.json()) as any;
@@ -184,7 +178,6 @@ export default function CustomerJoinPage() {
                 onClick={() => {
                   setResult(null);
                   setPhoneRaw("");
-                  setPin("");
                 }}
                 className="mt-6 w-full py-4 bg-stone-900 text-white tracking-widest hover:bg-stone-800 transition-colors"
               >
@@ -195,7 +188,7 @@ export default function CustomerJoinPage() {
         ) : (
           /* Check-in form */
           <form onSubmit={onSubmit} className="w-full max-w-sm">
-            <div className="mb-4">
+            <div className="mb-8">
               <label htmlFor="phone" className="sr-only">Phone Number</label>
               <input
                 id="phone"
@@ -204,21 +197,6 @@ export default function CustomerJoinPage() {
                 onChange={(e) => setPhoneRaw(formatPhoneDisplay(e.target.value))}
                 placeholder="Phone Number"
                 maxLength={14}
-                className="w-full px-5 py-4 border border-stone-300 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-600 transition-colors tracking-wide"
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="mb-8">
-              <label htmlFor="pin" className="sr-only">PIN (optional)</label>
-              <input
-                id="pin"
-                type="text"
-                inputMode="numeric"
-                value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="6-digit PIN (optional)"
-                maxLength={6}
                 className="w-full px-5 py-4 border border-stone-300 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-600 transition-colors tracking-wide"
                 disabled={submitting}
               />
