@@ -66,25 +66,24 @@ export async function POST(req: Request) {
       .from("stripe_events")
       .insert({ id: event.id } as any);
 
-    console.log("[WEBHOOK] inserted stripe_events", event.id);
-
     if (insertErr) {
       const code = (insertErr as any).code;
       const msg = String((insertErr as any).message ?? "").toLowerCase();
 
-      // Postgres unique violation (already processed)
+      // Postgres unique violation → genuine duplicate, skip processing
       if (code === "23505" || msg.includes("duplicate") || msg.includes("unique")) {
+        console.log("[WEBHOOK] duplicate event, skipping", event.id);
         return ok({ received: true, duplicate: true });
       }
 
-      console.error("[WEBHOOK] stripe_events insertErr", insertErr);
-      console.error("stripe_events insert failed", insertErr);
-      // Return 200 so Stripe doesn't retry forever; surface the failure for debugging.
-      return ok({ received: true, stripe_events_insert_error: true });
+      // Any other error (e.g. table missing) → log warning but CONTINUE to process the event
+      console.warn("[WEBHOOK] stripe_events insert failed (non-fatal), continuing:", insertErr);
+    } else {
+      console.log("[WEBHOOK] recorded stripe_events", event.id);
     }
   } catch (e: any) {
-    console.error("stripe_events idempotency block failed", e);
-    return ok({ received: true, stripe_events_insert_error: true });
+    // Unexpected error in idempotency block → log but CONTINUE to process the event
+    console.warn("[WEBHOOK] stripe_events idempotency block error (non-fatal), continuing:", e);
   }
 
   try {
