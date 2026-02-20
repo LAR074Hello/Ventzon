@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -71,16 +71,33 @@ function safeTemplatePreview(tpl: string | null, shopName: string, dealTitle: st
     .replaceAll("{{deal_title}}", dealTitle);
 }
 
-export default function MerchantShopPage() {
+export default function MerchantShopPageWrapper() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center">
+        <div className="text-neutral-400">Loading dashboard…</div>
+      </main>
+    }>
+      <MerchantShopPage />
+    </Suspense>
+  );
+}
+
+function MerchantShopPage() {
   const params = useParams<{ shop?: string }>();
 
   const shopSlug = useMemo(() => {
     return String(params?.shop ?? "").trim().toLowerCase();
   }, [params]);
 
+  const searchParams = useSearchParams();
+  const isCheckoutReturn = searchParams.get("checkout") === "success";
+
   const [paid, setPaid] = useState<boolean>(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("inactive");
   const [shopLoadError, setShopLoadError] = useState<string>("");
+  const [waitingForPayment, setWaitingForPayment] = useState<boolean>(isCheckoutReturn);
+  const pollCountRef = useRef(0);
 
   const [origin, setOrigin] = useState<string>("");
 
@@ -89,49 +106,82 @@ export default function MerchantShopPage() {
     setOrigin(window.location.origin);
   }, []);
 
+  // Fetch shop status from Supabase
+  const fetchShopStatus = useCallback(async () => {
+    if (!shopSlug) return null;
+    const supabase = createSupabaseBrowserClient();
+    const { data: shopRow, error } = await supabase
+      .from("shops")
+      .select("is_paid,subscription_status")
+      .eq("slug", shopSlug)
+      .maybeSingle();
+    if (error) throw error;
+    return shopRow;
+  }, [shopSlug]);
+
+  // Initial load + post-payment polling
   useEffect(() => {
     let cancelled = false;
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
-    (async () => {
+    async function loadShopStatus() {
       try {
         setShopLoadError("");
         if (!shopSlug) return;
 
-        const supabase = createSupabaseBrowserClient();
-
-        const { data: shopRow, error } = await supabase
-          .from("shops")
-          .select("is_paid,subscription_status")
-          .eq("slug", shopSlug)
-          .maybeSingle();
-
+        const shopRow = await fetchShopStatus();
         if (cancelled) return;
-
-        if (error) {
-          console.error("[merchant] failed to load shop", error);
-          setShopLoadError("Could not load shop status.");
-          return;
-        }
 
         if (!shopRow) {
           setShopLoadError("Shop not found. Double-check the link slug.");
           setPaid(false);
           setSubscriptionStatus("inactive");
+          setWaitingForPayment(false);
           return;
         }
 
-        setPaid(Boolean((shopRow as any).is_paid));
+        const isPaid = Boolean((shopRow as any).is_paid);
+        setPaid(isPaid);
         setSubscriptionStatus(String((shopRow as any).subscription_status ?? "inactive"));
+
+        // If we're waiting for payment and it's now paid, stop polling
+        if (isPaid) {
+          setWaitingForPayment(false);
+          pollCountRef.current = 0;
+          // Clean up the ?checkout=success from the URL
+          if (isCheckoutReturn) {
+            window.history.replaceState({}, "", window.location.pathname);
+          }
+          return;
+        }
+
+        // If we're waiting for payment and still not paid, keep polling (up to 10 times = ~20s)
+        if (isCheckoutReturn && !isPaid && pollCountRef.current < 10) {
+          pollCountRef.current += 1;
+          pollTimer = setTimeout(() => {
+            if (!cancelled) loadShopStatus();
+          }, 2000);
+        } else if (isCheckoutReturn && !isPaid) {
+          // Gave up polling — show normal inactive state
+          setWaitingForPayment(false);
+          pollCountRef.current = 0;
+        }
       } catch (e: any) {
         console.error("[merchant] shop status exception", e);
-        if (!cancelled) setShopLoadError("Could not load shop status.");
+        if (!cancelled) {
+          setShopLoadError("Could not load shop status.");
+          setWaitingForPayment(false);
+        }
       }
-    })();
+    }
+
+    loadShopStatus();
 
     return () => {
       cancelled = true;
+      if (pollTimer) clearTimeout(pollTimer);
     };
-  }, [shopSlug]);
+  }, [shopSlug, fetchShopStatus, isCheckoutReturn]);
 
   const [data, setData] = useState<StatsResponse | null>(null);
   const [settings, setSettings] = useState<ShopSettings | null>(null);
@@ -320,10 +370,12 @@ export default function MerchantShopPage() {
               className={`rounded-full border px-3 py-1 text-xs ${
                 paid
                   ? "border-emerald-700/60 bg-emerald-950/30 text-emerald-200"
+                  : waitingForPayment
+                  ? "border-yellow-700/60 bg-yellow-950/30 text-yellow-200 animate-pulse"
                   : "border-neutral-800 bg-neutral-950/40 text-neutral-300"
               }`}
             >
-              {paid ? "Active" : "Inactive"}
+              {paid ? "Active" : waitingForPayment ? "Payment processing…" : "Inactive"}
               {subscriptionStatus && subscriptionStatus !== "inactive"
                 ? ` • ${subscriptionStatus}`
                 : ""}

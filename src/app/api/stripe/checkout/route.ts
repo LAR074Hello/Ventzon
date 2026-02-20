@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}`,
+      success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
         shop_slug
       )}&canceled=1`,
