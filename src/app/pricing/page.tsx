@@ -3,34 +3,75 @@
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 function PricingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const supabase = createSupabaseBrowserClient();
 
   const shopFromQuery = (searchParams.get("shop") || "").trim();
-  const [shopDraft, setShopDraft] = useState(shopFromQuery);
 
-  useEffect(() => {
-    // Keep the input in sync if the URL query changes
-    setShopDraft(shopFromQuery);
-  }, [shopFromQuery]);
-
-  const shop = useMemo(() => shopDraft.trim(), [shopDraft]);
-  const hasShop = shop.length > 0;
-
-  function applyShopSlug() {
-    const next = shopDraft.trim();
-    if (!next) return;
-    router.push(`/pricing?shop=${encodeURIComponent(next)}`);
-  }
-
+  const [shop, setShop] = useState(shopFromQuery);
+  const [shopName, setShopName] = useState<string | null>(null);
+  const [loadingShop, setLoadingShop] = useState(!shopFromQuery);
   const [loading, setLoading] = useState<"monthly" | "yearly" | null>(null);
   const [error, setError] = useState("");
 
+  const hasShop = shop.length > 0;
+
+  // Auto-detect the logged-in user's shop if no ?shop= param
+  useEffect(() => {
+    if (shopFromQuery) {
+      setLoadingShop(false);
+      return;
+    }
+
+    (async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) {
+          setLoadingShop(false);
+          return;
+        }
+
+        const { data: shops } = await supabase
+          .from("shops")
+          .select("slug, id")
+          .eq("user_id", userData.user.id)
+          .limit(1);
+
+        if (shops && shops.length > 0) {
+          setShop((shops[0] as any).slug);
+        }
+      } catch (e) {
+        console.error("Failed to auto-detect shop", e);
+      } finally {
+        setLoadingShop(false);
+      }
+    })();
+  }, [shopFromQuery, supabase]);
+
+  // Load shop name for display
+  useEffect(() => {
+    if (!shop) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("shop_settings")
+          .select("shop_name")
+          .eq("shop_slug", shop)
+          .maybeSingle();
+        if (data && (data as any).shop_name) {
+          setShopName((data as any).shop_name);
+        }
+      } catch {}
+    })();
+  }, [shop, supabase]);
+
   async function startCheckout(plan: "monthly" | "yearly") {
     if (!hasShop) {
-      setError("Please create a shop first (or open pricing with ?shop=your-shop-slug).");
+      setError("No shop found. Please create a shop first.");
       return;
     }
 
@@ -41,10 +82,7 @@ function PricingContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shop,
-          plan,
-        }),
+        body: JSON.stringify({ shop, plan }),
       });
 
       const data = await res.json();
@@ -66,91 +104,74 @@ function PricingContent() {
         VENTZON REWARDS
       </div>
 
-      <h1 className="mt-3 text-4xl font-semibold">
-        Choose your plan
-      </h1>
+      <h1 className="mt-3 text-4xl font-semibold">Choose your plan</h1>
 
       <p className="mt-3 text-neutral-300">
         Start your free trial. Cancel anytime.
       </p>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4">
-          <div className="text-sm font-medium">Shop slug</div>
-          <div className="mt-2 flex gap-2">
-            <input
-              value={shopDraft}
-              onChange={(e) => setShopDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") applyShopSlug();
-              }}
-              placeholder="e.g. govans-groceries"
-              className="w-full rounded-xl border border-neutral-800 bg-black/30 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 outline-none focus:border-neutral-700"
-            />
-            <button
-              type="button"
-              onClick={applyShopSlug}
-              disabled={!shopDraft.trim()}
-              className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-2 text-sm hover:bg-neutral-900 disabled:opacity-50"
-            >
-              Use
-            </button>
-          </div>
-          <div className="mt-2 text-xs text-neutral-500">
-            This connects your subscription to a shop. You can also open pricing with{' '}
-            <code className="rounded bg-black/30 px-1 py-0.5">/pricing?shop=your-shop-slug</code>.
-          </div>
-          <div className="mt-3 text-sm text-neutral-400">
-            {hasShop ? (
-              <>
-                Pricing for: <span className="font-mono text-neutral-200">{shop}</span>
-              </>
-            ) : (
-              <>No shop selected</>
-            )}
+      {/* Shop info */}
+      {loadingShop ? (
+        <div className="mt-8 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4 text-sm text-neutral-400">
+          Finding your shop…
+        </div>
+      ) : hasShop ? (
+        <div className="mt-8 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-neutral-400">Shop:</span>
+            <span className="font-medium text-neutral-100">
+              {shopName || shop}
+            </span>
           </div>
         </div>
-
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-4">
-          <div className="text-sm font-medium">New merchant?</div>
+      ) : (
+        <div className="mt-8 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+          <div className="text-sm font-medium">No shop found</div>
           <p className="mt-2 text-sm text-neutral-400">
-            Create your shop first, then come back here to start a free trial.
+            Create your shop first, then come back here to pick a plan.
           </p>
           <a
             href="/get-started"
-            className="mt-4 inline-flex items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-2 text-sm hover:bg-neutral-900"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
           >
             Create a shop →
           </a>
         </div>
-      </div>
+      )}
 
+      {/* Plan cards */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {/* Monthly */}
         <button
           onClick={() => startCheckout("monthly")}
-          disabled={!hasShop || loading !== null}
+          disabled={!hasShop || loading !== null || loadingShop}
           className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 text-left hover:bg-neutral-900 disabled:opacity-50"
-          title={!hasShop ? "Create a shop first" : ""}
         >
           <div className="text-lg font-medium">Monthly</div>
           <div className="mt-1 text-neutral-400">$49.99 / month</div>
           <div className="mt-4 text-sm">
-            {loading === "monthly" ? "Redirecting…" : hasShop ? "Start free trial →" : "Select a shop to continue"}
+            {loading === "monthly"
+              ? "Redirecting…"
+              : hasShop
+              ? "Start free trial →"
+              : "Create a shop first"}
           </div>
         </button>
 
         {/* Yearly */}
         <button
           onClick={() => startCheckout("yearly")}
-          disabled={!hasShop || loading !== null}
+          disabled={!hasShop || loading !== null || loadingShop}
           className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6 text-left hover:bg-neutral-900 disabled:opacity-50"
-          title={!hasShop ? "Create a shop first" : ""}
         >
           <div className="text-lg font-medium">Yearly</div>
           <div className="mt-1 text-neutral-400">$479.99 / year</div>
           <div className="mt-4 text-sm">
-            {loading === "yearly" ? "Redirecting…" : hasShop ? "Start free trial →" : "Select a shop to continue"}
+            {loading === "yearly"
+              ? "Redirecting…"
+              : hasShop
+              ? "Start free trial →"
+              : "Create a shop first"}
           </div>
         </button>
       </div>
