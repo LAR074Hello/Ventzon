@@ -29,6 +29,13 @@ function normalizePhone(raw: string) {
   return "";
 }
 
+function formatPhoneDisplay(value: string) {
+  const cleaned = value.replace(/\D/g, "");
+  if (cleaned.length <= 3) return cleaned;
+  if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+  return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+}
+
 export default function CustomerJoinPage() {
   const params = useParams<{ shop: string }>();
   const shopSlug = useMemo(
@@ -109,102 +116,136 @@ export default function CustomerJoinPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-neutral-300">Loading…</div>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-stone-400 text-sm tracking-wide">Loading...</p>
       </main>
     );
   }
 
   if (err && !settings) {
     return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-neutral-800 bg-neutral-950 p-6">
-          <div className="text-lg font-semibold">Couldn’t load this shop</div>
-          <div className="mt-2 text-sm text-red-400">{err}</div>
+      <main className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center">
+          <p className="text-lg font-medium text-stone-900">Couldn't load this shop</p>
+          <p className="mt-2 text-sm text-red-500">{err}</p>
         </div>
       </main>
     );
   }
 
   const shopName = settings?.shop_name || shopSlug;
-  const dealTitle = settings?.deal_title || "A special reward";
-  const dealDetails = settings?.deal_details || "";
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-      <div className="max-w-md w-full rounded-2xl border border-neutral-800 bg-neutral-950 p-6">
-        <div className="text-xs text-neutral-400">Ventzon Rewards</div>
+    <main className="min-h-screen bg-white flex flex-col">
+      <div className="flex-1 flex flex-col items-center px-6 pt-16">
+        {/* Logo / Fallback */}
         {settings?.logo_url ? (
           <img
             src={settings.logo_url}
             alt={shopName}
-            className="mt-3 h-16 max-w-[200px] object-contain"
+            className="w-24 h-24 rounded-full object-cover shadow-sm"
           />
-        ) : null}
-        <h1 className="mt-2 text-2xl font-semibold">{shopName}</h1>
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center shadow-sm">
+            <span className="text-2xl font-semibold text-stone-400">
+              {shopName.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
 
-        <div className="mt-4 rounded-xl border border-neutral-800 bg-black p-4">
-          <div className="text-sm text-neutral-400">Your reward</div>
-          <div className="mt-1 text-lg font-semibold">{dealTitle}</div>
-          {dealDetails ? (
-            <div className="mt-2 text-sm text-neutral-300">{dealDetails}</div>
-          ) : null}
-        </div>
+        {/* Store Name */}
+        <h1 className="mt-6 mb-16 tracking-wide text-stone-900 text-2xl">
+          {shopName.toUpperCase()}
+        </h1>
 
+        {/* Result state */}
         {result ? (
-          <div className="mt-5 rounded-xl border border-green-900 bg-green-950/40 p-4">
-            <div className="font-semibold">{result.message}</div>
+          <div className="w-full max-w-sm">
+            <div className="border border-stone-200 p-6 text-center">
+              <p className="text-lg font-medium text-stone-900">{result.message}</p>
 
-            <div className="mt-2 text-sm text-neutral-200">
-              Visits: <span className="font-mono">{result.visits}/{result.goal}</span>
-              {" "}• Remaining: <span className="font-mono">{result.remaining}</span>
+              <p className="mt-3 text-sm text-stone-500 tracking-wide">
+                Visits: <span className="font-mono">{result.visits}/{result.goal}</span>
+                {" "}&middot;{" "}
+                Remaining: <span className="font-mono">{result.remaining}</span>
+              </p>
+
+              {result.status === "reward" ? (
+                <p className="mt-4 text-sm font-semibold text-green-700">
+                  REDEEM NOW — show this to the cashier
+                </p>
+              ) : (
+                <p className="mt-4 text-xs text-stone-400 tracking-wide">
+                  Limit: 1 check-in per day. Progress resets after you redeem.
+                </p>
+              )}
+
+              <button
+                onClick={() => {
+                  setResult(null);
+                  setPhoneRaw("");
+                  setPin("");
+                }}
+                className="mt-6 w-full py-4 bg-stone-900 text-white tracking-widest hover:bg-stone-800 transition-colors"
+              >
+                DONE
+              </button>
             </div>
-
-            {result.status === "reward" ? (
-              <div className="mt-2 text-sm font-semibold text-green-200">
-                ✅ REDEEM NOW — show this text to the cashier
-              </div>
-            ) : (
-              <div className="mt-2 text-xs text-neutral-300">
-                (Limit: 1 check-in text per day. Your progress resets after you redeem.)
-              </div>
-            )}
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="mt-5 space-y-3">
-            <label className="block">
-              <div className="text-sm text-neutral-300">Phone number</div>
+          /* Check-in form */
+          <form onSubmit={onSubmit} className="w-full max-w-sm">
+            <div className="mb-4">
+              <label htmlFor="phone" className="sr-only">Phone Number</label>
               <input
+                id="phone"
+                type="tel"
                 value={phoneRaw}
-                onChange={(e) => setPhoneRaw(e.target.value)}
-                placeholder="(410) 555-1234"
-                className="mt-2 w-full rounded-xl border border-neutral-800 bg-black px-4 py-3 text-white outline-none focus:border-neutral-600"
+                onChange={(e) => setPhoneRaw(formatPhoneDisplay(e.target.value))}
+                placeholder="Phone Number"
+                maxLength={14}
+                className="w-full px-5 py-4 border border-stone-300 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-600 transition-colors tracking-wide"
+                disabled={submitting}
               />
-            </label>
+            </div>
 
-            <label className="block">
-              <div className="text-sm text-neutral-300">6-digit PIN <span className="text-neutral-500">(optional)</span></div>
+            <div className="mb-8">
+              <label htmlFor="pin" className="sr-only">PIN (optional)</label>
               <input
+                id="pin"
+                type="text"
+                inputMode="numeric"
                 value={pin}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="123456"
-                className="mt-2 w-full rounded-xl border border-neutral-800 bg-black px-4 py-3 text-white outline-none focus:border-neutral-600"
+                placeholder="6-digit PIN (optional)"
+                maxLength={6}
+                className="w-full px-5 py-4 border border-stone-300 bg-white text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-600 transition-colors tracking-wide"
+                disabled={submitting}
               />
-              <div className="mt-1 text-xs text-neutral-500">
-                Set a PIN to secure your check-ins. Not required for QR check-ins.
-              </div>
-            </label>
+            </div>
 
-            {err ? <div className="text-sm text-red-400">{err}</div> : null}
+            {err && (
+              <p className="mb-4 text-sm text-red-500 text-center">{err}</p>
+            )}
 
             <button
-              disabled={submitting}
-              className="w-full rounded-xl bg-white text-black py-3 font-semibold disabled:opacity-60"
+              type="submit"
+              disabled={submitting || !phoneRaw.trim()}
+              className="w-full py-5 bg-stone-900 text-white tracking-widest disabled:bg-stone-300 disabled:text-stone-500 hover:bg-stone-800 transition-all duration-300 shadow-sm hover:shadow-md"
             >
-              {submitting ? "Checking in…" : "Check in"}
+              {submitting ? "CHECKING IN..." : "CHECK IN"}
             </button>
           </form>
         )}
+      </div>
+
+      {/* Footer */}
+      <div className="px-8 pb-8 pt-4">
+        <p className="text-xs text-stone-500 text-center leading-relaxed tracking-wide">
+          By checking in you agree to receive SMS messages.
+          <br />
+          Reply STOP to opt out.
+        </p>
       </div>
     </main>
   );
