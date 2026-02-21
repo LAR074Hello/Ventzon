@@ -38,44 +38,25 @@ export default function Home() {
 
         {/* Hero content */}
         <div className="relative z-10 mx-auto max-w-3xl px-8 text-center">
-          {/*
-            LOGO: To show a logo above the headline, uncomment and update:
-            <Image
-              src="/logo.svg"
-              alt="Ventzon"
-              width={120}
-              height={30}
-              className="mx-auto mb-12 animate-fade-in opacity-0"
-              priority
-            />
-          */}
-
-          <p className="animate-fade-in anim-delay-200 text-[10px] font-light tracking-[0.5em] text-[#999] opacity-0">
-            CUSTOMER REWARDS PLATFORM
-          </p>
-
-          <h1 className="animate-fade-in-up anim-delay-400 mt-8 text-4xl font-extralight leading-[1.15] tracking-[-0.02em] text-[#ededed] opacity-0 sm:text-5xl lg:text-6xl">
-            Turn every visit
-            <br />
-            into a lasting relationship.
+          <h1 className="animate-fade-in anim-delay-200 text-5xl font-extralight tracking-[0.35em] text-white opacity-0 sm:text-6xl lg:text-7xl">
+            VENTZON
           </h1>
 
-          <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-lg text-base font-light leading-relaxed text-[#999] opacity-0">
-            The simplest loyalty program for local businesses. Customers scan,
-            check in, and earn rewards via SMS. No app required.
+          <p className="animate-fade-in anim-delay-600 mt-5 text-[13px] font-light tracking-[0.3em] text-white/70 opacity-0">
+            Unbridled Loyalty
           </p>
 
-          <div className="animate-fade-in-up anim-delay-800 mt-12 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
+          <div className="animate-fade-in-up anim-delay-1000 mt-16 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+              className="inline-flex items-center gap-3 rounded-full border border-white/40 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white transition-all duration-500 hover:border-white hover:bg-white hover:text-black"
             >
               Begin
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link
               href="/how-it-works"
-              className="text-[12px] font-light tracking-[0.15em] text-[#666] transition-colors duration-500 hover:text-[#ededed]"
+              className="text-[12px] font-light tracking-[0.15em] text-white/40 transition-colors duration-500 hover:text-white"
             >
               Discover how it works
             </Link>
