@@ -72,8 +72,8 @@ export default function Home() {
       {/* ============================================================
           SECTION 2 — STATS
           ============================================================ */}
-      <section className="px-8 py-28 sm:py-36">
-        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-4xl">
           <AnimatedStats />
         </div>
@@ -82,7 +82,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 3 — HOW IT WORKS
           ============================================================ */}
-      <section className="px-8 py-28 sm:py-36">
+      <section className="px-8 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
           {/* Section header */}
           <ScrollReveal className="text-center">
@@ -95,7 +95,7 @@ export default function Home() {
           </ScrollReveal>
 
           {/* Steps */}
-          <div className="mt-28 space-y-36 lg:space-y-44">
+          <div className="mt-20 space-y-24 lg:space-y-32">
             {/* ── Step 1 ── */}
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
@@ -178,8 +178,8 @@ export default function Home() {
       {/* ============================================================
           SECTION 4 — FEATURES (Why Ventzon)
           ============================================================ */}
-      <section className="px-8 py-28 sm:py-36">
-        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
             <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
@@ -192,7 +192,7 @@ export default function Home() {
             </h2>
           </ScrollReveal>
 
-          <div className="mt-24 grid gap-px sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-16 grid gap-px sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 title: "No app download",
@@ -237,8 +237,8 @@ export default function Home() {
       {/* ============================================================
           SECTION 5 — TESTIMONIALS
           ============================================================ */}
-      <section className="px-8 py-28 sm:py-36">
-        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
             <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
@@ -249,7 +249,7 @@ export default function Home() {
             </h2>
           </ScrollReveal>
 
-          <div className="mt-24 grid gap-16 md:grid-cols-3 md:gap-12">
+          <div className="mt-16 grid gap-16 md:grid-cols-3 md:gap-12">
             {[
               {
                 quote:
@@ -293,8 +293,8 @@ export default function Home() {
       {/* ============================================================
           SECTION 6 — PRICING
           ============================================================ */}
-      <section className="px-8 py-28 sm:py-36">
-        <div className="luxury-divider mx-auto mb-28 max-w-xs" />
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[10px] font-light tracking-[0.5em] text-[#666]">
@@ -308,7 +308,7 @@ export default function Home() {
             </p>
           </ScrollReveal>
 
-          <div className="mt-20 grid gap-8 sm:grid-cols-2">
+          <div className="mt-14 grid gap-8 sm:grid-cols-2">
             {/* Monthly */}
             <ScrollReveal delay={1}>
               <div className="rounded-lg border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
@@ -382,7 +382,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 7 — FINAL CTA
           ============================================================ */}
-      <section className="px-8 py-36 sm:py-44">
+      <section className="px-8 py-28 sm:py-36">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
             Ready to begin?
@@ -405,8 +405,8 @@ export default function Home() {
       {/* ============================================================
           SECTION 8 — FOOTER
           ============================================================ */}
-      <footer className="px-8 pb-12 pt-20">
-        <div className="luxury-divider mx-auto mb-12 max-w-xs" />
+      <footer className="px-8 pb-12 pt-16">
+        <div className="luxury-divider mx-auto mb-10 max-w-xs" />
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 sm:flex-row">
           <div className="text-[10px] font-light tracking-[0.4em] text-[#444]">
             VENTZON
