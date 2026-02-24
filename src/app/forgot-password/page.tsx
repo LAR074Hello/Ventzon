@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const supabase = createSupabaseBrowserClient();
@@ -35,47 +36,68 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-16 text-white">
-      <h1 className="text-3xl font-semibold">Reset your password</h1>
-      <p className="mt-2 text-neutral-400">
-        Enter your email and we'll send you a link to reset your password.
-      </p>
+    <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+      <div className="w-full max-w-md animate-fade-in opacity-0 anim-delay-200">
+        {/* Header */}
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+          ACCOUNT RECOVERY
+        </p>
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+          Reset password
+        </h1>
+        <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
+          Enter your email and we&rsquo;ll send you a link to reset your
+          password.
+        </p>
 
-      {sent ? (
-        <div className="mt-8 rounded-xl border border-emerald-800/50 bg-emerald-950/30 px-4 py-4 text-sm text-emerald-200">
-          Check your email for a password reset link. It may take a minute to arrive.
-        </div>
-      ) : (
-        <form onSubmit={onSubmit} className="mt-8 space-y-4">
-          <input
-            className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-white placeholder:text-neutral-500"
-            placeholder="Email"
-            autoComplete="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          {err && (
-            <div className="rounded-xl border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-200">
-              {err}
+        {/* Success / Form */}
+        {sent ? (
+          <div className="mt-10 rounded-lg border border-emerald-900/30 bg-emerald-950/20 px-5 py-5 text-[13px] font-light leading-relaxed text-emerald-300/80">
+            Check your email for a password reset link. It may take a minute
+            to arrive.
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="mt-10 space-y-5">
+            <div>
+              <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+                EMAIL
+              </label>
+              <input
+                className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+                placeholder="you@example.com"
+                autoComplete="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-          )}
 
-          <button
-            disabled={loading}
-            className="w-full rounded-xl bg-white py-3 font-medium text-black disabled:opacity-60"
+            {err && (
+              <div className="rounded-lg border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                {err}
+              </div>
+            )}
+
+            <button
+              disabled={loading}
+              className="mt-1 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+            >
+              {loading ? "Sending…" : "Send reset link"}
+            </button>
+          </form>
+        )}
+
+        {/* Back link */}
+        <div className="mt-8">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
           >
-            {loading ? "Sending..." : "Send reset link"}
-          </button>
-        </form>
-      )}
-
-      <div className="mt-6 text-sm text-neutral-500">
-        <Link href="/login" className="underline hover:text-neutral-300">
-          Back to login
-        </Link>
+            <ArrowLeft className="h-3 w-3" />
+            Back to sign in
+          </Link>
+        </div>
       </div>
     </main>
   );

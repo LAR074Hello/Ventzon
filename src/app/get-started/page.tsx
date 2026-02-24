@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export default function GetStartedPage() {
   const router = useRouter();
@@ -25,13 +27,20 @@ export default function GetStartedPage() {
     })();
   }, [supabase, router]);
 
+  // Generate slug preview
+  const slugPreview = shopName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 40);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      // Create shop via API (server handles slug + membership)
       const resp = await fetch("/api/merchant/onboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -50,59 +59,92 @@ export default function GetStartedPage() {
     }
   }
 
+  /* ── Loading state ── */
   if (checkingAuth) {
     return (
-      <main className="mx-auto w-full max-w-xl px-6 py-16 text-white">
-        <p className="text-neutral-400">Loading...</p>
+      <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+        <p className="text-[14px] font-light text-[#444] animate-pulse">
+          Loading…
+        </p>
       </main>
     );
   }
 
+  /* ── Page ── */
   return (
-    <main className="mx-auto w-full max-w-xl px-6 py-16 text-white">
-      <div className="text-xs uppercase tracking-[0.22em] text-white/60">
-        Ventzon Rewards
-      </div>
+    <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+      <div className="w-full max-w-lg animate-fade-in opacity-0 anim-delay-200">
+        {/* Header */}
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+          ONBOARDING
+        </p>
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+          Name your shop
+        </h1>
+        <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
+          This is the name your customers will see when they check in.
+          You can change it later from your dashboard.
+        </p>
 
-      <h1 className="mt-3 text-4xl font-semibold">Create your shop</h1>
+        {/* Card */}
+        <div className="mt-10 rounded-xl border border-[#1a1a1a] p-6 transition-colors duration-500 hover:border-[#222]">
+          <form onSubmit={onSubmit}>
+            <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+              SHOP NAME
+            </label>
+            <input
+              value={shopName}
+              onChange={(e) => setShopName(e.target.value)}
+              placeholder="e.g. Sunrise Bakery"
+              required
+              maxLength={60}
+              className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+            />
 
-      <p className="mt-3 text-white/70">
-        Give your shop a name and we'll set everything up for you.
-      </p>
+            {/* Slug preview */}
+            {shopName.length > 0 && (
+              <p className="mt-3 text-[12px] font-light text-[#444]">
+                ventzon.com/join/
+                <span className="text-[#666]">{slugPreview || "…"}</span>
+              </p>
+            )}
 
-      <form
-        onSubmit={onSubmit}
-        className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur"
-      >
-        <label className="text-sm text-white/70">Shop name</label>
-        <input
-          value={shopName}
-          onChange={(e) => setShopName(e.target.value)}
-          placeholder="Govans Groceries"
-          required
-          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
-        />
+            {/* Character count */}
+            <p className="mt-2 text-right text-[11px] font-light text-[#333]">
+              {shopName.length}/60
+            </p>
 
-        {error && (
-          <div className="mt-5 rounded-xl border border-red-900/40 bg-red-950/30 px-4 py-3 text-sm text-red-200">
-            {error}
+            {/* Error */}
+            {error && (
+              <div className="mt-4 rounded-lg border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                {error}
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              disabled={loading}
+              className="mt-6 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+            >
+              <span className="inline-flex items-center gap-2">
+                {loading ? "Creating shop…" : "Continue to plans"}
+                {!loading && <ArrowRight className="h-3 w-3" />}
+              </span>
+            </button>
+          </form>
+
+          {/* Dashboard link */}
+          <div className="mt-5 border-t border-[#1a1a1a] pt-5">
+            <Link
+              href="/merchant/dashboard"
+              className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+            >
+              Already have a shop? Go to dashboard
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
-        )}
-
-        <button
-          disabled={loading}
-          className="mt-6 w-full rounded-2xl bg-white py-3 text-sm font-semibold text-black disabled:opacity-40"
-        >
-          {loading ? "Creating shop..." : "Continue to plans"}
-        </button>
-
-        <div className="mt-4 text-xs text-white/50">
-          Already have a shop?{" "}
-          <a href="/merchant/dashboard" className="underline">
-            Go to dashboard
-          </a>
         </div>
-      </form>
+      </div>
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function JoinIndexPage({
   searchParams,
@@ -14,16 +15,25 @@ export default async function JoinIndexPage({
   if (cleaned) redirect(`/join/${encodeURIComponent(cleaned)}`);
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100">
-      <div className="mx-auto max-w-xl px-6 py-16">
-        <div className="text-xs tracking-[0.35em] text-neutral-400">
+    <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+      <div className="w-full max-w-md text-center">
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
           VENTZON REWARDS
-        </div>
-        <h1 className="mt-3 text-3xl font-semibold">Missing shop</h1>
-        <p className="mt-3 text-neutral-300">
-          Open a link like <span className="font-mono">/join/govans-groceries</span>{" "}
-          (or <span className="font-mono">/join?shop_slug=govans-groceries</span>)
         </p>
+        <h1 className="mt-4 text-3xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-4xl">
+          Missing shop
+        </h1>
+        <p className="mt-5 text-[14px] font-light leading-relaxed text-[#555]">
+          This link doesn&rsquo;t point to a shop. Try scanning the QR code
+          at the register, or open a link like{" "}
+          <span className="font-mono text-[#666]">/join/your-shop</span>
+        </p>
+        <Link
+          href="/"
+          className="mt-10 inline-block text-[12px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+        >
+          Go to homepage
+        </Link>
       </div>
     </main>
   );
