@@ -5,12 +5,16 @@ import { useParams, useSearchParams } from "next/navigation";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import Link from "next/link";
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 type StatsResponse = {
   shop_slug: string;
   totals: { total: number; today: number };
   latest: Array<{ phone: string; created_at: string }>;
-  // Optional: some installs return this from the stats endpoint
   is_paid?: boolean;
   subscription_status?: string | null;
 };
@@ -25,33 +29,19 @@ type ShopSettings = {
   reward_sms_template: string | null;
 };
 
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
 function maskPhone(phone: string) {
   const digits = String(phone ?? "").replace(/[^\d]/g, "");
   if (digits.length <= 4) return digits;
-  const last4 = digits.slice(-4);
-  return `***-***-${last4}`;
-}
-
-function formatTime(iso: string) {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString("en-US", {
-      timeZone: "America/New_York",
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
+  return `***-***-${digits.slice(-4)}`;
 }
 
 function formatShortNY(iso: string) {
   try {
-    const d = new Date(iso);
-    return d.toLocaleString("en-US", {
+    return new Date(iso).toLocaleString("en-US", {
       timeZone: "America/New_York",
       month: "short",
       day: "2-digit",
@@ -66,47 +56,160 @@ function formatShortNY(iso: string) {
 function safeTemplatePreview(tpl: string | null, shopName: string, dealTitle: string) {
   const t = (tpl ?? "").trim();
   if (!t) return "";
-  return t
-    .replaceAll("{{shop_name}}", shopName)
-    .replaceAll("{{deal_title}}", dealTitle);
+  return t.replaceAll("{{shop_name}}", shopName).replaceAll("{{deal_title}}", dealTitle);
 }
+
+/* ------------------------------------------------------------------ */
+/*  Small UI components                                                */
+/* ------------------------------------------------------------------ */
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+      {children}
+    </p>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
+      {children}
+    </h2>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-[12px] font-light tracking-[0.1em] text-[#555]">
+      {children}
+    </label>
+  );
+}
+
+function GhostButton({
+  children,
+  onClick,
+  disabled,
+  className = "",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`rounded-full border border-[#333] px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PrimaryButton({
+  children,
+  onClick,
+  disabled,
+  href,
+  className = "",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  href?: string;
+  className?: string;
+}) {
+  const cls = `inline-flex items-center justify-center rounded-full border border-[#ededed] px-6 py-2.5 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40 ${className}`;
+
+  if (href) {
+    return (
+      <a href={href} className={cls}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} disabled={disabled} className={cls}>
+      {children}
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Wrapper with Suspense                                              */
+/* ------------------------------------------------------------------ */
 
 export default function MerchantShopPageWrapper() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center">
-        <div className="text-neutral-400">Loading dashboard…</div>
-      </main>
-    }>
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-black text-[#ededed]">
+          <p className="text-[13px] font-light text-[#555]">Loading dashboard…</p>
+        </main>
+      }
+    >
       <MerchantShopPage />
     </Suspense>
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Main dashboard                                                     */
+/* ------------------------------------------------------------------ */
+
 function MerchantShopPage() {
   const params = useParams<{ shop?: string }>();
-
-  const shopSlug = useMemo(() => {
-    return String(params?.shop ?? "").trim().toLowerCase();
-  }, [params]);
+  const shopSlug = useMemo(() => String(params?.shop ?? "").trim().toLowerCase(), [params]);
 
   const searchParams = useSearchParams();
   const isCheckoutReturn = searchParams.get("checkout") === "success";
 
-  const [paid, setPaid] = useState<boolean>(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("inactive");
-  const [shopLoadError, setShopLoadError] = useState<string>("");
-  const [waitingForPayment, setWaitingForPayment] = useState<boolean>(isCheckoutReturn);
+  /* ── State ── */
+  const [paid, setPaid] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
+  const [shopLoadError, setShopLoadError] = useState("");
+  const [waitingForPayment, setWaitingForPayment] = useState(isCheckoutReturn);
   const pollCountRef = useRef(0);
 
-  const [origin, setOrigin] = useState<string>("");
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
 
-  useEffect(() => {
-    // Avoid hydration mismatch by only reading window on the client
-    setOrigin(window.location.origin);
-  }, []);
+  const [data, setData] = useState<StatsResponse | null>(null);
+  const [settings, setSettings] = useState<ShopSettings | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState("");
+  const [rewardGoalDraft, setRewardGoalDraft] = useState(5);
+  const [shopNameDraft, setShopNameDraft] = useState("");
+  const [dealTitleDraft, setDealTitleDraft] = useState("");
+  const [dealDetailsDraft, setDealDetailsDraft] = useState("");
+  const [welcomeSmsDraft, setWelcomeSmsDraft] = useState("");
+  const [rewardSmsDraft, setRewardSmsDraft] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [saveSettingsMsg, setSaveSettingsMsg] = useState("");
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoMsg, setLogoMsg] = useState("");
+  const [portalLoading, setPortalLoading] = useState(false);
 
-  // Fetch shop status from Supabase
+  const joinUrl = useMemo(() => {
+    if (!origin || !shopSlug) return "";
+    return `${origin}/join/${shopSlug}`;
+  }, [origin, shopSlug]);
+
+  const statsUrl = useMemo(() => {
+    if (!shopSlug) return "";
+    return `/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`;
+  }, [shopSlug]);
+
+  /* ── Shop status (payment polling) ── */
   const fetchShopStatus = useCallback(async () => {
     if (!shopSlug) return null;
     const supabase = createSupabaseBrowserClient();
@@ -119,7 +222,6 @@ function MerchantShopPage() {
     return shopRow;
   }, [shopSlug]);
 
-  // Initial load + post-payment polling
   useEffect(() => {
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -128,7 +230,6 @@ function MerchantShopPage() {
       try {
         setShopLoadError("");
         if (!shopSlug) return;
-
         const shopRow = await fetchShopStatus();
         if (cancelled) return;
 
@@ -145,92 +246,39 @@ function MerchantShopPage() {
         setSubscriptionStatus(String((shopRow as any).subscription_status ?? "inactive"));
         setLogoUrl((shopRow as any).logo_url || null);
 
-        // If we're waiting for payment and it's now paid, stop polling
         if (isPaid) {
           setWaitingForPayment(false);
           pollCountRef.current = 0;
-          // Clean up the ?checkout=success from the URL
-          if (isCheckoutReturn) {
-            window.history.replaceState({}, "", window.location.pathname);
-          }
+          if (isCheckoutReturn) window.history.replaceState({}, "", window.location.pathname);
           return;
         }
 
-        // If we're waiting for payment and still not paid, keep polling (up to 10 times = ~20s)
         if (isCheckoutReturn && !isPaid && pollCountRef.current < 10) {
           pollCountRef.current += 1;
-          pollTimer = setTimeout(() => {
-            if (!cancelled) loadShopStatus();
-          }, 2000);
+          pollTimer = setTimeout(() => { if (!cancelled) loadShopStatus(); }, 2000);
         } else if (isCheckoutReturn && !isPaid) {
-          // Gave up polling — show normal inactive state
           setWaitingForPayment(false);
           pollCountRef.current = 0;
         }
       } catch (e: any) {
         console.error("[merchant] shop status exception", e);
-        if (!cancelled) {
-          setShopLoadError("Could not load shop status.");
-          setWaitingForPayment(false);
-        }
+        if (!cancelled) { setShopLoadError("Could not load shop status."); setWaitingForPayment(false); }
       }
     }
 
     loadShopStatus();
-
-    return () => {
-      cancelled = true;
-      if (pollTimer) clearTimeout(pollTimer);
-    };
+    return () => { cancelled = true; if (pollTimer) clearTimeout(pollTimer); };
   }, [shopSlug, fetchShopStatus, isCheckoutReturn]);
 
-  const [data, setData] = useState<StatsResponse | null>(null);
-  const [settings, setSettings] = useState<ShopSettings | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState(false);
-  const [settingsError, setSettingsError] = useState("");
-  const [rewardGoalDraft, setRewardGoalDraft] = useState<number>(5);
-  // Draft state for editable merchant settings
-  const [shopNameDraft, setShopNameDraft] = useState<string>("");
-  const [dealTitleDraft, setDealTitleDraft] = useState<string>("");
-  const [dealDetailsDraft, setDealDetailsDraft] = useState<string>("");
-  const [welcomeSmsDraft, setWelcomeSmsDraft] = useState<string>("");
-  const [rewardSmsDraft, setRewardSmsDraft] = useState<string>("");
-  const [savingSettings, setSavingSettings] = useState(false);
-  const [saveSettingsMsg, setSaveSettingsMsg] = useState<string>("");
-  const [autoRefresh, setAutoRefresh] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [logoUploading, setLogoUploading] = useState(false);
-  const [logoMsg, setLogoMsg] = useState<string>("");
-
-  const joinUrl = useMemo(() => {
-    if (!origin || !shopSlug) return "";
-    return `${origin}/join/${shopSlug}`;
-  }, [origin, shopSlug]);
-
-  const statsUrl = useMemo(() => {
-    if (!shopSlug) return "";
-    return `/merchant/stats?shop_slug=${encodeURIComponent(shopSlug)}`;
-  }, [shopSlug]);
-
+  /* ── Stats ── */
   async function loadStats() {
     try {
       setLoading(true);
       setLoadError("");
-
-      if (!statsUrl) {
-        setLoadError("Missing shop slug");
-        return;
-      }
-
+      if (!statsUrl) { setLoadError("Missing shop slug"); return; }
       const res = await fetch(statsUrl, { cache: "no-store" });
       const json = (await res.json()) as any;
-
       if (!res.ok) throw new Error(json?.error ?? "Failed to load stats");
-
       setData(json as StatsResponse);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (e: any) {
@@ -240,28 +288,18 @@ function MerchantShopPage() {
     }
   }
 
+  /* ── Settings ── */
   async function loadSettings() {
     try {
       setSettingsLoading(true);
       setSettingsError("");
-
-      if (!shopSlug) {
-        setSettingsError("Missing shop slug");
-        return;
-      }
-
-      const res = await fetch(
-        `/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`,
-        { cache: "no-store" }
-      );
+      if (!shopSlug) { setSettingsError("Missing shop slug"); return; }
+      const res = await fetch(`/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to load shop settings");
-
-      setSettings(json.settings as ShopSettings);
-      const goal = Number((json.settings as any)?.reward_goal ?? 5);
-      setRewardGoalDraft(Number.isFinite(goal) ? goal : 5);
-      // Initialize draft fields from loaded settings
       const s = json.settings as ShopSettings;
+      setSettings(s);
+      setRewardGoalDraft(Number.isFinite(Number(s?.reward_goal)) ? Number(s.reward_goal) : 5);
       setShopNameDraft(String(s?.shop_name ?? ""));
       setDealTitleDraft(String(s?.deal_title ?? ""));
       setDealDetailsDraft(String(s?.deal_details ?? ""));
@@ -279,29 +317,24 @@ function MerchantShopPage() {
       if (!shopSlug) return;
       setSavingSettings(true);
       setSaveSettingsMsg("");
-
-      const payload: any = {
-        shop_slug: shopSlug,
-        reward_goal: rewardGoalDraft,
-        shop_name: shopNameDraft.trim() || null,
-        deal_title: dealTitleDraft.trim() || null,
-        deal_details: dealDetailsDraft.trim() || null,
-        welcome_sms_template: welcomeSmsDraft || null,
-        reward_sms_template: rewardSmsDraft || null,
-      };
-
       const res = await fetch("/api/merchant/shop-settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          shop_slug: shopSlug,
+          reward_goal: rewardGoalDraft,
+          shop_name: shopNameDraft.trim() || null,
+          deal_title: dealTitleDraft.trim() || null,
+          deal_details: dealDetailsDraft.trim() || null,
+          welcome_sms_template: welcomeSmsDraft || null,
+          reward_sms_template: rewardSmsDraft || null,
+        }),
       });
-
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to save settings");
-
-      setSaveSettingsMsg("Saved ✓");
+      setSaveSettingsMsg("Saved");
       await loadSettings();
-      window.setTimeout(() => setSaveSettingsMsg(""), 1500);
+      setTimeout(() => setSaveSettingsMsg(""), 1500);
     } catch (e: any) {
       setSaveSettingsMsg(e?.message ?? "Failed to save");
     } finally {
@@ -309,6 +342,7 @@ function MerchantShopPage() {
     }
   }
 
+  /* ── Logo ── */
   async function uploadLogo(file: File) {
     if (!shopSlug) return;
     setLogoUploading(true);
@@ -317,17 +351,12 @@ function MerchantShopPage() {
       const form = new FormData();
       form.append("file", file);
       form.append("shop_slug", shopSlug);
-
-      const res = await fetch("/api/merchant/logo", {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch("/api/merchant/logo", { method: "POST", body: form });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Upload failed");
-
       setLogoUrl(json.logo_url);
-      setLogoMsg("Uploaded ✓");
-      window.setTimeout(() => setLogoMsg(""), 2000);
+      setLogoMsg("Uploaded");
+      setTimeout(() => setLogoMsg(""), 2000);
     } catch (e: any) {
       setLogoMsg(e?.message ?? "Upload failed");
     } finally {
@@ -335,41 +364,7 @@ function MerchantShopPage() {
     }
   }
 
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      if (cancelled) return;
-      await Promise.all([loadStats(), loadSettings()]);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statsUrl]);
-
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const id = window.setInterval(() => {
-      loadStats();
-    }, 15000); // 15s feels “live” without being annoying
-    return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRefresh, statsUrl]);
-
-  async function copyJoinLink() {
-    if (!joinUrl) return;
-    await navigator.clipboard.writeText(joinUrl);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
-  }
-
-  function printQr() {
-    window.print();
-  }
-
-  const [portalLoading, setPortalLoading] = useState(false);
+  /* ── Billing ── */
   async function openBillingPortal() {
     if (!shopSlug) return;
     setPortalLoading(true);
@@ -379,260 +374,285 @@ function MerchantShopPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shop_slug: shopSlug }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to open billing portal");
-      window.location.href = data.url;
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "Failed to open billing portal");
+      window.location.href = d.url;
     } catch (e: any) {
       alert(e.message || "Could not open billing portal");
       setPortalLoading(false);
     }
   }
 
+  /* ── Clipboard ── */
+  async function copyJoinLink() {
+    if (!joinUrl) return;
+    await navigator.clipboard.writeText(joinUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1400);
+  }
+
+  /* ── Initial load + auto-refresh ── */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => { if (!cancelled) await Promise.all([loadStats(), loadSettings()]); })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statsUrl]);
+
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const id = setInterval(() => loadStats(), 15000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRefresh, statsUrl]);
+
   const isMissingShop = !shopSlug;
 
-  return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100">
-      {/* subtle premium glow */}
-      <div className="pointer-events-none fixed inset-0 opacity-60">
-        <div className="absolute left-1/2 top-[-200px] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-neutral-800 blur-3xl" />
-        <div className="absolute right-[-220px] top-[140px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
-        <div className="absolute left-[-220px] bottom-[80px] h-[520px] w-[520px] rounded-full bg-neutral-900 blur-3xl" />
-      </div>
+  /* ── Derived display values ── */
+  const displayShopName = paid ? shopNameDraft : (settings?.shop_name || shopSlug);
+  const displayDealTitle = paid ? dealTitleDraft : (settings?.deal_title || "");
 
-      <div className="relative mx-auto max-w-4xl px-6 py-12">
-        {/* Header */}
-        <div className="mb-10">
-          <div className="text-xs tracking-[0.35em] text-neutral-400">
-            VENTZON REWARDS
-          </div>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-            Merchant Dashboard
-          </h1>
-          <p className="mt-3 max-w-2xl text-neutral-300">
-            View signups and share your shop’s join link. Totals follow New York time. Refresh to see new signups instantly.
+  /* ================================================================ */
+  /*  RENDER                                                          */
+  /* ================================================================ */
+
+  return (
+    <main className="min-h-screen bg-black text-[#ededed]">
+      {/* Radial glow */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.03),transparent)]" />
+
+      <div className="relative mx-auto max-w-5xl px-8 pb-20 pt-28">
+
+        {/* ============================================================
+            HEADER
+            ============================================================ */}
+        <header className="animate-fade-in anim-delay-200 opacity-0">
+          <p className="text-[11px] font-light tracking-[0.5em] text-[#555]">
+            MERCHANT DASHBOARD
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-300">
-              Shop: <span className="font-mono text-neutral-100">{shopSlug || "(missing)"}</span>
+          <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-white sm:text-5xl">
+            {settingsLoading ? shopSlug : (settings?.shop_name || shopSlug)}
+          </h1>
+
+          {/* Status bar */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-[#1a1a1a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888]">
+              {shopSlug}
             </span>
             <span
-              className={`rounded-full border px-3 py-1 text-xs ${
+              className={`rounded-full border px-4 py-1.5 text-[11px] font-light tracking-[0.1em] ${
                 paid
-                  ? "border-emerald-700/60 bg-emerald-950/30 text-emerald-200"
+                  ? "border-emerald-800/50 text-emerald-400"
                   : waitingForPayment
-                  ? "border-yellow-700/60 bg-yellow-950/30 text-yellow-200 animate-pulse"
-                  : "border-neutral-800 bg-neutral-950/40 text-neutral-300"
+                  ? "animate-pulse border-yellow-800/50 text-yellow-400"
+                  : "border-[#1a1a1a] text-[#555]"
               }`}
             >
-              {paid ? "Active" : waitingForPayment ? "Payment processing…" : "Inactive"}
-              {subscriptionStatus && subscriptionStatus !== "inactive"
-                ? ` • ${subscriptionStatus}`
-                : ""}
+              {paid ? "Active" : waitingForPayment ? "Processing payment…" : "Inactive"}
+              {subscriptionStatus && subscriptionStatus !== "inactive" ? ` · ${subscriptionStatus}` : ""}
             </span>
             {paid && (
-              <button
-                onClick={openBillingPortal}
-                disabled={portalLoading}
-                className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-300 hover:border-neutral-600 hover:text-neutral-100 disabled:opacity-50"
-              >
-                {portalLoading ? "Opening..." : "Manage subscription"}
-              </button>
+              <GhostButton onClick={openBillingPortal} disabled={portalLoading}>
+                {portalLoading ? "Opening…" : "Manage billing"}
+              </GhostButton>
             )}
-            {shopLoadError ? (
-              <span className="text-xs text-neutral-400">
-                {shopLoadError}
-              </span>
-            ) : null}
+            {shopLoadError && (
+              <span className="text-[12px] font-light text-[#555]">{shopLoadError}</span>
+            )}
           </div>
-        </div>
+        </header>
 
         {isMissingShop ? (
-          <section className="rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-            <div className="text-sm text-neutral-300">Missing shop slug</div>
-            <div className="mt-2 text-sm text-neutral-400">
-              Open this page like:
-            </div>
-            <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4 font-mono text-sm text-neutral-200">
-              /merchant/govans-groceries
-            </div>
+          /* ── Missing shop fallback ── */
+          <section className="mt-16 rounded-2xl border border-[#1a1a1a] p-8">
+            <SectionLabel>ERROR</SectionLabel>
+            <SectionTitle>Missing shop slug</SectionTitle>
+            <p className="mt-4 text-[14px] font-light text-[#666]">
+              Open this page like:{" "}
+              <code className="rounded bg-[#111] px-2 py-0.5 font-mono text-[13px] text-[#888]">
+                /merchant/your-shop-slug
+              </code>
+            </p>
           </section>
         ) : (
           <>
-            {/* Top row */}
-            <section className="grid gap-6 lg:grid-cols-3">
-              {/* Total */}
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-                <div className="text-sm text-neutral-400">Total signups</div>
-                <div className="mt-2 text-5xl font-semibold tracking-tight">
-                  {loading ? "…" : data?.totals?.total ?? 0}
+            {/* ============================================================
+                STATS
+                ============================================================ */}
+            <section className="animate-fade-in-up anim-delay-400 mt-14 opacity-0">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Total signups */}
+                <div className="group rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                  <SectionLabel>TOTAL SIGNUPS</SectionLabel>
+                  <div className="mt-4 text-5xl font-extralight tracking-tight text-white">
+                    {loading ? "…" : (data?.totals?.total ?? 0).toLocaleString()}
+                  </div>
+                  <p className="mt-3 text-[12px] font-light text-[#444]">All time</p>
+                </div>
+
+                {/* Today */}
+                <div className="group rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                  <SectionLabel>TODAY</SectionLabel>
+                  <div className="mt-4 text-5xl font-extralight tracking-tight text-white">
+                    {loading ? "…" : (data?.totals?.today ?? 0).toLocaleString()}
+                  </div>
+                  <p className="mt-3 text-[12px] font-light text-[#444]">New York time</p>
+                </div>
+
+                {/* Reward goal */}
+                <div className="group rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                  <SectionLabel>REWARD GOAL</SectionLabel>
+                  <div className="mt-4 text-5xl font-extralight tracking-tight text-white">
+                    {settingsLoading ? "…" : (settings?.reward_goal ?? rewardGoalDraft)}
+                  </div>
+                  <p className="mt-3 text-[12px] font-light text-[#444]">Visits to earn reward</p>
                 </div>
               </div>
 
-              {/* Today */}
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-                <div className="text-sm text-neutral-400">Signups today</div>
-                <div className="mt-2 text-5xl font-semibold tracking-tight">
-                  {loading ? "…" : data?.totals?.today ?? 0}
-                </div>
-              </div>
-
-              {/* QR / print area */}
-              <div className="print-area rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm text-neutral-400">Join link (QR)</div>
-                  {copied ? (
-                    <div className="text-xs text-neutral-200">Copied ✓</div>
-                  ) : (
-                    <div className="text-xs text-neutral-500">
-                      Print & place near checkout
-                    </div>
-                  )}
-                </div>
-
-                {!paid ? (
-                  <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
-                    <div className="text-sm font-medium text-neutral-200">
-                      Activation required
-                    </div>
-                    <div className="mt-2 text-sm text-neutral-400">
-                      Subscribe to unlock your QR code, join link, and printing. This dashboard updates automatically once payment is confirmed.
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <a
-                        href={`/merchant/subscribe?shop=${encodeURIComponent(shopSlug)}`}
-                        className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-black hover:bg-neutral-200"
-                      >
-                        Activate now
-                      </a>
-                      <button
-                        onClick={loadStats}
-                        className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
-                      >
-                        Refresh stats
-                      </button>
-                    </div>
-
-                    <div className="mt-4 flex flex-col items-center gap-3 opacity-60">
-                      <div className="flex justify-center">
-                        <div className="rounded-2xl bg-white p-3 shadow-sm">
-                          <QRCodeCanvas value={"locked"} size={160} />
-                        </div>
-                      </div>
-
-                      <div className="w-full min-w-0">
-                        <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3">
-                          <div className="text-[11px] uppercase tracking-widest text-neutral-500">
-                            Join URL
-                          </div>
-                          <div className="mt-2 break-all font-mono text-xs text-neutral-200">(locked)</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex flex-col items-center gap-3">
-                    <div className="flex justify-center">
-                      <div className="rounded-2xl bg-white p-3 shadow-sm">
-                        <QRCodeCanvas value={joinUrl || " "} size={160} />
-                      </div>
-                    </div>
-
-                    <div className="w-full min-w-0">
-                      <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3">
-                        <div className="text-[11px] uppercase tracking-widest text-neutral-500">
-                          Join URL
-                        </div>
-                        <div className="mt-2 max-h-24 overflow-auto whitespace-normal break-all font-mono text-xs text-neutral-200">
-                          {joinUrl}
-                        </div>
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <button
-                          onClick={copyJoinLink}
-                          className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
-                        >
-                          Copy link
-                        </button>
-
-                        <button
-                          onClick={printQr}
-                          className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-black hover:bg-neutral-200"
-                        >
-                          Print
-                        </button>
-
-                        <button
-                          onClick={loadStats}
-                          className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
-                        >
-                          Refresh
-                        </button>
-
-                        <label className="flex items-center gap-2 text-xs text-neutral-400">
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 accent-white"
-                            checked={autoRefresh}
-                            onChange={(e) => setAutoRefresh(e.target.checked)}
-                          />
-                          Auto-refresh
-                        </label>
-
-                        <div className="ml-auto flex items-center text-xs text-neutral-500">
-                          {lastUpdated ? (
-                            <span>Last updated: {lastUpdated}</span>
-                          ) : (
-                            <span>&nbsp;</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {/* Refresh controls */}
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <GhostButton onClick={loadStats}>Refresh</GhostButton>
+                <label className="flex items-center gap-2 text-[12px] font-light text-[#555]">
+                  <input
+                    type="checkbox"
+                    className="h-3.5 w-3.5 accent-white"
+                    checked={autoRefresh}
+                    onChange={(e) => setAutoRefresh(e.target.checked)}
+                  />
+                  Auto-refresh
+                </label>
+                {lastUpdated && (
+                  <span className="text-[11px] font-light text-[#333]">
+                    Updated {lastUpdated}
+                  </span>
                 )}
               </div>
             </section>
 
-            {/* Error */}
-            {loadError ? (
-              <div className="mt-6 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-200">
+            {/* Errors */}
+            {loadError && (
+              <div className="mt-6 rounded-2xl border border-red-900/30 p-4 text-[13px] font-light text-red-400">
                 {loadError}
               </div>
-            ) : null}
-            {settingsError ? (
-              <div className="mt-6 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-sm text-red-200">
+            )}
+            {settingsError && (
+              <div className="mt-6 rounded-2xl border border-red-900/30 p-4 text-[13px] font-light text-red-400">
                 {settingsError}
               </div>
-            ) : null}
+            )}
 
-            {/* Latest signups */}
-            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold">Latest signups</h2>
+            {/* ============================================================
+                QR CODE & JOIN LINK
+                ============================================================ */}
+            <section className="mt-14">
+              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+
+              <div className="print-area rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333] sm:p-10">
+                <div className="grid items-center gap-10 lg:grid-cols-[auto_1fr]">
+                  {/* QR code */}
+                  <div className="flex flex-col items-center gap-4">
+                    <div className={`rounded-2xl bg-white p-4 shadow-sm ${!paid ? "opacity-40" : ""}`}>
+                      <QRCodeCanvas value={paid ? (joinUrl || " ") : "locked"} size={180} />
+                    </div>
+                    {paid && (
+                      <Link
+                        href={`/merchant/${shopSlug}/print-card`}
+                        className="text-[11px] font-light tracking-[0.15em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
+                      >
+                        Open print card
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* Info + actions */}
+                  <div>
+                    <SectionLabel>JOIN LINK</SectionLabel>
+                    <SectionTitle>
+                      {paid ? "Share with customers" : "Activate to unlock"}
+                    </SectionTitle>
+
+                    {paid ? (
+                      <>
+                        <div className="mt-6 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-5 py-4">
+                          <p className="break-all font-mono text-[13px] font-light text-[#888]">
+                            {joinUrl}
+                          </p>
+                        </div>
+
+                        <div className="mt-5 flex flex-wrap items-center gap-3">
+                          <GhostButton onClick={copyJoinLink}>
+                            {copied ? "Copied" : "Copy link"}
+                          </GhostButton>
+                          <GhostButton onClick={() => window.print()}>Print QR</GhostButton>
+                          <a
+                            href={joinUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
+                          >
+                            Open join page
+                          </a>
+                        </div>
+
+                        <p className="mt-5 text-[13px] font-light leading-[1.7] text-[#444]">
+                          Print this QR code and place it near your register.
+                          Customers scan to join your rewards program instantly.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
+                          Subscribe to unlock your QR code, join link, and customer rewards.
+                          This dashboard updates automatically once payment is confirmed.
+                        </p>
+                        <div className="mt-6 flex flex-wrap gap-3">
+                          <PrimaryButton href={`/merchant/subscribe?shop=${encodeURIComponent(shopSlug)}`}>
+                            Activate now
+                          </PrimaryButton>
+                          <GhostButton onClick={loadStats}>Refresh status</GhostButton>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ============================================================
+                LATEST SIGNUPS
+                ============================================================ */}
+            <section className="mt-14">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <SectionLabel>ACTIVITY</SectionLabel>
+                  <SectionTitle>Latest signups</SectionTitle>
+                </div>
                 <a
                   href={statsUrl}
-                  className="text-sm text-neutral-400 underline hover:text-neutral-200"
+                  className="text-[11px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open raw stats JSON
+                  Raw JSON
                 </a>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-xl border border-neutral-800">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-neutral-950">
-                    <tr className="text-neutral-300">
-                      <th className="px-4 py-3 font-medium">Phone</th>
-                      <th className="px-4 py-3 font-medium">Time</th>
+              <div className="mt-6 overflow-hidden rounded-2xl border border-[#1a1a1a]">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-[#1a1a1a]">
+                      <th className="px-6 py-4 text-[11px] font-light tracking-[0.2em] text-[#555]">
+                        PHONE
+                      </th>
+                      <th className="px-6 py-4 text-[11px] font-light tracking-[0.2em] text-[#555]">
+                        TIME
+                      </th>
                     </tr>
                   </thead>
-
-                  <tbody className="divide-y divide-neutral-800">
+                  <tbody className="divide-y divide-[#111]">
                     {(data?.latest ?? []).length === 0 ? (
-                      <tr className="hover:bg-neutral-950/60">
-                        <td className="px-4 py-4 text-neutral-400" colSpan={2}>
+                      <tr>
+                        <td className="px-6 py-6 text-[13px] font-light text-[#444]" colSpan={2}>
                           {loading ? "Loading…" : "No signups yet."}
                         </td>
                       </tr>
@@ -640,12 +660,12 @@ function MerchantShopPage() {
                       (data?.latest ?? []).map((row, idx) => (
                         <tr
                           key={`${row.phone}-${row.created_at}-${idx}`}
-                          className="hover:bg-neutral-950/60"
+                          className="transition-colors duration-300 hover:bg-white/[0.02]"
                         >
-                          <td className="px-4 py-3 font-mono text-neutral-200">
+                          <td className="px-6 py-4 font-mono text-[13px] font-light text-[#ededed]">
                             {maskPhone(row.phone)}
                           </td>
-                          <td className="px-4 py-3 font-mono text-neutral-400">
+                          <td className="px-6 py-4 font-mono text-[13px] font-light text-[#555]">
                             {formatShortNY(row.created_at)}
                           </td>
                         </tr>
@@ -656,258 +676,268 @@ function MerchantShopPage() {
               </div>
             </section>
 
-            {/* Store Logo */}
-            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-              <h2 className="text-lg font-semibold">Store Logo</h2>
-              <p className="mt-1 text-sm text-neutral-400">
-                Displayed on your customer check-in page.
-              </p>
+            {/* ============================================================
+                STORE LOGO
+                ============================================================ */}
+            <section className="mt-14">
+              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
 
-              <div className="mt-4 flex items-center gap-6">
-                {logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt="Store logo"
-                    className="h-20 w-20 rounded-xl border border-neutral-800 object-contain bg-white"
-                  />
-                ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-neutral-700 bg-neutral-900 text-xs text-neutral-500">
-                    No logo
-                  </div>
-                )}
+              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                <SectionLabel>BRANDING</SectionLabel>
+                <SectionTitle>Store logo</SectionTitle>
+                <p className="mt-2 text-[13px] font-light text-[#444]">
+                  Displayed on your customer check-in page.
+                </p>
 
-                <div className="flex flex-col gap-2">
-                  <label
-                    className={`inline-flex cursor-pointer items-center rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900 ${
-                      !paid || logoUploading ? "pointer-events-none opacity-60" : ""
-                    }`}
-                  >
-                    {logoUploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      className="hidden"
-                      disabled={!paid || logoUploading}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) uploadLogo(f);
-                        e.target.value = "";
-                      }}
+                <div className="mt-6 flex items-center gap-6">
+                  {logoUrl ? (
+                    <img
+                      src={logoUrl}
+                      alt="Store logo"
+                      className="h-20 w-20 rounded-xl border border-[#1a1a1a] bg-white object-contain"
                     />
-                  </label>
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-[#333] text-[11px] font-light text-[#444]">
+                      No logo
+                    </div>
+                  )}
 
-                  {logoMsg && (
-                    <span className="text-xs text-neutral-400">{logoMsg}</span>
-                  )}
-                  {!paid && (
-                    <span className="text-xs text-neutral-500">
-                      Activate subscription to upload
-                    </span>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    <label className={`cursor-pointer ${!paid || logoUploading ? "pointer-events-none opacity-40" : ""}`}>
+                      <GhostButton>
+                        {logoUploading ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
+                      </GhostButton>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        disabled={!paid || logoUploading}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) uploadLogo(f);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+
+                    {logoMsg && <span className="text-[11px] font-light text-[#555]">{logoMsg}</span>}
+                    {!paid && <span className="text-[11px] font-light text-[#444]">Activate subscription to upload</span>}
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* Offer preview */}
-            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold">Offer & welcome text</h2>
-                <button
-                  onClick={loadSettings}
-                  className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
-                >
-                  Refresh offer
-                </button>
+            {/* ============================================================
+                OFFER SETTINGS
+                ============================================================ */}
+            <section className="mt-14">
+              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <SectionLabel>SETTINGS</SectionLabel>
+                  <SectionTitle>Offer & reward</SectionTitle>
+                </div>
+                <GhostButton onClick={loadSettings}>Refresh</GhostButton>
               </div>
 
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                  <div className="text-[11px] uppercase tracking-widest text-neutral-500">
-                    Offer customers see
+              <div className="mt-8 grid gap-6 lg:grid-cols-2">
+                {/* Left column: Offer details */}
+                <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+                    OFFER CUSTOMERS SEE
+                  </p>
+
+                  <div className="mt-6 space-y-5">
+                    <div>
+                      <FieldLabel>SHOP NAME</FieldLabel>
+                      {paid ? (
+                        <input
+                          value={shopNameDraft}
+                          onChange={(e) => setShopNameDraft(e.target.value)}
+                          placeholder={shopSlug}
+                          className="mt-2 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
+                        />
+                      ) : (
+                        <div className="mt-2 text-[15px] font-normal text-white">
+                          {settingsLoading ? "Loading…" : settings?.shop_name || shopSlug}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <FieldLabel>REWARD TITLE</FieldLabel>
+                      {paid ? (
+                        <input
+                          value={dealTitleDraft}
+                          onChange={(e) => setDealTitleDraft(e.target.value)}
+                          placeholder="e.g., 10% off your next visit"
+                          className="mt-2 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
+                        />
+                      ) : (
+                        <div className="mt-2 text-[15px] font-normal text-white">
+                          {settingsLoading ? "Loading…" : settings?.deal_title || "—"}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <FieldLabel>REWARD DETAILS</FieldLabel>
+                      {paid ? (
+                        <textarea
+                          value={dealDetailsDraft}
+                          onChange={(e) => setDealDetailsDraft(e.target.value)}
+                          placeholder="e.g., Show this message at checkout within 7 days."
+                          rows={3}
+                          className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
+                        />
+                      ) : (
+                        <div className="mt-2 whitespace-pre-wrap text-[14px] font-light text-[#888]">
+                          {settingsLoading ? "Loading…" : settings?.deal_details || "—"}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <FieldLabel>VISITS TO EARN REWARD</FieldLabel>
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        <select
+                          value={rewardGoalDraft}
+                          onChange={(e) => setRewardGoalDraft(Number(e.target.value))}
+                          disabled={!paid}
+                          className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 focus:border-[#333] disabled:opacity-40"
+                        >
+                          {Array.from({ length: 30 }, (_, i) => i + 2).map((n) => (
+                            <option key={n} value={n}>{n} visits</option>
+                          ))}
+                        </select>
+                      </div>
+                      <p className="mt-2 text-[11px] font-light text-[#333]">
+                        Coffee shops: 5–10 visits. Salons: 2–5.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="mt-3 text-sm text-neutral-300">
-                    <div className="text-neutral-400">Shop</div>
-                    {paid ? (
-                      <input
-                        value={shopNameDraft}
-                        onChange={(e) => setShopNameDraft(e.target.value)}
-                        placeholder={shopSlug}
-                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-600"
-                      />
-                    ) : (
-                      <div className="mt-1 text-lg font-semibold text-neutral-100">
-                        {settingsLoading ? "Loading…" : settings?.shop_name || shopSlug}
-                      </div>
+                  {/* Save button */}
+                  <div className="mt-8 flex items-center gap-3">
+                    <PrimaryButton onClick={saveShopSettings} disabled={savingSettings || !paid}>
+                      {savingSettings ? "Saving…" : "Save settings"}
+                    </PrimaryButton>
+                    {saveSettingsMsg && (
+                      <span className="text-[12px] font-light text-[#555]">{saveSettingsMsg}</span>
+                    )}
+                    {!paid && (
+                      <span className="text-[11px] font-light text-[#444]">Activate to edit</span>
                     )}
                   </div>
+                </div>
 
-                  <div className="mt-4 text-sm text-neutral-300">
-                    <div className="text-neutral-400">Reward title</div>
-                    {paid ? (
-                      <input
-                        value={dealTitleDraft}
-                        onChange={(e) => setDealTitleDraft(e.target.value)}
-                        placeholder="e.g., 10% off your next visit"
-                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-600"
-                      />
-                    ) : (
-                      <div className="mt-1 font-medium text-neutral-100">
-                        {settingsLoading ? "Loading…" : settings?.deal_title || "—"}
-                      </div>
-                    )}
-                  </div>
+                {/* Right column: SMS templates */}
+                <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+                    SMS MESSAGES
+                  </p>
 
-                  <div className="mt-4 text-sm text-neutral-300">
-                    <div className="text-neutral-400">Reward details</div>
-                    {paid ? (
+                  {/* Welcome SMS */}
+                  <div className="mt-6">
+                    <FieldLabel>WELCOME TEXT</FieldLabel>
+                    {paid && (
                       <textarea
-                        value={dealDetailsDraft}
-                        onChange={(e) => setDealDetailsDraft(e.target.value)}
-                        placeholder="e.g., Show this message at checkout within 7 days."
+                        value={welcomeSmsDraft}
+                        onChange={(e) => setWelcomeSmsDraft(e.target.value)}
+                        placeholder={'Welcome to {{shop_name}} Rewards! Reply STOP to opt out. Your deal: {{deal_title}}'}
                         rows={3}
-                        className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-600"
+                        className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 font-mono text-[12px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
                       />
-                    ) : (
-                      <div className="mt-1 whitespace-pre-wrap text-neutral-200">
-                        {settingsLoading ? "Loading…" : settings?.deal_details || "—"}
-                      </div>
                     )}
-                  </div>
-
-                  <div className="mt-5 text-sm text-neutral-300">
-                    <div className="text-neutral-400">Visits required to earn reward</div>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <select
-                        value={rewardGoalDraft}
-                        onChange={(e) => setRewardGoalDraft(Number(e.target.value))}
-                        className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100"
-                      >
-                        {Array.from({ length: 30 }, (_, i) => i + 2).map((n) => (
-                          <option key={n} value={n}>
-                            {n} visits
-                          </option>
-                        ))}
-                      </select>
-
-                      <button
-                        onClick={saveShopSettings}
-                        disabled={savingSettings || !paid}
-                        className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-black hover:bg-neutral-200 disabled:opacity-60"
-                      >
-                        {savingSettings ? "Saving…" : "Save"}
-                      </button>
-
-                      {saveSettingsMsg ? (
-                        <span className="text-xs text-neutral-400">{saveSettingsMsg}</span>
-                      ) : null}
-
-                      {!paid ? (
-                        <span className="text-xs text-neutral-500">
-                          (Activate subscription to edit)
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-2 text-xs text-neutral-500">
-                      Suggestion: many coffee shops choose 5–10 visits; salons often choose 2–5.
+                    <div className="mt-3 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3">
+                      <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
+                      <p className="mt-2 whitespace-pre-wrap font-mono text-[12px] font-light text-[#888]">
+                        {settingsLoading
+                          ? "Loading…"
+                          : safeTemplatePreview(
+                              paid ? welcomeSmsDraft : (settings?.welcome_sms_template ?? ""),
+                              displayShopName || shopSlug,
+                              displayDealTitle
+                            ) || "—"}
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                  <div className="text-[11px] uppercase tracking-widest text-neutral-500">Welcome text</div>
-
-                  {paid ? (
-                    <textarea
-                      value={welcomeSmsDraft}
-                      onChange={(e) => setWelcomeSmsDraft(e.target.value)}
-                      placeholder="Welcome to {{shop_name}} Rewards 🎉 Reply STOP to opt out. Your deal: {{deal_title}}"
-                      rows={4}
-                      className="mt-3 w-full resize-none rounded-xl border border-neutral-800 bg-black px-3 py-2 font-mono text-xs text-neutral-200 placeholder:text-neutral-600"
-                    />
-                  ) : null}
-
-                  <div className="mt-3 whitespace-pre-wrap rounded-xl border border-neutral-800 bg-black p-4 font-mono text-xs text-neutral-200">
-                    {settingsLoading
-                      ? "Loading…"
-                      : safeTemplatePreview(
-                          paid ? welcomeSmsDraft : (settings?.welcome_sms_template ?? ""),
-                          (paid ? shopNameDraft : (settings?.shop_name || shopSlug)) || shopSlug,
-                          paid ? dealTitleDraft : (settings?.deal_title || "")
-                        ) || "—"}
+                  {/* Reward SMS */}
+                  <div className="mt-8">
+                    <FieldLabel>REWARD EARNED TEXT</FieldLabel>
+                    {paid && (
+                      <textarea
+                        value={rewardSmsDraft}
+                        onChange={(e) => setRewardSmsDraft(e.target.value)}
+                        placeholder={'You earned your reward at {{shop_name}}! Show this text to redeem: {{deal_title}}'}
+                        rows={3}
+                        className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 font-mono text-[12px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
+                      />
+                    )}
+                    <div className="mt-3 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3">
+                      <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
+                      <p className="mt-2 whitespace-pre-wrap font-mono text-[12px] font-light text-[#888]">
+                        {settingsLoading
+                          ? "Loading…"
+                          : safeTemplatePreview(
+                              paid ? rewardSmsDraft : String((settings as any)?.reward_sms_template ?? ""),
+                              displayShopName || shopSlug,
+                              displayDealTitle
+                            ) || "—"}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="mt-3 text-[11px] uppercase tracking-widest text-neutral-500">Reward earned text</div>
-
-                  {paid ? (
-                    <textarea
-                      value={rewardSmsDraft}
-                      onChange={(e) => setRewardSmsDraft(e.target.value)}
-                      placeholder="You earned your reward at {{shop_name}} 🎉 Show this text to redeem: {{deal_title}}"
-                      rows={4}
-                      className="mt-3 w-full resize-none rounded-xl border border-neutral-800 bg-black px-3 py-2 font-mono text-xs text-neutral-200 placeholder:text-neutral-600"
-                    />
-                  ) : null}
-
-                  <div className="mt-3 whitespace-pre-wrap rounded-xl border border-neutral-800 bg-black p-4 font-mono text-xs text-neutral-200">
-                    {settingsLoading
-                      ? "Loading…"
-                      : safeTemplatePreview(
-                          paid ? rewardSmsDraft : String((settings as any)?.reward_sms_template ?? ""),
-                          (paid ? shopNameDraft : (settings?.shop_name || shopSlug)) || shopSlug,
-                          paid ? dealTitleDraft : (settings?.deal_title || "")
-                        ) || "—"}
-                  </div>
-
-                  <div className="mt-3 text-xs text-neutral-500">
-                    Use <span className="font-mono">{"{{shop_name}}"}</span> and{" "}
-                    <span className="font-mono">{"{{deal_title}}"}</span>. Keep messages short.
-                  </div>
+                  <p className="mt-6 text-[11px] font-light text-[#333]">
+                    Use <code className="font-mono text-[#555]">{"{{shop_name}}"}</code> and{" "}
+                    <code className="font-mono text-[#555]">{"{{deal_title}}"}</code>. Keep messages short.
+                  </p>
                 </div>
               </div>
             </section>
 
-            {/* Quick start */}
-            <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-6 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-neutral-700">
-              <div className="text-sm text-neutral-400">Quick start</div>
-              <div className="mt-2 text-sm text-neutral-200">
-                Your customer join page:
-              </div>
-              <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                <div className="text-[11px] uppercase tracking-widest text-neutral-500">
-                  Customer join link
-                </div>
-                <div className="mt-2 break-all font-mono text-sm text-neutral-200">
-                  {paid ? joinUrl : "(locked — activate to reveal your join link)"}
+            {/* ============================================================
+                QUICK START
+                ============================================================ */}
+            <section className="mt-14">
+              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+
+              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                <SectionLabel>QUICK START</SectionLabel>
+                <SectionTitle>Customer join page</SectionTitle>
+
+                <div className="mt-6 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-5 py-4">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">JOIN URL</p>
+                  <p className="mt-2 break-all font-mono text-[13px] font-light text-[#888]">
+                    {paid ? joinUrl : "(locked — activate to reveal your join link)"}
+                  </p>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-5 flex flex-wrap gap-3">
                   {paid ? (
                     <>
                       <a
                         href={joinUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
+                        className="text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
                       >
                         Open join page
                       </a>
+                      <span className="text-[#333]">·</span>
                       <button
                         onClick={copyJoinLink}
-                        className="rounded-xl border border-neutral-800 px-3 py-2 text-sm hover:bg-neutral-900"
+                        className="text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
                       >
-                        Copy link
+                        {copied ? "Copied" : "Copy link"}
                       </button>
                     </>
                   ) : (
-                    <a
-                      href={`/merchant/subscribe?shop=${encodeURIComponent(shopSlug)}`}
-                      className="rounded-xl bg-white px-3 py-2 text-sm font-medium text-black hover:bg-neutral-200"
-                    >
+                    <PrimaryButton href={`/merchant/subscribe?shop=${encodeURIComponent(shopSlug)}`}>
                       Activate now
-                    </a>
+                    </PrimaryButton>
                   )}
                 </div>
               </div>
@@ -916,22 +946,15 @@ function MerchantShopPage() {
         )}
       </div>
 
-      {/* Print styling: only show the QR panel when printing */}
+      {/* ============================================================
+          PRINT STYLES — Only show QR panel when printing
+          ============================================================ */}
       <style jsx global>{`
         @media print {
-          body {
-            background: white !important;
-          }
-          main {
-            background: white !important;
-          }
-          main * {
-            visibility: hidden;
-          }
-          main .print-area,
-          main .print-area * {
-            visibility: visible;
-          }
+          body { background: white !important; }
+          main { background: white !important; }
+          main * { visibility: hidden; }
+          main .print-area, main .print-area * { visibility: visible; }
           main .print-area {
             position: absolute;
             left: 24px;
@@ -941,9 +964,7 @@ function MerchantShopPage() {
             background: white !important;
             color: black !important;
           }
-          main .print-area .bg-white {
-            box-shadow: none !important;
-          }
+          main .print-area .bg-white { box-shadow: none !important; }
         }
       `}</style>
     </main>
