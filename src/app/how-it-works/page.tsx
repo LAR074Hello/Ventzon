@@ -18,8 +18,8 @@ const customerSteps = [
   },
   {
     number: "02",
-    title: "Enter phone + 6-digit PIN",
-    body: "Your phone ties visits to that shop. Your 6-digit PIN lets you check in later — no account login required.",
+    title: "Enter your phone number",
+    body: "Your phone number ties visits to that shop. No account creation, no passwords — just your number.",
   },
   {
     number: "03",
@@ -81,7 +81,7 @@ const benefits = [
 
 const goodToKnow = [
   "A customer is linked to a shop by phone number — the same phone can join multiple shops.",
-  "The 6-digit PIN is for quick re-check-ins. No account creation needed.",
+  "No account creation needed — customers just use their phone number to check in.",
   "One check-in per day per shop prevents spam and keeps it fair.",
 ];
 
@@ -145,7 +145,7 @@ export default function HowItWorksPage() {
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
-            Scan a QR, enter your phone + a 6-digit PIN, check in once per day,
+            Scan a QR, enter your phone number, check in once per day,
             and redeem when you hit the shop's goal. Simple for customers,
             valuable for merchants.
           </p>
