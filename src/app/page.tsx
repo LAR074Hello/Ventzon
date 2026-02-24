@@ -12,26 +12,20 @@ export default function Home() {
           VIDEO SETUP:
           1. Place your video at  /public/hero.mp4  (or hero.webm)
           2. Place a fallback poster image at  /public/hero-poster.jpg
-          3. The video is hidden on mobile (<md) and replaced by the poster
+          3. The video plays on all devices (poster shown while loading)
           ============================================================ */}
       <section className="relative flex h-screen items-center justify-center overflow-hidden">
-        {/* Background video (desktop) */}
+        {/* Background video (all devices including mobile) */}
         <video
           autoPlay
           loop
           muted
           playsInline
           poster="/hero-poster.jpg"
-          className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover md:block"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
         >
           <source src="/hero.mp4" type="video/mp4" />
         </video>
-
-        {/* Fallback poster image (mobile) */}
-        <div
-          className="absolute inset-0 bg-cover bg-center md:hidden"
-          style={{ backgroundImage: "url('/hero-poster.jpg')" }}
-        />
 
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/55" />
