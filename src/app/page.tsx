@@ -95,8 +95,8 @@ export default function Home() {
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=900&q=80&auto=format&fit=crop"
-                    alt="Retail store checkout counter"
+                    src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80&auto=format&fit=crop"
+                    alt="Warm cafe counter with ambient lighting"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
@@ -121,8 +121,8 @@ export default function Home() {
               <ScrollReveal className="order-1 lg:order-2">
                 <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=900&q=80&auto=format&fit=crop"
-                    alt="Customer using their phone to check in"
+                    src="https://images.unsplash.com/photo-1556742111-a301076d9d18?w=900&q=80&auto=format&fit=crop"
+                    alt="Customer scanning phone at checkout"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
@@ -146,8 +146,8 @@ export default function Home() {
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80&auto=format&fit=crop"
-                    alt="Small business owner smiling"
+                    src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=900&q=80&auto=format&fit=crop"
+                    alt="Artisan bakery display with warm lighting"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
