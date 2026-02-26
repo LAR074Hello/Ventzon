@@ -7,6 +7,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
+import MerchantAnalytics from "@/components/MerchantAnalytics";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -562,6 +563,11 @@ function MerchantShopPage() {
                 {settingsError}
               </div>
             )}
+
+            {/* ============================================================
+                ANALYTICS
+                ============================================================ */}
+            {paid && <MerchantAnalytics shopSlug={shopSlug} />}
 
             {/* ============================================================
                 QR CODE & JOIN LINK
