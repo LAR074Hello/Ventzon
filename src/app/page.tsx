@@ -229,6 +229,130 @@ export default function Home() {
       </section>
 
       {/* ============================================================
+          SECTION 4b — ANALYTICS DASHBOARD FEATURE
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+        <div className="mx-auto max-w-5xl">
+          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+            {/* Left — Text */}
+            <ScrollReveal>
+              <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+                ANALYTICS
+              </p>
+              <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+                Know your customers.
+              </h2>
+              <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
+                See who&rsquo;s coming back, track check-ins over time, and
+                measure reward redemptions &mdash; all in one dashboard.
+              </p>
+              <Link
+                href="/signup"
+                className="mt-10 inline-flex items-center gap-3 rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
+              >
+                View dashboard
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </ScrollReveal>
+
+            {/* Right — Visual mock of the analytics charts */}
+            <ScrollReveal delay={2}>
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] p-6 sm:p-8">
+                {/* Mini chart header */}
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
+                    CUSTOMER CHECK-INS
+                  </p>
+                  <div className="flex gap-1.5">
+                    {["7d", "30d", "60d"].map((p) => (
+                      <span
+                        key={p}
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-light ${
+                          p === "30d"
+                            ? "bg-[#ededed] text-black"
+                            : "text-[#444]"
+                        }`}
+                      >
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SVG chart illustration */}
+                <div className="mt-6 h-[140px] w-full">
+                  <svg
+                    viewBox="0 0 400 120"
+                    className="h-full w-full"
+                    preserveAspectRatio="none"
+                  >
+                    {/* Grid lines */}
+                    {[0, 30, 60, 90].map((y) => (
+                      <line
+                        key={y}
+                        x1="0"
+                        y1={y}
+                        x2="400"
+                        y2={y}
+                        stroke="#1a1a1a"
+                        strokeWidth="1"
+                      />
+                    ))}
+                    {/* Area fill */}
+                    <path
+                      d="M0,100 C30,90 60,85 90,70 C120,55 150,60 180,45 C210,30 240,35 270,25 C300,15 330,20 360,10 C380,5 400,8 400,8 L400,120 L0,120 Z"
+                      fill="url(#chartGrad)"
+                      opacity="0.15"
+                    />
+                    {/* Line */}
+                    <path
+                      d="M0,100 C30,90 60,85 90,70 C120,55 150,60 180,45 C210,30 240,35 270,25 C300,15 330,20 360,10 C380,5 400,8 400,8"
+                      fill="none"
+                      stroke="#ededed"
+                      strokeWidth="1.5"
+                    />
+                    <defs>
+                      <linearGradient
+                        id="chartGrad"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#ededed" />
+                        <stop offset="100%" stopColor="#ededed" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+
+                {/* Mini stats row */}
+                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-[#1a1a1a] pt-5">
+                  <div>
+                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">
+                      CHECK-INS
+                    </p>
+                    <p className="mt-1 text-2xl font-extralight text-white">
+                      1,247
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">
+                      REWARDS
+                    </p>
+                    <p className="mt-1 text-2xl font-extralight text-white">
+                      83
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           SECTION 5 — TESTIMONIALS
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">

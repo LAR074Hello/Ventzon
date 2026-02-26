@@ -64,29 +64,29 @@ const merchantSteps = [
 const benefits = [
   {
     label: "Repeat visits",
-    value: "↑",
+    value: "\u2191",
     note: "A visible goal nudges customers to come back sooner to finish the punch card.",
   },
   {
     label: "Basket size",
-    value: "↑",
+    value: "\u2191",
     note: "Customers who feel close to earning often add an item or choose your shop over another.",
   },
   {
     label: "Direct channel",
     value: "SMS",
-    note: "Promos go straight to the customer — not an algorithm. Opt-in only, always.",
+    note: "Promos go straight to the customer \u2014 not an algorithm. Opt-in only, always.",
   },
 ];
 
 const goodToKnow = [
-  "A customer is linked to a shop by phone number — the same phone can join multiple shops.",
-  "No account creation needed — customers just use their phone number to check in.",
+  "A customer is linked to a shop by phone number \u2014 the same phone can join multiple shops.",
+  "No account creation needed \u2014 customers just use their phone number to check in.",
   "One check-in per day per shop prevents spam and keeps it fair.",
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Animated number component for benefit stats                        */
+/*  Animated progress bar for benefit stats                            */
 /* ------------------------------------------------------------------ */
 
 function ProgressBar({ started }: { started: boolean }) {
@@ -146,7 +146,7 @@ export default function HowItWorksPage() {
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
             Scan a QR, enter your phone number, check in once per day,
-            and redeem when you hit the shop's goal. Simple for customers,
+            and redeem when you hit the shop&rsquo;s goal. Simple for customers,
             valuable for merchants.
           </p>
 
@@ -174,80 +174,115 @@ export default function HowItWorksPage() {
       </section>
 
       {/* ============================================================
-          QUICK BENEFITS — Two feature cards
+          THE THREE STEPS — Cinematic image-driven storytelling
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid gap-6 sm:grid-cols-2">
-            <ScrollReveal delay={1}>
-              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                  ZERO FRICTION
-                </p>
-                <h3 className="mt-4 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
-                  No apps to download
-                </h3>
-                <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
-                  Customers use their phone camera and SMS. That's it. No
-                  downloads, no sign-ups, no passwords to remember.
-                </p>
+      <section className="py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl px-8">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+              THREE STEPS
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+              Print. Scan. Reward.
+            </h2>
+          </ScrollReveal>
+        </div>
+
+        {/* ── Step 1 — Print your QR code ── */}
+        <div className="mt-20 space-y-32 lg:space-y-40">
+          <div className="mx-auto max-w-6xl px-8">
+            <ScrollReveal>
+              <div className="overflow-hidden rounded-2xl">
+                {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step1.jpg */}
+                <img
+                  src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1400&q=80&auto=format&fit=crop"
+                  alt="Coffee shop counter with register and menu boards"
+                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+                />
               </div>
             </ScrollReveal>
-            <ScrollReveal delay={2}>
-              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                  BUILT FOR SPEED
+            <ScrollReveal>
+              <div className="mt-10 grid items-end gap-6 lg:grid-cols-[auto_1fr_1fr]">
+                <p className="font-mono text-[48px] font-extralight leading-none tracking-tight text-[#1a1a1a] sm:text-[64px]">
+                  01
                 </p>
-                <h3 className="mt-4 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
-                  Designed for checkout
-                </h3>
-                <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
-                  One scan, one check-in per day, one redemption text. The
-                  entire experience takes seconds — not minutes.
-                </p>
+                <div>
+                  <h3 className="text-2xl font-extralight tracking-[-0.01em] text-white sm:text-3xl">
+                    Print your QR code
+                  </h3>
+                  <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
+                    Sign up, name your shop, and set your reward. We generate a
+                    unique QR code &mdash; print it and place it by the register.
+                    The entire setup takes under five minutes.
+                  </p>
+                </div>
+                <div className="hidden lg:block" />
               </div>
             </ScrollReveal>
           </div>
-        </div>
-      </section>
 
-      {/* ============================================================
-          FOR CUSTOMERS — Scroll-based storytelling
-          ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
-        <div className="mx-auto max-w-6xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              FOR CUSTOMERS
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              Earn rewards in seconds.
-            </h2>
-            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
-              Fast check-ins and a clear redeem text to show at the register.
-              No apps, no hassle.
-            </p>
-          </ScrollReveal>
-
-          <div className="mt-20 space-y-0">
-            {customerSteps.map((step, i) => (
-              <ScrollReveal key={step.title}>
-                <div className="group grid items-start gap-8 border-t border-[#161616] py-12 transition-colors duration-500 hover:border-[#333] lg:grid-cols-[80px_1fr_1.5fr] lg:gap-12 lg:py-16">
-                  <p className="font-mono text-[13px] tracking-[0.3em] text-[#333] transition-colors duration-500 group-hover:text-[#666]">
-                    {step.number}
-                  </p>
-                  <h3 className="text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
-                    {step.title}
+          {/* ── Step 2 — Customer checks in ── */}
+          <div className="mx-auto max-w-6xl px-8">
+            <ScrollReveal>
+              <div className="overflow-hidden rounded-2xl">
+                {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step2.jpg */}
+                <img
+                  src="https://images.unsplash.com/photo-1556742077-0a6b6a4a4ac4?w=1400&q=80&auto=format&fit=crop"
+                  alt="Person using their smartphone in a retail store"
+                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+                />
+              </div>
+            </ScrollReveal>
+            <ScrollReveal>
+              <div className="mt-10 grid items-end gap-6 lg:grid-cols-[auto_1fr_1fr]">
+                <p className="font-mono text-[48px] font-extralight leading-none tracking-tight text-[#1a1a1a] sm:text-[64px]">
+                  02
+                </p>
+                <div>
+                  <h3 className="text-2xl font-extralight tracking-[-0.01em] text-white sm:text-3xl">
+                    Customers check in
                   </h3>
-                  <p className="text-[15px] font-light leading-[1.8] text-[#666]">
-                    {step.body}
+                  <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
+                    Customers scan the QR with their phone camera, enter their
+                    number, and they&rsquo;re checked in. One tap per day &mdash;
+                    no app download, no account to create.
                   </p>
                 </div>
-              </ScrollReveal>
-            ))}
-            {/* Final border */}
-            <div className="border-t border-[#161616]" />
+                <div className="hidden lg:block" />
+              </div>
+            </ScrollReveal>
+          </div>
+
+          {/* ── Step 3 — They earn rewards ── */}
+          <div className="mx-auto max-w-6xl px-8">
+            <ScrollReveal>
+              <div className="overflow-hidden rounded-2xl">
+                {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step3.jpg */}
+                <img
+                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&q=80&auto=format&fit=crop"
+                  alt="Happy small business owner smiling at camera"
+                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+                />
+              </div>
+            </ScrollReveal>
+            <ScrollReveal>
+              <div className="mt-10 grid items-end gap-6 lg:grid-cols-[auto_1fr_1fr]">
+                <p className="font-mono text-[48px] font-extralight leading-none tracking-tight text-[#1a1a1a] sm:text-[64px]">
+                  03
+                </p>
+                <div>
+                  <h3 className="text-2xl font-extralight tracking-[-0.01em] text-white sm:text-3xl">
+                    They earn rewards
+                  </h3>
+                  <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
+                    When a customer hits the visit goal you set, they receive an
+                    SMS with their reward. They show it at checkout and redeem
+                    instantly. The counter resets and the cycle continues.
+                  </p>
+                </div>
+                <div className="hidden lg:block" />
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -266,7 +301,85 @@ export default function HowItWorksPage() {
       </section>
 
       {/* ============================================================
-          FOR MERCHANTS — Scroll-based storytelling
+          QUICK BENEFITS — Two feature cards
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="mx-auto max-w-4xl">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <ScrollReveal delay={1}>
+              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+                  ZERO FRICTION
+                </p>
+                <h3 className="mt-4 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
+                  No apps to download
+                </h3>
+                <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
+                  Customers use their phone camera and SMS. That&rsquo;s it. No
+                  downloads, no sign-ups, no passwords to remember.
+                </p>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={2}>
+              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+                  BUILT FOR SPEED
+                </p>
+                <h3 className="mt-4 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
+                  Designed for checkout
+                </h3>
+                <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
+                  One scan, one check-in per day, one redemption text. The
+                  entire experience takes seconds &mdash; not minutes.
+                </p>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          FOR CUSTOMERS — Detailed steps
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+        <div className="mx-auto max-w-6xl">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+              FOR CUSTOMERS
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+              Earn rewards in seconds.
+            </h2>
+            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
+              Fast check-ins and a clear redeem text to show at the register.
+              No apps, no hassle.
+            </p>
+          </ScrollReveal>
+
+          <div className="mt-20 space-y-0">
+            {customerSteps.map((step) => (
+              <ScrollReveal key={step.title}>
+                <div className="group grid items-start gap-8 border-t border-[#161616] py-12 transition-colors duration-500 hover:border-[#333] lg:grid-cols-[80px_1fr_1.5fr] lg:gap-12 lg:py-16">
+                  <p className="font-mono text-[13px] tracking-[0.3em] text-[#333] transition-colors duration-500 group-hover:text-[#666]">
+                    {step.number}
+                  </p>
+                  <h3 className="text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
+                    {step.title}
+                  </h3>
+                  <p className="text-[15px] font-light leading-[1.8] text-[#666]">
+                    {step.body}
+                  </p>
+                </div>
+              </ScrollReveal>
+            ))}
+            <div className="border-t border-[#161616]" />
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          FOR MERCHANTS — Detailed steps
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-20 max-w-xs" />
@@ -285,7 +398,7 @@ export default function HowItWorksPage() {
           </ScrollReveal>
 
           <div className="mt-20 space-y-0">
-            {merchantSteps.map((step, i) => (
+            {merchantSteps.map((step) => (
               <ScrollReveal key={step.title}>
                 <div className="group grid items-start gap-8 border-t border-[#161616] py-12 transition-colors duration-500 hover:border-[#333] lg:grid-cols-[80px_1fr_1.5fr] lg:gap-12 lg:py-16">
                   <p className="font-mono text-[13px] tracking-[0.3em] text-[#333] transition-colors duration-500 group-hover:text-[#666]">
@@ -300,7 +413,6 @@ export default function HowItWorksPage() {
                 </div>
               </ScrollReveal>
             ))}
-            {/* Final border */}
             <div className="border-t border-[#161616]" />
           </div>
         </div>
@@ -320,7 +432,7 @@ export default function HowItWorksPage() {
               Why this helps shop owners
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
-              Loyalty isn't just discounts — it's behavior shaping.
+              Loyalty isn&rsquo;t just discounts &mdash; it&rsquo;s behavior shaping.
             </p>
           </ScrollReveal>
 
@@ -353,8 +465,8 @@ export default function HowItWorksPage() {
               </p>
               <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
                 Keep the reward simple (free item or % off) and set a goal that
-                matches your purchase cycle — coffee shops 5–10 visits, salons
-                2–5, etc.
+                matches your purchase cycle &mdash; coffee shops 5&ndash;10 visits, salons
+                2&ndash;5, etc.
               </p>
             </div>
           </ScrollReveal>
