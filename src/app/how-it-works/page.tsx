@@ -379,6 +379,175 @@ export default function HowItWorksPage() {
       </section>
 
       {/* ============================================================
+          CUSTOMER EXPERIENCE — Join page visual mock
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+              THE CHECK-IN PAGE
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+              What your customers see.
+            </h2>
+            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
+              A clean, fast page that works on any phone.
+              No app to download, no account to create.
+            </p>
+          </ScrollReveal>
+
+          <div className="mt-14 grid gap-8 lg:grid-cols-3">
+            {/* ── State 1: Check-in form ── */}
+            <ScrollReveal delay={1}>
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 transition-all duration-500 hover:border-[#333]">
+                <p className="mb-5 text-[10px] font-light tracking-[0.3em] text-[#444]">
+                  STEP 1 &mdash; CHECK IN
+                </p>
+
+                <div className="flex flex-col items-center">
+                  {/* Shop avatar */}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+                    <span className="text-lg font-extralight text-[#555]">S</span>
+                  </div>
+                  <p className="mt-3 text-[11px] font-light tracking-[0.3em] text-[#ededed]">
+                    SUNRISE BAKERY
+                  </p>
+
+                  {/* Deal */}
+                  <div className="mt-4 w-full rounded-lg border border-[#1a1a1a] px-4 py-2.5 text-center">
+                    <p className="text-[12px] font-light text-[#888]">
+                      Free pastry after 8 visits
+                    </p>
+                  </div>
+
+                  {/* Phone input */}
+                  <div className="mt-6 w-full">
+                    <p className="mb-1.5 text-[9px] font-light tracking-[0.2em] text-[#555]">
+                      PHONE NUMBER
+                    </p>
+                    <div className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-3 py-3 text-center">
+                      <span className="text-[15px] font-light tracking-[0.05em] text-[#ededed]">
+                        (555) 123-4567
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Button */}
+                  <div className="mt-4 w-full rounded-full border border-[#ededed] py-3 text-center text-[10px] font-light tracking-[0.2em] text-[#ededed]">
+                    CHECK IN
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* ── State 2: Progress ── */}
+            <ScrollReveal delay={2}>
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 transition-all duration-500 hover:border-[#333]">
+                <p className="mb-5 text-[10px] font-light tracking-[0.3em] text-[#444]">
+                  STEP 2 &mdash; PROGRESS
+                </p>
+
+                <div className="flex flex-col items-center">
+                  {/* Visit counter */}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+                    <span className="font-mono text-[18px] font-light text-[#ededed]">6</span>
+                  </div>
+
+                  <p className="mt-4 text-[14px] font-extralight text-[#ededed]">
+                    Checked in! 2 more to go.
+                  </p>
+
+                  {/* Progress dots */}
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex h-5 w-5 items-center justify-center rounded-full ${
+                          i < 6 ? "bg-[#ededed]" : "border border-[#333] bg-transparent"
+                        }`}
+                      >
+                        {i < 6 && (
+                          <svg className="h-2.5 w-2.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="mt-3 text-[11px] font-light tracking-[0.1em] text-[#555]">
+                    6/8 visits &middot; 2 to go
+                  </p>
+
+                  <p className="mt-2 text-[10px] font-light text-[#444]">
+                    1 check-in per day
+                  </p>
+
+                  {/* Done button */}
+                  <div className="mt-6 w-full rounded-full border border-[#ededed] py-3 text-center text-[10px] font-light tracking-[0.2em] text-[#ededed]">
+                    DONE
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* ── State 3: Reward earned ── */}
+            <ScrollReveal delay={3}>
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 transition-all duration-500 hover:border-[#333]">
+                <p className="mb-5 text-[10px] font-light tracking-[0.3em] text-[#444]">
+                  STEP 3 &mdash; REWARD
+                </p>
+
+                <div className="flex flex-col items-center">
+                  {/* Reward icon */}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
+                    <svg className="h-7 w-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+
+                  <p className="mt-4 text-[14px] font-extralight text-[#ededed]">
+                    You earned your reward!
+                  </p>
+
+                  {/* Full progress dots */}
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ededed]"
+                      >
+                        <svg className="h-2.5 w-2.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="mt-3 text-[11px] font-light tracking-[0.1em] text-[#555]">
+                    8/8 visits
+                  </p>
+
+                  {/* Redeem banner */}
+                  <div className="mt-5 w-full rounded-lg border border-emerald-900/30 bg-emerald-950/20 px-4 py-3 text-center">
+                    <p className="text-[10px] font-light tracking-[0.15em] text-emerald-300/80">
+                      SHOW THIS TO THE CASHIER
+                    </p>
+                  </div>
+
+                  {/* Done button */}
+                  <div className="mt-5 w-full rounded-full border border-[#ededed] py-3 text-center text-[10px] font-light tracking-[0.2em] text-[#ededed]">
+                    DONE
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           FOR MERCHANTS — Detailed steps
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">

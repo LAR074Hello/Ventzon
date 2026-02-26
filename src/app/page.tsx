@@ -170,6 +170,141 @@ export default function Home() {
       </section>
 
       {/* ============================================================
+          SECTION 3b — CUSTOMER EXPERIENCE (Join page mock)
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+              CUSTOMER EXPERIENCE
+            </p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+              What your customers see.
+            </h2>
+            <p className="mt-5 text-[15px] font-light text-[#666]">
+              A simple check-in page that works on any phone. No app, no account.
+            </p>
+          </ScrollReveal>
+
+          <div className="mt-14 grid gap-8 sm:grid-cols-2">
+            {/* ── Check-in form mock ── */}
+            <ScrollReveal delay={1}>
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8 transition-all duration-500 hover:border-[#333]">
+                <p className="mb-6 text-[10px] font-light tracking-[0.3em] text-[#444]">
+                  CHECK-IN
+                </p>
+
+                {/* Shop avatar + name */}
+                <div className="flex flex-col items-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+                    <span className="text-xl font-extralight text-[#555]">S</span>
+                  </div>
+                  <p className="mt-4 text-[12px] font-light tracking-[0.3em] text-[#ededed]">
+                    SUNRISE BAKERY
+                  </p>
+
+                  {/* Deal card */}
+                  <div className="mt-5 rounded-lg border border-[#1a1a1a] px-5 py-3 text-center">
+                    <p className="text-[13px] font-light text-[#888]">
+                      Free pastry after 8 visits
+                    </p>
+                    <p className="mt-1 text-[11px] font-light text-[#555]">
+                      Any pastry up to $6
+                    </p>
+                  </div>
+
+                  {/* Phone input mock */}
+                  <div className="mt-8 w-full">
+                    <p className="mb-2 text-[10px] font-light tracking-[0.2em] text-[#555]">
+                      PHONE NUMBER
+                    </p>
+                    <div className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-center">
+                      <span className="text-[16px] font-light tracking-[0.05em] text-[#ededed]">
+                        (555) 123-4567
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Check in button */}
+                  <div className="mt-5 w-full rounded-full border border-[#ededed] py-3.5 text-center text-[11px] font-light tracking-[0.2em] text-[#ededed]">
+                    CHECK IN
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* ── Progress / reward result mock ── */}
+            <ScrollReveal delay={2}>
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8 transition-all duration-500 hover:border-[#333]">
+                <p className="mb-6 text-[10px] font-light tracking-[0.3em] text-[#444]">
+                  AFTER CHECK-IN
+                </p>
+
+                <div className="flex flex-col items-center">
+                  {/* Visit counter circle */}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+                    <span className="font-mono text-[18px] font-light text-[#ededed]">
+                      6
+                    </span>
+                  </div>
+
+                  {/* Message */}
+                  <p className="mt-5 text-[15px] font-extralight text-[#ededed]">
+                    Checked in! 2 more to go.
+                  </p>
+
+                  {/* Progress dots */}
+                  <div className="mt-6 flex items-center gap-2">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex h-5 w-5 items-center justify-center rounded-full ${
+                          i < 6
+                            ? "bg-[#ededed]"
+                            : "border border-[#333] bg-transparent"
+                        }`}
+                      >
+                        {i < 6 && (
+                          <Check className="h-2.5 w-2.5 text-black" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Stats */}
+                  <p className="mt-4 text-[11px] font-light tracking-[0.1em] text-[#555]">
+                    6/8 visits &middot; 2 to go
+                  </p>
+
+                  {/* Info */}
+                  <p className="mt-3 text-[10px] font-light text-[#444]">
+                    1 check-in per day &middot; Progress resets after redeem
+                  </p>
+
+                  {/* Divider */}
+                  <div className="luxury-divider mx-auto my-6 max-w-[60px]" />
+
+                  {/* Reward state preview */}
+                  <div className="w-full rounded-xl border border-emerald-900/30 bg-emerald-950/20 p-4 text-center">
+                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+                      <Check className="h-5 w-5 text-emerald-400" />
+                    </div>
+                    <p className="text-[13px] font-extralight text-emerald-300/80">
+                      You earned your reward!
+                    </p>
+                    <p className="mt-2 text-[10px] font-light tracking-[0.15em] text-emerald-400/50">
+                      SHOW THIS TO THE CASHIER
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           SECTION 4 — FEATURES (Why Ventzon)
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">
