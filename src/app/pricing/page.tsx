@@ -13,34 +13,45 @@ import ScrollReveal from "@/components/ScrollReveal";
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
 
-const sharedFeatures = [
+const freeFeatures = [
   "QR code + join page",
   "Unlimited customer check-ins",
-  "Custom rewards & SMS messages",
-  "Real-time analytics dashboard",
-  "Promotional messaging (opt-in)",
-  "No per-message charges",
+  "SMS reward notifications",
+  "Basic merchant dashboard",
   "Cancel anytime",
 ];
 
-const yearlyExtras = [
-  "Everything in Monthly",
-  "Two months free",
-  "Priority support",
+const proFeatures = [
+  "Everything in Free",
+  "Custom reward goal (2–12 visits)",
+  "Custom SMS messages",
+  "Analytics dashboard",
+  "Promotional texting ($0.04/customer)",
+];
+
+const comparisonRows = [
+  { feature: "QR code + join page", free: true, pro: true },
+  { feature: "Unlimited customer check-ins", free: true, pro: true },
+  { feature: "SMS reward notifications", free: true, pro: true },
+  { feature: "Basic merchant dashboard", free: true, pro: true },
+  { feature: "Custom reward goal (2–12 visits)", free: false, pro: true },
+  { feature: "Custom SMS messages", free: false, pro: true },
+  { feature: "Analytics dashboard", free: false, pro: true },
+  { feature: "Promotional texting", free: false, pro: true },
 ];
 
 const faqs = [
   {
-    q: "Is there a free trial?",
-    a: "Yes. Start your free trial with any plan — no credit card charged until it ends.",
+    q: "How does the Free plan work?",
+    a: "The Free plan costs $0 per month. You only pay $1 per reward redeemed by a customer. No upfront cost, no commitment.",
+  },
+  {
+    q: "What does promotional texting cost?",
+    a: "On the Pro plan, you can text your opted-in customer list at $0.04 per customer per promo. Example: texting 500 customers costs $20.",
   },
   {
     q: "Can I switch plans later?",
     a: "Absolutely. Upgrade or downgrade anytime from your merchant dashboard.",
-  },
-  {
-    q: "Are there per-message fees?",
-    a: "No. SMS messages to your customers are included in your plan at no extra cost.",
   },
   {
     q: "What happens if I cancel?",
@@ -161,15 +172,15 @@ function PricingContent() {
           </p>
 
           <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-white opacity-0 sm:text-5xl lg:text-6xl">
-            One plan.{" "}
+            Start free.{" "}
             <br className="hidden sm:block" />
-            Everything included.
+            Grow when you&rsquo;re ready.
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
-            No hidden fees. No per-message charges. No surprises.
+            No commitment on the Free plan &mdash; pay only when customers redeem.
             <br className="hidden sm:block" />
-            Start your free trial today.
+            Upgrade to Pro for the full suite.
           </p>
         </div>
       </section>
@@ -216,16 +227,16 @@ function PricingContent() {
       <section className="px-8 py-20 sm:py-28">
         <div className="mx-auto grid max-w-4xl gap-8 sm:grid-cols-2">
 
-          {/* ── Monthly ── */}
+          {/* ── Free Plan ── */}
           <ScrollReveal delay={1}>
             <div className="group flex h-full flex-col rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333] sm:p-10">
               <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                MONTHLY
+                FREE
               </p>
 
               <div className="mt-6">
                 <span className="text-5xl font-extralight tracking-tight text-[#ededed]">
-                  $49.99
+                  $0
                 </span>
                 <span className="ml-1 text-lg font-light text-[#444]">
                   /mo
@@ -233,9 +244,9 @@ function PricingContent() {
               </div>
 
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                Full access. No commitment.
+                $1 per reward redeemed.
                 <br />
-                Cancel anytime.
+                No monthly commitment.
               </p>
 
               {/* Divider */}
@@ -243,7 +254,7 @@ function PricingContent() {
 
               {/* Features */}
               <ul className="flex-1 space-y-4">
-                {sharedFeatures.map((item) => (
+                {freeFeatures.map((item) => (
                   <li
                     key={item}
                     className="flex items-start gap-3 text-[14px] font-light text-[#888]"
@@ -255,50 +266,42 @@ function PricingContent() {
               </ul>
 
               {/* CTA */}
-              <button
-                onClick={() => startCheckout("monthly")}
-                disabled={!hasShop || loading !== null || loadingShop}
-                className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+              <Link
+                href="/signup"
+                className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
               >
-                {loading === "monthly"
-                  ? "Redirecting…"
-                  : hasShop
-                  ? "Start free trial"
-                  : "Create a shop first"}
-              </button>
+                Get started free
+              </Link>
             </div>
           </ScrollReveal>
 
-          {/* ── Yearly (recommended) ── */}
+          {/* ── Pro Plan (recommended) ── */}
           <ScrollReveal delay={2}>
             <div className="group relative flex h-full flex-col rounded-2xl border border-[#2a2a2a] p-8 transition-all duration-500 hover:border-[#444] sm:p-10">
               {/* Badge */}
               <div className="absolute -top-3 left-8 rounded-full bg-[#ededed] px-4 py-1 text-[10px] font-normal tracking-[0.2em] text-black sm:left-10">
-                SAVE $120
+                RECOMMENDED
               </div>
 
               <div className="flex items-center gap-3">
                 <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                  YEARLY
+                  PRO
                 </p>
-                <span className="rounded-full border border-[#333] px-3 py-0.5 text-[10px] font-light tracking-[0.15em] text-[#888]">
-                  RECOMMENDED
-                </span>
               </div>
 
               <div className="mt-6">
                 <span className="text-5xl font-extralight tracking-tight text-[#ededed]">
-                  $479.99
+                  $19
                 </span>
                 <span className="ml-1 text-lg font-light text-[#444]">
-                  /yr
+                  /mo
                 </span>
               </div>
 
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                Two months free.
+                Everything in Free, plus analytics,
                 <br />
-                Best value for growing businesses.
+                custom SMS &amp; promo texting.
               </p>
 
               {/* Divider */}
@@ -306,7 +309,7 @@ function PricingContent() {
 
               {/* Features */}
               <ul className="flex-1 space-y-4">
-                {yearlyExtras.map((item) => (
+                {proFeatures.map((item) => (
                   <li
                     key={item}
                     className="flex items-start gap-3 text-[14px] font-light text-[#888]"
@@ -317,13 +320,20 @@ function PricingContent() {
                 ))}
               </ul>
 
+              {/* Promo texting example */}
+              <div className="mt-6 rounded-xl bg-white/[0.03] px-5 py-3">
+                <p className="text-[12px] font-light text-[#666]">
+                  Example: text 500 customers = $20
+                </p>
+              </div>
+
               {/* CTA — more prominent */}
               <button
-                onClick={() => startCheckout("yearly")}
+                onClick={() => startCheckout("monthly")}
                 disabled={!hasShop || loading !== null || loadingShop}
-                className="mt-10 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {loading === "yearly"
+                {loading === "monthly"
                   ? "Redirecting…"
                   : hasShop
                   ? "Start free trial"
@@ -361,49 +371,65 @@ function PricingContent() {
             <div className="grid grid-cols-[1fr_80px_80px] items-end border-b border-[#1a1a1a] pb-4 sm:grid-cols-[1fr_100px_100px]">
               <div />
               <p className="text-center text-[11px] font-light tracking-[0.15em] text-[#555]">
-                MONTHLY
+                FREE
               </p>
               <p className="text-center text-[11px] font-light tracking-[0.15em] text-[#555]">
-                YEARLY
+                PRO
               </p>
             </div>
 
-            {/* Shared features */}
-            {sharedFeatures.map((feature, i) => (
-              <ScrollReveal key={feature}>
+            {/* Rows */}
+            {comparisonRows.map((row) => (
+              <ScrollReveal key={row.feature}>
                 <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
                   <p className="text-[14px] font-light text-[#888]">
-                    {feature}
+                    {row.feature}
                   </p>
                   <div className="flex justify-center">
-                    <Check className="h-4 w-4 text-[#555]" />
+                    {row.free ? (
+                      <Check className="h-4 w-4 text-[#555]" />
+                    ) : (
+                      <span className="text-[13px] text-[#333]">—</span>
+                    )}
                   </div>
                   <div className="flex justify-center">
-                    <Check className="h-4 w-4 text-[#ededed]" />
+                    {row.pro ? (
+                      <Check className="h-4 w-4 text-[#ededed]" />
+                    ) : (
+                      <span className="text-[13px] text-[#333]">—</span>
+                    )}
                   </div>
                 </div>
               </ScrollReveal>
             ))}
 
-            {/* Yearly-only features */}
-            {[
-              "Two months free",
-              "Priority support",
-            ].map((feature) => (
-              <ScrollReveal key={feature}>
-                <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
-                  <p className="text-[14px] font-light text-[#888]">
-                    {feature}
-                  </p>
-                  <div className="flex justify-center">
-                    <span className="text-[13px] text-[#333]">—</span>
-                  </div>
-                  <div className="flex justify-center">
-                    <Check className="h-4 w-4 text-[#ededed]" />
-                  </div>
+            {/* Pricing row */}
+            <ScrollReveal>
+              <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
+                <p className="text-[14px] font-light text-[#888]">
+                  Monthly cost
+                </p>
+                <div className="flex justify-center">
+                  <span className="text-[13px] font-light text-[#888]">$0</span>
                 </div>
-              </ScrollReveal>
-            ))}
+                <div className="flex justify-center">
+                  <span className="text-[13px] font-light text-[#ededed]">$19</span>
+                </div>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal>
+              <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
+                <p className="text-[14px] font-light text-[#888]">
+                  Per reward redeemed
+                </p>
+                <div className="flex justify-center">
+                  <span className="text-[13px] font-light text-[#888]">$1</span>
+                </div>
+                <div className="flex justify-center">
+                  <span className="text-[13px] font-light text-[#ededed]">$0</span>
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>

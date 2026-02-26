@@ -209,8 +209,8 @@ export default function Home() {
                 desc: "Real-time dashboard shows signups, check-ins, and redemptions.",
               },
               {
-                title: "Simple, flat pricing",
-                desc: "$49.99 per month. No hidden fees, no per-message charges.",
+                title: "Free to start",
+                desc: "No monthly fee on the Free plan — pay $1 per reward redeemed. Pro at $19/mo.",
               },
             ].map((feature, i) => (
               <ScrollReveal key={feature.title} delay={i < 3 ? 1 : 2}>
@@ -419,31 +419,33 @@ export default function Home() {
               PRICING
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              One plan. Everything included.
+              Start free. Upgrade anytime.
             </h2>
             <p className="mt-5 text-[15px] font-light text-[#666]">
-              No hidden fees. No per-message charges. Cancel anytime.
+              No commitment on the Free plan. Pay only when customers redeem.
             </p>
           </ScrollReveal>
 
           <div className="mt-14 grid gap-8 sm:grid-cols-2">
-            {/* Monthly */}
+            {/* Free */}
             <ScrollReveal delay={1}>
               <div className="rounded-lg border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
                 <p className="text-[12px] font-light tracking-[0.2em] text-[#666]">
-                  MONTHLY
+                  FREE
                 </p>
                 <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
-                  $49.99
+                  $0
                   <span className="text-lg font-light text-[#555]">/mo</span>
                 </div>
+                <p className="mt-3 text-[13px] font-light text-[#555]">
+                  $1 per reward redeemed
+                </p>
                 <ul className="mt-8 space-y-4 text-[14px] font-light text-[#888]">
                   {[
                     "QR code + join page",
-                    "Unlimited customer check-ins",
-                    "Custom rewards & SMS",
-                    "Real-time dashboard",
-                    "Cancel anytime",
+                    "Unlimited check-ins",
+                    "SMS reward notifications",
+                    "Basic dashboard",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#444]" />
@@ -455,41 +457,42 @@ export default function Home() {
                   href="/signup"
                   className="mt-10 block rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
                 >
-                  Get started
+                  Get started free
                 </Link>
               </div>
             </ScrollReveal>
 
-            {/* Yearly */}
+            {/* Pro */}
             <ScrollReveal delay={2}>
               <div className="relative rounded-lg border border-[#2a2a2a] p-8 transition-colors duration-500 hover:border-[#444]">
                 <div className="absolute -top-3 left-8 rounded-full bg-[#ededed] px-4 py-1 text-[10px] font-normal tracking-[0.2em] text-black">
-                  SAVE $120
+                  RECOMMENDED
                 </div>
                 <p className="text-[12px] font-light tracking-[0.2em] text-[#666]">
-                  YEARLY
+                  PRO
                 </p>
                 <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
-                  $479.99
-                  <span className="text-lg font-light text-[#555]">/yr</span>
+                  $19
+                  <span className="text-lg font-light text-[#555]">/mo</span>
                 </div>
                 <ul className="mt-8 space-y-4 text-[14px] font-light text-[#888]">
                   {[
-                    "Everything in Monthly",
-                    "Two months free",
-                    "Priority support",
+                    "Everything in Free",
+                    "Custom reward goals",
+                    "Analytics dashboard",
+                    "Promo texting ($0.04/customer)",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#444]" />
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ededed]" />
                       {item}
                     </li>
                   ))}
                 </ul>
                 <Link
-                  href="/signup"
+                  href="/pricing"
                   className="mt-10 block rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
                 >
-                  Get started
+                  View Pro plan
                 </Link>
               </div>
             </ScrollReveal>

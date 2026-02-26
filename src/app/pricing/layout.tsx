@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Pricing — Ventzon",
   description:
-    "Affordable plans starting at $29/month. Unlimited customers, SMS rewards, QR code check-in, and a full merchant dashboard.",
+    "Start free — pay $1 per reward redeemed. Upgrade to Pro at $19/month for analytics, custom SMS, and promotional texting.",
   openGraph: {
     title: "Pricing — Ventzon",
     description:
-      "Affordable loyalty rewards for local businesses. Plans start at $29/month.",
+      "Start free with Ventzon loyalty rewards. Pro plan at $19/month for the full suite.",
   },
 };
 
