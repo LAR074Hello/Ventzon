@@ -1,11 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import Link from "next/link";
+import { LogOut } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -198,6 +199,8 @@ function MerchantShopPage() {
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoMsg, setLogoMsg] = useState("");
   const [portalLoading, setPortalLoading] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const logoutRouter = useRouter();
 
   const joinUrl = useMemo(() => {
     if (!origin || !shopSlug) return "";
@@ -391,6 +394,15 @@ function MerchantShopPage() {
     setTimeout(() => setCopied(false), 1400);
   }
 
+  /* ── Logout ── */
+  async function handleLogout() {
+    setLoggingOut(true);
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    logoutRouter.push("/login");
+    logoutRouter.refresh();
+  }
+
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
     let cancelled = false;
@@ -459,6 +471,16 @@ function MerchantShopPage() {
             {shopLoadError && (
               <span className="text-[12px] font-light text-[#555]">{shopLoadError}</span>
             )}
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="ml-auto inline-flex items-center gap-2 rounded-full border border-[#1a1a1a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#555] transition-all duration-500 hover:border-[#333] hover:text-[#ededed] disabled:opacity-40"
+            >
+              <LogOut className="h-3 w-3" />
+              {loggingOut ? "Signing out…" : "Sign out"}
+            </button>
           </div>
         </header>
 

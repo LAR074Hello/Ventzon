@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 
 function SubscribeContent() {
   const searchParams = useSearchParams();
@@ -13,52 +14,61 @@ function SubscribeContent() {
   }, [searchParams]);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
-      <div className="text-xs tracking-[0.35em] text-neutral-400">
+    <div className="mx-auto max-w-lg px-8 pb-20 pt-28">
+      <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
         VENTZON REWARDS
-      </div>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-        Start your free trial
+      </p>
+      <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+        Choose a plan
       </h1>
-      <p className="mt-3 max-w-2xl text-neutral-300">
-        Choose a plan next. You'll get a checkout page, then your dashboard
-        unlocks automatically.
+      <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
+        Pick a plan to activate your dashboard. Your shop will go live as
+        soon as payment is confirmed.
       </p>
 
       {!shopSlug ? (
-        <div className="mt-8 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-          <div className="text-sm text-neutral-200">Missing shop slug</div>
-          <div className="mt-2 text-sm text-neutral-400">Open this page like:</div>
-          <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-950 p-4 font-mono text-sm text-neutral-200">
-            /merchant/subscribe?shop=govans-groceries
-          </div>
-          <div className="mt-3 text-xs text-neutral-500">
-            <a href="/get-started" className="underline hover:text-neutral-300">Create a shop</a> to get started.
-          </div>
+        <div className="mt-10 rounded-xl border border-[#1a1a1a] p-6">
+          <p className="text-[14px] font-light text-[#ededed]">
+            Missing shop
+          </p>
+          <p className="mt-2 text-[13px] font-light text-[#555]">
+            This page requires a shop slug. Open it like:
+          </p>
+          <p className="mt-3 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 font-mono text-[13px] font-light text-[#666]">
+            /merchant/subscribe?shop=your-shop
+          </p>
+          <Link
+            href="/get-started"
+            className="mt-5 inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+          >
+            Create a shop to get started
+            <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
       ) : (
-        <div className="mt-10 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-8">
-          <div className="text-sm text-neutral-400">Shop</div>
-          <div className="mt-1 font-mono text-neutral-200">{shopSlug}</div>
+        <div className="mt-10 rounded-xl border border-[#1a1a1a] p-6 transition-colors duration-500 hover:border-[#222]">
+          <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
+            SHOP
+          </p>
+          <p className="mt-1 font-mono text-[14px] font-light text-[#ededed]">
+            {shopSlug}
+          </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={`/pricing?shop=${encodeURIComponent(shopSlug)}`}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
+              className="inline-flex items-center gap-2 rounded-full border border-[#ededed] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
             >
               Choose plan
+              <ArrowRight className="h-3 w-3" />
             </Link>
 
             <Link
               href={`/merchant/${encodeURIComponent(shopSlug)}`}
-              className="rounded-xl border border-neutral-800 px-4 py-2 text-sm hover:bg-neutral-900"
+              className="rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
             >
               Back to dashboard
             </Link>
-          </div>
-
-          <div className="mt-4 text-xs text-neutral-500">
-            Next: wire this to Stripe Checkout (Monthly/Yearly) from the Pricing page.
           </div>
         </div>
       )}
@@ -68,7 +78,7 @@ function SubscribeContent() {
 
 export default function MerchantSubscribePage() {
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+    <main className="min-h-screen bg-black text-[#ededed]">
       <Suspense>
         <SubscribeContent />
       </Suspense>

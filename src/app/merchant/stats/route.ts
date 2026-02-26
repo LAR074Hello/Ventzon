@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 /**
  * Returns YYYY-MM-DD for "today" in America/New_York
@@ -75,7 +76,32 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing shop_slug" }, { status: 400 });
     }
 
+    // Auth check: verify the requesting user owns this shop
+    const supabaseAuth = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabaseAuth.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Verify ownership: user must own a shop with this slug
+    const { data: shopRow } = await supabase
+      .from("shops")
+      .select("id")
+      .eq("slug", shop_slug)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!shopRow) {
+      return NextResponse.json(
+        { error: "Shop not found or you don't own it" },
+        { status: 403 }
+      );
+    }
 
     // ✅ New York local midnight → UTC ISO string
     const startOfTodayNYUTC = getStartOfTodayNYAsUTCISOString();

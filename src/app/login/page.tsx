@@ -20,6 +20,7 @@ function CheckEmailBanner() {
 /* ── Login form ── */
 function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createSupabaseBrowserClient();
 
   const [email, setEmail] = useState("");
@@ -41,7 +42,9 @@ function LoginForm() {
     setLoading(false);
     if (error) return setErr(error.message);
 
-    router.push("/merchant/dashboard");
+    // If the middleware redirected here with a ?redirect param, go back there
+    const redirectTo = searchParams?.get("redirect") || "/merchant/dashboard";
+    router.push(redirectTo);
     router.refresh();
   }
 
@@ -130,8 +133,8 @@ export default function LoginPage() {
         <div className="mt-10">
           <Suspense>
             <CheckEmailBanner />
+            <LoginForm />
           </Suspense>
-          <LoginForm />
         </div>
 
         {/* Footer links */}

@@ -1,16 +1,29 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 function isE164(phone: string) {
   return /^\+\d{10,15}$/.test(phone);
 }
 
 export async function POST(req: Request) {
+  // Rate limit: 10 signups per IP per minute
+  const ip = getClientIp(req);
+  const rl = rateLimit(`signup:${ip}`, 10, 60_000);
+  if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return NextResponse.json(
+      { error: "Server misconfigured: missing Supabase env vars" },
+      { status: 500 }
+    );
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
+
   const body = await req.json().catch(() => ({}));
   const shop_slug = String(body?.shop_slug || "").trim().toLowerCase();
   const phone = String(body?.phone || "").trim();

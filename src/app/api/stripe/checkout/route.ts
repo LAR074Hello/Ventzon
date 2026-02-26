@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,11 @@ if (!STRIPE_SECRET_KEY) {
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 export async function POST(req: Request) {
+  // Rate limit: 5 checkout sessions per IP per minute
+  const ip = getClientIp(req);
+  const rl = rateLimit(`checkout:${ip}`, 5, 60_000);
+  if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
+
   try {
     const body = await req.json();
     const shop_slug = String(body.shop_slug ?? body.shop ?? "").trim();
@@ -46,6 +52,11 @@ export async function POST(req: Request) {
         shop_slug
       )}&canceled=1`,
       metadata: { shop_slug, plan },
+      // Propagate shop_slug to the subscription object so webhook events
+      // (customer.subscription.updated / deleted) can identify the shop.
+      subscription_data: {
+        metadata: { shop_slug, plan },
+      },
     });
 
     return Response.json({ url: session.url });

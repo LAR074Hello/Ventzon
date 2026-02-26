@@ -133,22 +133,36 @@ export async function POST(req: Request) {
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
-
-        // We also stamp metadata on the subscription by passing metadata at checkout creation.
-        const shopSlug = (sub.metadata?.shop_slug ?? "").trim().toLowerCase();
         const status = sub.status; // active, trialing, canceled, unpaid, past_due, etc.
+        const isPaid = status === "active" || status === "trialing";
 
+        // Try metadata first (set via subscription_data.metadata at checkout creation)
+        let shopSlug = (sub.metadata?.shop_slug ?? "").trim().toLowerCase();
+
+        // Fallback: look up the shop by stripe_subscription_id for subscriptions
+        // created before metadata was propagated to the subscription object.
         if (!shopSlug) {
-          // If you don't have shop_slug on the subscription metadata, you can alternatively
-          // look it up by stripe_subscription_id in your DB. This assumes metadata exists.
-          console.warn("subscription event missing metadata.shop_slug", {
+          console.warn("subscription event missing metadata.shop_slug, falling back to DB lookup", {
             subId: sub.id,
             type: event.type,
           });
-          break;
-        }
 
-        const isPaid = status === "active" || status === "trialing";
+          const { data: shopRow } = await supabaseAdmin
+            .from("shops")
+            .select("slug")
+            .eq("stripe_subscription_id", sub.id)
+            .maybeSingle();
+
+          if (shopRow?.slug) {
+            shopSlug = shopRow.slug;
+          } else {
+            console.error("Could not resolve shop for subscription event", {
+              subId: sub.id,
+              type: event.type,
+            });
+            break;
+          }
+        }
 
         const { error } = await supabaseAdmin
           .from("shops")

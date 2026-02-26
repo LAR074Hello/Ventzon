@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { sendSms } from "@/lib/twilio";
+import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,6 +49,11 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  // Rate limit: 20 check-ins per IP per minute
+  const ip = getClientIp(req);
+  const rl = rateLimit(`checkin:${ip}`, 20, 60_000);
+  if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
+
   try {
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

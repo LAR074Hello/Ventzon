@@ -1,5 +1,7 @@
+import Link from "next/link";
+
 export const metadata = {
-  title: "Privacy Policy | Ventzon",
+  title: "Privacy Policy — Ventzon",
   description: "How Ventzon collects, uses, and protects your data.",
 };
 
@@ -11,9 +13,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
-      <div className="mt-4 space-y-3 text-sm leading-relaxed text-white/70">
+    <section className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#222]">
+      <h2 className="text-[15px] font-normal tracking-[-0.01em] text-[#ededed]">
+        {title}
+      </h2>
+      <div className="mt-4 space-y-3 text-[14px] font-light leading-[1.8] text-[#666]">
         {children}
       </div>
     </section>
@@ -22,19 +26,19 @@ function Section({
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-[calc(100vh-72px)] px-6 py-16 text-white">
+    <main className="min-h-screen bg-black px-6 pb-20 pt-28 text-[#ededed]">
       <div className="mx-auto w-full max-w-3xl">
-        <div className="text-xs uppercase tracking-[0.28em] text-white/60">
-          Legal
-        </div>
-        <h1 className="mt-3 text-4xl font-semibold leading-tight">
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+          LEGAL
+        </p>
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
           Privacy Policy
         </h1>
-        <p className="mt-4 text-white/70">
+        <p className="mt-4 text-[14px] font-light text-[#555]">
           Effective date: February 18, 2026
         </p>
 
-        <div className="mt-10 space-y-6">
+        <div className="mt-12 space-y-6">
           <Section title="Who we are">
             <p>
               Ventzon (&ldquo;we,&rdquo; &ldquo;us,&rdquo; &ldquo;our&rdquo;)
@@ -48,18 +52,23 @@ export default function PrivacyPolicyPage() {
             <p>We collect the minimum data needed to operate the service:</p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-medium text-white">Phone number</span> —
-                provided when you check in at a participating shop via QR code.
-                Used to identify your loyalty account and deliver SMS messages.
+                <span className="font-normal text-[#ededed]">
+                  Phone number
+                </span>{" "}
+                — provided when you check in at a participating shop via QR
+                code. Used to identify your loyalty account and deliver SMS
+                messages.
               </li>
               <li>
-                <span className="font-medium text-white">Visit history</span> —
-                the number of check-ins per shop and the date of each visit.
+                <span className="font-normal text-[#ededed]">
+                  Visit history
+                </span>{" "}
+                — the number of check-ins per shop and the date of each visit.
                 Used to track progress toward rewards.
               </li>
               <li>
-                <span className="font-medium text-white">6-digit PIN</span> —
-                an optional PIN you set for quick re-check-ins. Stored as a
+                <span className="font-normal text-[#ededed]">6-digit PIN</span>{" "}
+                — an optional PIN you set for quick re-check-ins. Stored as a
                 one-way hash (scrypt); we cannot read your PIN.
               </li>
             </ul>
@@ -77,14 +86,14 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-medium text-white">
+                <span className="font-normal text-[#ededed]">
                   Transactional messages
                 </span>{" "}
                 — check-in confirmations, visit progress updates, and reward
                 redemption texts.
               </li>
               <li>
-                <span className="font-medium text-white">
+                <span className="font-normal text-[#ededed]">
                   Promotional messages
                 </span>{" "}
                 — optional marketing texts sent by the merchant (e.g., deals,
@@ -101,7 +110,7 @@ export default function PrivacyPolicyPage() {
           <Section title="How to opt out">
             <p>
               You can stop receiving messages at any time by replying{" "}
-              <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-white">
+              <span className="rounded border border-[#1a1a1a] bg-[#0a0a0a] px-1.5 py-0.5 font-mono text-[13px] text-[#888]">
                 STOP
               </span>{" "}
               to any text from Ventzon. Once you opt out, you will not receive
@@ -112,7 +121,7 @@ export default function PrivacyPolicyPage() {
               You may also contact us at{" "}
               <a
                 href="mailto:support@ventzon.com"
-                className="text-white underline underline-offset-2 hover:text-white/90"
+                className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
               >
                 support@ventzon.com
               </a>{" "}
@@ -122,10 +131,21 @@ export default function PrivacyPolicyPage() {
 
           <Section title="How we use your data">
             <ul className="list-disc space-y-2 pl-5">
-              <li>Delivering check-in confirmations and reward notifications via SMS.</li>
-              <li>Tracking visit progress toward each shop&rsquo;s reward goal.</li>
-              <li>Enabling merchants to send promotional messages to opted-in customers.</li>
-              <li>Maintaining message logs for delivery tracking and troubleshooting.</li>
+              <li>
+                Delivering check-in confirmations and reward notifications via
+                SMS.
+              </li>
+              <li>
+                Tracking visit progress toward each shop&rsquo;s reward goal.
+              </li>
+              <li>
+                Enabling merchants to send promotional messages to opted-in
+                customers.
+              </li>
+              <li>
+                Maintaining message logs for delivery tracking and
+                troubleshooting.
+              </li>
             </ul>
             <p>
               We do not sell, rent, or share your personal data with third
@@ -137,17 +157,18 @@ export default function PrivacyPolicyPage() {
             <p>We use the following services to operate the platform:</p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-medium text-white">Twilio</span> — for
-                sending and receiving SMS messages. Your phone number is shared
-                with Twilio solely for message delivery.
+                <span className="font-normal text-[#ededed]">Twilio</span> —
+                for sending and receiving SMS messages. Your phone number is
+                shared with Twilio solely for message delivery.
               </li>
               <li>
-                <span className="font-medium text-white">Supabase</span> — for
-                secure data storage. Data is encrypted at rest and in transit.
+                <span className="font-normal text-[#ededed]">Supabase</span> —
+                for secure data storage. Data is encrypted at rest and in
+                transit.
               </li>
               <li>
-                <span className="font-medium text-white">Stripe</span> — for
-                processing merchant subscription payments. Ventzon does not
+                <span className="font-normal text-[#ededed]">Stripe</span> —
+                for processing merchant subscription payments. Ventzon does not
                 handle or store merchant payment card data.
               </li>
             </ul>
@@ -185,13 +206,29 @@ export default function PrivacyPolicyPage() {
               Questions about this policy? Reach us at{" "}
               <a
                 href="mailto:support@ventzon.com"
-                className="text-white underline underline-offset-2 hover:text-white/90"
+                className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
               >
                 support@ventzon.com
               </a>
               .
             </p>
           </Section>
+        </div>
+
+        {/* Footer links */}
+        <div className="mt-14 flex items-center justify-between border-t border-[#1a1a1a] pt-8">
+          <Link
+            href="/"
+            className="text-[12px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+          >
+            &larr; Back to home
+          </Link>
+          <Link
+            href="/terms"
+            className="text-[12px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+          >
+            Terms of Service
+          </Link>
         </div>
       </div>
     </main>

@@ -1,6 +1,9 @@
+import Link from "next/link";
+
 export const metadata = {
-  title: "Terms of Service | Ventzon",
-  description: "Terms and conditions for using the Ventzon rewards platform.",
+  title: "Terms of Service — Ventzon",
+  description:
+    "Terms and conditions for using the Ventzon rewards platform.",
 };
 
 function Section({
@@ -11,9 +14,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
-      <div className="mt-4 space-y-3 text-sm leading-relaxed text-white/70">
+    <section className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#222]">
+      <h2 className="text-[15px] font-normal tracking-[-0.01em] text-[#ededed]">
+        {title}
+      </h2>
+      <div className="mt-4 space-y-3 text-[14px] font-light leading-[1.8] text-[#666]">
         {children}
       </div>
     </section>
@@ -22,19 +27,19 @@ function Section({
 
 export default function TermsPage() {
   return (
-    <main className="min-h-[calc(100vh-72px)] px-6 py-16 text-white">
+    <main className="min-h-screen bg-black px-6 pb-20 pt-28 text-[#ededed]">
       <div className="mx-auto w-full max-w-3xl">
-        <div className="text-xs uppercase tracking-[0.28em] text-white/60">
-          Legal
-        </div>
-        <h1 className="mt-3 text-4xl font-semibold leading-tight">
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+          LEGAL
+        </p>
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
           Terms of Service
         </h1>
-        <p className="mt-4 text-white/70">
+        <p className="mt-4 text-[14px] font-light text-[#555]">
           Effective date: February 18, 2026
         </p>
 
-        <div className="mt-10 space-y-6">
+        <div className="mt-12 space-y-6">
           <Section title="Acceptance of terms">
             <p>
               By using Ventzon (&ldquo;the Service&rdquo;), you agree to these
@@ -63,14 +68,14 @@ export default function TermsPage() {
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-medium text-white">
+                <span className="font-normal text-[#ededed]">
                   Transactional messages
                 </span>{" "}
                 — check-in confirmations, visit progress updates, and reward
                 redemption notifications.
               </li>
               <li>
-                <span className="font-medium text-white">
+                <span className="font-normal text-[#ededed]">
                   Promotional messages
                 </span>{" "}
                 — marketing texts sent by the merchant such as deals, events, or
@@ -80,11 +85,11 @@ export default function TermsPage() {
             <p>
               Message frequency varies. Message and data rates may apply. You
               can opt out at any time by replying{" "}
-              <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-white">
+              <span className="rounded border border-[#1a1a1a] bg-[#0a0a0a] px-1.5 py-0.5 font-mono text-[13px] text-[#888]">
                 STOP
               </span>{" "}
               to any Ventzon message. Reply{" "}
-              <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-white">
+              <span className="rounded border border-[#1a1a1a] bg-[#0a0a0a] px-1.5 py-0.5 font-mono text-[13px] text-[#888]">
                 HELP
               </span>{" "}
               for assistance.
@@ -144,12 +149,12 @@ export default function TermsPage() {
           <Section title="Data and privacy">
             <p>
               Your use of the Service is also governed by our{" "}
-              <a
+              <Link
                 href="/privacy-policy"
-                className="text-white underline underline-offset-2 hover:text-white/90"
+                className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
               >
                 Privacy Policy
-              </a>
+              </Link>
               , which describes what data we collect, how we use it, and how you
               can manage your information.
             </p>
@@ -199,13 +204,23 @@ export default function TermsPage() {
               Questions about these terms? Reach us at{" "}
               <a
                 href="mailto:support@ventzon.com"
-                className="text-white underline underline-offset-2 hover:text-white/90"
+                className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
               >
                 support@ventzon.com
               </a>
               .
             </p>
           </Section>
+        </div>
+
+        {/* Back link */}
+        <div className="mt-14 border-t border-[#1a1a1a] pt-8">
+          <Link
+            href="/"
+            className="text-[12px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+          >
+            &larr; Back to home
+          </Link>
         </div>
       </div>
     </main>
