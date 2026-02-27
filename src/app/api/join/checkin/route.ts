@@ -109,7 +109,7 @@ export async function POST(req: Request) {
     // Find or create customer
     const { data: existing, error: findErr } = await supabase
       .from("customers")
-      .select("id, shop_slug, phone, pin_hash, visits, last_checkin_date")
+      .select("id, shop_slug, phone, pin_hash, visits, last_checkin_date, opted_out")
       .eq("shop_slug", shop_slug)
       .eq("phone", phone)
       .limit(1)
@@ -282,8 +282,9 @@ export async function POST(req: Request) {
       ? applyTemplate(rewardTpl, vars)
       : applyTemplate(progressTpl, vars);
 
-    // Send SMS if enabled
-    if (process.env.SMS_ENABLED === "true") {
+    // Send SMS if enabled (skip opted-out customers)
+    const isOptedOut = customer.opted_out === true;
+    if (process.env.SMS_ENABLED === "true" && !isOptedOut) {
       try {
         await sendSms(phone, message);
       } catch (smsErr: any) {

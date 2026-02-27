@@ -19,6 +19,17 @@ export const metadata: Metadata = {
   description:
     "Ventzon helps local businesses increase repeat customers with simple SMS-based rewards. No app download needed.",
   metadataBase: new URL("https://www.ventzon.com"),
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
   openGraph: {
     title: "Ventzon — Customer Rewards Platform",
     description:

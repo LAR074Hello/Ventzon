@@ -39,9 +39,18 @@ export default function SiteHeader() {
           {/* Logo */}
           <Link
             href="/"
-            className="text-[11px] font-light tracking-[0.45em] text-[#ededed] transition-opacity duration-300 hover:opacity-70"
+            className="flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-70"
           >
-            <span>VENTZON</span>
+            <Image
+              src="/ventzoncompanylogo.png"
+              alt="Ventzon"
+              width={22}
+              height={22}
+              className="invert"
+            />
+            <span className="text-[11px] font-light tracking-[0.45em] text-[#ededed]">
+              VENTZON
+            </span>
           </Link>
 
           {/* Desktop nav */}
