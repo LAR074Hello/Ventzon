@@ -20,12 +20,48 @@ export async function POST(req: Request) {
     const body = await req.json();
     const shop_slug = String(body.shop_slug ?? body.shop ?? "").trim();
     const planRaw = String(body.plan ?? "monthly").trim().toLowerCase();
-    const plan = planRaw === "yearly" ? "yearly" : "monthly";
 
     if (!shop_slug) {
       return Response.json({ error: "Missing shop_slug" }, { status: 400 });
     }
 
+    const origin =
+      req.headers.get("origin") ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://ventzon.vercel.app";
+
+    // ── Free plan: metered billing subscription ($1/reward, billed monthly) ──
+    if (planRaw === "free") {
+      const meteredPriceId = process.env.STRIPE_PRICE_FREE_METERED;
+      if (!meteredPriceId) {
+        return Response.json(
+          { error: "Missing STRIPE_PRICE_FREE_METERED env var" },
+          { status: 500 }
+        );
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price: meteredPriceId,
+            // No quantity for metered — usage is reported via API
+          },
+        ],
+        success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}?checkout=success`,
+        cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(shop_slug)}&canceled=1`,
+        metadata: { shop_slug, plan_type: "free" },
+        subscription_data: {
+          metadata: { shop_slug, plan_type: "free" },
+        },
+      });
+
+      return Response.json({ url: session.url });
+    }
+
+    // ── Pro plan: fixed monthly/yearly subscription ──
+    const plan = planRaw === "yearly" ? "yearly" : "monthly";
     const priceId =
       plan === "yearly"
         ? (process.env.PRICE_YEARLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY)
@@ -38,11 +74,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const origin =
-      req.headers.get("origin") ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      "https://ventzon.vercel.app";
-
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -51,11 +82,9 @@ export async function POST(req: Request) {
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
         shop_slug
       )}&canceled=1`,
-      metadata: { shop_slug, plan },
-      // Propagate shop_slug to the subscription object so webhook events
-      // (customer.subscription.updated / deleted) can identify the shop.
+      metadata: { shop_slug, plan_type: "pro" },
       subscription_data: {
-        metadata: { shop_slug, plan },
+        metadata: { shop_slug, plan_type: "pro" },
       },
     });
 

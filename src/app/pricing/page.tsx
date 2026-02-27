@@ -127,13 +127,13 @@ function PricingContent() {
     })();
   }, [shop, supabase]);
 
-  async function startCheckout(plan: "monthly" | "yearly") {
+  async function startCheckout(plan: "monthly" | "yearly" | "free") {
     if (!hasShop) {
       setError("No shop found. Please create a shop first.");
       return;
     }
 
-    setLoading(plan);
+    setLoading(plan as any);
     setError("");
 
     try {
@@ -266,12 +266,22 @@ function PricingContent() {
               </ul>
 
               {/* CTA */}
-              <Link
-                href="/signup"
-                className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
-              >
-                Get started free
-              </Link>
+              {hasShop ? (
+                <button
+                  onClick={() => startCheckout("free")}
+                  disabled={loading !== null || loadingShop}
+                  className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {loading === ("free" as any) ? "Redirecting\u2026" : "Get started free"}
+                </button>
+              ) : (
+                <Link
+                  href="/signup"
+                  className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
+                >
+                  Get started free
+                </Link>
+              )}
             </div>
           </ScrollReveal>
 

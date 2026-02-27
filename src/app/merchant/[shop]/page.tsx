@@ -202,6 +202,11 @@ function MerchantShopPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const logoutRouter = useRouter();
+  const [billingData, setBillingData] = useState<{
+    plan_type: string;
+    rewards_this_month: number;
+    estimated_charge: string;
+  } | null>(null);
 
   const joinUrl = useMemo(() => {
     if (!origin || !shopSlug) return "";
@@ -387,6 +392,18 @@ function MerchantShopPage() {
     }
   }
 
+  /* ── Billing data ── */
+  async function loadBilling() {
+    if (!shopSlug) return;
+    try {
+      const res = await fetch(`/api/merchant/billing?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        setBillingData(json);
+      }
+    } catch {}
+  }
+
   /* ── Clipboard ── */
   async function copyJoinLink() {
     if (!joinUrl) return;
@@ -407,7 +424,7 @@ function MerchantShopPage() {
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
     let cancelled = false;
-    (async () => { if (!cancelled) await Promise.all([loadStats(), loadSettings()]); })();
+    (async () => { if (!cancelled) await Promise.all([loadStats(), loadSettings(), loadBilling()]); })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsUrl]);
@@ -925,6 +942,37 @@ function MerchantShopPage() {
                 </div>
               </div>
             </section>
+
+            {/* ============================================================
+                BILLING (small, understated)
+                ============================================================ */}
+            {paid && billingData && (
+              <section className="mt-14">
+                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+
+                <div className="rounded-2xl border border-[#1a1a1a] px-8 py-6 transition-all duration-500 hover:border-[#333]">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="rounded-full border border-[#1a1a1a] px-3 py-1 text-[10px] font-light tracking-[0.2em] text-[#555]">
+                        {billingData.plan_type === "pro" ? "PRO" : "FREE"}
+                      </span>
+                      <span className="text-[13px] font-light text-[#666]">
+                        {billingData.plan_type === "pro"
+                          ? "$19/mo \u00b7 All rewards included"
+                          : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month \u2192 ${billingData.estimated_charge}`}
+                      </span>
+                    </div>
+                    <button
+                      onClick={openBillingPortal}
+                      disabled={portalLoading}
+                      className="text-[11px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+                    >
+                      {portalLoading ? "Opening\u2026" : "Manage billing"}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* ============================================================
                 QUICK START

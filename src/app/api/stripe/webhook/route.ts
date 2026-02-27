@@ -4,12 +4,10 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
-// Stripe client (TS typing for apiVersion can be overly strict; `as any` avoids noise)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil" as any,
 });
 
-// Server-side Supabase client (service role required for updates from webhooks)
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseAdmin =
@@ -33,7 +31,6 @@ export async function POST(req: Request) {
   if (!sig) return ok({ error: "Missing stripe-signature" }, 400);
   if (!webhookSecret) return ok({ error: "Missing STRIPE_WEBHOOK_SECRET" }, 500);
 
-  // IMPORTANT: use raw body for signature verification
   const rawBody = await req.text();
 
   let event: Stripe.Event;
@@ -49,8 +46,6 @@ export async function POST(req: Request) {
     return ok({ error: `Webhook Error: ${err?.message ?? "invalid signature"}` }, 400);
   }
 
-  // If Supabase server env vars aren't set, we still return 200 so Stripe stops retrying,
-  // but we include a helpful log.
   if (!supabaseAdmin) {
     console.warn(
       "Webhook received but SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set; skipping DB update.",
@@ -59,8 +54,7 @@ export async function POST(req: Request) {
     return ok({ received: true, skipped_db: true });
   }
 
-  // Idempotency: record processed Stripe event IDs so retries don't double-apply updates.
-  // Requires a table: public.stripe_events(id text primary key, created_at timestamptz default now())
+  // Idempotency: prevent duplicate processing
   try {
     const { error: insertErr } = await supabaseAdmin
       .from("stripe_events")
@@ -70,19 +64,16 @@ export async function POST(req: Request) {
       const code = (insertErr as any).code;
       const msg = String((insertErr as any).message ?? "").toLowerCase();
 
-      // Postgres unique violation → genuine duplicate, skip processing
       if (code === "23505" || msg.includes("duplicate") || msg.includes("unique")) {
         console.log("[WEBHOOK] duplicate event, skipping", event.id);
         return ok({ received: true, duplicate: true });
       }
 
-      // Any other error (e.g. table missing) → log warning but CONTINUE to process the event
       console.warn("[WEBHOOK] stripe_events insert failed (non-fatal), continuing:", insertErr);
     } else {
       console.log("[WEBHOOK] recorded stripe_events", event.id);
     }
   } catch (e: any) {
-    // Unexpected error in idempotency block → log but CONTINUE to process the event
     console.warn("[WEBHOOK] stripe_events idempotency block error (non-fatal), continuing:", e);
   }
 
@@ -91,10 +82,9 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        // We pass the shop slug into metadata when creating the checkout session.
         const shopSlug = (session.metadata?.shop_slug ?? "").trim().toLowerCase();
+        const planType = (session.metadata?.plan_type ?? "").trim().toLowerCase() || "pro";
 
-        // For subscriptions, Stripe provides these on the session.
         const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
         const customerId = typeof session.customer === "string" ? session.customer : null;
 
@@ -105,13 +95,6 @@ export async function POST(req: Request) {
           break;
         }
 
-        // Update your shops table. If your table/column names differ, adjust here.
-        // Assumed schema: table `shops` with columns:
-        //   - slug (text)
-        //   - is_paid (bool)
-        //   - subscription_status (text)
-        //   - stripe_customer_id (text)
-        //   - stripe_subscription_id (text)
         const { error } = await supabaseAdmin
           .from("shops")
           .update({
@@ -119,12 +102,15 @@ export async function POST(req: Request) {
             subscription_status: "active",
             stripe_customer_id: customerId,
             stripe_subscription_id: subscriptionId,
+            plan_type: planType,
             updated_at: new Date().toISOString(),
           } as any)
           .eq("slug", shopSlug);
 
         if (error) {
           console.error("Supabase update failed on checkout.session.completed", error);
+        } else {
+          console.log("[WEBHOOK] shop activated", { shopSlug, planType });
         }
 
         break;
@@ -133,14 +119,11 @@ export async function POST(req: Request) {
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
-        const status = sub.status; // active, trialing, canceled, unpaid, past_due, etc.
+        const status = sub.status;
         const isPaid = status === "active" || status === "trialing";
 
-        // Try metadata first (set via subscription_data.metadata at checkout creation)
         let shopSlug = (sub.metadata?.shop_slug ?? "").trim().toLowerCase();
 
-        // Fallback: look up the shop by stripe_subscription_id for subscriptions
-        // created before metadata was propagated to the subscription object.
         if (!shopSlug) {
           console.warn("subscription event missing metadata.shop_slug, falling back to DB lookup", {
             subId: sub.id,
@@ -164,15 +147,24 @@ export async function POST(req: Request) {
           }
         }
 
+        const planType = (sub.metadata?.plan_type ?? "").trim().toLowerCase();
+
+        const updatePayload: Record<string, any> = {
+          is_paid: isPaid,
+          subscription_status: status,
+          stripe_customer_id: typeof sub.customer === "string" ? sub.customer : null,
+          stripe_subscription_id: sub.id,
+          updated_at: new Date().toISOString(),
+        };
+
+        // Only update plan_type if metadata has it (avoids wiping it on legacy subs)
+        if (planType) {
+          updatePayload.plan_type = planType;
+        }
+
         const { error } = await supabaseAdmin
           .from("shops")
-          .update({
-            is_paid: isPaid,
-            subscription_status: status,
-            stripe_customer_id: typeof sub.customer === "string" ? sub.customer : null,
-            stripe_subscription_id: sub.id,
-            updated_at: new Date().toISOString(),
-          } as any)
+          .update(updatePayload as any)
           .eq("slug", shopSlug);
 
         if (error) {
@@ -182,13 +174,61 @@ export async function POST(req: Request) {
         break;
       }
 
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subId = typeof (invoice as any).subscription === "string" ? (invoice as any).subscription : null;
+
+        if (subId) {
+          // Mark all unbilled reward_events as billed for this shop
+          const { data: shopRow } = await supabaseAdmin
+            .from("shops")
+            .select("slug")
+            .eq("stripe_subscription_id", subId)
+            .maybeSingle();
+
+          if (shopRow?.slug) {
+            await supabaseAdmin
+              .from("reward_events")
+              .update({ billed: true } as any)
+              .eq("shop_slug", shopRow.slug)
+              .eq("billed", false);
+
+            console.log("[WEBHOOK] invoice paid, marked reward_events as billed", {
+              shop: shopRow.slug,
+            });
+          }
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subId = typeof (invoice as any).subscription === "string" ? (invoice as any).subscription : null;
+
+        if (subId) {
+          const { data: shopRow } = await supabaseAdmin
+            .from("shops")
+            .select("slug")
+            .eq("stripe_subscription_id", subId)
+            .maybeSingle();
+
+          if (shopRow?.slug) {
+            console.warn("[WEBHOOK] invoice payment failed", {
+              shop: shopRow.slug,
+              invoiceId: invoice.id,
+            });
+            // Stripe's built-in dunning will retry automatically.
+            // The subscription.updated event will update status to past_due if needed.
+          }
+        }
+        break;
+      }
+
       default:
-        // ignore other events
         break;
     }
   } catch (e: any) {
     console.error("Webhook handler error", e);
-    // Return 200 to prevent Stripe from retrying forever on transient app errors.
     return ok({ received: true, handler_error: e?.message ?? "unknown" });
   }
 
