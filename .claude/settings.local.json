@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"logo\\\\|Logo\" /Users/lukerichards/Desktop/ventzon/src/app/merchant/[shop]/page.tsx)",
+      "Bash(grep -n \"uploadLogo\\\\|Store logo\\\\|logoUrl\" /Users/lukerichards/Desktop/ventzon/src/app/merchant/[shop]/page.tsx)",
+      "Bash(grep -n \"logo_url\\\\|{/* Logo\" /Users/lukerichards/Desktop/ventzon/src/app/join/[shop]/page.tsx)",
+      "Bash(grep -n \"logo\" /Users/lukerichards/Desktop/ventzon/src/app/join/[shop]/page.tsx)",
+      "Bash(ls -lh /Users/lukerichards/Desktop/ventzon/public/*.png /Users/lukerichards/Desktop/ventzon/public/*.ico)",
+      "Bash(npm install --save-dev sharp)",
+      "Bash(npx next build)",
+      "Bash(node scripts/generate-favicons.mjs)",
+      "Bash(node /Users/lukerichards/Desktop/ventzon/scripts/generate-favicons.mjs)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

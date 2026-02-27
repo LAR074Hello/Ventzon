@@ -41,13 +41,15 @@ export default function SiteHeader() {
             href="/"
             className="flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-70"
           >
-            <Image
-              src="/ventzoncompanylogo.png"
-              alt="Ventzon"
-              width={22}
-              height={22}
-              className="invert"
-            />
+            <div className="h-7 w-7 overflow-hidden rounded-full bg-black ring-1 ring-[#333]">
+              <Image
+                src="/logo.png"
+                alt="Ventzon"
+                width={28}
+                height={28}
+                className="h-full w-full object-cover"
+              />
+            </div>
             <span className="text-[11px] font-light tracking-[0.45em] text-[#ededed]">
               VENTZON
             </span>
