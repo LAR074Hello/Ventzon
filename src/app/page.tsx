@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
-import AnimatedStats from "@/components/AnimatedStats";
 import ScrollReveal from "@/components/ScrollReveal";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -65,12 +64,25 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          SECTION 2 — STATS
+          SECTION 2 — VALUE PROPS
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-4xl">
-          <AnimatedStats />
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
+          {[
+            { title: "Effortless Check-ins", desc: "Customers tap once to check in — no apps, no friction." },
+            { title: "Real-time Insights", desc: "See who visits, how often, and what keeps them coming back." },
+            { title: "Built for Local", desc: "Designed from the ground up for independent businesses." },
+          ].map((item) => (
+            <div key={item.title} className="text-center">
+              <h3 className="text-lg font-extralight tracking-[0.15em] text-[#ededed]">
+                {item.title}
+              </h3>
+              <p className="mt-3 text-[13px] font-light leading-relaxed text-[#666]">
+                {item.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
