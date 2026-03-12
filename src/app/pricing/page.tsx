@@ -44,7 +44,7 @@ const comparisonRows = [
 const faqs = [
   {
     q: "How does the Free plan work?",
-    a: "The Free plan costs $0 per month. You only pay $1 per reward redeemed by a customer. No upfront cost, no commitment.",
+    a: "The Free plan costs $0 per month. You only pay $1.25 per reward redeemed by a customer. No upfront cost, no commitment.",
   },
   {
     q: "What does promotional texting cost?",
@@ -245,7 +245,7 @@ function PricingContent() {
               </div>
 
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                $1 per reward redeemed.
+                $1.25 per reward redeemed.
                 <br />
                 No monthly commitment.
               </p>
@@ -302,7 +302,7 @@ function PricingContent() {
 
               <div className="mt-6">
                 <span className="text-5xl font-extralight tracking-tight text-[#ededed]">
-                  $19
+                  $19.99
                 </span>
                 <span className="ml-1 text-lg font-light text-[#444]">
                   /mo
@@ -582,7 +582,7 @@ function PricingContent() {
                   <span className="text-[13px] font-light text-[#888]">$0</span>
                 </div>
                 <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#ededed]">$19</span>
+                  <span className="text-[13px] font-light text-[#ededed]">$19.99</span>
                 </div>
               </div>
             </ScrollReveal>
@@ -592,7 +592,7 @@ function PricingContent() {
                   Per reward redeemed
                 </p>
                 <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#888]">$1</span>
+                  <span className="text-[13px] font-light text-[#888]">$1.25</span>
                 </div>
                 <div className="flex justify-center">
                   <span className="text-[13px] font-light text-[#ededed]">$0</span>

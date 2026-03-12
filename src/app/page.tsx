@@ -358,7 +358,7 @@ export default function Home() {
               },
               {
                 title: "Free to start",
-                desc: "No monthly fee on the Free plan — pay $1 per reward redeemed. Pro at $19/mo.",
+                desc: "No monthly fee on the Free plan — pay $1.25 per reward redeemed. Pro at $19.99/mo.",
               },
             ].map((feature, i) => (
               <ScrollReveal key={feature.title} delay={i < 3 ? 1 : 2}>
@@ -586,7 +586,7 @@ export default function Home() {
                   <span className="text-lg font-light text-[#555]">/mo</span>
                 </div>
                 <p className="mt-3 text-[13px] font-light text-[#555]">
-                  $1 per reward redeemed
+                  $1.25 per reward redeemed
                 </p>
                 <ul className="mt-8 space-y-4 text-[14px] font-light text-[#888]">
                   {[
@@ -620,7 +620,7 @@ export default function Home() {
                   PRO
                 </p>
                 <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
-                  $19
+                  $19.99
                   <span className="text-lg font-light text-[#555]">/mo</span>
                 </div>
                 <ul className="mt-8 space-y-4 text-[14px] font-light text-[#888]">

@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_SITE_URL ||
       "https://ventzon.vercel.app";
 
-    // ── Free plan: metered billing subscription ($1/reward, billed monthly) ──
+    // ── Free plan: metered billing subscription ($1.25/reward, billed monthly) ──
     if (planRaw === "free") {
       const meteredPriceId = process.env.STRIPE_PRICE_FREE_METERED;
       if (!meteredPriceId) {

@@ -61,9 +61,9 @@ export async function GET(req: Request) {
     // Estimated charge
     let estimatedCharge: string;
     if (planType === "pro") {
-      estimatedCharge = "$19/mo";
+      estimatedCharge = "$19.99/mo";
     } else {
-      estimatedCharge = `$${rewardsThisMonth}`;
+      estimatedCharge = `$${(rewardsThisMonth * 1.25).toFixed(2)}`;
     }
 
     return Response.json({
