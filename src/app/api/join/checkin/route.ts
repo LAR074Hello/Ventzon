@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import crypto from "crypto";
 import { sendSms } from "@/lib/twilio";
+import { sendEmail } from "@/lib/resend";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -68,14 +69,26 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({} as any));
     const shop_slug = String(body?.shop_slug ?? "").trim().toLowerCase();
     const phone = String(body?.phone ?? "").trim();
+    const email = String(body?.email ?? "").trim().toLowerCase();
     const pin = String(body?.pin ?? "").trim();
 
-    if (!shop_slug || !phone) {
+    // Customer must provide either phone or email
+    if (!shop_slug || (!phone && !email)) {
       return NextResponse.json(
-        { error: "Missing shop_slug or phone" },
+        { error: "Missing shop_slug, or provide phone or email" },
         { status: 400 }
       );
     }
+
+    // Basic email validation
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: "Invalid email address." },
+        { status: 400 }
+      );
+    }
+
+    const contactMethod = email ? "email" : "sms";
 
     // PIN is optional (QR check-ins don't require one),
     // but if provided it must be exactly 6 digits.
@@ -106,12 +119,19 @@ export async function POST(req: Request) {
     const dealTitle = settings?.deal_title || "your reward";
     const goal = Number(settings?.visits_required ?? 5);
 
-    // Find or create customer
-    const { data: existing, error: findErr } = await supabase
+    // Find or create customer (by phone or email)
+    let findQuery = supabase
       .from("customers")
-      .select("id, shop_slug, phone, pin_hash, visits, last_checkin_date, opted_out")
-      .eq("shop_slug", shop_slug)
-      .eq("phone", phone)
+      .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date, opted_out")
+      .eq("shop_slug", shop_slug);
+
+    if (email) {
+      findQuery = findQuery.eq("email", email);
+    } else {
+      findQuery = findQuery.eq("phone", phone);
+    }
+
+    const { data: existing, error: findErr } = await findQuery
       .limit(1)
       .maybeSingle();
 
@@ -130,7 +150,8 @@ export async function POST(req: Request) {
         .from("customers")
         .insert({
           shop_slug,
-          phone,
+          phone: phone || null,
+          email: email || null,
           pin_hash: pin ? hashPin(pin) : null,
           visits: 0,
           last_checkin_date: null,
@@ -138,7 +159,7 @@ export async function POST(req: Request) {
           last_seen_at: now.toISOString(),
           opted_out: false,
         })
-        .select("id, shop_slug, phone, pin_hash, visits, last_checkin_date")
+        .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date")
         .single();
 
       if (insertErr) {
@@ -160,7 +181,7 @@ export async function POST(req: Request) {
           .from("customers")
           .update({ pin_hash: hashPin(pin) })
           .eq("id", customer.id)
-          .select("id, shop_slug, phone, pin_hash, visits, last_checkin_date")
+          .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date")
           .single();
 
         if (pinErr) {
@@ -215,7 +236,7 @@ export async function POST(req: Request) {
         last_checkin_date: today,
       })
       .eq("id", customer.id)
-      .select("id, shop_slug, phone, visits, last_checkin_date")
+      .select("id, shop_slug, phone, email, visits, last_checkin_date")
       .single();
 
     if (updateErr) {
@@ -282,13 +303,24 @@ export async function POST(req: Request) {
       ? applyTemplate(rewardTpl, vars)
       : applyTemplate(progressTpl, vars);
 
-    // Send SMS if enabled (skip opted-out customers)
+    // Send notification (SMS or email) — skip opted-out customers
     const isOptedOut = customer.opted_out === true;
-    if (process.env.SMS_ENABLED === "true" && !isOptedOut) {
-      try {
-        await sendSms(phone, message);
-      } catch (smsErr: any) {
-        console.error("SMS send failed:", smsErr?.message);
+    if (!isOptedOut) {
+      if (contactMethod === "email") {
+        try {
+          const subject = hitGoal
+            ? `You earned a reward at ${shopName}!`
+            : `Check-in at ${shopName}`;
+          await sendEmail(email, subject, message);
+        } catch (emailErr: any) {
+          console.error("Email send failed:", emailErr?.message);
+        }
+      } else if (process.env.SMS_ENABLED === "true") {
+        try {
+          await sendSms(phone, message);
+        } catch (smsErr: any) {
+          console.error("SMS send failed:", smsErr?.message);
+        }
       }
     }
 

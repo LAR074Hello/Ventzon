@@ -52,7 +52,9 @@ export default function CustomerJoinPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
+  const [contactMethod, setContactMethod] = useState<"phone" | "email">("phone");
   const [phoneRaw, setPhoneRaw] = useState("");
+  const [emailRaw, setEmailRaw] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CheckinResponse | null>(null);
 
@@ -91,10 +93,22 @@ export default function CustomerJoinPage() {
     setErr(null);
     setResult(null);
 
-    const phone = normalizePhone(phoneRaw);
-    if (!phone) {
-      setErr("Enter a valid phone number.");
-      return;
+    const payload: Record<string, string> = { shop_slug: shopSlug };
+
+    if (contactMethod === "phone") {
+      const phone = normalizePhone(phoneRaw);
+      if (!phone) {
+        setErr("Enter a valid phone number.");
+        return;
+      }
+      payload.phone = phone;
+    } else {
+      const email = emailRaw.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setErr("Enter a valid email address.");
+        return;
+      }
+      payload.email = email;
     }
 
     setSubmitting(true);
@@ -102,7 +116,7 @@ export default function CustomerJoinPage() {
       const res = await fetch("/api/join/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, phone }),
+        body: JSON.stringify(payload),
       });
 
       const json = (await res.json()) as any;
@@ -270,6 +284,7 @@ export default function CustomerJoinPage() {
                 onClick={() => {
                   setResult(null);
                   setPhoneRaw("");
+                  setEmailRaw("");
                 }}
                 className="mt-8 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
               >
@@ -283,21 +298,65 @@ export default function CustomerJoinPage() {
             onSubmit={onSubmit}
             className="mt-10 w-full max-w-sm animate-fade-in opacity-0 anim-delay-200"
           >
+            {/* Contact method toggle */}
+            <div className="mb-6 flex items-center justify-center gap-1 rounded-full border border-[#1a1a1a] p-1">
+              <button
+                type="button"
+                onClick={() => setContactMethod("phone")}
+                className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${
+                  contactMethod === "phone"
+                    ? "bg-[#ededed] text-black"
+                    : "text-[#555] hover:text-[#ededed]"
+                }`}
+              >
+                PHONE
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactMethod("email")}
+                className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${
+                  contactMethod === "email"
+                    ? "bg-[#ededed] text-black"
+                    : "text-[#555] hover:text-[#ededed]"
+                }`}
+              >
+                EMAIL
+              </button>
+            </div>
+
             <div>
-              <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
-                PHONE NUMBER
-              </label>
-              <input
-                type="tel"
-                value={phoneRaw}
-                onChange={(e) =>
-                  setPhoneRaw(formatPhoneDisplay(e.target.value))
-                }
-                placeholder="(555) 123-4567"
-                maxLength={14}
-                className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
-                disabled={submitting}
-              />
+              {contactMethod === "phone" ? (
+                <>
+                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+                    PHONE NUMBER
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneRaw}
+                    onChange={(e) =>
+                      setPhoneRaw(formatPhoneDisplay(e.target.value))
+                    }
+                    placeholder="(555) 123-4567"
+                    maxLength={14}
+                    className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+                    disabled={submitting}
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+                    EMAIL ADDRESS
+                  </label>
+                  <input
+                    type="email"
+                    value={emailRaw}
+                    onChange={(e) => setEmailRaw(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+                    disabled={submitting}
+                  />
+                </>
+              )}
             </div>
 
             {/* Error */}
@@ -310,7 +369,7 @@ export default function CustomerJoinPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={submitting || !phoneRaw.trim()}
+              disabled={submitting || (contactMethod === "phone" ? !phoneRaw.trim() : !emailRaw.trim())}
               className="mt-6 w-full rounded-full border border-[#ededed] py-4 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-30"
             >
               {submitting ? "CHECKING IN\u2026" : "CHECK IN"}
@@ -322,9 +381,9 @@ export default function CustomerJoinPage() {
       {/* Footer */}
       <div className="px-8 pb-8 pt-4">
         <p className="text-center text-[11px] font-light leading-relaxed text-[#444]">
-          By checking in you agree to receive SMS messages.
+          By checking in you agree to receive reward notifications.
           <br />
-          Reply STOP to opt out.
+          {contactMethod === "phone" ? "Reply STOP to opt out." : "Unsubscribe anytime."}
         </p>
       </div>
     </main>
