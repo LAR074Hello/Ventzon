@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { generateJoinToken } from "@/lib/join-token";
 
 export async function GET(req: Request) {
   try {
@@ -20,6 +21,16 @@ export async function GET(req: Request) {
 
     if (!shop_slug) {
       return NextResponse.json({ error: "Missing shop_slug" }, { status: 400 });
+    }
+
+    // Token validation: if `t` param is provided, verify it matches expected token
+    const tokenParam = url.searchParams.get("t");
+    const validToken = generateJoinToken(shop_slug);
+    if (tokenParam !== null && tokenParam !== validToken) {
+      return NextResponse.json(
+        { error: "invalid_token", message: "Please scan the QR code at the store to check in." },
+        { status: 403 }
+      );
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -73,7 +84,7 @@ export async function GET(req: Request) {
         .maybeSingle();
 
       return NextResponse.json(
-        { ok: true, settings: { ...inserted, logo_url: shopRowNew?.logo_url ?? null } },
+        { ok: true, join_token: validToken, settings: { ...inserted, logo_url: shopRowNew?.logo_url ?? null } },
         { status: 200 }
       );
     }
@@ -86,7 +97,7 @@ export async function GET(req: Request) {
       .maybeSingle();
 
     return NextResponse.json(
-      { ok: true, settings: { ...existing, logo_url: shopRow?.logo_url ?? null } },
+      { ok: true, join_token: validToken, settings: { ...existing, logo_url: shopRow?.logo_url ?? null } },
       { status: 200 }
     );
   } catch (err: any) {

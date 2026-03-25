@@ -196,6 +196,7 @@ function MerchantShopPage() {
   const [loadError, setLoadError] = useState("");
   const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState("");
+  const [joinToken, setJoinToken] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoMsg, setLogoMsg] = useState("");
@@ -210,8 +211,9 @@ function MerchantShopPage() {
 
   const joinUrl = useMemo(() => {
     if (!origin || !shopSlug) return "";
-    return `${origin}/join/${shopSlug}`;
-  }, [origin, shopSlug]);
+    const base = `${origin}/join/${shopSlug}`;
+    return joinToken ? `${base}?t=${joinToken}` : base;
+  }, [origin, shopSlug, joinToken]);
 
   const statsUrl = useMemo(() => {
     if (!shopSlug) return "";
@@ -307,6 +309,7 @@ function MerchantShopPage() {
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to load shop settings");
       const s = json.settings as ShopSettings;
+      if (json.join_token) setJoinToken(json.join_token);
       setSettings(s);
       setRewardGoalDraft(Number.isFinite(Number(s?.reward_goal)) ? Number(s.reward_goal) : 5);
       setShopNameDraft(String(s?.shop_name ?? ""));

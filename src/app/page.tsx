@@ -70,7 +70,7 @@ export default function Home() {
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
           {[
-            { title: "Effortless Check-ins", desc: "Customers tap once to check in — no apps, no friction." },
+            { title: "Effortless Check-ins", desc: "Customers enter their phone or email to check in — no apps, no friction." },
             { title: "Real-time Insights", desc: "See who visits, how often, and what keeps them coming back." },
             { title: "Built for Local", desc: "Designed from the ground up for independent businesses." },
           ].map((item) => (
@@ -148,8 +148,8 @@ export default function Home() {
                   Customers check in
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  They enter their phone number. One check-in per day keeps it
-                  fair and simple.
+                  They enter their phone number or email. One check-in per day
+                  keeps it fair and simple.
                 </p>
               </ScrollReveal>
             </div>
@@ -170,11 +170,11 @@ export default function Home() {
                   03
                 </p>
                 <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  They earn rewards via SMS
+                  They earn rewards via SMS or email
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  After enough visits they get a text with their reward. You set
-                  the goal, you set the offer. It&rsquo;s that simple.
+                  After enough visits they get a text or email with their reward.
+                  You set the goal, you set the offer. It&rsquo;s that simple.
                 </p>
               </ScrollReveal>
             </div>
@@ -196,7 +196,7 @@ export default function Home() {
               What your customers see.
             </h2>
             <p className="mt-5 text-[15px] font-light text-[#666]">
-              A simple check-in page that works on any phone. No app, no account.
+              A simple check-in page that works on any phone. Phone or email &mdash; no app, no account.
             </p>
           </ScrollReveal>
 
@@ -227,8 +227,16 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Phone input mock */}
+                  {/* Contact method toggle mock */}
                   <div className="mt-8 w-full">
+                    <div className="mb-4 flex items-center justify-center gap-1 rounded-full border border-[#1a1a1a] p-1">
+                      <div className="flex-1 rounded-full bg-[#ededed] py-2 text-center text-[10px] font-light tracking-[0.15em] text-black">
+                        PHONE
+                      </div>
+                      <div className="flex-1 rounded-full py-2 text-center text-[10px] font-light tracking-[0.15em] text-[#555]">
+                        EMAIL
+                      </div>
+                    </div>
                     <p className="mb-2 text-[10px] font-light tracking-[0.2em] text-[#555]">
                       PHONE NUMBER
                     </p>
@@ -338,15 +346,15 @@ export default function Home() {
             {[
               {
                 title: "No app download",
-                desc: "Works with any phone camera and SMS. Zero friction for your customers.",
+                desc: "Works with any phone camera. Rewards via SMS or email. Zero friction for your customers.",
               },
               {
                 title: "Ready in five minutes",
                 desc: "Sign up, name your shop, set your reward, print the QR. You\u2019re live.",
               },
               {
-                title: "SMS \u2014 the direct channel",
-                desc: "Messages go straight to your customers. No algorithm, no noise.",
+                title: "SMS & Email \u2014 direct channels",
+                desc: "Rewards go straight to your customers via text or email. No algorithm, no noise.",
               },
               {
                 title: "One check-in per day",
@@ -531,7 +539,7 @@ export default function Home() {
               },
               {
                 quote:
-                  "My regulars love the SMS rewards. They feel like VIPs without downloading yet another app.",
+                  "My regulars love the rewards. They feel like VIPs without downloading yet another app.",
                 name: "Sarah Kim",
                 biz: "Sunrise Bakery",
               },
@@ -592,7 +600,7 @@ export default function Home() {
                   {[
                     "QR code + join page",
                     "Unlimited check-ins",
-                    "SMS reward notifications",
+                    "SMS & email notifications",
                     "Basic dashboard",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
@@ -657,7 +665,7 @@ export default function Home() {
             Ready to begin?
           </h2>
           <p className="mt-6 text-base font-light leading-relaxed text-[#666]">
-            Set up your SMS rewards program in under five minutes.
+            Set up your rewards program in under five minutes.
             <br className="hidden sm:block" />
             No credit card required.
           </p>

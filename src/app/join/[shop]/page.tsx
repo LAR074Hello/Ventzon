@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
 
 /* ── Types ── */
@@ -41,16 +41,33 @@ function formatPhoneDisplay(value: string) {
 }
 
 /* ── Page ── */
-export default function CustomerJoinPage() {
+export default function CustomerJoinPageWrapper() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-black">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        </main>
+      }
+    >
+      <CustomerJoinPage />
+    </Suspense>
+  );
+}
+
+function CustomerJoinPage() {
   const params = useParams<{ shop: string }>();
+  const searchParams = useSearchParams();
   const shopSlug = useMemo(
     () => String(params?.shop || "").trim().toLowerCase(),
     [params]
   );
+  const token = searchParams?.get("t") ?? "";
 
   const [settings, setSettings] = useState<ShopSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [tokenInvalid, setTokenInvalid] = useState(false);
 
   const [contactMethod, setContactMethod] = useState<"phone" | "email">("phone");
   const [phoneRaw, setPhoneRaw] = useState("");
@@ -58,7 +75,24 @@ export default function CustomerJoinPage() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CheckinResponse | null>(null);
 
-  /* ── Load shop settings ── */
+  /* ── Restore cached check-in from today ── */
+  useEffect(() => {
+    if (!shopSlug) return;
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const cached = localStorage.getItem(`ventzon-checkin-${shopSlug}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.date === today && parsed.result) {
+          setResult(parsed.result);
+        } else {
+          localStorage.removeItem(`ventzon-checkin-${shopSlug}`);
+        }
+      }
+    } catch {}
+  }, [shopSlug]);
+
+  /* ── Load shop settings (with token validation) ── */
   useEffect(() => {
     if (!shopSlug) return;
 
@@ -66,13 +100,18 @@ export default function CustomerJoinPage() {
     async function run() {
       setLoading(true);
       setErr(null);
+      setTokenInvalid(false);
       try {
-        const res = await fetch(
-          `/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`
-        );
+        const qs = new URLSearchParams({ shop_slug: shopSlug, t: token });
+        const res = await fetch(`/api/join/settings?${qs}`);
         const json = await res.json();
-        if (!res.ok)
+        if (!res.ok) {
+          if (json?.error === "invalid_token") {
+            if (!cancelled) setTokenInvalid(true);
+            return;
+          }
           throw new Error(json?.error || "Failed to load shop settings");
+        }
         if (!cancelled) setSettings(json.settings);
       } catch (e: any) {
         if (!cancelled) setErr(e?.message ?? "Unknown error");
@@ -85,7 +124,7 @@ export default function CustomerJoinPage() {
     return () => {
       cancelled = true;
     };
-  }, [shopSlug]);
+  }, [shopSlug, token]);
 
   /* ── Check in ── */
   async function onSubmit(e: React.FormEvent) {
@@ -122,7 +161,16 @@ export default function CustomerJoinPage() {
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.error || "Check-in failed");
 
-      setResult(json as CheckinResponse);
+      const checkinResult = json as CheckinResponse;
+      setResult(checkinResult);
+      // Cache today's check-in so the page shows result on revisit
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        localStorage.setItem(
+          `ventzon-checkin-${shopSlug}`,
+          JSON.stringify({ date: today, result: checkinResult })
+        );
+      } catch {}
     } catch (e: any) {
       setErr(e?.message ?? "Unknown error");
     } finally {
@@ -135,6 +183,25 @@ export default function CustomerJoinPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-black">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+      </main>
+    );
+  }
+
+  /* ── Token invalid — not accessed via QR code ── */
+  if (tokenInvalid) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-black px-6">
+        <div className="w-full max-w-sm text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+            <span className="text-2xl font-extralight text-[#555]">?</span>
+          </div>
+          <p className="mt-6 text-[18px] font-extralight text-[#ededed]">
+            Scan the QR code
+          </p>
+          <p className="mt-3 text-[13px] font-light text-[#555]">
+            Visit the store and scan the QR code near the register to check in and earn rewards.
+          </p>
+        </div>
       </main>
     );
   }
