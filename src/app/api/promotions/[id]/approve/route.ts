@@ -4,6 +4,9 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { sendSms } from "@/lib/twilio";
 import { sendEmail } from "@/lib/resend";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 async function verifyShopOwner(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   userId: string,

@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 function escapeHtml(str: string) {
   return str
@@ -18,7 +22,7 @@ export async function sendEmail(to: string, subject: string, body: string) {
 
   const safeBody = escapeHtml(body).replace(/\n/g, "<br/>");
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: "Ventzon Rewards <rewards@ventzon.com>",
     to,
     subject,
