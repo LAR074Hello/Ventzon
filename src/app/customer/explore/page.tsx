@@ -38,7 +38,7 @@ const GRADIENTS = [
 function getGradient(name: string): [string, string] {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
+  return GRADIENTS[Math.abs(hash) % GRADIENTS.length] as [string, string];
 }
 
 function getAccent(name: string): string {
