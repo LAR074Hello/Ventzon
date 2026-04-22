@@ -41,11 +41,11 @@ const INITIAL: FormState = {
 function Field({ label, required, children, hint }: { label: string; required?: boolean; children: React.ReactNode; hint?: string }) {
   return (
     <div>
-      <label className="mb-2 block text-[11px] font-light tracking-[0.25em] text-[#555]">
-        {label.toUpperCase()}{required && <span className="ml-1 text-[#444]">*</span>}
+      <label className="mb-2 block text-[11px] font-light tracking-[0.25em] text-[#aaa]">
+        {label.toUpperCase()}{required && <span className="ml-1 text-[#777]">*</span>}
       </label>
       {children}
-      {hint && <p className="mt-1.5 text-[11px] font-light text-[#3a3a3a]">{hint}</p>}
+      {hint && <p className="mt-1.5 text-[11px] font-light text-[#777]">{hint}</p>}
     </div>
   );
 }
@@ -60,7 +60,7 @@ function TextInput({ value, onChange, placeholder, type = "text", disabled }: {
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className="w-full rounded-xl border border-[#1a1a1a] bg-[#080808] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
+      className="w-full rounded-xl border border-[#333] bg-[#0d0d0d] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#555] focus:border-[#555] disabled:opacity-40"
     />
   );
 }
@@ -75,7 +75,7 @@ function Textarea({ value, onChange, placeholder, rows = 4, disabled }: {
       placeholder={placeholder}
       rows={rows}
       disabled={disabled}
-      className="w-full rounded-xl border border-[#1a1a1a] bg-[#080808] px-4 py-3.5 text-[14px] font-light leading-relaxed text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40 resize-none"
+      className="w-full rounded-xl border border-[#333] bg-[#0d0d0d] px-4 py-3.5 text-[14px] font-light leading-relaxed text-[#ededed] outline-none transition-colors placeholder:text-[#555] focus:border-[#555] disabled:opacity-40 resize-none"
     />
   );
 }
@@ -95,7 +95,7 @@ function RadioGroup({ name, value, onChange, options, disabled }: {
           className={`rounded-full border px-4 py-2 text-[12px] font-light tracking-[0.05em] transition-all duration-200 ${
             value === opt.value
               ? "border-[#ededed] bg-[#ededed] text-black"
-              : "border-[#1a1a1a] bg-[#080808] text-[#666] hover:border-[#333] hover:text-[#999]"
+              : "border-[#333] bg-[#0d0d0d] text-[#888] hover:border-[#555] hover:text-[#bbb]"
           } disabled:opacity-40`}
         >
           {opt.label}
@@ -108,11 +108,11 @@ function RadioGroup({ name, value, onChange, options, disabled }: {
 function SectionHeading({ number, title }: { number: string; title: string }) {
   return (
     <div className="flex items-center gap-4 pb-5 pt-2">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#222] text-[11px] font-light text-[#555]">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#444] text-[11px] font-light text-[#888]">
         {number}
       </span>
-      <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">{title.toUpperCase()}</p>
-      <div className="h-px flex-1 bg-[#111]" />
+      <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">{title.toUpperCase()}</p>
+      <div className="h-px flex-1 bg-[#222]" />
     </div>
   );
 }
@@ -170,12 +170,12 @@ export default function ApplyPage() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
         <CheckCircle className="h-12 w-12 text-emerald-400" />
         <h1 className="mt-6 text-[28px] font-extralight text-[#ededed]">Application received</h1>
-        <p className="mt-3 max-w-sm text-[14px] font-light leading-relaxed text-[#555]">
+        <p className="mt-3 max-w-sm text-[14px] font-light leading-relaxed text-[#999]">
           Thanks for applying to Ventzon. We review every application and will be in touch shortly.
         </p>
         <Link
           href="/"
-          className="mt-8 inline-flex items-center gap-2 text-[12px] font-light tracking-[0.15em] text-[#444] transition-colors hover:text-[#888]"
+          className="mt-8 inline-flex items-center gap-2 text-[12px] font-light tracking-[0.15em] text-[#777] transition-colors hover:text-[#bbb]"
         >
           Back to Ventzon <ArrowRight className="h-3 w-3" />
         </Link>
@@ -188,13 +188,13 @@ export default function ApplyPage() {
       <div className="mx-auto max-w-2xl px-8 pb-24 pt-36">
 
         {/* Header */}
-        <Link href="/careers/summer-sales-intern" className="text-[11px] font-light tracking-[0.3em] text-[#444] transition-colors hover:text-[#888]">
+        <Link href="/careers/summer-sales-intern" className="text-[11px] font-light tracking-[0.3em] text-[#777] transition-colors hover:text-[#bbb]">
           ← JOB LISTING
         </Link>
         <h1 className="mt-6 text-[32px] font-extralight tracking-[-0.01em] text-[#ededed]">
           Apply
         </h1>
-        <p className="mt-2 text-[14px] font-light text-[#555]">Summer Sales Intern · Ventzon</p>
+        <p className="mt-2 text-[14px] font-light text-[#999]">Summer Sales Intern · Ventzon</p>
 
         <form onSubmit={handleSubmit} className="mt-12 space-y-10">
 
@@ -343,21 +343,21 @@ export default function ApplyPage() {
               <div
                 onClick={() => fileRef.current?.click()}
                 className={`flex cursor-pointer flex-col items-center gap-3 rounded-xl border border-dashed py-8 transition-colors duration-200 ${
-                  form.resume ? "border-[#333] bg-[#080808]" : "border-[#1a1a1a] bg-[#050505] hover:border-[#2a2a2a]"
+                  form.resume ? "border-[#444] bg-[#0d0d0d]" : "border-[#333] bg-[#080808] hover:border-[#555]"
                 }`}
               >
-                <Upload className="h-5 w-5 text-[#444]" />
+                <Upload className="h-5 w-5 text-[#777]" />
                 {form.resume ? (
                   <div className="text-center">
                     <p className="text-[13px] font-light text-[#ededed]">{form.resume.name}</p>
-                    <p className="mt-1 text-[11px] font-light text-[#555]">
+                    <p className="mt-1 text-[11px] font-light text-[#888]">
                       {(form.resume.size / 1024 / 1024).toFixed(2)} MB · Click to change
                     </p>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <p className="text-[13px] font-light text-[#666]">Click to upload resume</p>
-                    <p className="mt-1 text-[11px] font-light text-[#444]">PDF, DOC, DOCX up to 5 MB</p>
+                    <p className="text-[13px] font-light text-[#aaa]">Click to upload resume</p>
+                    <p className="mt-1 text-[11px] font-light text-[#777]">PDF, DOC, DOCX up to 5 MB</p>
                   </div>
                 )}
               </div>
@@ -395,7 +395,7 @@ export default function ApplyPage() {
             {submitting ? "SUBMITTING…" : "SUBMIT APPLICATION"}
           </button>
 
-          <p className="text-center text-[11px] font-light leading-relaxed text-[#333]">
+          <p className="text-center text-[11px] font-light leading-relaxed text-[#666]">
             By submitting, you confirm all information provided is accurate. Ventzon is an equal opportunity employer.
           </p>
 
