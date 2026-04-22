@@ -37,6 +37,12 @@ export default function SiteFooter() {
             Pricing
           </Link>
           <Link
+            href="/careers"
+            className="transition-colors duration-300 hover:text-[#999]"
+          >
+            Careers
+          </Link>
+          <Link
             href="/privacy-policy"
             className="transition-colors duration-300 hover:text-[#999]"
           >
