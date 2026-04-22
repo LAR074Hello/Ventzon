@@ -66,10 +66,10 @@ export default function CareersPage() {
               </div>
 
               <Link
-                href="mailto:lukerichardsschool@gmail.com?subject=Summer Sales Intern Application"
+                href="/careers/summer-sales-intern"
                 className="inline-flex shrink-0 items-center gap-2.5 rounded-full border border-[#ededed] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black"
               >
-                Apply now <ArrowRight className="h-3.5 w-3.5" />
+                View & apply <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
