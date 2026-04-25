@@ -12,7 +12,7 @@ const tabs = [
   { href: "/customer/profile", label: "Profile", icon: User },
 ];
 
-async function registerPushNotifications() {
+async function registerPushNotifications(userId: string) {
   try {
     const { Capacitor } = await import("@capacitor/core");
     if (!Capacitor.isNativePlatform()) return;
@@ -24,7 +24,7 @@ async function registerPushNotifications() {
       await fetch("/api/customer/device-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, platform: "ios" }),
+        body: JSON.stringify({ token, platform: "ios", user_id: userId }),
       });
     });
   } catch {}
@@ -38,7 +38,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) registerPushNotifications();
+      if (data.session) registerPushNotifications(data.session.user.id);
     });
   }, []);
 

@@ -631,7 +631,18 @@ function MerchantShopPage() {
                           <GhostButton onClick={copyJoinLink}>
                             {copied ? "Copied" : "Copy link"}
                           </GhostButton>
-                          <GhostButton onClick={() => window.print()}>Print QR</GhostButton>
+                          <Link
+                            href={`/merchant/${shopSlug}/qr`}
+                            className="rounded-full border border-[#2a2a2a] px-4 py-2 text-[12px] font-light tracking-[0.1em] text-[#888] transition-colors duration-300 hover:border-[#444] hover:text-[#ededed]"
+                          >
+                            Display in-store
+                          </Link>
+                          <Link
+                            href={`/merchant/${shopSlug}/print-card`}
+                            className="text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
+                          >
+                            Print card
+                          </Link>
                           <a
                             href={joinUrl}
                             target="_blank"

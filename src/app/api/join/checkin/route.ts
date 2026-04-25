@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { sendSms } from "@/lib/twilio";
 import { sendEmail } from "@/lib/resend";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { sendPushToDeviceTokens } from "@/lib/push";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -302,6 +303,41 @@ export async function POST(req: Request) {
     const message = hitGoal
       ? applyTemplate(rewardTpl, vars)
       : applyTemplate(progressTpl, vars);
+
+    // ── Push notifications ──
+    try {
+      if (email && customer.id) {
+        // Look up auth user by email to find their device tokens
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        const authUser = authUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+        if (authUser) {
+          const { data: tokenRows } = await supabase
+            .from("device_tokens")
+            .select("token")
+            .eq("user_id", authUser.id);
+          const tokens = (tokenRows ?? []).map((r: any) => r.token).filter(Boolean);
+          if (tokens.length > 0) {
+            if (hitGoal) {
+              await sendPushToDeviceTokens(
+                tokens,
+                "🏆 Reward earned!",
+                `You've earned your reward at ${shopName}. Show the app at the register.`,
+                { shop_slug, type: "reward" }
+              );
+            } else if (nextVisits === goal - 1) {
+              await sendPushToDeviceTokens(
+                tokens,
+                "Almost there!",
+                `Just 1 more visit to earn your reward at ${shopName}.`,
+                { shop_slug, type: "almost" }
+              );
+            }
+          }
+        }
+      }
+    } catch (pushErr: any) {
+      console.error("[checkin] Push notification failed:", pushErr?.message);
+    }
 
     // Send notification (SMS or email) — skip opted-out customers
     const isOptedOut = customer.opted_out === true;
