@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { Compass, CreditCard, User, ScanLine } from "lucide-react";
+import Onboarding, { useOnboarding } from "./components/Onboarding";
 
 const tabs = [
   { href: "/customer/explore", label: "Explore", icon: Compass },
@@ -12,6 +13,7 @@ const tabs = [
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { show: showOnboarding, finish: finishOnboarding } = useOnboarding();
 
   const isAuthPage = pathname === "/customer/auth";
   const isScanPage = pathname === "/customer/scan";
@@ -19,6 +21,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
   return (
     <div className="customer-app flex flex-col bg-black" style={{ minHeight: "100dvh" }}>
+      {showOnboarding && <Onboarding onFinish={finishOnboarding} />}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: hideNav ? 0 : "80px" }}>
         {children}
       </div>
