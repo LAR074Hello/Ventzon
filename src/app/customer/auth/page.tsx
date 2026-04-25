@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Suspense } from "react";
+import { Capacitor } from "@capacitor/core";
 
 function AuthForm() {
   const router = useRouter();
@@ -24,6 +25,27 @@ function AuthForm() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace(redirectTo);
     });
+
+    if (Capacitor.isNativePlatform()) {
+      // Dynamically import native plugins to avoid SSR issues
+      Promise.all([
+        import("@capacitor/app"),
+        import("@capacitor/browser"),
+      ]).then(([{ App }, { Browser }]) => {
+        const listener = App.addListener("appUrlOpen", async ({ url }) => {
+          if (url.includes("auth/callback")) {
+            const urlObj = new URL(url);
+            const code = urlObj.searchParams.get("code");
+            if (code) {
+              await supabase.auth.exchangeCodeForSession(code);
+            }
+            await Browser.close();
+            router.replace(redirectTo);
+          }
+        });
+        return () => { listener.then((l) => l.remove()); };
+      });
+    }
   }, []);
 
   async function handleEmailAuth(e: React.FormEvent) {
@@ -61,14 +83,27 @@ function AuthForm() {
   async function handleGoogle() {
     setErr(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/customer/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
-      },
-    });
-    if (error) {
-      setErr(error.message);
+    try {
+      const isNative = Capacitor.isNativePlatform();
+      const callbackUrl = isNative
+        ? "com.ventzon.app://auth/callback"
+        : `${window.location.origin}/customer/auth/callback?redirect=${encodeURIComponent(redirectTo)}`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: callbackUrl,
+          skipBrowserRedirect: isNative,
+        },
+      });
+      if (error) throw error;
+
+      if (isNative && data.url) {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: data.url, windowName: "_self" });
+      }
+    } catch (e: any) {
+      setErr(e?.message ?? "Something went wrong");
       setLoading(false);
     }
   }
