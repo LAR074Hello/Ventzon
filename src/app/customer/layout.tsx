@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Compass, CreditCard, User, ScanLine } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -35,10 +35,18 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const router = useRouter();
   const { show: showOnboarding, finish: finishOnboarding } = useOnboarding();
   const supabase = createSupabaseBrowserClient();
+  const [readyCount, setReadyCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) registerPushNotifications(data.session.user.id);
+      if (data.session) {
+        registerPushNotifications(data.session.user.id);
+        // Load badge count
+        fetch("/api/customer/memberships").then(r => r.json()).then(d => {
+          const memberships = d.memberships ?? [];
+          setReadyCount(memberships.filter((m: any) => m.visits >= m.reward_goal).length);
+        }).catch(() => {});
+      }
     });
   }, []);
 
@@ -62,16 +70,24 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             {/* Left tabs */}
             {tabs.slice(0, 2).map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname?.startsWith(href + "/");
+              const showBadge = href === "/customer/home" && readyCount > 0;
               return (
                 <button
                   key={href}
                   onClick={() => router.push(href)}
                   className="flex flex-1 flex-col items-center gap-1 py-1"
                 >
-                  <Icon
-                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
-                    strokeWidth={active ? 1.5 : 1}
-                  />
+                  <div className="relative">
+                    <Icon
+                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
+                      strokeWidth={active ? 1.5 : 1}
+                    />
+                    {showBadge && (
+                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500">
+                        <span className="text-[9px] font-medium text-black">{readyCount}</span>
+                      </div>
+                    )}
+                  </div>
                   <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}>
                     {label.toUpperCase()}
                   </span>

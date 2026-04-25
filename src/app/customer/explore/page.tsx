@@ -12,6 +12,7 @@ type Shop = {
   reward_goal: number;
   logo_url: string | null;
   created_at: string | null;
+  member_count: number;
 };
 
 const CATEGORIES = [
@@ -138,7 +139,12 @@ function StoreCard({ shop, onClick, tag }: { shop: Shop; onClick: () => void; ta
           )}
         </div>
         <p className="mt-0.5 text-[12px] font-light text-[#555] truncate">{shop.deal_title}</p>
-        <p className="mt-0.5 text-[11px] font-light text-[#333]">{shop.reward_goal} visits to reward</p>
+        <p className="mt-0.5 text-[11px] font-light text-[#333]">
+          {shop.reward_goal} visits to reward
+          {shop.member_count > 0 && (
+            <span className="ml-2 text-[#2a2a2a]">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
+          )}
+        </p>
       </div>
     </button>
   );

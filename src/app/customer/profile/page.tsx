@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { LogOut, User, Check, ChevronRight, Trophy } from "lucide-react";
+import { LogOut, User, ChevronRight, Trophy, Share2, Bell, BellOff } from "lucide-react";
 
 type Membership = {
   shop_slug: string;
@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notifEnabled, setNotifEnabled] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -39,6 +40,31 @@ export default function ProfilePage() {
   async function signOut() {
     await supabase.auth.signOut();
     router.replace("/customer/auth");
+  }
+
+  async function shareApp() {
+    try {
+      await navigator.share({
+        title: "Ventzon Rewards",
+        text: "Earn rewards at local stores with Ventzon — the loyalty app for real businesses.",
+        url: "https://www.ventzon.com",
+      });
+    } catch {}
+  }
+
+  async function toggleNotifications() {
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      if (!Capacitor.isNativePlatform()) return;
+      if (!notifEnabled) {
+        const { PushNotifications } = await import("@capacitor/push-notifications");
+        await PushNotifications.requestPermissions();
+        await PushNotifications.register();
+        setNotifEnabled(true);
+      } else {
+        setNotifEnabled(false);
+      }
+    } catch {}
   }
 
   if (loading) {
@@ -172,6 +198,21 @@ export default function ProfilePage() {
 
       {/* Settings */}
       <div className="mx-5 rounded-2xl border border-[#1a1a1a] overflow-hidden">
+        <button
+          onClick={shareApp}
+          className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] border-b border-[#111]"
+        >
+          <Share2 className="h-4 w-4 text-[#555]" />
+          <span className="flex-1 text-[14px] font-light text-[#888]">Share Ventzon</span>
+        </button>
+        <button
+          onClick={toggleNotifications}
+          className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] border-b border-[#111]"
+        >
+          {notifEnabled ? <Bell className="h-4 w-4 text-[#555]" /> : <BellOff className="h-4 w-4 text-[#555]" />}
+          <span className="flex-1 text-[14px] font-light text-[#888]">Notifications</span>
+          <span className="text-[12px] font-light text-[#333]">{notifEnabled ? "On" : "Off"}</span>
+        </button>
         <button
           onClick={signOut}
           className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a]"
