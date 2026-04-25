@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Compass, CreditCard, User, ScanLine } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 const tabs = [
   { href: "/customer/explore", label: "Explore", icon: Compass },
@@ -10,10 +12,35 @@ const tabs = [
   { href: "/customer/profile", label: "Profile", icon: User },
 ];
 
+async function registerPushNotifications() {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) return;
+    const { PushNotifications } = await import("@capacitor/push-notifications");
+    const permResult = await PushNotifications.requestPermissions();
+    if (permResult.receive !== "granted") return;
+    await PushNotifications.register();
+    PushNotifications.addListener("registration", async ({ value: token }) => {
+      await fetch("/api/customer/device-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, platform: "ios" }),
+      });
+    });
+  } catch {}
+}
+
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { show: showOnboarding, finish: finishOnboarding } = useOnboarding();
+  const supabase = createSupabaseBrowserClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) registerPushNotifications();
+    });
+  }, []);
 
   const isAuthPage = pathname === "/customer/auth";
   const isScanPage = pathname === "/customer/scan";

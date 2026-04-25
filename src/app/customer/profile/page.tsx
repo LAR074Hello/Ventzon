@@ -3,19 +3,37 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Check, ChevronRight, Trophy } from "lucide-react";
+
+type Membership = {
+  shop_slug: string;
+  shop_name: string;
+  deal_title: string | null;
+  reward_goal: number;
+  visits: number;
+  logo_url: string | null;
+};
 
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const [user, setUser] = useState<any>(null);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
+    async function load() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setLoading(false); return; }
+      setUser(session.user);
+      const res = await fetch("/api/customer/memberships");
+      if (res.ok) {
+        const data = await res.json();
+        setMemberships(data.memberships ?? []);
+      }
       setLoading(false);
-    });
+    }
+    load();
   }, []);
 
   async function signOut() {
@@ -40,7 +58,7 @@ export default function ProfilePage() {
         <p className="mt-5 text-[16px] font-extralight text-[#ededed]">Not signed in</p>
         <button
           onClick={() => router.push("/customer/auth")}
-          className="mt-8 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black"
+          className="mt-8 rounded-2xl bg-[#ededed] px-8 py-4 text-[12px] font-light tracking-[0.2em] text-black transition-all active:bg-[#d0d0d0]"
         >
           SIGN IN
         </button>
@@ -50,21 +68,21 @@ export default function ProfilePage() {
 
   const name = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Customer";
   const initials = name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+  const totalVisits = memberships.reduce((s, m) => s + m.visits, 0);
+  const readyCards = memberships.filter(m => m.visits >= m.reward_goal);
+  const activeCards = memberships.length;
 
   return (
-    <div className="flex min-h-full flex-col bg-black">
-      <div className="px-5 pb-4" style={{ paddingTop: 'calc(env(safe-area-inset-top, 20px) + 16px)' }}>
+    <div className="flex min-h-full flex-col bg-black pb-8">
+      {/* Header */}
+      <div className="px-5 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
         <h1 className="text-[22px] font-extralight tracking-[-0.01em] text-[#ededed]">Profile</h1>
       </div>
 
-      {/* Avatar + info */}
+      {/* Avatar */}
       <div className="flex flex-col items-center py-8">
         {user.user_metadata?.avatar_url ? (
-          <img
-            src={user.user_metadata.avatar_url}
-            alt={name}
-            className="h-20 w-20 rounded-full border border-[#1a1a1a] object-cover"
-          />
+          <img src={user.user_metadata.avatar_url} alt={name} className="h-20 w-20 rounded-full border border-[#1a1a1a] object-cover" />
         ) : (
           <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
             <span className="text-xl font-extralight text-[#555]">{initials}</span>
@@ -74,7 +92,85 @@ export default function ProfilePage() {
         <p className="mt-1 text-[13px] font-light text-[#555]">{user.email}</p>
       </div>
 
-      {/* Settings rows */}
+      {/* Stats */}
+      <div className="mx-5 mb-6 grid grid-cols-3 gap-3">
+        {[
+          { label: "STORES", value: activeCards },
+          { label: "STAMPS", value: totalVisits },
+          { label: "READY", value: readyCards.length },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex flex-col items-center rounded-2xl border border-[#1a1a1a] bg-[#080808] py-4">
+            <p className="text-[22px] font-extralight text-[#ededed]">{value}</p>
+            <p className="mt-1 text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Rewards ready */}
+      {readyCards.length > 0 && (
+        <div className="mx-5 mb-6">
+          <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#444]">REWARDS READY</p>
+          <div className="space-y-2">
+            {readyCards.map((m) => (
+              <button
+                key={m.shop_slug}
+                onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
+                className="flex w-full items-center gap-3 rounded-2xl border border-yellow-900/30 bg-yellow-950/10 px-4 py-3.5 text-left active:bg-yellow-950/20"
+              >
+                <Trophy className="h-4 w-4 shrink-0 text-yellow-500" strokeWidth={1.5} />
+                <p className="flex-1 text-[13px] font-light text-[#ededed]">{m.shop_name}</p>
+                <ChevronRight className="h-4 w-4 text-[#444]" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All loyalty cards */}
+      {memberships.length > 0 && (
+        <div className="mx-5 mb-6">
+          <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#444]">YOUR CARDS</p>
+          <div className="rounded-2xl border border-[#1a1a1a] overflow-hidden">
+            {memberships.map((m, i) => {
+              const isReady = m.visits >= m.reward_goal;
+              return (
+                <button
+                  key={m.shop_slug}
+                  onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
+                  className={`flex w-full items-center gap-4 px-4 py-3.5 text-left active:bg-[#0a0a0a] ${i > 0 ? "border-t border-[#111]" : ""}`}
+                >
+                  {m.logo_url ? (
+                    <img src={m.logo_url} alt={m.shop_name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#1a1a1a] bg-[#111]">
+                      <span className="text-sm font-extralight text-[#555]">{m.shop_name.charAt(0).toUpperCase()}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-light text-[#ededed] truncate">{m.shop_name}</p>
+                    <div className="mt-1.5 flex gap-1">
+                      {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#ededed]" : "bg-[#1a1a1a]"}`}
+                          style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isReady && <span className="text-[10px] font-light text-yellow-500">READY</span>}
+                    <span className="text-[12px] font-light text-[#444]">{m.visits}/{m.reward_goal}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-[#333]" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Settings */}
       <div className="mx-5 rounded-2xl border border-[#1a1a1a] overflow-hidden">
         <button
           onClick={signOut}
@@ -85,8 +181,8 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      <div className="mt-auto px-5 pb-8 pt-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.15em] text-[#333]">VENTZON</p>
+      <div className="mt-8 text-center">
+        <p className="text-[11px] font-light tracking-[0.15em] text-[#222]">VENTZON</p>
       </div>
     </div>
   );
