@@ -52,11 +52,12 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             {/* Center scan button */}
             <button
               onClick={() => router.push("/customer/scan")}
-              className="flex flex-col items-center justify-center mx-2"
+              className="flex flex-1 flex-col items-center gap-1 py-1"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ededed] shadow-lg">
-                <ScanLine className="h-5 w-5 text-black" strokeWidth={1.5} />
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#2a2a2a] bg-[#111]">
+                <ScanLine className="h-4 w-4 text-[#888]" strokeWidth={1.5} />
               </div>
+              <span className="text-[10px] font-light tracking-[0.15em] text-[#444]">SCAN</span>
             </button>
 
             {/* Right tabs */}
