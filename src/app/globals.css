@@ -128,6 +128,43 @@ body {
   transition-delay: 600ms;
 }
 
+/* ===== Customer app: native iOS feel ===== */
+
+.customer-app {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.customer-app * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Re-enable text input selection */
+.customer-app input,
+.customer-app textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Prevent iOS font zoom on input focus (requires font-size >= 16px) */
+.customer-app input,
+.customer-app textarea,
+.customer-app select {
+  font-size: max(16px, 1em);
+}
+
+/* Hide scrollbars on horizontal scroll areas */
+.customer-app .scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.customer-app .scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ===== Utility: thin horizontal rule ===== */
 
 .luxury-divider {

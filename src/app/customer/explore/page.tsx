@@ -282,7 +282,7 @@ export default function ExplorePage() {
   return (
     <div className="flex min-h-full flex-col bg-black">
       {/* Header */}
-      <div className="px-5 pt-14 pb-4">
+      <div className="px-5 pb-4" style={{ paddingTop: 'calc(env(safe-area-inset-top, 20px) + 16px)' }}>
         <h1 className="text-[24px] font-extralight tracking-[-0.02em] text-[#ededed]">Explore</h1>
         <p className="mt-1 text-[13px] font-light text-[#555]">Discover rewards near you</p>
 

@@ -16,7 +16,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const isAuthPage = pathname === "/customer/auth";
 
   return (
-    <div className="flex flex-col bg-black" style={{ minHeight: "100dvh" }}>
+    <div className="customer-app flex flex-col bg-black" style={{ minHeight: "100dvh" }}>
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: isAuthPage ? 0 : "80px" }}>
         {children}
       </div>

@@ -58,7 +58,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-full flex-col bg-black">
       {/* Header */}
-      <div className="px-5 pt-14 pb-4">
+      <div className="px-5 pb-4" style={{ paddingTop: 'calc(env(safe-area-inset-top, 20px) + 16px)' }}>
         <h1 className="text-[22px] font-extralight tracking-[-0.01em] text-[#ededed]">
           My Cards
         </h1>

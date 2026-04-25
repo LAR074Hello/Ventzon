@@ -106,13 +106,14 @@ export default function CustomerShopPage() {
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="fixed left-4 top-12 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1a1a1a] bg-black/80 backdrop-blur-sm"
+        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1a1a1a] bg-black/80 backdrop-blur-sm"
+        style={{ top: 'calc(env(safe-area-inset-top, 20px) + 8px)' }}
       >
         <ArrowLeft className="h-4 w-4 text-[#ededed]" />
       </button>
 
       {/* Hero */}
-      <div className="flex flex-col items-center px-6 pt-24 pb-8">
+      <div className="flex flex-col items-center px-6 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top, 20px) + 64px)' }}>
         {settings?.logo_url ? (
           <img
             src={settings.logo_url}
