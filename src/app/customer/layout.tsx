@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Compass, CreditCard, User } from "lucide-react";
+import { Compass, CreditCard, User, ScanLine } from "lucide-react";
 
 const tabs = [
   { href: "/customer/explore", label: "Explore", icon: Compass },
@@ -14,20 +14,23 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const router = useRouter();
 
   const isAuthPage = pathname === "/customer/auth";
+  const isScanPage = pathname === "/customer/scan";
+  const hideNav = isAuthPage || isScanPage;
 
   return (
     <div className="customer-app flex flex-col bg-black" style={{ minHeight: "100dvh" }}>
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: isAuthPage ? 0 : "80px" }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: hideNav ? 0 : "80px" }}>
         {children}
       </div>
 
-      {!isAuthPage && (
+      {!hideNav && (
         <nav
           className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#1a1a1a] bg-black/90 backdrop-blur-md"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          <div className="flex items-center justify-around px-2 py-3">
-            {tabs.map(({ href, label, icon: Icon }) => {
+          <div className="flex items-center px-2 py-2">
+            {/* Left tabs */}
+            {tabs.slice(0, 2).map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname?.startsWith(href + "/");
               return (
                 <button
@@ -39,9 +42,37 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                     className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
                     strokeWidth={active ? 1.5 : 1}
                   />
-                  <span
-                    className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
-                  >
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}>
+                    {label.toUpperCase()}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* Center scan button */}
+            <button
+              onClick={() => router.push("/customer/scan")}
+              className="flex flex-col items-center justify-center mx-2"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ededed] shadow-lg">
+                <ScanLine className="h-5 w-5 text-black" strokeWidth={1.5} />
+              </div>
+            </button>
+
+            {/* Right tabs */}
+            {tabs.slice(2).map(({ href, label, icon: Icon }) => {
+              const active = pathname === href || pathname?.startsWith(href + "/");
+              return (
+                <button
+                  key={href}
+                  onClick={() => router.push(href)}
+                  className="flex flex-1 flex-col items-center gap-1 py-1"
+                >
+                  <Icon
+                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
+                    strokeWidth={active ? 1.5 : 1}
+                  />
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>

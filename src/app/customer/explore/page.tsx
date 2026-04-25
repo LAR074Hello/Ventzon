@@ -319,10 +319,39 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading skeleton */}
       {loading && (
-        <div className="flex items-center justify-center py-24">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="px-5 pb-4 space-y-6">
+          {/* Featured skeleton */}
+          <div>
+            <div className="skeleton h-4 w-24 rounded mb-3" />
+            <div className="flex gap-3 overflow-hidden">
+              {[0,1,2].map(i => (
+                <div key={i} className="shrink-0 w-64">
+                  <div className="skeleton h-36 w-full rounded-2xl" />
+                  <div className="mt-2 space-y-1.5">
+                    <div className="skeleton h-3 w-32 rounded" />
+                    <div className="skeleton h-3 w-24 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Row skeleton */}
+          <div>
+            <div className="skeleton h-4 w-20 rounded mb-3" />
+            <div className="space-y-3">
+              {[0,1,2].map(i => (
+                <div key={i} className="flex gap-3.5 rounded-2xl border border-[#111] bg-[#080808] p-3.5">
+                  <div className="skeleton h-16 w-16 shrink-0 rounded-xl" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="skeleton h-3.5 w-28 rounded" />
+                    <div className="skeleton h-3 w-36 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

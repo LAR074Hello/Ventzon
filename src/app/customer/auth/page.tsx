@@ -27,7 +27,6 @@ function AuthForm() {
     });
 
     if (Capacitor.isNativePlatform()) {
-      // Dynamically import native plugins to avoid SSR issues
       Promise.all([
         import("@capacitor/app"),
         import("@capacitor/browser"),
@@ -109,89 +108,105 @@ function AuthForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6">
-      <div className="w-full max-w-sm">
-        {/* Logo / wordmark */}
-        <div className="mb-10 text-center">
-          <p className="text-[11px] font-light tracking-[0.45em] text-[#ededed]">VENTZON</p>
-          <p className="mt-3 text-[13px] font-light text-[#555]">
+    <div className="flex min-h-screen flex-col bg-black" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+      {/* Top branding area */}
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pt-12 pb-8">
+        {/* Logo mark */}
+        <div className="mb-8 flex flex-col items-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a]">
+            {/* Pegasus / V mark — using text for now */}
+            <span className="text-2xl font-extralight tracking-tight text-[#ededed]">V</span>
+          </div>
+          <p className="mt-4 text-[11px] font-light tracking-[0.5em] text-[#ededed]">VENTZON</p>
+          <p className="mt-2 text-[13px] font-light text-[#444]">Unbridled Loyalty</p>
+        </div>
+
+        <div className="w-full max-w-sm">
+          <p className="mb-6 text-center text-[13px] font-light text-[#555]">
             {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
           </p>
-        </div>
 
-        {/* Google button */}
-        <button
-          onClick={handleGoogle}
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-3 rounded-full border border-[#2a2a2a] bg-[#0a0a0a] py-3.5 text-[13px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111] disabled:opacity-40"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
+          {/* Google */}
+          <button
+            onClick={handleGoogle}
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] py-4 text-[14px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111] disabled:opacity-40"
+          >
+            <GoogleIcon />
+            Continue with Google
+          </button>
 
-        <div className="my-6 flex items-center gap-4">
-          <div className="h-px flex-1 bg-[#1a1a1a]" />
-          <span className="text-[11px] font-light tracking-[0.2em] text-[#444]">OR</span>
-          <div className="h-px flex-1 bg-[#1a1a1a]" />
-        </div>
+          <div className="my-5 flex items-center gap-4">
+            <div className="h-px flex-1 bg-[#1a1a1a]" />
+            <span className="text-[11px] font-light tracking-[0.2em] text-[#333]">OR</span>
+            <div className="h-px flex-1 bg-[#1a1a1a]" />
+          </div>
 
-        <form onSubmit={handleEmailAuth} className="space-y-3">
-          {mode === "signup" && (
+          <form onSubmit={handleEmailAuth} className="space-y-3">
+            {mode === "signup" && (
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                required
+                className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+              />
+            )}
             <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
               required
-              className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#444] focus:border-[#333]"
+              autoComplete="email"
+              className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
             />
-          )}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            required
-            autoComplete="email"
-            className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#444] focus:border-[#333]"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            minLength={6}
-            className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#444] focus:border-[#333]"
-          />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              minLength={6}
+              className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+            />
 
-          {err && (
-            <div className="rounded-xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-[13px] font-light text-red-300/80">
-              {err}
-            </div>
-          )}
-          {info && (
-            <div className="rounded-xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3 text-[13px] font-light text-emerald-300/80">
-              {info}
-            </div>
-          )}
+            {err && (
+              <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                {err}
+              </div>
+            )}
+            {info && (
+              <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                {info}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+            >
+              {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
+            </button>
+          </form>
 
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); }}
+            className="mt-5 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
           >
-            {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
+            {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>
-        </form>
+        </div>
+      </div>
 
-        <button
-          onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); }}
-          className="mt-6 w-full text-center text-[12px] font-light text-[#555] transition-colors hover:text-[#888]"
-        >
-          {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-        </button>
+      {/* Footer */}
+      <div className="px-6 pb-8 text-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}>
+        <p className="text-[11px] font-light text-[#222]">
+          By continuing you agree to our Terms of Service
+        </p>
       </div>
     </div>
   );
