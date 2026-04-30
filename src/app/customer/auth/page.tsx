@@ -11,17 +11,20 @@ function AuthForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get("redirect") ?? "/customer/home";
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [isNative, setIsNative] = useState(false);
 
   const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
+    setIsNative(Capacitor.isNativePlatform());
+
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace(redirectTo);
     });
@@ -72,6 +75,27 @@ function AuthForm() {
         if (error) throw error;
         router.replace(redirectTo);
       }
+    } catch (e: any) {
+      setErr(e?.message ?? "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setInfo(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        {
+          redirectTo: `${window.location.origin}/customer/auth/callback`,
+        }
+      );
+      if (error) throw error;
+      setInfo("Password reset link sent — check your email.");
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
     } finally {
@@ -130,7 +154,6 @@ function AuthForm() {
       if (error) throw error;
       router.replace(redirectTo);
     } catch (e: any) {
-      // User cancelled — don't show an error
       if (e?.message?.includes("cancelled") || e?.message?.includes("canceled") || e?.code === "1001") {
         setLoading(false);
         return;
@@ -147,7 +170,6 @@ function AuthForm() {
         {/* Logo mark */}
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a]">
-            {/* Pegasus / V mark — using text for now */}
             <span className="text-2xl font-extralight tracking-tight text-[#ededed]">V</span>
           </div>
           <p className="mt-4 text-[11px] font-light tracking-[0.5em] text-[#ededed]">VENTZON</p>
@@ -155,95 +177,153 @@ function AuthForm() {
         </div>
 
         <div className="w-full max-w-sm">
-          <p className="mb-6 text-center text-[13px] font-light text-[#555]">
-            {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
-          </p>
 
-          {/* Apple */}
-          <button
-            onClick={handleApple}
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#ededed] py-4 text-[14px] font-light text-black transition-colors duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
-          >
-            <AppleIcon />
-            Continue with Apple
-          </button>
+          {/* ── FORGOT PASSWORD MODE ── */}
+          {mode === "forgot" ? (
+            <>
+              <p className="mb-6 text-center text-[13px] font-light text-[#555]">
+                Enter your email and we&apos;ll send a reset link
+              </p>
+              <form onSubmit={handleForgotPassword} className="space-y-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email address"
+                  required
+                  autoComplete="email"
+                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                />
+                {err && (
+                  <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                    {err}
+                  </div>
+                )}
+                {info && (
+                  <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                    {info}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                >
+                  {loading ? "…" : "SEND RESET LINK"}
+                </button>
+              </form>
+              <button
+                onClick={() => { setMode("signin"); setErr(null); setInfo(null); }}
+                className="mt-5 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
+              >
+                Back to sign in
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="mb-6 text-center text-[13px] font-light text-[#555]">
+                {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
+              </p>
 
-          <div className="mt-3" />
+              {/* Apple — only shown on native iOS */}
+              {isNative && (
+                <>
+                  <button
+                    onClick={handleApple}
+                    disabled={loading}
+                    className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#ededed] py-4 text-[14px] font-light text-black transition-colors duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                  >
+                    <AppleIcon />
+                    Continue with Apple
+                  </button>
+                  <div className="mt-3" />
+                </>
+              )}
 
-          {/* Google */}
-          <button
-            onClick={handleGoogle}
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] py-4 text-[14px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111] disabled:opacity-40"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
+              {/* Google */}
+              <button
+                onClick={handleGoogle}
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] py-4 text-[14px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111] disabled:opacity-40"
+              >
+                <GoogleIcon />
+                Continue with Google
+              </button>
 
-          <div className="my-5 flex items-center gap-4">
-            <div className="h-px flex-1 bg-[#1a1a1a]" />
-            <span className="text-[11px] font-light tracking-[0.2em] text-[#333]">OR</span>
-            <div className="h-px flex-1 bg-[#1a1a1a]" />
-          </div>
-
-          <form onSubmit={handleEmailAuth} className="space-y-3">
-            {mode === "signup" && (
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                required
-                className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
-              />
-            )}
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
-              required
-              autoComplete="email"
-              className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              minLength={6}
-              className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
-            />
-
-            {err && (
-              <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
-                {err}
+              <div className="my-5 flex items-center gap-4">
+                <div className="h-px flex-1 bg-[#1a1a1a]" />
+                <span className="text-[11px] font-light tracking-[0.2em] text-[#333]">OR</span>
+                <div className="h-px flex-1 bg-[#1a1a1a]" />
               </div>
-            )}
-            {info && (
-              <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
-                {info}
-              </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
-            >
-              {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
-            </button>
-          </form>
+              <form onSubmit={handleEmailAuth} className="space-y-3">
+                {mode === "signup" && (
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                    required
+                    className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                  />
+                )}
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email address"
+                  required
+                  autoComplete="email"
+                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  required
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  minLength={6}
+                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                />
 
-          <button
-            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); }}
-            className="mt-5 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
-          >
-            {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-          </button>
+                {err && (
+                  <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                    {err}
+                  </div>
+                )}
+                {info && (
+                  <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                    {info}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                >
+                  {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
+                </button>
+              </form>
+
+              {mode === "signin" && (
+                <button
+                  onClick={() => { setMode("forgot"); setErr(null); setInfo(null); }}
+                  className="mt-3 w-full text-center text-[12px] font-light text-[#333] transition-colors active:text-[#555]"
+                >
+                  Forgot password?
+                </button>
+              )}
+
+              <button
+                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); }}
+                className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
+              >
+                {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
