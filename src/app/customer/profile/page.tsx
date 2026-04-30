@@ -114,7 +114,8 @@ export default function ProfilePage() {
     );
   }
 
-  const name = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Customer";
+  const isPrivateRelay = user.email?.endsWith("@privaterelay.appleid.com") ?? false;
+  const name = user.user_metadata?.full_name ?? (isPrivateRelay ? "Customer" : (user.email?.split("@")[0] ?? "Customer"));
   const initials = name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
   const totalVisits = memberships.reduce((s, m) => s + m.visits, 0);
   const readyCards = memberships.filter(m => m.visits >= m.reward_goal);
