@@ -149,9 +149,12 @@ function AuthForm() {
       const { error } = await supabase.auth.signInWithIdToken({
         provider: "apple",
         token: identityToken,
-        options: fullName ? { data: { full_name: fullName } } : undefined,
       });
       if (error) throw error;
+      // Apple only provides the name on the very first sign-in
+      if (fullName) {
+        await supabase.auth.updateUser({ data: { full_name: fullName } });
+      }
       router.replace(redirectTo);
     } catch (e: any) {
       if (e?.message?.includes("cancelled") || e?.message?.includes("canceled") || e?.code === "1001") {
