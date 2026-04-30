@@ -107,6 +107,39 @@ function AuthForm() {
     }
   }
 
+  async function handleApple() {
+    setErr(null);
+    setLoading(true);
+    try {
+      const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
+      const result = await SignInWithApple.authorize({
+        clientId: "com.ventzon.app",
+        redirectURI: "com.ventzon.app://auth/callback",
+        scopes: "email name",
+      });
+      const { identityToken, givenName, familyName } = result.response;
+      if (!identityToken) throw new Error("No identity token returned from Apple");
+
+      const fullName = [givenName, familyName].filter(Boolean).join(" ") || undefined;
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: identityToken,
+        options: fullName ? { data: { full_name: fullName } } : undefined,
+      });
+      if (error) throw error;
+      router.replace(redirectTo);
+    } catch (e: any) {
+      // User cancelled — don't show an error
+      if (e?.message?.includes("cancelled") || e?.message?.includes("canceled") || e?.code === "1001") {
+        setLoading(false);
+        return;
+      }
+      setErr(e?.message ?? "Something went wrong");
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-black" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       {/* Top branding area */}
@@ -125,6 +158,18 @@ function AuthForm() {
           <p className="mb-6 text-center text-[13px] font-light text-[#555]">
             {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
           </p>
+
+          {/* Apple */}
+          <button
+            onClick={handleApple}
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#ededed] py-4 text-[14px] font-light text-black transition-colors duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+          >
+            <AppleIcon />
+            Continue with Apple
+          </button>
+
+          <div className="mt-3" />
 
           {/* Google */}
           <button
@@ -209,6 +254,14 @@ function AuthForm() {
         </p>
       </div>
     </div>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M12.27 0c.07.9-.26 1.79-.77 2.45-.52.68-1.34 1.21-2.17 1.15-.09-.85.28-1.74.77-2.36C10.62.58 11.48.07 12.27 0zm2.96 6.37c-.1.06-1.9 1.09-1.88 3.25.02 2.57 2.26 3.43 2.28 3.44-.02.07-.35 1.22-1.17 2.38-.71 1.02-1.46 2.03-2.6 2.05-1.11.02-1.47-.66-2.75-.66-1.27 0-1.67.64-2.73.68-1.1.04-1.93-1.1-2.65-2.11C2.1 13.3.97 10.32 1.99 8.27c.5-.99 1.4-1.62 2.37-1.63.99-.02 1.92.66 2.53.66.6 0 1.73-.82 2.92-.7.5.02 1.89.2 2.79 1.52l-.37.25z" fill="black"/>
+    </svg>
   );
 }
 

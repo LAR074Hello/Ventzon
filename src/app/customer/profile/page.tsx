@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { LogOut, User, ChevronRight, Trophy, Share2, Bell, BellOff } from "lucide-react";
+import { LogOut, User, ChevronRight, Trophy, Share2, Bell, BellOff, Trash2 } from "lucide-react";
 
 type Membership = {
   shop_slug: string;
@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(true);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -40,6 +41,27 @@ export default function ProfilePage() {
   async function signOut() {
     await supabase.auth.signOut();
     router.replace("/customer/auth");
+  }
+
+  async function deleteAccount() {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This will permanently remove all your loyalty cards and rewards. This cannot be undone."
+    );
+    if (!confirmed) return;
+
+    setDeletingAccount(true);
+    try {
+      const res = await fetch("/api/customer/delete-account", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Failed to delete account");
+      }
+      await supabase.auth.signOut();
+      router.replace("/customer/auth");
+    } catch (e: any) {
+      alert(e?.message ?? "Something went wrong. Please try again.");
+      setDeletingAccount(false);
+    }
   }
 
   async function shareApp() {
@@ -215,10 +237,20 @@ export default function ProfilePage() {
         </button>
         <button
           onClick={signOut}
-          className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a]"
+          className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] border-b border-[#111]"
         >
           <LogOut className="h-4 w-4 text-[#555]" />
           <span className="text-[14px] font-light text-[#888]">Sign out</span>
+        </button>
+        <button
+          onClick={deleteAccount}
+          disabled={deletingAccount}
+          className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] disabled:opacity-40"
+        >
+          <Trash2 className="h-4 w-4 text-red-900/60" />
+          <span className="text-[14px] font-light text-red-900/60">
+            {deletingAccount ? "Deleting account…" : "Delete account"}
+          </span>
         </button>
       </div>
 
