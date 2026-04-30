@@ -14,6 +14,7 @@ function AuthForm() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -57,6 +58,11 @@ function AuthForm() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (password !== confirmPassword) {
+          setErr("Passwords don't match");
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
@@ -289,6 +295,18 @@ function AuthForm() {
                   minLength={6}
                   className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
                 />
+                {mode === "signup" && (
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm password"
+                    required
+                    autoComplete="new-password"
+                    minLength={6}
+                    className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                  />
+                )}
 
                 {err && (
                   <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
@@ -320,7 +338,7 @@ function AuthForm() {
               )}
 
               <button
-                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); }}
+                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); setConfirmPassword(""); }}
                 className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
               >
                 {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
@@ -333,7 +351,10 @@ function AuthForm() {
       {/* Footer */}
       <div className="px-6 pb-8 text-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}>
         <p className="text-[11px] font-light text-[#222]">
-          By continuing you agree to our Terms of Service
+          By continuing you agree to our{" "}
+          <a href="https://www.ventzon.com/terms" className="underline decoration-[#333] underline-offset-2">Terms</a>
+          {" "}and{" "}
+          <a href="https://www.ventzon.com/privacy" className="underline decoration-[#333] underline-offset-2">Privacy Policy</a>
         </p>
       </div>
     </div>
