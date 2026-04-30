@@ -18,12 +18,10 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
-  experimental: {
-    turbopack: {
-      resolveAlias: {
-        "@capacitor-community/apple-sign-in":
-          "./src/lib/apple-sign-in-plugin.ts",
-      },
+  turbopack: {
+    resolveAlias: {
+      "@capacitor-community/apple-sign-in":
+        "./src/lib/apple-sign-in-plugin.ts",
     },
   },
 };
