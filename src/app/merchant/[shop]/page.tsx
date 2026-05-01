@@ -174,6 +174,7 @@ function MerchantShopPage() {
   const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
   const [shopLoadError, setShopLoadError] = useState("");
   const [waitingForPayment, setWaitingForPayment] = useState(isCheckoutReturn);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const pollCountRef = useRef(0);
 
   const [origin, setOrigin] = useState("");
@@ -424,6 +425,32 @@ function MerchantShopPage() {
     await supabase.auth.signOut();
     logoutRouter.push("/login");
     logoutRouter.refresh();
+  }
+
+  async function handleDeleteAccount() {
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete your Ventzon account?\n\nThis will:\n• Cancel your subscription\n• Delete all your shops and customer data\n• Remove your account permanently\n\nThis cannot be undone."
+    );
+    if (!confirmed) return;
+    const doubleConfirmed = window.confirm(
+      "Last chance — this is permanent and cannot be reversed. Delete account?"
+    );
+    if (!doubleConfirmed) return;
+
+    setDeletingAccount(true);
+    try {
+      const res = await fetch("/api/merchant/delete-account", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Failed to delete account");
+      }
+      const supabase = createSupabaseBrowserClient();
+      await supabase.auth.signOut();
+      logoutRouter.push("/");
+    } catch (e: any) {
+      alert(e?.message ?? "Something went wrong. Please try again.");
+      setDeletingAccount(false);
+    }
   }
 
   /* ── Initial load + auto-refresh ── */
@@ -1043,6 +1070,30 @@ function MerchantShopPage() {
           </>
         )}
       </div>
+
+      {/* ============================================================
+          DANGER ZONE
+          ============================================================ */}
+      <section className="mx-auto mt-16 w-full max-w-6xl px-4 pb-16">
+        <div className="rounded-2xl border border-red-950/30 p-8">
+          <p className="text-[11px] font-light tracking-[0.3em] text-red-900/60">DANGER ZONE</p>
+          <div className="mt-6 flex items-start justify-between gap-8">
+            <div>
+              <p className="text-[14px] font-light text-[#888]">Delete account</p>
+              <p className="mt-1 text-[12px] font-light text-[#444]">
+                Permanently removes your account, all shops, all customer data, and cancels your subscription.
+              </p>
+            </div>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className="shrink-0 rounded-xl border border-red-950/40 px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-red-900/60 transition-colors hover:border-red-900/60 hover:text-red-400 disabled:opacity-40"
+            >
+              {deletingAccount ? "Deleting…" : "Delete account"}
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* ============================================================
           PRINT STYLES — Only show QR panel when printing
