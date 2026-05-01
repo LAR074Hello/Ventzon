@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { LogOut, User, ChevronRight, Trophy, Share2, Bell, BellOff, Trash2 } from "lucide-react";
+import { LogOut, User, ChevronRight, Trophy, Share2, Bell, BellOff, Trash2, Pencil, Check, X } from "lucide-react";
 
 type Membership = {
   shop_slug: string;
@@ -22,6 +22,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -41,6 +44,17 @@ export default function ProfilePage() {
   async function signOut() {
     await supabase.auth.signOut();
     router.replace("/customer/auth");
+  }
+
+  async function saveName() {
+    if (!nameInput.trim()) return;
+    setSavingName(true);
+    const { error } = await supabase.auth.updateUser({ data: { full_name: nameInput.trim() } });
+    if (!error) {
+      setUser((u: any) => ({ ...u, user_metadata: { ...u.user_metadata, full_name: nameInput.trim() } }));
+      setEditingName(false);
+    }
+    setSavingName(false);
   }
 
   async function deleteAccount() {
@@ -137,7 +151,33 @@ export default function ProfilePage() {
             <span className="text-xl font-extralight text-[#555]">{initials}</span>
           </div>
         )}
-        <p className="mt-4 text-[18px] font-extralight text-[#ededed]">{name}</p>
+        {editingName ? (
+          <div className="mt-4 flex items-center gap-2">
+            <input
+              autoFocus
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
+              className="rounded-xl border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-[16px] font-extralight text-[#ededed] outline-none focus:border-[#555] text-center"
+              placeholder="Your name"
+              maxLength={50}
+            />
+            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ededed] disabled:opacity-40">
+              <Check className="h-3.5 w-3.5 text-black" />
+            </button>
+            <button onClick={() => setEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#333]">
+              <X className="h-3.5 w-3.5 text-[#555]" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setNameInput(name === "Customer" ? "" : name); setEditingName(true); }}
+            className="mt-4 flex items-center gap-2 group"
+          >
+            <p className="text-[18px] font-extralight text-[#ededed]">{name}</p>
+            <Pencil className="h-3.5 w-3.5 text-[#333] group-active:text-[#555]" />
+          </button>
+        )}
         <p className="mt-1 text-[13px] font-light text-[#555]">{user.email}</p>
       </div>
 
