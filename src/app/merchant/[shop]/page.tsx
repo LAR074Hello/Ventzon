@@ -264,9 +264,11 @@ function MerchantShopPage() {
           return;
         }
 
-        if (isCheckoutReturn && !isPaid && pollCountRef.current < 10) {
+        if (isCheckoutReturn && !isPaid && pollCountRef.current < 30) {
           pollCountRef.current += 1;
-          pollTimer = setTimeout(() => { if (!cancelled) loadShopStatus(); }, 2000);
+          // Poll faster at first, then back off
+          const delay = pollCountRef.current < 10 ? 2000 : 5000;
+          pollTimer = setTimeout(() => { if (!cancelled) loadShopStatus(); }, delay);
         } else if (isCheckoutReturn && !isPaid) {
           setWaitingForPayment(false);
           pollCountRef.current = 0;
@@ -487,6 +489,11 @@ function MerchantShopPage() {
             {paid && (
               <GhostButton onClick={openBillingPortal} disabled={portalLoading}>
                 {portalLoading ? "Opening…" : "Manage billing"}
+              </GhostButton>
+            )}
+            {!paid && !waitingForPayment && isCheckoutReturn && (
+              <GhostButton onClick={() => { pollCountRef.current = 0; window.location.reload(); }}>
+                Refresh
               </GhostButton>
             )}
             {shopLoadError && (
@@ -779,6 +786,7 @@ function MerchantShopPage() {
                       />
                     </label>
 
+                    {!paid && <span className="text-[11px] font-light text-[#444]">Available after activating subscription</span>}
                     {logoMsg && <span className="text-[11px] font-light text-[#555]">{logoMsg}</span>}
                     {!paid && <span className="text-[11px] font-light text-[#444]">Activate subscription to upload</span>}
                   </div>

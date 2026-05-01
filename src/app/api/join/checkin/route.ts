@@ -106,7 +106,7 @@ export async function POST(req: Request) {
     const { data: settings, error: settingsErr } = await supabase
       .from("shop_settings")
       .select(
-        "shop_slug, shop_name, deal_title, visits_required, reward_sms_template, progress_sms_template"
+        "shop_slug, shop_name, deal_title, reward_goal, reward_sms_template, progress_sms_template"
       )
       .eq("shop_slug", shop_slug)
       .limit(1)
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
 
     const shopName = settings?.shop_name || shop_slug;
     const dealTitle = settings?.deal_title || "your reward";
-    const goal = Number(settings?.visits_required ?? 5);
+    const goal = Number(settings?.reward_goal ?? 5);
 
     // Find or create customer (by phone or email)
     let findQuery = supabase

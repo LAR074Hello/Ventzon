@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const origin =
       req.headers.get("origin") ||
       process.env.NEXT_PUBLIC_SITE_URL ||
-      "https://ventzon.vercel.app";
+      "https://www.ventzon.com";
 
     // ── Free plan: metered billing subscription ($1.25/reward, billed monthly) ──
     if (planRaw === "free") {
