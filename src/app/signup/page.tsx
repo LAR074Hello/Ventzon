@@ -62,7 +62,11 @@ export default function SignupPage() {
     });
 
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(
+      error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists")
+        ? "An account with this email already exists. Try signing in instead."
+        : error.message
+    );
 
     // If email confirmation is enabled Supabase may not return a session.
     const { data: sessionRes } = await supabase.auth.getSession();

@@ -40,10 +40,15 @@ function LoginForm() {
     });
 
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(
+      error.message.toLowerCase().includes("invalid") || error.message.toLowerCase().includes("credentials")
+        ? "Incorrect email or password."
+        : error.message
+    );
 
-    // If the middleware redirected here with a ?redirect param, go back there
-    const redirectTo = searchParams?.get("redirect") || "/merchant/dashboard";
+    // Only redirect to internal paths — never external URLs
+    const raw = searchParams?.get("redirect") || "";
+    const redirectTo = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/merchant/dashboard";
     router.push(redirectTo);
     router.refresh();
   }

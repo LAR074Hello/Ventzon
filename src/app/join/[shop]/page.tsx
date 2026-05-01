@@ -58,10 +58,11 @@ export default function CustomerJoinPageWrapper() {
 function CustomerJoinPage() {
   const params = useParams<{ shop: string }>();
   const searchParams = useSearchParams();
-  const shopSlug = useMemo(
-    () => String(params?.shop || "").trim().toLowerCase(),
-    [params]
-  );
+  const shopSlug = useMemo(() => {
+    const raw = String(params?.shop || "").trim().toLowerCase();
+    // Only allow valid slug characters — blocks path traversal / injection attempts
+    return /^[a-z0-9-]{1,100}$/.test(raw) ? raw : "";
+  }, [params]);
   const token = searchParams?.get("t") ?? "";
 
   const [settings, setSettings] = useState<ShopSettings | null>(null);
@@ -103,7 +104,9 @@ function CustomerJoinPage() {
       setTokenInvalid(false);
       try {
         const qs = new URLSearchParams({ shop_slug: shopSlug, t: token });
-        const res = await fetch(`/api/join/settings?${qs}`);
+        const res = await fetch(`/api/join/settings?${qs}`, {
+          signal: AbortSignal.timeout(10_000),
+        });
         const json = await res.json();
         if (!res.ok) {
           if (json?.error === "invalid_token") {
