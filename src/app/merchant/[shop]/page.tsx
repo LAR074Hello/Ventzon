@@ -203,6 +203,19 @@ function MerchantShopPage() {
   const [logoMsg, setLogoMsg] = useState("");
   const [portalLoading, setPortalLoading] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Customers tab
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(false);
+  const [customersLoaded, setCustomersLoaded] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+
+  // Manual check-in modal
+  const [showManualCheckin, setShowManualCheckin] = useState(false);
+  const [manualContact, setManualContact] = useState("");
+  const [manualLoading, setManualLoading] = useState(false);
+  const [manualResult, setManualResult] = useState<any>(null);
+  const [manualError, setManualError] = useState("");
   const logoutRouter = useRouter();
   const [billingData, setBillingData] = useState<{
     plan_type: string;
@@ -453,6 +466,44 @@ function MerchantShopPage() {
     }
   }
 
+  async function loadCustomers() {
+    if (!shopSlug || customersLoading) return;
+    setCustomersLoading(true);
+    try {
+      const res = await fetch(`/api/merchant/customers?shop_slug=${encodeURIComponent(shopSlug)}`);
+      const json = await res.json();
+      if (res.ok) { setCustomers(json.customers ?? []); setCustomersLoaded(true); }
+    } finally {
+      setCustomersLoading(false);
+    }
+  }
+
+  async function handleManualCheckin(e: React.FormEvent) {
+    e.preventDefault();
+    setManualError("");
+    setManualResult(null);
+    setManualLoading(true);
+    try {
+      const res = await fetch("/api/merchant/manual-checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, contact: manualContact.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setManualError(json.error ?? "Failed"); }
+      else {
+        setManualResult(json);
+        setManualContact("");
+        // Refresh customer list if open
+        if (customersLoaded) loadCustomers();
+      }
+    } catch (e: any) {
+      setManualError(e?.message ?? "Unknown error");
+    } finally {
+      setManualLoading(false);
+    }
+  }
+
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
     let cancelled = false;
@@ -622,6 +673,156 @@ function MerchantShopPage() {
                 ANALYTICS
                 ============================================================ */}
             {paid && <MerchantAnalytics shopSlug={shopSlug} />}
+
+            {/* ============================================================
+                CUSTOMERS
+                ============================================================ */}
+            {paid && (
+              <section className="mt-14">
+                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">CUSTOMERS</p>
+                    <p className="mt-1 text-[13px] font-light text-[#444]">Everyone who has joined your loyalty program</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <GhostButton onClick={() => setShowManualCheckin(true)}>
+                      + Manual stamp
+                    </GhostButton>
+                    {customersLoaded && customers.length > 0 && (
+                      <GhostButton onClick={() => window.open(`/api/merchant/customers?shop_slug=${encodeURIComponent(shopSlug)}&format=csv`, "_blank")}>
+                        Export CSV
+                      </GhostButton>
+                    )}
+                    {!customersLoaded && (
+                      <GhostButton onClick={loadCustomers} disabled={customersLoading}>
+                        {customersLoading ? "Loading…" : "Load customers"}
+                      </GhostButton>
+                    )}
+                  </div>
+                </div>
+
+                {customersLoaded && (
+                  <div className="rounded-2xl border border-[#1a1a1a] overflow-hidden">
+                    {customers.length > 0 && (
+                      <div className="px-4 py-3 border-b border-[#111]">
+                        <input
+                          value={customerSearch}
+                          onChange={e => setCustomerSearch(e.target.value)}
+                          placeholder="Search by phone or email…"
+                          className="w-full bg-transparent text-[13px] font-light text-[#ededed] placeholder:text-[#333] outline-none"
+                        />
+                      </div>
+                    )}
+                    {customers.length === 0 ? (
+                      <div className="px-6 py-10 text-center text-[13px] font-light text-[#444]">
+                        No customers yet — share your QR code to get started.
+                      </div>
+                    ) : (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-[#111]">
+                            <th className="px-5 py-3 text-[10px] font-light tracking-[0.15em] text-[#444]">CONTACT</th>
+                            <th className="px-5 py-3 text-[10px] font-light tracking-[0.15em] text-[#444]">STAMPS</th>
+                            <th className="hidden px-5 py-3 text-[10px] font-light tracking-[0.15em] text-[#444] sm:table-cell">LAST VISIT</th>
+                            <th className="hidden px-5 py-3 text-[10px] font-light tracking-[0.15em] text-[#444] sm:table-cell">STATUS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {customers
+                            .filter(c => {
+                              if (!customerSearch) return true;
+                              const q = customerSearch.toLowerCase();
+                              return (c.phone ?? "").includes(q) || (c.email ?? "").toLowerCase().includes(q);
+                            })
+                            .map((c, i) => {
+                              const goal = settings?.reward_goal ?? 5;
+                              const progress = Math.min(((c.visits ?? 0) % goal) / goal, 1);
+                              const isReady = (c.visits ?? 0) > 0 && (c.visits ?? 0) % goal === 0;
+                              return (
+                                <tr key={c.id} className={`${i > 0 ? "border-t border-[#0d0d0d]" : ""} hover:bg-[#0a0a0a]`}>
+                                  <td className="px-5 py-3.5 text-[13px] font-light text-[#888] font-mono">
+                                    {c.phone || c.email || "—"}
+                                  </td>
+                                  <td className="px-5 py-3.5">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-[13px] font-light text-[#ededed]">{c.visits ?? 0}</span>
+                                      <div className="hidden h-1 w-16 overflow-hidden rounded-full bg-[#111] sm:block">
+                                        <div className="h-full rounded-full bg-[#333] transition-all" style={{ width: `${progress * 100}%` }} />
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="hidden px-5 py-3.5 text-[12px] font-light text-[#444] sm:table-cell">
+                                    {c.last_checkin_date ?? "—"}
+                                  </td>
+                                  <td className="hidden px-5 py-3.5 sm:table-cell">
+                                    {c.opted_out ? (
+                                      <span className="text-[10px] font-light tracking-[0.1em] text-[#444]">OPTED OUT</span>
+                                    ) : isReady ? (
+                                      <span className="text-[10px] font-light tracking-[0.1em] text-yellow-500">REWARD READY</span>
+                                    ) : (
+                                      <span className="text-[10px] font-light tracking-[0.1em] text-[#333]">ACTIVE</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ============================================================
+                MANUAL CHECK-IN MODAL
+                ============================================================ */}
+            {showManualCheckin && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }}>
+                <div className="w-full max-w-md rounded-2xl border border-[#1a1a1a] bg-[#080808] p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">MANUAL STAMP</p>
+                  <p className="mt-2 text-[18px] font-extralight text-[#ededed]">Add a stamp</p>
+                  <p className="mt-1 text-[13px] font-light text-[#444]">Enter a customer's phone number or email to add a stamp manually.</p>
+
+                  {manualResult ? (
+                    <div className="mt-6 rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-5 py-4">
+                      <p className="text-[14px] font-light text-emerald-400">
+                        {manualResult.status === "reward" ? "🎉 Reward earned!" : "✓ Stamp added"}
+                      </p>
+                      <p className="mt-1 text-[12px] font-light text-[#555]">
+                        {manualResult.new_customer ? "New customer · " : ""}{manualResult.visits} / {manualResult.goal} stamps
+                        {manualResult.status !== "reward" && ` · ${manualResult.remaining} to go`}
+                      </p>
+                      <button onClick={() => setManualResult(null)} className="mt-4 text-[12px] font-light text-[#555] hover:text-[#ededed]">
+                        Add another →
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleManualCheckin} className="mt-6 space-y-4">
+                      <input
+                        autoFocus
+                        value={manualContact}
+                        onChange={e => setManualContact(e.target.value)}
+                        placeholder="Phone (e.g. 5551234567) or email"
+                        className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
+                      />
+                      {manualError && (
+                        <p className="text-[12px] font-light text-red-400">{manualError}</p>
+                      )}
+                      <div className="flex gap-3">
+                        <button type="submit" disabled={manualLoading || !manualContact.trim()} className="flex-1 rounded-xl border border-[#ededed] py-3 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40">
+                          {manualLoading ? "Adding…" : "Add stamp"}
+                        </button>
+                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }} className="rounded-xl border border-[#1a1a1a] px-5 py-3 text-[12px] font-light text-[#555] hover:border-[#333]">
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ============================================================
                 QR CODE & JOIN LINK
