@@ -337,6 +337,128 @@ function PricingContent() {
       </section>
 
       {/* ============================================================
+          TRUST SIGNALS
+          ============================================================ */}
+      <section className="px-8 pb-12">
+        <div className="mx-auto max-w-lg">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { stat: "5 min", label: "to set up" },
+              { stat: "0", label: "hardware needed" },
+              { stat: "Any device", label: "works everywhere" },
+              { stat: "Cancel", label: "anytime, no hassle" },
+            ].map(({ stat, label }) => (
+              <div key={label} className="rounded-xl border border-[#1a1a1a] px-4 py-4 text-center">
+                <p className="text-lg font-extralight tracking-tight text-[#ededed]">{stat}</p>
+                <p className="mt-1 text-[11px] font-light text-[#555]">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          THE ECONOMICS
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">THE MATH</p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+              You pay when it works.
+            </h2>
+            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
+              Every $0.85 charge means a customer just visited your shop enough times to earn a reward. Here&rsquo;s what that looks like.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal>
+            <div className="mt-14 rounded-2xl border border-[#1a1a1a] bg-[#050505] p-8 sm:p-10">
+              {/* Stamp card visual */}
+              <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">EXAMPLE — 8 VISIT REWARD</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#ededed] text-[13px] text-[#ededed]"
+                  >
+                    ✓
+                  </div>
+                ))}
+              </div>
+
+              {/* Breakdown */}
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-[#1a1a1a] p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">RETURN VISITS DRIVEN</p>
+                  <p className="mt-2 text-3xl font-extralight text-white">8</p>
+                  <p className="mt-1 text-[12px] font-light text-[#555]">customers came back</p>
+                </div>
+                <div className="rounded-xl border border-[#1a1a1a] p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">YOU PAY VENTZON</p>
+                  <p className="mt-2 text-3xl font-extralight text-white">$0.85</p>
+                  <p className="mt-1 text-[12px] font-light text-[#555]">on redemption</p>
+                </div>
+                <div className="rounded-xl border border-[#1a1a1a] p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">COST PER RETURN VISIT</p>
+                  <p className="mt-2 text-3xl font-extralight text-emerald-400">$0.11</p>
+                  <p className="mt-1 text-[12px] font-light text-[#555]">driven by Ventzon</p>
+                </div>
+              </div>
+
+              <p className="mt-8 text-[13px] font-light leading-[1.8] text-[#555]">
+                Compare that to paid ads, flyers, or any other channel driving repeat foot traffic &mdash; $0.11 per proven return visit is hard to beat.
+              </p>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ============================================================
+          COMPARISON
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">COMPARE</p>
+            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+              How Ventzon stacks up.
+            </h2>
+          </ScrollReveal>
+
+          <div className="mt-16">
+            <div className="grid grid-cols-[1fr_80px_80px_80px] items-end border-b border-[#1a1a1a] pb-4 sm:grid-cols-[1fr_100px_100px_100px]">
+              <div />
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#ededed]">VENTZON</p>
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">SQUARE</p>
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">PUNCH CARD</p>
+            </div>
+
+            {[
+              { feature: "Monthly fee", ventzon: "$25", square: "$45–$105", punch: "$0" },
+              { feature: "Per redemption", ventzon: "$0.85", square: "included", punch: "$0" },
+              { feature: "Customer data & analytics", ventzon: "✓", square: "✓", punch: "✗" },
+              { feature: "Digital stamp tracking", ventzon: "✓", square: "✓", punch: "✗" },
+              { feature: "Push notifications", ventzon: "✓", square: "✗", punch: "✗" },
+              { feature: "No hardware required", ventzon: "✓", square: "✗", punch: "✓" },
+              { feature: "Fraud-proof stamps", ventzon: "✓", square: "✓", punch: "✗" },
+            ].map((row) => (
+              <ScrollReveal key={row.feature}>
+                <div className="grid grid-cols-[1fr_80px_80px_80px] items-center border-b border-[#111] py-4 sm:grid-cols-[1fr_100px_100px_100px]">
+                  <p className="text-[13px] font-light text-[#888]">{row.feature}</p>
+                  <p className="text-center text-[13px] font-light text-[#ededed]">{row.ventzon}</p>
+                  <p className="text-center text-[13px] font-light text-[#444]">{row.square}</p>
+                  <p className="text-center text-[13px] font-light text-[#444]">{row.punch}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           DASHBOARD PREVIEW
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">
