@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import crypto from "crypto";
-import { sendSms } from "@/lib/twilio";
 import { sendEmail } from "@/lib/resend";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { sendPushToDeviceTokens } from "@/lib/push";
@@ -89,7 +88,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const contactMethod = email ? "email" : "sms";
+    const contactMethod = email ? "email" : "none";
 
     // PIN is optional (QR check-ins don't require one),
     // but if provided it must be exactly 6 digits.
@@ -106,7 +105,7 @@ export async function POST(req: Request) {
     const { data: settings, error: settingsErr } = await supabase
       .from("shop_settings")
       .select(
-        "shop_slug, shop_name, deal_title, reward_goal, reward_sms_template, progress_sms_template"
+        "shop_slug, shop_name, deal_title, reward_goal, bonus_days"
       )
       .eq("shop_slug", shop_slug)
       .limit(1)
@@ -142,6 +141,10 @@ export async function POST(req: Request) {
 
     const now = new Date();
     const today = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // Bonus days: if today's day-of-week is in bonus_days, award 2 stamps
+    const bonusDays = (settings as any)?.bonus_days as number[] | null;
+    const isBonusDay = Array.isArray(bonusDays) && bonusDays.includes(now.getDay()); // 0=Sun…6=Sat
 
     let customer = existing as any;
 
@@ -223,9 +226,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: checkinInsertErr.message }, { status: 500 });
     }
 
-    // New check-in → increment visits
+    // New check-in → increment visits (double on bonus days)
     const currentVisits = Number(customer.visits ?? 0);
-    const nextVisits = currentVisits + 1;
+    const stampBonus = isBonusDay ? 2 : 1;
+    const nextVisits = currentVisits + stampBonus;
 
     const hitGoal = nextVisits >= goal;
 
@@ -253,7 +257,7 @@ export async function POST(req: Request) {
         reward_date: today,
       });
 
-      // Report metered usage to Stripe for free-plan shops (Billing Meters API)
+      // Report metered usage to Stripe for all subscribed shops ($0.95/redemption)
       try {
         const { data: shopRow } = await supabase
           .from("shops")
@@ -263,7 +267,7 @@ export async function POST(req: Request) {
 
         if (
           shopRow &&
-          (shopRow as any).plan_type === "free" &&
+          ["free", "pro"].includes((shopRow as any).plan_type) &&
           (shopRow as any).stripe_customer_id
         ) {
           const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -293,12 +297,8 @@ export async function POST(req: Request) {
       remaining: hitGoal ? 0 : Math.max(goal - nextVisits, 0),
     };
 
-    const rewardTpl =
-      settings?.reward_sms_template ||
-      "You qualify for {{deal_title}} at {{shop_name}} 🎉 Show this message to redeem.";
-    const progressTpl =
-      settings?.progress_sms_template ||
-      "Checked in at {{shop_name}} ✅ You're at {{visits}}/{{goal}} visits. {{remaining}} to go.";
+    const rewardTpl = "You've earned your reward at {{shop_name}} 🎉 Show the app at the register to redeem: {{deal_title}}";
+    const progressTpl = "Checked in at {{shop_name}} ✅ You're at {{visits}}/{{goal}} stamps. {{remaining}} more to go!";
 
     const message = hitGoal
       ? applyTemplate(rewardTpl, vars)
@@ -350,12 +350,6 @@ export async function POST(req: Request) {
           await sendEmail(email, subject, message);
         } catch (emailErr: any) {
           console.error("Email send failed:", emailErr?.message);
-        }
-      } else if (process.env.SMS_ENABLED === "true") {
-        try {
-          await sendSms(phone, message);
-        } catch (smsErr: any) {
-          console.error("SMS send failed:", smsErr?.message);
         }
       }
     }

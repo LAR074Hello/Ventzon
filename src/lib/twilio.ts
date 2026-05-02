@@ -1,13 +1,4 @@
-import twilio from "twilio";
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID!;
-const authToken = process.env.TWILIO_AUTH_TOKEN!;
-const from = process.env.TWILIO_PHONE_NUMBER!;
-
-export async function sendSms(to: string, body: string) {
-  if (!accountSid || !authToken || !from) {
-    throw new Error("Missing TWILIO_* env vars");
-  }
-  const client = twilio(accountSid, authToken);
-  return client.messages.create({ to, from, body });
+// SMS via Twilio has been removed. Ventzon uses push notifications (OneSignal) instead.
+export async function sendSms(_to: string, _body: string): Promise<void> {
+  throw new Error("SMS is not supported. Use push notifications instead.");
 }

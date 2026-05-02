@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 // @ts-ignore
 import { QRCodeCanvas } from "qrcode.react";
-import { ArrowLeft, Maximize2 } from "lucide-react";
+import { ArrowLeft, Maximize2, Download } from "lucide-react";
+import { useRef } from "react";
 
 export default function MerchantQRPage() {
   const params = useParams();
@@ -17,6 +18,16 @@ export default function MerchantQRPage() {
   const [fullscreen, setFullscreen] = useState(false);
 
   const joinUrl = `https://www.ventzon.com/join/${shopSlug}`;
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  function downloadQR() {
+    const canvas = qrRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = `${shopSlug}-qr.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
 
   useEffect(() => {
     fetch(`/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`)
@@ -91,7 +102,7 @@ export default function MerchantQRPage() {
         )}
 
         {/* QR code */}
-        <div className="rounded-3xl bg-white p-6 shadow-2xl mb-8">
+        <div ref={qrRef} className="rounded-3xl bg-white p-6 shadow-2xl mb-8">
           <QRCodeCanvas
             value={joinUrl}
             size={220}
@@ -121,6 +132,13 @@ export default function MerchantQRPage() {
         <p className="text-[12px] font-light text-[#444]">
           Collect {rewardGoal} stamps to earn your reward
         </p>
+        <button
+          onClick={downloadQR}
+          className="flex items-center gap-2 text-[11px] font-light tracking-[0.15em] text-[#555] transition-colors hover:text-[#888]"
+        >
+          <Download className="h-3 w-3" />
+          DOWNLOAD PNG
+        </button>
         <p className="text-[10px] font-light tracking-[0.2em] text-[#2a2a2a]">POWERED BY VENTZON</p>
       </div>
     </div>

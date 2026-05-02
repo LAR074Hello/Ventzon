@@ -39,7 +39,7 @@ export async function GET(req: Request) {
     const { data: existing, error: readErr } = await supabase
       .from("shop_settings")
       .select(
-        "shop_slug, shop_name, deal_title, deal_details, welcome_sms_template"
+        "shop_slug, shop_name, deal_title, deal_details, reward_goal, reward_expires_days, bonus_days"
       )
       .eq("shop_slug", shop_slug)
       .maybeSingle();
@@ -61,14 +61,13 @@ export async function GET(req: Request) {
         shop_name: defaultShopName || shop_slug,
         deal_title: "",
         deal_details: "",
-        welcome_sms_template: "Thanks for joining! Reply STOP to unsubscribe.",
       };
 
       const { data: inserted, error: upsertErr } = await supabase
         .from("shop_settings")
         .upsert(defaultRow, { onConflict: "shop_slug" })
         .select(
-          "shop_slug, shop_name, deal_title, deal_details, welcome_sms_template"
+          "shop_slug, shop_name, deal_title, deal_details, reward_goal, reward_expires_days, bonus_days"
         )
         .single();
 

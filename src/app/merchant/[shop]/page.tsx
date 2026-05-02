@@ -26,9 +26,9 @@ type ShopSettings = {
   shop_name: string | null;
   deal_title: string | null;
   deal_details: string | null;
-  welcome_sms_template: string | null;
   reward_goal: number | null;
-  reward_sms_template: string | null;
+  reward_expires_days: number | null;
+  bonus_days: number[] | null;
 };
 
 /* ------------------------------------------------------------------ */
@@ -53,12 +53,6 @@ function formatShortNY(iso: string) {
   } catch {
     return iso;
   }
-}
-
-function safeTemplatePreview(tpl: string | null, shopName: string, dealTitle: string) {
-  const t = (tpl ?? "").trim();
-  if (!t) return "";
-  return t.replaceAll("{{shop_name}}", shopName).replaceAll("{{deal_title}}", dealTitle);
 }
 
 /* ------------------------------------------------------------------ */
@@ -188,8 +182,6 @@ function MerchantShopPage() {
   const [shopNameDraft, setShopNameDraft] = useState("");
   const [dealTitleDraft, setDealTitleDraft] = useState("");
   const [dealDetailsDraft, setDealDetailsDraft] = useState("");
-  const [welcomeSmsDraft, setWelcomeSmsDraft] = useState("");
-  const [rewardSmsDraft, setRewardSmsDraft] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [saveSettingsMsg, setSaveSettingsMsg] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -209,6 +201,29 @@ function MerchantShopPage() {
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customersLoaded, setCustomersLoaded] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
+  const [customerTab, setCustomerTab] = useState<"all" | "lapsed">("all");
+
+  // Customer detail modal
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [customerCheckins, setCustomerCheckins] = useState<any[]>([]);
+  const [customerRewards, setCustomerRewards] = useState<any[]>([]);
+  const [customerDetailLoading, setCustomerDetailLoading] = useState(false);
+
+  // Email campaigns
+  const [campaignSubject, setCampaignSubject] = useState("");
+  const [campaignBody, setCampaignBody] = useState("");
+  const [campaignSending, setCampaignSending] = useState(false);
+  const [campaignMsg, setCampaignMsg] = useState("");
+  const [campaignError, setCampaignError] = useState("");
+
+  // Deal-change warning
+  const [dealChangeWarning, setDealChangeWarning] = useState<{ affectedCount: number; knownCount: boolean } | null>(null);
+
+  // Advanced settings
+  const [rewardExpiresDaysDraft, setRewardExpiresDaysDraft] = useState<number | "">("");
+  const [bonusDaysDraft, setBonusDaysDraft] = useState<number[]>([]);
+  const [registerPinDraft, setRegisterPinDraft] = useState("");
+  const [registerPinSet, setRegisterPinSet] = useState(false); // whether DB has a PIN
 
   // Manual check-in modal
   const [showManualCheckin, setShowManualCheckin] = useState(false);
@@ -331,8 +346,16 @@ function MerchantShopPage() {
       setShopNameDraft(String(s?.shop_name ?? ""));
       setDealTitleDraft(String(s?.deal_title ?? ""));
       setDealDetailsDraft(String(s?.deal_details ?? ""));
-      setWelcomeSmsDraft(String(s?.welcome_sms_template ?? ""));
-      setRewardSmsDraft(String((s as any)?.reward_sms_template ?? ""));
+      setRewardExpiresDaysDraft(s?.reward_expires_days ?? "");
+      setBonusDaysDraft(Array.isArray(s?.bonus_days) ? s.bonus_days : []);
+      // Load register_pin status from authenticated endpoint
+      try {
+        const pinRes = await fetch(`/api/merchant/shop-settings?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
+        if (pinRes.ok) {
+          const pinJson = await pinRes.json();
+          setRegisterPinSet(!!(pinJson.settings as any)?.register_pin);
+        }
+      } catch { /* non-fatal */ }
     } catch (e: any) {
       setSettingsError(e?.message ?? "Failed to load shop settings");
     } finally {
@@ -341,8 +364,26 @@ function MerchantShopPage() {
   }
 
   async function saveShopSettings() {
+    if (!shopSlug) return;
+
+    // Check if deal_title or reward_goal changed — warn if customers have stamps in progress
+    const dealChanged =
+      dealTitleDraft.trim() !== (settings?.deal_title ?? "") ||
+      rewardGoalDraft !== (settings?.reward_goal ?? 5);
+
+    if (dealChanged && !dealChangeWarning) {
+      const affectedCount = customersLoaded
+        ? customers.filter((c: any) => (c.visits ?? 0) > 0).length
+        : 0;
+      if (affectedCount > 0 || !customersLoaded) {
+        setDealChangeWarning({ affectedCount, knownCount: customersLoaded });
+        return; // pause — wait for merchant to confirm
+      }
+    }
+
+    // Confirmed or no change — proceed
+    setDealChangeWarning(null);
     try {
-      if (!shopSlug) return;
       setSavingSettings(true);
       setSaveSettingsMsg("");
       const res = await fetch("/api/merchant/shop-settings", {
@@ -354,13 +395,15 @@ function MerchantShopPage() {
           shop_name: shopNameDraft.trim() || null,
           deal_title: dealTitleDraft.trim() || null,
           deal_details: dealDetailsDraft.trim() || null,
-          welcome_sms_template: welcomeSmsDraft || null,
-          reward_sms_template: rewardSmsDraft || null,
+          reward_expires_days: rewardExpiresDaysDraft === "" ? null : Number(rewardExpiresDaysDraft),
+          bonus_days: bonusDaysDraft,
+          ...(registerPinDraft !== "" ? { register_pin: registerPinDraft } : {}),
         }),
       });
       const json = (await res.json()) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to save settings");
       setSaveSettingsMsg("Saved");
+      setRegisterPinDraft("");
       await loadSettings();
       setTimeout(() => setSaveSettingsMsg(""), 1500);
     } catch (e: any) {
@@ -504,6 +547,59 @@ function MerchantShopPage() {
     }
   }
 
+  /* ── Customer detail ── */
+  async function openCustomerDetail(customer: any) {
+    setSelectedCustomer(customer);
+    setCustomerDetailLoading(true);
+    setCustomerCheckins([]);
+    setCustomerRewards([]);
+    try {
+      const res = await fetch(
+        `/api/merchant/customer-checkins?shop_slug=${encodeURIComponent(shopSlug)}&customer_id=${encodeURIComponent(customer.id)}`
+      );
+      const json = await res.json();
+      if (res.ok) {
+        setCustomerCheckins(json.checkins ?? []);
+        setCustomerRewards(json.rewards ?? []);
+      }
+    } finally {
+      setCustomerDetailLoading(false);
+    }
+  }
+
+  /* ── Email campaign ── */
+  async function sendCampaign(e: React.FormEvent) {
+    e.preventDefault();
+    setCampaignSending(true);
+    setCampaignMsg("");
+    setCampaignError("");
+    try {
+      const res = await fetch("/api/merchant/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, subject: campaignSubject, body: campaignBody }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to send");
+      setCampaignMsg(`Sent to ${json.sent} customer${json.sent !== 1 ? "s" : ""}${json.failed > 0 ? ` (${json.failed} failed)` : ""}`);
+      setCampaignSubject("");
+      setCampaignBody("");
+    } catch (err: any) {
+      setCampaignError(err?.message ?? "Error sending campaign");
+    } finally {
+      setCampaignSending(false);
+    }
+  }
+
+  /* ── Auto-dismiss deal-change warning when drafts revert to saved values ── */
+  useEffect(() => {
+    if (!dealChangeWarning) return;
+    const dealUnchanged =
+      dealTitleDraft.trim() === (settings?.deal_title ?? "") &&
+      rewardGoalDraft === (settings?.reward_goal ?? 5);
+    if (dealUnchanged) setDealChangeWarning(null);
+  }, [dealTitleDraft, rewardGoalDraft, settings, dealChangeWarning]);
+
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
     let cancelled = false;
@@ -522,8 +618,6 @@ function MerchantShopPage() {
   const isMissingShop = !shopSlug;
 
   /* ── Derived display values ── */
-  const displayShopName = paid ? shopNameDraft : (settings?.shop_name || shopSlug);
-  const displayDealTitle = paid ? dealTitleDraft : (settings?.deal_title || "");
 
   /* ================================================================ */
   /*  RENDER                                                          */
@@ -565,9 +659,17 @@ function MerchantShopPage() {
               {subscriptionStatus && subscriptionStatus !== "inactive" ? ` · ${subscriptionStatus}` : ""}
             </span>
             {paid && (
-              <GhostButton onClick={openBillingPortal} disabled={portalLoading}>
-                {portalLoading ? "Opening…" : "Manage billing"}
-              </GhostButton>
+              <>
+                <GhostButton onClick={openBillingPortal} disabled={portalLoading}>
+                  {portalLoading ? "Opening…" : "Manage billing"}
+                </GhostButton>
+                <Link
+                  href={`/merchant/${shopSlug}/register`}
+                  className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#555] hover:text-[#ededed]"
+                >
+                  Register tool
+                </Link>
+              </>
             )}
             {!paid && !waitingForPayment && isCheckoutReturn && (
               <GhostButton onClick={() => { pollCountRef.current = 0; window.location.reload(); }}>
@@ -670,6 +772,19 @@ function MerchantShopPage() {
             )}
 
             {/* ============================================================
+                SETUP REMINDER (new merchants who haven't set a reward yet)
+                ============================================================ */}
+            {paid && !settingsLoading && !settings?.deal_title && (
+              <div className="mt-8 rounded-2xl border border-yellow-900/30 bg-yellow-950/10 px-6 py-5">
+                <p className="text-[11px] font-light tracking-[0.2em] text-yellow-600/80">ACTION NEEDED</p>
+                <p className="mt-1 text-[14px] font-light text-[#ededed]">Set your reward offer</p>
+                <p className="mt-1 text-[12px] font-light text-[#555]">
+                  Scroll down to <span className="text-[#888]">Offer &amp; reward</span> to add a reward title and details so customers know what they&rsquo;re earning.
+                </p>
+              </div>
+            )}
+
+            {/* ============================================================
                 ANALYTICS
                 ============================================================ */}
             {paid && <MerchantAnalytics shopSlug={shopSlug} />}
@@ -702,6 +817,25 @@ function MerchantShopPage() {
                   </div>
                 </div>
 
+                {/* Tabs */}
+                {customersLoaded && (
+                  <div className="mb-4 flex gap-1 rounded-full border border-[#1a1a1a] p-1 w-fit">
+                    {(["all", "lapsed"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setCustomerTab(tab)}
+                        className={`rounded-full px-4 py-1.5 text-[11px] font-light tracking-[0.1em] transition-all duration-300 ${
+                          customerTab === tab
+                            ? "bg-[#ededed] text-black"
+                            : "text-[#555] hover:text-[#ededed]"
+                        }`}
+                      >
+                        {tab === "all" ? "ALL" : "LAPSED 30+ DAYS"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {customersLoaded && (
                   <div className="rounded-2xl border border-[#1a1a1a] overflow-hidden">
                     {customers.length > 0 && (
@@ -731,6 +865,14 @@ function MerchantShopPage() {
                         <tbody>
                           {customers
                             .filter(c => {
+                              // Lapsed filter: no check-in in 30+ days
+                              if (customerTab === "lapsed") {
+                                if (!c.last_checkin_date) return true;
+                                const lastDate = new Date(c.last_checkin_date);
+                                const thirtyDaysAgo = new Date();
+                                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                                if (lastDate > thirtyDaysAgo) return false;
+                              }
                               if (!customerSearch) return true;
                               const q = customerSearch.toLowerCase();
                               return (c.phone ?? "").includes(q) || (c.email ?? "").toLowerCase().includes(q);
@@ -740,7 +882,7 @@ function MerchantShopPage() {
                               const progress = Math.min(((c.visits ?? 0) % goal) / goal, 1);
                               const isReady = (c.visits ?? 0) > 0 && (c.visits ?? 0) % goal === 0;
                               return (
-                                <tr key={c.id} className={`${i > 0 ? "border-t border-[#0d0d0d]" : ""} hover:bg-[#0a0a0a]`}>
+                                <tr key={c.id} onClick={() => openCustomerDetail(c)} className={`cursor-pointer ${i > 0 ? "border-t border-[#0d0d0d]" : ""} hover:bg-[#0a0a0a]`}>
                                   <td className="px-5 py-3.5 text-[13px] font-light text-[#888] font-mono">
                                     {c.phone || c.email || "—"}
                                   </td>
@@ -822,6 +964,143 @@ function MerchantShopPage() {
                   )}
                 </div>
               </div>
+            )}
+
+            {/* ============================================================
+                CUSTOMER DETAIL MODAL
+                ============================================================ */}
+            {selectedCustomer && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm" onClick={() => setSelectedCustomer(null)}>
+                <div className="w-full max-w-md rounded-2xl border border-[#1a1a1a] bg-[#080808] p-8 shadow-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-start justify-between mb-5">
+                    <div>
+                      <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">CUSTOMER DETAIL</p>
+                      <p className="mt-2 font-mono text-[15px] font-light text-[#ededed]">
+                        {selectedCustomer.phone || selectedCustomer.email || "—"}
+                      </p>
+                    </div>
+                    <button onClick={() => setSelectedCustomer(null)} className="text-[#555] hover:text-[#ededed] text-[20px] leading-none">×</button>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    <div className="rounded-xl border border-[#1a1a1a] p-3 text-center">
+                      <p className="text-[10px] font-light tracking-[0.1em] text-[#555]">STAMPS</p>
+                      <p className="mt-1 text-xl font-extralight text-[#ededed]">{selectedCustomer.visits ?? 0}</p>
+                    </div>
+                    <div className="rounded-xl border border-[#1a1a1a] p-3 text-center">
+                      <p className="text-[10px] font-light tracking-[0.1em] text-[#555]">LAST VISIT</p>
+                      <p className="mt-1 text-[12px] font-light text-[#ededed]">{selectedCustomer.last_checkin_date ?? "—"}</p>
+                    </div>
+                    <div className="rounded-xl border border-[#1a1a1a] p-3 text-center">
+                      <p className="text-[10px] font-light tracking-[0.1em] text-[#555]">VISITS</p>
+                      <p className="mt-1 text-xl font-extralight text-[#ededed]">{customerCheckins.length}</p>
+                    </div>
+                  </div>
+
+                  {customerDetailLoading ? (
+                    <p className="text-center text-[13px] font-light text-[#444]">Loading history…</p>
+                  ) : (
+                    <>
+                      {/* Rewards */}
+                      {customerRewards.length > 0 && (
+                        <div className="mb-5">
+                          <p className="text-[10px] font-light tracking-[0.15em] text-[#555] mb-3">REWARDS EARNED</p>
+                          <div className="space-y-1.5">
+                            {customerRewards.map((r, i) => (
+                              <div key={i} className="flex items-center justify-between rounded-lg border border-[#111] px-3 py-2">
+                                <span className="text-[12px] font-light text-[#888]">{r.reward_date}</span>
+                                <span className={`text-[10px] font-light tracking-[0.1em] ${r.is_redeemed ? "text-emerald-500" : "text-yellow-500"}`}>
+                                  {r.is_redeemed ? "REDEEMED" : "PENDING"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Check-in history */}
+                      <div>
+                        <p className="text-[10px] font-light tracking-[0.15em] text-[#555] mb-3">CHECK-IN HISTORY</p>
+                        {customerCheckins.length === 0 ? (
+                          <p className="text-[13px] font-light text-[#444]">No check-ins recorded.</p>
+                        ) : (
+                          <div className="max-h-48 overflow-y-auto space-y-1.5">
+                            {customerCheckins.map((c, i) => (
+                              <div key={i} className="flex items-center justify-between rounded-lg border border-[#111] px-3 py-2">
+                                <span className="text-[12px] font-light text-[#888]">{c.checkin_date}</span>
+                                <span className="text-[11px] font-light text-[#444]">
+                                  {new Date(c.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================
+                EMAIL CAMPAIGNS
+                ============================================================ */}
+            {paid && (
+              <section className="mt-14">
+                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+                <div>
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">EMAIL CAMPAIGNS</p>
+                  <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">Send to customers</h2>
+                  <p className="mt-1 text-[13px] font-light text-[#444]">
+                    Sends to all opted-in customers who have an email address on file.
+                  </p>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+                  <form onSubmit={sendCampaign} className="space-y-4">
+                    <div>
+                      <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">SUBJECT</label>
+                      <input
+                        value={campaignSubject}
+                        onChange={e => setCampaignSubject(e.target.value)}
+                        placeholder="e.g. Double stamps this weekend!"
+                        required
+                        className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">MESSAGE</label>
+                      <textarea
+                        value={campaignBody}
+                        onChange={e => setCampaignBody(e.target.value)}
+                        placeholder="Write your message to customers…"
+                        required
+                        rows={4}
+                        className="w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                      />
+                    </div>
+
+                    {campaignMsg && (
+                      <div className="rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-4 py-3">
+                        <p className="text-[13px] font-light text-emerald-400">{campaignMsg}</p>
+                      </div>
+                    )}
+                    {campaignError && (
+                      <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
+                        <p className="text-[13px] font-light text-red-400">{campaignError}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3">
+                      <PrimaryButton disabled={campaignSending || !campaignSubject.trim() || !campaignBody.trim()}>
+                        {campaignSending ? "Sending…" : "Send campaign"}
+                      </PrimaryButton>
+                      <span className="text-[12px] font-light text-[#444]">Emails only · No SMS</span>
+                    </div>
+                  </form>
+                </div>
+              </section>
             )}
 
             {/* ============================================================
@@ -1016,7 +1295,6 @@ function MerchantShopPage() {
 
                     {!paid && <span className="text-[11px] font-light text-[#444]">Available after activating subscription</span>}
                     {logoMsg && <span className="text-[11px] font-light text-[#555]">{logoMsg}</span>}
-                    {!paid && <span className="text-[11px] font-light text-[#444]">Activate subscription to upload</span>}
                   </div>
                 </div>
               </div>
@@ -1036,8 +1314,7 @@ function MerchantShopPage() {
                 <GhostButton onClick={loadSettings}>Refresh</GhostButton>
               </div>
 
-              <div className="mt-8 grid gap-6 lg:grid-cols-2">
-                {/* Left column: Offer details */}
+              <div className="mt-8">
                 <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
                   <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
                     OFFER CUSTOMERS SEE
@@ -1111,84 +1388,143 @@ function MerchantShopPage() {
                         Coffee shops: 5–10 visits. Salons: 2–5.
                       </p>
                     </div>
+
+                    <div>
+                      <FieldLabel>REWARD EXPIRY (DAYS)</FieldLabel>
+                      {paid ? (
+                        <div className="mt-2 flex items-center gap-3">
+                          <input
+                            type="number"
+                            min={1}
+                            max={365}
+                            value={rewardExpiresDaysDraft}
+                            onChange={(e) => setRewardExpiresDaysDraft(e.target.value === "" ? "" : Number(e.target.value))}
+                            placeholder="No expiry"
+                            className="w-32 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                          />
+                          <span className="text-[12px] font-light text-[#444]">days after earning</span>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-[14px] font-light text-[#888]">
+                          {settings?.reward_expires_days ? `${settings.reward_expires_days} days` : "No expiry"}
+                        </div>
+                      )}
+                      <p className="mt-2 text-[11px] font-light text-[#333]">
+                        Leave blank for rewards that never expire.
+                      </p>
+                    </div>
+
+                    <div>
+                      <FieldLabel>BONUS STAMP DAYS</FieldLabel>
+                      <p className="mt-1 text-[11px] font-light text-[#444]">Customers earn 2 stamps on these days.</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => {
+                          const isSelected = bonusDaysDraft.includes(idx);
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              disabled={!paid}
+                              onClick={() => {
+                                setBonusDaysDraft(prev =>
+                                  isSelected ? prev.filter(d => d !== idx) : [...prev, idx]
+                                );
+                              }}
+                              className={`rounded-full border px-3.5 py-1.5 text-[11px] font-light tracking-[0.05em] transition-all duration-200 disabled:opacity-40 ${
+                                isSelected
+                                  ? "border-[#ededed] bg-[#ededed] text-black"
+                                  : "border-[#1a1a1a] text-[#555] hover:border-[#333]"
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <FieldLabel>REGISTER TOOL PIN</FieldLabel>
+                      <p className="mt-1 text-[11px] font-light text-[#444]">
+                        {registerPinSet ? "A PIN is set. Enter a new one to change it, or save blank to remove it." : "Set a 4-digit PIN to lock the register tool. Leave blank for no PIN."}
+                      </p>
+                      <div className="mt-2 flex items-center gap-3">
+                        <input
+                          type="password"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={registerPinDraft}
+                          onChange={(e) => setRegisterPinDraft(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                          placeholder={registerPinSet ? "••••" : "e.g. 1234"}
+                          className="w-32 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                        />
+                        {registerPinSet && registerPinDraft === "" && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await fetch("/api/merchant/shop-settings", {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ shop_slug: shopSlug, register_pin: "" }),
+                              });
+                              setRegisterPinSet(false);
+                              setSaveSettingsMsg("PIN removed");
+                              setTimeout(() => setSaveSettingsMsg(""), 1500);
+                            }}
+                            className="text-[11px] font-light text-red-400/70 hover:text-red-400 transition-colors"
+                          >
+                            Remove PIN
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Deal-change warning */}
+                  {dealChangeWarning && (
+                    <div className="mt-6 rounded-xl border border-yellow-900/40 bg-yellow-950/10 px-5 py-4">
+                      <p className="text-[13px] font-light text-yellow-300/90">
+                        {dealChangeWarning.knownCount
+                          ? dealChangeWarning.affectedCount === 1
+                            ? "1 customer currently has stamps in progress toward the current reward."
+                            : `${dealChangeWarning.affectedCount} customers currently have stamps in progress toward the current reward.`
+                          : "Some customers may have stamps in progress toward the current reward."}
+                        {" "}Changing the deal title or goal will affect them immediately.
+                      </p>
+                      <div className="mt-4 flex items-center gap-3">
+                        <button
+                          onClick={saveShopSettings}
+                          disabled={savingSettings}
+                          className="rounded-full border border-yellow-700/60 px-5 py-2 text-[11px] font-light tracking-[0.1em] text-yellow-300 transition-all hover:bg-yellow-950/40 disabled:opacity-40"
+                        >
+                          {savingSettings ? "Saving…" : "Save anyway"}
+                        </button>
+                        <button
+                          onClick={() => setDealChangeWarning(null)}
+                          className="text-[11px] font-light text-[#555] transition-colors hover:text-[#888]"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Save button */}
-                  <div className="mt-8 flex items-center gap-3">
-                    <PrimaryButton onClick={saveShopSettings} disabled={savingSettings || !paid}>
-                      {savingSettings ? "Saving…" : "Save settings"}
-                    </PrimaryButton>
-                    {saveSettingsMsg && (
-                      <span className="text-[12px] font-light text-[#555]">{saveSettingsMsg}</span>
-                    )}
-                    {!paid && (
-                      <span className="text-[11px] font-light text-[#444]">Activate to edit</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right column: SMS templates */}
-                <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
-                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                    SMS MESSAGES
-                  </p>
-
-                  {/* Welcome SMS */}
-                  <div className="mt-6">
-                    <FieldLabel>WELCOME TEXT</FieldLabel>
-                    {paid && (
-                      <textarea
-                        value={welcomeSmsDraft}
-                        onChange={(e) => setWelcomeSmsDraft(e.target.value)}
-                        placeholder={'Welcome to {{shop_name}} Rewards! Reply STOP to opt out. Your deal: {{deal_title}}'}
-                        rows={3}
-                        className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 font-mono text-[12px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
-                      />
-                    )}
-                    <div className="mt-3 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3">
-                      <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
-                      <p className="mt-2 whitespace-pre-wrap font-mono text-[12px] font-light text-[#888]">
-                        {settingsLoading
-                          ? "Loading…"
-                          : safeTemplatePreview(
-                              paid ? welcomeSmsDraft : (settings?.welcome_sms_template ?? ""),
-                              displayShopName || shopSlug,
-                              displayDealTitle
-                            ) || "—"}
-                      </p>
+                  {!dealChangeWarning && (
+                    <div className="mt-8 flex items-center gap-3">
+                      <PrimaryButton onClick={saveShopSettings} disabled={savingSettings || !paid}>
+                        {savingSettings ? "Saving…" : "Save settings"}
+                      </PrimaryButton>
+                      {saveSettingsMsg && (
+                        <span className="text-[12px] font-light text-[#555]">{saveSettingsMsg}</span>
+                      )}
+                      {!paid && (
+                        <span className="text-[11px] font-light text-[#444]">Activate to edit</span>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Reward SMS */}
-                  <div className="mt-8">
-                    <FieldLabel>REWARD EARNED TEXT</FieldLabel>
-                    {paid && (
-                      <textarea
-                        value={rewardSmsDraft}
-                        onChange={(e) => setRewardSmsDraft(e.target.value)}
-                        placeholder={'You earned your reward at {{shop_name}}! Show this text to redeem: {{deal_title}}'}
-                        rows={3}
-                        className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 font-mono text-[12px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
-                      />
-                    )}
-                    <div className="mt-3 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3">
-                      <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
-                      <p className="mt-2 whitespace-pre-wrap font-mono text-[12px] font-light text-[#888]">
-                        {settingsLoading
-                          ? "Loading…"
-                          : safeTemplatePreview(
-                              paid ? rewardSmsDraft : String((settings as any)?.reward_sms_template ?? ""),
-                              displayShopName || shopSlug,
-                              displayDealTitle
-                            ) || "—"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="mt-6 text-[11px] font-light text-[#333]">
-                    Use <code className="font-mono text-[#555]">{"{{shop_name}}"}</code> and{" "}
-                    <code className="font-mono text-[#555]">{"{{deal_title}}"}</code>. Keep messages short.
-                  </p>
+                  )}
+                  {dealChangeWarning && saveSettingsMsg && (
+                    <p className="mt-3 text-[12px] font-light text-[#555]">{saveSettingsMsg}</p>
+                  )}
                 </div>
               </div>
             </section>

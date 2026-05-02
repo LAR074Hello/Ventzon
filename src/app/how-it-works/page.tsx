@@ -19,8 +19,8 @@ const customerSteps = [
   },
   {
     number: "02",
-    title: "Enter your phone number",
-    body: "Your phone number ties visits to that shop. No account creation, no passwords — just your number.",
+    title: "Enter your phone or email",
+    body: "Your phone number or email ties visits to that shop. No account creation, no passwords — just your contact.",
   },
   {
     number: "03",
@@ -30,7 +30,7 @@ const customerSteps = [
   {
     number: "04",
     title: "Hit the goal, redeem",
-    body: "When you reach the shop's visit goal, you'll get a redeem message via SMS. Show it to the cashier.",
+    body: "When you reach the shop's visit goal, you'll unlock your reward in the app. Show it to the cashier.",
   },
   {
     number: "05",
@@ -52,13 +52,13 @@ const merchantSteps = [
   },
   {
     number: "03",
-    title: "Customize texts",
-    body: "Edit the messages customers get for progress updates and redemption confirmations. Make it yours.",
+    title: "Track your customers",
+    body: "See your full customer list, check stamp counts, and manually add a stamp when needed.",
   },
   {
     number: "04",
-    title: "Send promos (optional)",
-    body: "Message your opted-in customer list when you want to drive traffic. Direct SMS — no algorithm in the way.",
+    title: "Push notifications",
+    body: "Customers who install the Ventzon app get notified when they earn rewards. No SMS needed.",
   },
 ];
 
@@ -75,14 +75,14 @@ const benefits = [
   },
   {
     label: "Direct channel",
-    value: "SMS",
-    note: "Promos go straight to the customer \u2014 not an algorithm. Opt-in only, always.",
+    value: "Push",
+    note: "Reward notifications go straight to the customer's app \u2014 not an algorithm.",
   },
 ];
 
 const goodToKnow = [
-  "A customer is linked to a shop by phone number \u2014 the same phone can join multiple shops.",
-  "No account creation needed \u2014 customers just use their phone number to check in.",
+  "A customer is linked to a shop by phone number or email \u2014 the same contact can join multiple shops.",
+  "No account creation needed \u2014 customers just use their phone or email to check in.",
   "One check-in per day per shop prevents spam and keeps it fair.",
 ];
 
@@ -146,7 +146,7 @@ export default function HowItWorksPage() {
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
-            Scan a QR, enter your phone number, check in once per day,
+            Scan a QR, enter your phone or email, check in once per day,
             and redeem when you hit the shop&rsquo;s goal. Simple for customers,
             valuable for merchants.
           </p>
@@ -245,7 +245,7 @@ export default function HowItWorksPage() {
                   </h3>
                   <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
                     Customers scan the QR with their phone camera, enter their
-                    number, and they&rsquo;re checked in. One tap per day &mdash;
+                    phone or email, and they&rsquo;re checked in. One tap per day &mdash;
                     no app download, no account to create.
                   </p>
                 </div>
@@ -276,8 +276,8 @@ export default function HowItWorksPage() {
                     They earn rewards
                   </h3>
                   <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
-                    When a customer hits the visit goal you set, they receive an
-                    SMS with their reward. They show it at checkout and redeem
+                    When a customer hits the visit goal you set, they unlock
+                    their reward in the app. They show it at checkout and redeem
                     instantly. The counter resets and the cycle continues.
                   </p>
                 </div>
@@ -316,8 +316,8 @@ export default function HowItWorksPage() {
                   No apps to download
                 </h3>
                 <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
-                  Customers use their phone camera and SMS. That&rsquo;s it. No
-                  downloads, no sign-ups, no passwords to remember.
+                  Customers use their phone camera to scan the QR code.
+                  Check-in takes seconds — no SMS needed.
                 </p>
               </div>
             </ScrollReveal>
@@ -330,7 +330,7 @@ export default function HowItWorksPage() {
                   Designed for checkout
                 </h3>
                 <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
-                  One scan, one check-in per day, one redemption text. The
+                  One scan, one check-in per day, one reward unlock. The
                   entire experience takes seconds &mdash; not minutes.
                 </p>
               </div>
@@ -603,7 +603,7 @@ export default function HowItWorksPage() {
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
               Track signups, check-ins, and rewards in real time.
-              Customize your SMS messages. All from one dashboard.
+              View your customer list and manage stamps. All from one dashboard.
             </p>
           </ScrollReveal>
 
@@ -719,24 +719,26 @@ export default function HowItWorksPage() {
             </div>
           </ScrollReveal>
 
-          {/* ── SMS preview mock ── */}
+          {/* ── Customer + push notification preview mock ── */}
           <ScrollReveal>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">WELCOME TEXT</p>
-                <div className="mt-4 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
-                  <p className="mt-2 whitespace-pre-wrap font-mono text-[12px] font-light text-[#888]">
-                    Welcome to Sunrise Bakery Rewards! Reply STOP to opt out. Your deal: Free pastry after 8 visits
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">CUSTOMER LIST</p>
+                <div className="mt-4 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3 space-y-2">
+                  <p className="font-mono text-[12px] font-light text-[#888]">
+                    customer@email.com · 7 stamps · Last visit: today
+                  </p>
+                  <p className="font-mono text-[12px] font-light text-[#555]">
+                    +14155550187 · 4 stamps · Last visit: yesterday
                   </p>
                 </div>
               </div>
               <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">REWARD EARNED TEXT</p>
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">PUSH NOTIFICATION</p>
                 <div className="mt-4 rounded-xl border border-[#111] bg-[#0a0a0a] px-4 py-3">
                   <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
                   <p className="mt-2 whitespace-pre-wrap font-mono text-[12px] font-light text-[#888]">
-                    You earned your reward at Sunrise Bakery! Show this text to redeem: Free pastry after 8 visits
+                    🏆 Reward earned! You've earned your reward at Sunrise Bakery. Show the app at the register.
                   </p>
                 </div>
               </div>
@@ -844,7 +846,7 @@ export default function HowItWorksPage() {
             Ready to begin?
           </h2>
           <p className="mt-6 text-base font-light leading-relaxed text-[#666]">
-            Set up your SMS rewards program in under five minutes.
+            Set up your loyalty rewards program in under five minutes.
             <br className="hidden sm:block" />
             No credit card required.
           </p>

@@ -19,6 +19,8 @@ import {
 
 type DataPoint = { date: string; count: number };
 
+type TopCustomer = { id: string; phone: string | null; email: string | null; visits: number };
+
 type AnalyticsResponse = {
   shop: string;
   period: string;
@@ -27,6 +29,8 @@ type AnalyticsResponse = {
   endDate: string;
   checkins: DataPoint[];
   rewards: DataPoint[];
+  retention_rate: number | null;
+  top_customers: TopCustomer[];
 };
 
 type Period = {
@@ -141,6 +145,8 @@ export default function MerchantAnalytics({ shopSlug }: { shopSlug: string }) {
 
   const totalCheckins = checkins.reduce((s, d) => s + d.count, 0);
   const totalRewards = rewards.reduce((s, d) => s + d.count, 0);
+  const retentionRate = data?.retention_rate ?? null;
+  const topCustomers = data?.top_customers ?? [];
 
   return (
     <section className="mt-14">
@@ -183,7 +189,7 @@ export default function MerchantAnalytics({ shopSlug }: { shopSlug: string }) {
       )}
 
       {/* Summary stats */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
           <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
             CHECK-INS
@@ -200,7 +206,38 @@ export default function MerchantAnalytics({ shopSlug }: { shopSlug: string }) {
             {loading ? "..." : totalRewards.toLocaleString()}
           </p>
         </div>
+        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+          <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
+            RETENTION RATE
+          </p>
+          <p className="mt-2 text-3xl font-extralight tracking-tight text-white">
+            {loading ? "..." : retentionRate !== null ? `${retentionRate}%` : "—"}
+          </p>
+          <p className="mt-1 text-[11px] font-light text-[#444]">Customers who returned</p>
+        </div>
       </div>
+
+      {/* Top customers */}
+      {!loading && topCustomers.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+          <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">TOP CUSTOMERS</p>
+          <div className="mt-4 space-y-2">
+            {topCustomers.map((c, i) => (
+              <div key={c.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-5 text-[11px] font-light text-[#444]">{i + 1}</span>
+                  <span className="font-mono text-[13px] font-light text-[#888]">
+                    {c.phone || c.email || "—"}
+                  </span>
+                </div>
+                <span className="text-[13px] font-light text-[#ededed]">
+                  {c.visits} visits
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Charts */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

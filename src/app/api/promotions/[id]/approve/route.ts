@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { sendSms } from "@/lib/twilio";
 import { sendEmail } from "@/lib/resend";
 
 export const runtime = "nodejs";
@@ -83,57 +82,41 @@ export async function POST(
     }
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Fetch opted-in customers
+    // Fetch opted-in customers with email addresses
     const { data: customers, error: custErr } = await adminClient
       .from("customers")
-      .select("id, phone, email")
+      .select("id, email")
       .eq("shop_slug", promo.shop_slug)
-      .eq("opted_out", false);
+      .eq("opted_out", false)
+      .not("email", "is", null);
 
     if (custErr) return NextResponse.json({ error: custErr.message }, { status: 500 });
 
-    // Send notifications to each customer sequentially (SMS or email)
-    const fromPhone = process.env.TWILIO_PHONE_NUMBER ?? "";
+    // Send email notifications to each customer
     let sent = 0;
     let failed = 0;
 
     for (const customer of customers ?? []) {
+      if (!customer.email) continue;
       let msgStatus: "sent" | "failed" = "sent";
-      let twilioSid: string | null = null;
       let errorMessage: string | null = null;
 
-      const hasEmail = !!customer.email;
-      const hasPhone = !!customer.phone;
-
-      if (hasEmail) {
-        // Send via email
-        try {
-          await sendEmail(customer.email, "Promotion from your rewards program", promo.body);
-        } catch (emailErr: any) {
-          msgStatus = "failed";
-          errorMessage = emailErr?.message ?? "Unknown email error";
-          console.error("Promotion email failed:", customer.email, errorMessage);
-        }
-      } else if (hasPhone && process.env.SMS_ENABLED === "true") {
-        // Send via SMS
-        try {
-          const result = await sendSms(customer.phone, promo.body);
-          twilioSid = result.sid;
-        } catch (smsErr: any) {
-          msgStatus = "failed";
-          errorMessage = smsErr?.message ?? "Unknown SMS error";
-          console.error("Promotion SMS failed:", customer.phone, errorMessage);
-        }
+      try {
+        await sendEmail(customer.email, "Promotion from your rewards program", promo.body);
+      } catch (emailErr: any) {
+        msgStatus = "failed";
+        errorMessage = emailErr?.message ?? "Unknown email error";
+        console.error("Promotion email failed:", customer.email, errorMessage);
       }
 
       await adminClient.from("messages").insert({
         shop_id: ownership.shopId,
-        to_phone: customer.phone || null,
-        from_phone: hasPhone ? fromPhone : null,
+        to_phone: null,
+        from_phone: null,
         body: promo.body,
         type: "marketing",
         status: msgStatus,
-        twilio_sid: twilioSid,
+        twilio_sid: null,
         error_message: errorMessage,
         promotion_id: promo.id,
       });

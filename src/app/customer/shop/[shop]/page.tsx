@@ -239,6 +239,24 @@ export default function CustomerShopPage() {
     );
   }
 
+  if (!settings) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">NOT FOUND</p>
+        <h1 className="mt-4 text-2xl font-extralight text-[#ededed]">Shop not found</h1>
+        <p className="mt-3 text-[14px] font-light text-[#555]">
+          This shop doesn&rsquo;t exist or may have been removed.
+        </p>
+        <button
+          onClick={() => router.push("/customer/explore")}
+          className="mt-8 rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:border-[#666]"
+        >
+          Explore shops
+        </button>
+      </div>
+    );
+  }
+
   const shopName = settings?.shop_name ?? shopSlug;
 
   return (

@@ -30,16 +30,19 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_SITE_URL ||
       "https://www.ventzon.com";
 
-    // ── Free plan: metered billing subscription ($1.25/reward, billed monthly) ──
-    if (planRaw === "free") {
-      const meteredPriceId = process.env.STRIPE_PRICE_FREE_METERED;
-      if (!meteredPriceId) {
-        return Response.json(
-          { error: "Missing STRIPE_PRICE_FREE_METERED env var" },
-          { status: 500 }
-        );
-      }
+    // Both plans charge $1.25/redemption (metered).
+    // Pro additionally has a $25/month flat operational fee.
+    const meteredPriceId = process.env.STRIPE_PRICE_FREE_METERED; // $1.25/redemption
 
+    if (!meteredPriceId) {
+      return Response.json(
+        { error: "Missing STRIPE_PRICE_FREE_METERED env var" },
+        { status: 500 }
+      );
+    }
+
+    // ── Free plan: metered-only ($0.95/reward, no monthly fee) ──
+    if (planRaw === "free") {
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
@@ -60,14 +63,14 @@ export async function POST(req: Request) {
       return Response.json({ url: session.url });
     }
 
-    // ── Pro plan: fixed monthly/yearly subscription ──
+    // ── Pro plan: $25/month flat + $0.95/redemption metered ──
     const plan = planRaw === "yearly" ? "yearly" : "monthly";
-    const priceId =
+    const flatPriceId =
       plan === "yearly"
         ? (process.env.PRICE_YEARLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY)
         : (process.env.PRICE_MONTHLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY);
 
-    if (!priceId) {
+    if (!flatPriceId) {
       return Response.json(
         { error: "Missing PRICE env var for selected plan" },
         { status: 500 }
@@ -77,7 +80,10 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [
+        { price: flatPriceId, quantity: 1 },   // $25/month operational fee
+        { price: meteredPriceId },              // $0.95/redemption (metered)
+      ],
       success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
         shop_slug

@@ -72,7 +72,7 @@ export default function SignupPage() {
     const { data: sessionRes } = await supabase.auth.getSession();
     if (!sessionRes.session) {
       setInfo(
-        "Check your email to confirm your account. After confirming, you\u2019ll be redirected to continue setup."
+        `We sent a confirmation link to ${email.trim()}. Click it to confirm your account \u2014 you'll be taken straight to setup.`
       );
       return;
     }
@@ -91,7 +91,7 @@ export default function SignupPage() {
           Create your account
         </h1>
         <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
-          Set up your merchant account to launch your SMS loyalty program.
+          Set up your merchant account to launch your loyalty rewards program.
         </p>
 
         {/* Form */}

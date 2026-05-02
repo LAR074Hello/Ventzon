@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Pricing — Ventzon",
   description:
-    "Start free — pay $1.25 per reward redeemed. Upgrade to Pro at $19.99/month for analytics, custom SMS, and promotional texting.",
+    "Start free — pay $1.25 per reward redeemed. Upgrade to Pro at $19.99/month for analytics, customer list, and advanced tools.",
   openGraph: {
     title: "Pricing — Ventzon",
     description:

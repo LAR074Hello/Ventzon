@@ -70,7 +70,7 @@ export default function Home() {
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
           {[
-            { title: "Effortless Check-ins", desc: "Customers enter their phone or email to check in — no apps, no friction." },
+            { title: "Effortless Check-ins", desc: "Customers scan, enter their contact, and they're in. Zero friction at the register." },
             { title: "Real-time Insights", desc: "See who visits, how often, and what keeps them coming back." },
             { title: "Built for Local", desc: "Designed from the ground up for independent businesses." },
           ].map((item) => (
@@ -149,7 +149,7 @@ export default function Home() {
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
                   They enter their phone number or email. One check-in per day
-                  keeps it fair and simple.
+                  keeps it honest and simple.
                 </p>
               </ScrollReveal>
             </div>
@@ -170,11 +170,12 @@ export default function Home() {
                   03
                 </p>
                 <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  They earn rewards via SMS or email
+                  They earn rewards via the app
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  After enough visits they get a text or email with their reward.
-                  You set the goal, you set the offer. It&rsquo;s that simple.
+                  After enough visits they unlock their reward in the app.
+                  Push notifications keep them engaged. You set the goal,
+                  you set the offer. It&rsquo;s that simple.
                 </p>
               </ScrollReveal>
             </div>
@@ -345,16 +346,16 @@ export default function Home() {
           <div className="mt-16 grid gap-px sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "No app download",
-                desc: "Works with any phone camera. Rewards via SMS or email. Zero friction for your customers.",
+                title: "No paper cards",
+                desc: "Works with any phone camera. Customers track rewards in the app. Zero friction.",
               },
               {
                 title: "Ready in five minutes",
                 desc: "Sign up, name your shop, set your reward, print the QR. You\u2019re live.",
               },
               {
-                title: "SMS & Email \u2014 direct channels",
-                desc: "Rewards go straight to your customers via text or email. No algorithm, no noise.",
+                title: "Push notifications",
+                desc: "Rewards and milestones are delivered instantly via push. No algorithm, no noise.",
               },
               {
                 title: "One check-in per day",
@@ -539,7 +540,7 @@ export default function Home() {
               },
               {
                 quote:
-                  "My regulars love the rewards. They feel like VIPs without downloading yet another app.",
+                  "My regulars love the rewards. They scan, they earn, they come back. It practically runs itself.",
                 name: "Sarah Kim",
                 biz: "Sunrise Bakery",
               },
@@ -600,7 +601,7 @@ export default function Home() {
                   {[
                     "QR code + join page",
                     "Unlimited check-ins",
-                    "SMS & email notifications",
+                    "Push notification rewards",
                     "Basic dashboard",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
@@ -636,7 +637,7 @@ export default function Home() {
                     "Everything in Free",
                     "Custom reward goals",
                     "Analytics dashboard",
-                    "Promo texting ($0.04/customer)",
+                    "Email campaigns",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ededed]" />

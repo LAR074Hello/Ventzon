@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "How It Works — Ventzon",
   description:
-    "Learn how Ventzon helps local businesses build customer loyalty with simple SMS-based rewards. No app download needed.",
+    "Learn how Ventzon helps local businesses build customer loyalty with simple app-based rewards. Set up in minutes.",
   openGraph: {
     title: "How It Works — Ventzon",
     description:
-      "Simple SMS-based loyalty rewards for local businesses. Set up in minutes.",
+      "Simple app-based loyalty rewards for local businesses. Set up in minutes.",
   },
 };
 

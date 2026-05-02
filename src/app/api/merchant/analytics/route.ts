@@ -141,6 +141,22 @@ export async function GET(req: Request) {
       cursor.setDate(cursor.getDate() + 1);
     }
 
+    // Retention rate: % of customers who visited more than once
+    const totalUniqueCustomers = Object.keys(customerVisits).length;
+    const returningCustomers = Object.values(customerVisits).filter((v) => v > 1).length;
+    const retentionRate =
+      totalUniqueCustomers > 0
+        ? Math.round((returningCustomers / totalUniqueCustomers) * 100)
+        : null;
+
+    // Top 5 customers by total visits
+    const { data: topCustomerRows } = await supabase
+      .from("customers")
+      .select("id, phone, email, visits")
+      .eq("shop_slug", shop)
+      .order("visits", { ascending: false })
+      .limit(5);
+
     return NextResponse.json({
       shop,
       period,
@@ -149,6 +165,8 @@ export async function GET(req: Request) {
       endDate,
       checkins,
       rewards,
+      retention_rate: retentionRate,
+      top_customers: topCustomerRows ?? [],
     });
   } catch (err: any) {
     return NextResponse.json(

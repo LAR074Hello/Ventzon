@@ -96,8 +96,6 @@ export async function POST(req: Request) {
       shop_name: defaultShopName,
       deal_title: null,
       deal_details: null,
-      welcome_sms_template: null,
-      reward_sms_template: null,
       reward_goal: 5,
     });
 

@@ -91,7 +91,7 @@ export default function DemoPage() {
           DEMO &mdash; THIS IS A SAMPLE CUSTOMER EXPERIENCE
         </p>
         <p className="mt-1 text-[11px] font-light text-[#555]">
-          No real data is sent. This shows what customers see when they check in via SMS link or QR code.
+          No real data is sent. This shows what customers see when they check in via the app or QR code.
         </p>
       </div>
 
@@ -288,11 +288,11 @@ export default function DemoPage() {
         <p className="text-center text-[11px] font-light leading-relaxed text-[#444]">
           By checking in you agree to receive reward notifications.
           <br />
-          {contactMethod === "phone" ? "Reply STOP to opt out." : "Unsubscribe anytime."}
+          {"Unsubscribe or disable notifications anytime."}
         </p>
       </div>
 
-      {/* How it works (for Twilio reviewers) */}
+      {/* How it works */}
       <div className="border-t border-[#1a1a1a] px-6 py-10">
         <div className="mx-auto max-w-lg">
           <h2 className="text-center text-[11px] font-light tracking-[0.3em] text-[#555]">
@@ -314,7 +314,7 @@ export default function DemoPage() {
                 2. TRACK PROGRESS
               </p>
               <p className="mt-2 text-[12px] font-light text-[#555]">
-                Each check-in sends an SMS or email confirmation with their current visit count and how many remain until a reward.
+                Stamps accumulate with each check-in. Customers can view their progress in the Ventzon app or on the check-in page.
               </p>
             </div>
 
@@ -323,38 +323,38 @@ export default function DemoPage() {
                 3. EARN REWARDS
               </p>
               <p className="mt-2 text-[12px] font-light text-[#555]">
-                When the visit goal is reached, the customer receives a reward notification and can show it to the cashier to redeem.
+                When the visit goal is reached, the customer unlocks their reward in the app and shows it to the cashier to redeem.
               </p>
             </div>
 
             <div className="rounded-lg border border-[#1a1a1a] p-5">
               <p className="text-[12px] font-light tracking-[0.1em] text-[#ededed]">
-                4. OPT OUT ANYTIME
+                4. PUSH NOTIFICATIONS
               </p>
               <p className="mt-2 text-[12px] font-light text-[#555]">
-                Customers can reply STOP to any SMS to immediately opt out. Email recipients can unsubscribe via the link in every message.
+                App users receive push notifications when they earn rewards or are one visit away. No SMS required.
               </p>
             </div>
           </div>
 
           <div className="mt-8 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-5">
             <p className="text-[11px] font-light tracking-[0.1em] text-[#888]">
-              SAMPLE SMS MESSAGES
+              SAMPLE PUSH NOTIFICATIONS
             </p>
             <div className="mt-3 space-y-3">
               <div className="rounded-md bg-[#111] px-3 py-2.5">
                 <p className="text-[12px] font-light text-[#ededed]">
-                  &ldquo;Sunrise Coffee: Checked in! Visit 5 of 8. 3 more until your free coffee. ☕&rdquo;
+                  &ldquo;Almost there! Just 1 more visit to earn your reward at Sunrise Coffee.&rdquo;
                 </p>
               </div>
               <div className="rounded-md bg-[#111] px-3 py-2.5">
                 <p className="text-[12px] font-light text-[#ededed]">
-                  &ldquo;Sunrise Coffee: 🎉 You earned a free medium coffee! Show this message at the register to redeem.&rdquo;
+                  &ldquo;🏆 Reward earned! You've earned your reward at Sunrise Coffee. Show the app at the register.&rdquo;
                 </p>
               </div>
               <div className="rounded-md bg-[#111] px-3 py-2.5">
                 <p className="text-[12px] font-light text-[#ededed]">
-                  &ldquo;Sunrise Coffee: Happy hour today! 2-for-1 lattes from 3-5pm. Show this text at checkout. Reply STOP to opt out.&rdquo;
+                  &ldquo;Email: Check-in confirmed at Sunrise Coffee ✅ You're at 5/8 stamps. 3 more to go!&rdquo;
                 </p>
               </div>
             </div>

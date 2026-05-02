@@ -453,7 +453,7 @@ function CustomerJoinPage() {
         <p className="text-center text-[11px] font-light leading-relaxed text-[#444]">
           By checking in you agree to receive reward notifications.
           <br />
-          {contactMethod === "phone" ? "Reply STOP to opt out." : "Unsubscribe anytime."}
+          Unsubscribe anytime.
         </p>
       </div>
     </main>

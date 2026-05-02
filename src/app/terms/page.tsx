@@ -52,47 +52,39 @@ export default function TermsPage() {
 
           <Section title="Description of service">
             <p>
-              Ventzon is an SMS-based loyalty and rewards platform. Merchants
-              create reward programs tied to a QR code. Customers scan the code,
-              provide a phone number, and receive SMS messages tracking their
-              visit progress and reward eligibility. Merchants may also send
-              promotional SMS messages to opted-in customers.
+              Ventzon is a loyalty and rewards platform for local businesses.
+              Merchants create reward programs tied to a QR code. Customers scan
+              the code, check in via the app or web, and receive push
+              notifications tracking their visit progress and reward eligibility.
             </p>
           </Section>
 
-          <Section title="Customer SMS terms">
+          <Section title="Customer notification terms">
             <p>
-              By checking in at a participating shop (scanning the QR code and
-              entering your phone number), you consent to receive SMS messages
-              from Ventzon on behalf of that shop. These messages include:
+              By checking in at a participating shop and installing the Ventzon
+              app, you may receive push notifications from Ventzon on behalf of
+              that shop. These notifications include:
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
                 <span className="font-normal text-[#ededed]">
-                  Transactional messages
+                  Reward notifications
                 </span>{" "}
-                — check-in confirmations, visit progress updates, and reward
-                redemption notifications.
+                — alerts when you earn a reward or reach a milestone.
               </li>
               <li>
                 <span className="font-normal text-[#ededed]">
-                  Promotional messages
+                  Email confirmations
                 </span>{" "}
-                — marketing texts sent by the merchant such as deals, events, or
-                announcements.
+                — transactional emails for customers who check in with an email
+                address.
               </li>
             </ul>
             <p>
-              Message frequency varies. Message and data rates may apply. You
-              can opt out at any time by replying{" "}
-              <span className="rounded border border-[#1a1a1a] bg-[#0a0a0a] px-1.5 py-0.5 font-mono text-[13px] text-[#888]">
-                STOP
-              </span>{" "}
-              to any Ventzon message. Reply{" "}
-              <span className="rounded border border-[#1a1a1a] bg-[#0a0a0a] px-1.5 py-0.5 font-mono text-[13px] text-[#888]">
-                HELP
-              </span>{" "}
-              for assistance.
+              You can opt out of push notifications at any time in your
+              device&rsquo;s notification settings. To unsubscribe from email
+              notifications, use the unsubscribe link in any email or contact
+              support.
             </p>
           </Section>
 
@@ -111,8 +103,8 @@ export default function TermsPage() {
                 promotional messages.
               </li>
               <li>
-                Comply with all applicable laws and regulations including the
-                Telephone Consumer Protection Act (TCPA) and CAN-SPAM Act.
+                Comply with all applicable laws and regulations including
+                CAN-SPAM and applicable consumer protection laws.
               </li>
               <li>
                 Maintain a valid subscription to access paid features of the
@@ -173,8 +165,8 @@ export default function TermsPage() {
             <p>
               The Service is provided &ldquo;as is&rdquo; and &ldquo;as
               available&rdquo; without warranties of any kind, whether express
-              or implied. We do not guarantee uninterrupted service, SMS
-              delivery, or the accuracy of visit tracking. Ventzon is not
+              or implied. We do not guarantee uninterrupted service, push
+              notification delivery, or the accuracy of visit tracking. Ventzon is not
               responsible for the content of promotional messages sent by
               merchants.
             </p>

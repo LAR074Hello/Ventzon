@@ -77,8 +77,7 @@ export default function PrivacyPolicyPage() {
               <li>
                 <span className="font-normal text-[#ededed]">Phone number</span>{" "}
                 — optionally provided when checking in at a participating shop
-                via QR code on the web platform. Used to deliver SMS
-                confirmations and reward notifications.
+                via QR code. Used to identify you across visits.
               </li>
               <li>
                 <span className="font-normal text-[#ededed]">6-digit PIN</span>{" "}
@@ -103,18 +102,10 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc space-y-2 pl-5">
               <li>
                 <span className="font-normal text-[#ededed]">
-                  Transactional messages
+                  Push notifications
                 </span>{" "}
-                — check-in confirmations, visit progress updates, and reward
-                notifications delivered via the app or SMS.
-              </li>
-              <li>
-                <span className="font-normal text-[#ededed]">
-                  Promotional messages
-                </span>{" "}
-                — optional marketing messages sent by the merchant (e.g.,
-                deals, events, announcements). These are sent only to customers
-                who have not opted out.
+                — reward milestones and earned rewards delivered via push
+                notification (app) or email.
               </li>
             </ul>
           </Section>
@@ -132,12 +123,10 @@ export default function PrivacyPolicyPage() {
               within 30 days.
             </p>
             <p>
-              If you signed up via the SMS platform, you can stop receiving
-              text messages at any time by replying{" "}
-              <span className="rounded border border-[#1a1a1a] bg-[#0a0a0a] px-1.5 py-0.5 font-mono text-[13px] text-[#888]">
-                STOP
-              </span>{" "}
-              to any message from Ventzon.
+              You can disable push notifications at any time in your
+              device&rsquo;s Settings under Notifications. To unsubscribe from
+              email notifications, use the unsubscribe link in any email or
+              contact us.
             </p>
           </Section>
 
@@ -188,10 +177,10 @@ export default function PrivacyPolicyPage() {
                 and in transit.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">Twilio</span> —
-                for sending and receiving SMS messages on the web platform.
-                Your phone number is shared with Twilio solely for message
-                delivery.
+                <span className="font-normal text-[#ededed]">OneSignal</span> —
+                for delivering push notifications to the Ventzon app.
+                Device tokens are shared with OneSignal solely for
+                notification delivery.
               </li>
               <li>
                 <span className="font-normal text-[#ededed]">Stripe</span> —

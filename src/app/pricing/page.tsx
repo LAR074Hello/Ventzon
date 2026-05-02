@@ -17,7 +17,7 @@ import SiteFooter from "@/components/SiteFooter";
 const freeFeatures = [
   "QR code + join page",
   "Unlimited customer check-ins",
-  "SMS reward notifications",
+  "Push notification rewards",
   "Basic merchant dashboard",
   "Cancel anytime",
 ];
@@ -25,30 +25,36 @@ const freeFeatures = [
 const proFeatures = [
   "Everything in Free",
   "Custom reward goal (2–12 visits)",
-  "Custom SMS messages",
   "Analytics dashboard",
-  "Promotional texting ($0.04/customer)",
+  "Customer list & CSV export",
+  "Manual stamp tool",
+  "Email campaigns",
 ];
 
 const comparisonRows = [
   { feature: "QR code + join page", free: true, pro: true },
   { feature: "Unlimited customer check-ins", free: true, pro: true },
-  { feature: "SMS reward notifications", free: true, pro: true },
+  { feature: "Push notification rewards", free: true, pro: true },
   { feature: "Basic merchant dashboard", free: true, pro: true },
   { feature: "Custom reward goal (2–12 visits)", free: false, pro: true },
-  { feature: "Custom SMS messages", free: false, pro: true },
   { feature: "Analytics dashboard", free: false, pro: true },
-  { feature: "Promotional texting", free: false, pro: true },
+  { feature: "Customer list & CSV export", free: false, pro: true },
+  { feature: "Manual stamp tool", free: false, pro: true },
+  { feature: "Email campaigns", free: false, pro: true },
 ];
 
 const faqs = [
   {
     q: "How does the Free plan work?",
-    a: "The Free plan costs $0 per month. You only pay $1.25 per reward redeemed by a customer. No upfront cost, no commitment.",
+    a: "The Free plan costs $0 per month. You only pay $0.85 per reward redeemed by a customer — no upfront cost, no commitment. You get the core loyalty tools to get started.",
   },
   {
-    q: "What does promotional texting cost?",
-    a: "On the Pro plan, you can text your opted-in customer list at $0.04 per customer per promo. Example: texting 500 customers costs $20.",
+    q: "What does the $25/month cover on Pro?",
+    a: "The $25 operational fee covers your full Pro suite — analytics, customer list, CSV export, manual stamp tool, and email campaigns. You still pay $0.85 per redemption on top of that.",
+  },
+  {
+    q: "How do customers get notified?",
+    a: "Customers who install the Ventzon app receive push notifications when they earn rewards or are close to earning one. No SMS required.",
   },
   {
     q: "Can I switch plans later?",
@@ -75,6 +81,7 @@ function PricingContent() {
   const [shopName, setShopName] = useState<string | null>(null);
   const [loadingShop, setLoadingShop] = useState(!shopFromQuery);
   const [loading, setLoading] = useState<"monthly" | "yearly" | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [error, setError] = useState("");
 
   const hasShop = shop.length > 0;
@@ -173,18 +180,41 @@ function PricingContent() {
           </p>
 
           <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-white opacity-0 sm:text-5xl lg:text-6xl">
-            Start free.{" "}
+            Simple pricing.{" "}
             <br className="hidden sm:block" />
-            Grow when you&rsquo;re ready.
+            Pay for what works.
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
-            No commitment on the Free plan &mdash; pay only when customers redeem.
+            Start free with no monthly fee &mdash; or go Pro for the full suite.
             <br className="hidden sm:block" />
-            Upgrade to Pro for the full suite.
+            Either way, you only pay $0.85 when a customer redeems their reward.
           </p>
         </div>
       </section>
+
+      {/* ============================================================
+          ONBOARDING STEP INDICATOR (shown when coming from get-started)
+          ============================================================ */}
+      {shopFromQuery && (
+        <section className="px-8 pb-4">
+          <div className="mx-auto flex max-w-4xl items-center justify-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#333]">
+                <span className="text-[11px] font-light text-[#555]">1</span>
+              </div>
+              <span className="text-[11px] font-light tracking-[0.1em] text-[#555]">Name your shop</span>
+            </div>
+            <div className="h-[1px] w-6 bg-[#555]" />
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ededed]">
+                <span className="text-[11px] font-normal text-black">2</span>
+              </div>
+              <span className="text-[11px] font-light tracking-[0.1em] text-[#ededed]">Choose a plan</span>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ============================================================
           SHOP CONTEXT BAR
@@ -245,7 +275,7 @@ function PricingContent() {
               </div>
 
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                $1.25 per reward redeemed.
+                $0.85 per reward redeemed.
                 <br />
                 No monthly commitment.
               </p>
@@ -294,25 +324,54 @@ function PricingContent() {
                 RECOMMENDED
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between">
                 <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
                   PRO
                 </p>
+                {/* Billing period toggle */}
+                <div className="flex items-center rounded-full border border-[#2a2a2a] p-0.5">
+                  <button
+                    onClick={() => setBillingPeriod("monthly")}
+                    className={`rounded-full px-3 py-1 text-[10px] font-light tracking-[0.1em] transition-all duration-300 ${
+                      billingPeriod === "monthly"
+                        ? "bg-[#ededed] text-black"
+                        : "text-[#555] hover:text-[#888]"
+                    }`}
+                  >
+                    MONTHLY
+                  </button>
+                  <button
+                    onClick={() => setBillingPeriod("yearly")}
+                    className={`rounded-full px-3 py-1 text-[10px] font-light tracking-[0.1em] transition-all duration-300 ${
+                      billingPeriod === "yearly"
+                        ? "bg-[#ededed] text-black"
+                        : "text-[#555] hover:text-[#888]"
+                    }`}
+                  >
+                    YEARLY
+                  </button>
+                </div>
               </div>
 
               <div className="mt-6">
                 <span className="text-5xl font-extralight tracking-tight text-[#ededed]">
-                  $19.99
+                  {billingPeriod === "yearly" ? "$240" : "$25"}
                 </span>
                 <span className="ml-1 text-lg font-light text-[#444]">
-                  /mo
+                  {billingPeriod === "yearly" ? "/yr" : "/mo"}
                 </span>
               </div>
 
+              {billingPeriod === "yearly" && (
+                <p className="mt-2 text-[11px] font-light tracking-[0.05em] text-emerald-500">
+                  Save $60 vs monthly — that&apos;s 2 months free
+                </p>
+              )}
+
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                Everything in Free, plus analytics,
+                $0.85 per reward redeemed.
                 <br />
-                custom SMS &amp; promo texting.
+                Full suite &mdash; analytics, tools &amp; more.
               </p>
 
               {/* Divider */}
@@ -331,23 +390,16 @@ function PricingContent() {
                 ))}
               </ul>
 
-              {/* Promo texting example */}
-              <div className="mt-6 rounded-xl bg-white/[0.03] px-5 py-3">
-                <p className="text-[12px] font-light text-[#666]">
-                  Example: text 500 customers = $20
-                </p>
-              </div>
-
               {/* CTA — more prominent */}
               <button
-                onClick={() => startCheckout("monthly")}
+                onClick={() => startCheckout(billingPeriod)}
                 disabled={!hasShop || loading !== null || loadingShop}
                 className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {loading === "monthly"
+                {loading === billingPeriod
                   ? "Redirecting…"
                   : hasShop
-                  ? "Start free trial"
+                  ? "Get started"
                   : "Create a shop first"}
               </button>
             </div>
@@ -376,7 +428,7 @@ function PricingContent() {
               See what you get.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
-              Real-time stats, analytics charts, and SMS previews &mdash;
+              Real-time stats and analytics charts &mdash;
               all in one place.
             </p>
           </ScrollReveal>
@@ -494,23 +546,23 @@ function PricingContent() {
                 </div>
               </div>
 
-              {/* SMS preview row */}
+              {/* Push notification preview row */}
               <div className="mt-6 grid gap-4 lg:grid-cols-2">
                 <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">WELCOME TEXT</p>
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">CUSTOMER LIST</p>
                   <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
-                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
+                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">SAMPLE</p>
                     <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
-                      Welcome to Sunrise Bakery Rewards! Reply STOP to opt out. Your deal: Free pastry after 8 visits
+                      customer@example.com · 7 stamps · Last visit: today
                     </p>
                   </div>
                 </div>
                 <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">REWARD EARNED TEXT</p>
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">PUSH NOTIFICATION</p>
                   <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
                     <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
                     <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
-                      You earned your reward at Sunrise Bakery! Show this text to redeem: Free pastry after 8 visits
+                      🏆 Reward earned! You've earned your reward at Sunrise Bakery. Show the app at the register.
                     </p>
                   </div>
                 </div>
@@ -581,8 +633,9 @@ function PricingContent() {
                 <div className="flex justify-center">
                   <span className="text-[13px] font-light text-[#888]">$0</span>
                 </div>
-                <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#ededed]">$19.99</span>
+                <div className="flex flex-col items-center gap-0.5">
+                  <span className="text-[13px] font-light text-[#ededed]">$25/mo</span>
+                  <span className="text-[11px] font-light text-[#555]">or $240/yr</span>
                 </div>
               </div>
             </ScrollReveal>
@@ -592,10 +645,10 @@ function PricingContent() {
                   Per reward redeemed
                 </p>
                 <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#888]">$1.25</span>
+                  <span className="text-[13px] font-light text-[#888]">$0.85</span>
                 </div>
                 <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#ededed]">$0</span>
+                  <span className="text-[13px] font-light text-[#ededed]">$0.85</span>
                 </div>
               </div>
             </ScrollReveal>
