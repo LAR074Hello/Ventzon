@@ -442,7 +442,7 @@ function PricingContent() {
               { feature: "Customer data & analytics", ventzon: "✓", square: "✓", punch: "✗" },
               { feature: "Digital stamp tracking", ventzon: "✓", square: "✓", punch: "✗" },
               { feature: "Push notifications", ventzon: "✓", square: "✗", punch: "✗" },
-              { feature: "No hardware required", ventzon: "✓", square: "✗", punch: "✓" },
+              { feature: "Works without a POS system", ventzon: "✓", square: "✗", punch: "✓" },
               { feature: "Fraud-proof stamps", ventzon: "✓", square: "✓", punch: "✗" },
             ].map((row) => (
               <ScrollReveal key={row.feature}>
