@@ -14,55 +14,37 @@ import SiteFooter from "@/components/SiteFooter";
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
 
-const freeFeatures = [
+const proFeatures = [
   "QR code + join page",
   "Unlimited customer check-ins",
-  "Push notification rewards",
-  "Basic merchant dashboard",
-  "Cancel anytime",
-];
-
-const proFeatures = [
-  "Everything in Free",
   "Custom reward goal (2–12 visits)",
   "Analytics dashboard",
   "Customer list & CSV export",
   "Manual stamp tool",
   "Email campaigns",
-];
-
-const comparisonRows = [
-  { feature: "QR code + join page", free: true, pro: true },
-  { feature: "Unlimited customer check-ins", free: true, pro: true },
-  { feature: "Push notification rewards", free: true, pro: true },
-  { feature: "Basic merchant dashboard", free: true, pro: true },
-  { feature: "Custom reward goal (2–12 visits)", free: false, pro: true },
-  { feature: "Analytics dashboard", free: false, pro: true },
-  { feature: "Customer list & CSV export", free: false, pro: true },
-  { feature: "Manual stamp tool", free: false, pro: true },
-  { feature: "Email campaigns", free: false, pro: true },
+  "Cancel anytime",
 ];
 
 const faqs = [
   {
-    q: "How does the Free plan work?",
-    a: "The Free plan costs $0 per month. You only pay $0.85 per reward redeemed by a customer — no upfront cost, no commitment. You get the core loyalty tools to get started.",
+    q: "What does the $25/month cover?",
+    a: "The $25 operational fee covers everything — your shop listing, QR code, stamp tracking, analytics, customer list, CSV export, manual stamp tool, and email campaigns.",
   },
   {
-    q: "What does the $25/month cover on Pro?",
-    a: "The $25 operational fee covers your full Pro suite — analytics, customer list, CSV export, manual stamp tool, and email campaigns. You still pay $0.85 per redemption on top of that.",
+    q: "What is the $0.85 per redemption charge?",
+    a: "When a customer completes their stamp card and earns their reward, you're charged $0.85. You only pay when the loyalty program actually works.",
   },
   {
     q: "How do customers get notified?",
-    a: "Customers who install the Ventzon app receive push notifications when they earn rewards or are close to earning one. No SMS required.",
+    a: "Customers who install the Ventzon app receive push notifications when they earn rewards or are close to earning one.",
   },
   {
-    q: "Can I switch plans later?",
-    a: "Absolutely. Upgrade or downgrade anytime from your merchant dashboard.",
+    q: "Can I cancel anytime?",
+    a: "Yes. Cancel anytime from your merchant dashboard. Your shop stays active until the end of your billing period and no data is deleted.",
   },
   {
-    q: "What happens if I cancel?",
-    a: "Your shop stays active until the end of your billing period. No data is deleted.",
+    q: "Is yearly billing worth it?",
+    a: "At $240/year vs $300 billed monthly, you save $60 — that's 2 months free. The $0.85 per redemption applies either way.",
   },
 ];
 
@@ -135,13 +117,13 @@ function PricingContent() {
     })();
   }, [shop, supabase]);
 
-  async function startCheckout(plan: "monthly" | "yearly" | "free") {
+  async function startCheckout(plan: "monthly" | "yearly") {
     if (!hasShop) {
       setError("No shop found. Please create a shop first.");
       return;
     }
 
-    setLoading(plan as any);
+    setLoading(plan);
     setError("");
 
     try {
@@ -186,9 +168,9 @@ function PricingContent() {
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
-            Start free with no monthly fee &mdash; or go Pro for the full suite.
+            $25/month to run your loyalty program &mdash; plus $0.85
             <br className="hidden sm:block" />
-            Either way, you only pay $0.85 when a customer redeems their reward.
+            for every customer who earns their reward.
           </p>
         </div>
       </section>
@@ -220,16 +202,14 @@ function PricingContent() {
           SHOP CONTEXT BAR
           ============================================================ */}
       <section className="px-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-lg">
           {loadingShop ? (
             <div className="animate-fade-in rounded-2xl border border-[#1a1a1a] px-6 py-4 text-center text-[13px] font-light text-[#555]">
-              Finding your shop…
+              Finding your shop&hellip;
             </div>
           ) : hasShop ? (
             <div className="animate-fade-in rounded-2xl border border-[#1a1a1a] px-6 py-4 text-center">
-              <span className="text-[13px] font-light text-[#555]">
-                Subscribing for{" "}
-              </span>
+              <span className="text-[13px] font-light text-[#555]">Subscribing for </span>
               <span className="text-[13px] font-normal tracking-[0.05em] text-[#ededed]">
                 {shopName || shop}
               </span>
@@ -237,8 +217,7 @@ function PricingContent() {
           ) : (
             <div className="animate-fade-in rounded-2xl border border-[#1a1a1a] px-8 py-8 text-center">
               <p className="text-[15px] font-light text-[#888]">
-                No shop found. Create your shop first, then come back to pick a
-                plan.
+                No shop found. Create your shop first, then come back to pick a plan.
               </p>
               <a
                 href="/get-started"
@@ -253,80 +232,16 @@ function PricingContent() {
       </section>
 
       {/* ============================================================
-          PLAN CARDS
+          PLAN CARD
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">
-        <div className="mx-auto grid max-w-4xl gap-8 sm:grid-cols-2">
-
-          {/* ── Free Plan ── */}
-          <ScrollReveal delay={1}>
-            <div className="group flex h-full flex-col rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333] sm:p-10">
-              <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                FREE
-              </p>
-
-              <div className="mt-6">
-                <span className="text-5xl font-extralight tracking-tight text-[#ededed]">
-                  $0
-                </span>
-                <span className="ml-1 text-lg font-light text-[#444]">
-                  /mo
-                </span>
-              </div>
-
-              <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                $0.85 per reward redeemed.
-                <br />
-                No monthly commitment.
-              </p>
-
-              {/* Divider */}
-              <div className="my-8 h-[1px] bg-[#1a1a1a]" />
-
-              {/* Features */}
-              <ul className="flex-1 space-y-4">
-                {freeFeatures.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-3 text-[14px] font-light text-[#888]"
-                  >
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#444]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              {hasShop ? (
-                <button
-                  onClick={() => startCheckout("free")}
-                  disabled={loading !== null || loadingShop}
-                  className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {loading === ("free" as any) ? "Redirecting\u2026" : "Get started free"}
-                </button>
-              ) : (
-                <Link
-                  href="/signup"
-                  className="mt-10 block w-full rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
-                >
-                  Get started free
-                </Link>
-              )}
-            </div>
-          </ScrollReveal>
-
-          {/* ── Pro Plan (recommended) ── */}
-          <ScrollReveal delay={2}>
-            <div className="group relative flex h-full flex-col rounded-2xl border border-[#2a2a2a] p-8 transition-all duration-500 hover:border-[#444] sm:p-10">
-              {/* Badge */}
-              <div className="absolute -top-3 left-8 rounded-full bg-[#ededed] px-4 py-1 text-[10px] font-normal tracking-[0.2em] text-black sm:left-10">
-                RECOMMENDED
-              </div>
+        <div className="mx-auto max-w-lg">
+          <ScrollReveal>
+            <div className="flex flex-col rounded-2xl border border-[#2a2a2a] p-8 transition-all duration-500 hover:border-[#444] sm:p-10">
 
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
-                  PRO
+                  VENTZON PRO
                 </p>
                 {/* Billing period toggle */}
                 <div className="flex items-center rounded-full border border-[#2a2a2a] p-0.5">
@@ -362,16 +277,18 @@ function PricingContent() {
                 </span>
               </div>
 
-              {billingPeriod === "yearly" && (
+              {billingPeriod === "yearly" ? (
                 <p className="mt-2 text-[11px] font-light tracking-[0.05em] text-emerald-500">
-                  Save $60 vs monthly — that&apos;s 2 months free
+                  Save $60 vs monthly &mdash; that&apos;s 2 months free
+                </p>
+              ) : (
+                <p className="mt-2 text-[11px] font-light text-[#555]">
+                  or $240/yr and save $60
                 </p>
               )}
 
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                $0.85 per reward redeemed.
-                <br />
-                Full suite &mdash; analytics, tools &amp; more.
+                + $0.85 per reward redeemed
               </p>
 
               {/* Divider */}
@@ -390,32 +307,37 @@ function PricingContent() {
                 ))}
               </ul>
 
-              {/* CTA — more prominent */}
-              <button
-                onClick={() => startCheckout(billingPeriod)}
-                disabled={!hasShop || loading !== null || loadingShop}
-                className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {loading === billingPeriod
-                  ? "Redirecting…"
-                  : hasShop
-                  ? "Get started"
-                  : "Create a shop first"}
-              </button>
+              {/* CTA */}
+              {hasShop ? (
+                <button
+                  onClick={() => startCheckout(billingPeriod)}
+                  disabled={loading !== null || loadingShop}
+                  className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {loading === billingPeriod ? "Redirecting…" : "Get started"}
+                </button>
+              ) : (
+                <Link
+                  href="/signup"
+                  className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+                >
+                  Create an account
+                </Link>
+              )}
             </div>
           </ScrollReveal>
-        </div>
 
-        {/* Error message */}
-        {error && (
-          <div className="mx-auto mt-8 max-w-4xl text-center text-[13px] font-light text-red-400">
-            {error}
-          </div>
-        )}
+          {/* Error message */}
+          {error && (
+            <div className="mt-6 text-center text-[13px] font-light text-red-400">
+              {error}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ============================================================
-          DASHBOARD PREVIEW — Visual mock of what merchants get
+          DASHBOARD PREVIEW
           ============================================================ */}
       <section className="px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-20 max-w-xs" />
@@ -428,15 +350,12 @@ function PricingContent() {
               See what you get.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
-              Real-time stats and analytics charts &mdash;
-              all in one place.
+              Real-time stats and analytics charts &mdash; all in one place.
             </p>
           </ScrollReveal>
 
-          {/* Dashboard mock container */}
           <ScrollReveal>
             <div className="mt-14 rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8">
-              {/* Mock header */}
               <div className="flex items-center justify-between border-b border-[#1a1a1a] pb-5">
                 <div>
                   <p className="text-[11px] font-light tracking-[0.5em] text-[#555]">MERCHANT DASHBOARD</p>
@@ -447,7 +366,6 @@ function PricingContent() {
                 </span>
               </div>
 
-              {/* Stats cards row */}
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-[#1a1a1a] px-5 py-4">
                   <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">TOTAL SIGNUPS</p>
@@ -463,15 +381,9 @@ function PricingContent() {
                 </div>
               </div>
 
-              {/* Analytics charts — PRO badge */}
               <div className="mt-6">
-                <div className="flex items-center gap-2">
-                  <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">ANALYTICS</p>
-                  <span className="rounded-full bg-[#ededed] px-2.5 py-0.5 text-[9px] font-normal tracking-[0.15em] text-black">PRO</span>
-                </div>
-
+                <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">ANALYTICS</p>
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                  {/* Check-ins line chart */}
                   <div className="rounded-xl border border-[#1a1a1a] p-5">
                     <div className="flex items-center justify-between">
                       <p className="text-[10px] font-light tracking-[0.15em] text-[#555]">CUSTOMER CHECK-INS</p>
@@ -515,7 +427,6 @@ function PricingContent() {
                     </div>
                   </div>
 
-                  {/* Rewards bar chart */}
                   <div className="rounded-xl border border-[#1a1a1a] p-5">
                     <p className="text-[10px] font-light tracking-[0.15em] text-[#555]">REWARDS REDEEMED</p>
                     <div className="mt-3 h-[120px]">
@@ -546,14 +457,13 @@ function PricingContent() {
                 </div>
               </div>
 
-              {/* Push notification preview row */}
               <div className="mt-6 grid gap-4 lg:grid-cols-2">
                 <div className="rounded-xl border border-[#1a1a1a] p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">CUSTOMER LIST</p>
                   <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
                     <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">SAMPLE</p>
                     <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
-                      customer@example.com · 7 stamps · Last visit: today
+                      customer@example.com &middot; 7 stamps &middot; Last visit: today
                     </p>
                   </div>
                 </div>
@@ -562,97 +472,13 @@ function PricingContent() {
                   <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
                     <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
                     <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
-                      🏆 Reward earned! You've earned your reward at Sunrise Bakery. Show the app at the register.
+                      🏆 Reward earned! You&apos;ve earned your reward at Sunrise Bakery. Show the app at the register.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ============================================================
-          FEATURE COMPARISON — Clean table
-          ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              COMPARE
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              What&rsquo;s included
-            </h2>
-          </ScrollReveal>
-
-          <div className="mt-16">
-            {/* Table header */}
-            <div className="grid grid-cols-[1fr_80px_80px] items-end border-b border-[#1a1a1a] pb-4 sm:grid-cols-[1fr_100px_100px]">
-              <div />
-              <p className="text-center text-[11px] font-light tracking-[0.15em] text-[#555]">
-                FREE
-              </p>
-              <p className="text-center text-[11px] font-light tracking-[0.15em] text-[#555]">
-                PRO
-              </p>
-            </div>
-
-            {/* Rows */}
-            {comparisonRows.map((row) => (
-              <ScrollReveal key={row.feature}>
-                <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
-                  <p className="text-[14px] font-light text-[#888]">
-                    {row.feature}
-                  </p>
-                  <div className="flex justify-center">
-                    {row.free ? (
-                      <Check className="h-4 w-4 text-[#555]" />
-                    ) : (
-                      <span className="text-[13px] text-[#333]">—</span>
-                    )}
-                  </div>
-                  <div className="flex justify-center">
-                    {row.pro ? (
-                      <Check className="h-4 w-4 text-[#ededed]" />
-                    ) : (
-                      <span className="text-[13px] text-[#333]">—</span>
-                    )}
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-
-            {/* Pricing row */}
-            <ScrollReveal>
-              <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
-                <p className="text-[14px] font-light text-[#888]">
-                  Monthly cost
-                </p>
-                <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#888]">$0</span>
-                </div>
-                <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-[13px] font-light text-[#ededed]">$25/mo</span>
-                  <span className="text-[11px] font-light text-[#555]">or $240/yr</span>
-                </div>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal>
-              <div className="grid grid-cols-[1fr_80px_80px] items-center border-b border-[#111] py-5 sm:grid-cols-[1fr_100px_100px]">
-                <p className="text-[14px] font-light text-[#888]">
-                  Per reward redeemed
-                </p>
-                <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#888]">$0.85</span>
-                </div>
-                <div className="flex justify-center">
-                  <span className="text-[13px] font-light text-[#ededed]">$0.85</span>
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
         </div>
       </section>
 
