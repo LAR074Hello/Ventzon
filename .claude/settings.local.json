@@ -157,7 +157,12 @@
       "mcp__2220ec59-29cb-4ba2-9d50-e62c6009f7a1__get_deployment",
       "Bash(rm /Users/lukerichards/Desktop/ventzon/.git/index.lock)",
       "Bash(git -C /Users/lukerichards/Desktop/ventzon add -A)",
-      "Bash(git -C /Users/lukerichards/Desktop/ventzon diff --cached --stat)"
+      "Bash(git -C /Users/lukerichards/Desktop/ventzon diff --cached --stat)",
+      "Bash(git -C /Users/lukerichards/Desktop/ventzon add src/app/pricing/page.tsx)",
+      "Bash(git -C /Users/lukerichards/Desktop/ventzon commit -m 'Add economics, trust signals, and comparison table to pricing page *)",
+      "Bash(git -C /Users/lukerichards/Desktop/ventzon push)",
+      "Bash(git -C /Users/lukerichards/Desktop/ventzon commit -m 'Fix comparison row: no hardware → works without a POS system *)",
+      "Bash(git -C /Users/lukerichards/Desktop/ventzon commit -m 'Add /app page, Customer app nav link, fix homepage prices + explore CTA *)"
     ]
   }
 }

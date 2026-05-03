@@ -323,6 +323,16 @@ export default function Home() {
               </div>
             </ScrollReveal>
           </div>
+
+          <div className="mt-12 text-center">
+            <Link
+              href="/customer/explore"
+              className="inline-flex items-center gap-3 text-[12px] font-light tracking-[0.15em] text-[#555] transition-colors duration-500 hover:text-[#ededed]"
+            >
+              Browse local shops
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -366,8 +376,8 @@ export default function Home() {
                 desc: "Real-time dashboard shows signups, check-ins, and redemptions.",
               },
               {
-                title: "Free to start",
-                desc: "No monthly fee on the Free plan — pay $1.25 per reward redeemed. Pro at $19.99/mo.",
+                title: "Simple pricing",
+                desc: "One plan: $25/month + $0.85 per reward redeemed. Pay only when your loyalty program works.",
               },
             ].map((feature, i) => (
               <ScrollReveal key={feature.title} delay={i < 3 ? 1 : 2}>
