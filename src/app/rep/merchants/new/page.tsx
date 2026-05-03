@@ -1,36 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, ArrowLeft, Search, Store } from "lucide-react";
+
+type Result = {
+  slug: string;
+  name: string;
+  plan: string;
+  alreadyClaimed: boolean;
+  claimedByMe: boolean;
+};
 
 export default function NewMerchantPage() {
   const router = useRouter();
-  const [slug, setSlug] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Result[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [claiming, setClaiming] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.length < 2) { setResults([]); return; }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      const res = await fetch(`/api/rep/merchants/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setResults(data.results ?? []);
+      setSearching(false);
+    }, 300);
+  }, [query]);
+
+  async function handleClaim(slug: string, name: string) {
     setError(null);
-    setLoading(true);
+    setClaiming(slug);
 
     const res = await fetch("/api/rep/merchants", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug: slug.trim().toLowerCase() }),
+      body: JSON.stringify({ slug }),
     });
 
     const data = await res.json();
-    setLoading(false);
+    setClaiming(null);
 
-    if (!res.ok) {
-      setError(data.error ?? "Something went wrong.");
-      return;
-    }
-
-    setSuccess(data.shopName);
+    if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }
+    setSuccess(name);
   }
 
   if (success) {
@@ -44,7 +63,7 @@ export default function NewMerchantPage() {
         <p className="mt-1 text-[13px] font-light text-[#555]">Commission starts counting from today.</p>
         <div className="mt-8 flex gap-3">
           <button
-            onClick={() => { setSuccess(null); setSlug(""); }}
+            onClick={() => { setSuccess(null); setQuery(""); setResults([]); }}
             className="rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#888] transition-colors hover:border-[#555]"
           >
             ADD ANOTHER
@@ -68,53 +87,99 @@ export default function NewMerchantPage() {
         </button>
         <h1 className="text-[22px] font-extralight text-[#ededed]">Log a Merchant</h1>
         <p className="mt-1 text-[13px] font-light text-[#555]">
-          Once the business has created their Ventzon account, enter their shop slug here to add them to your book.
+          Help the owner sign up first, then search for their business name here.
         </p>
       </div>
 
-      <div className="px-5 pb-8">
-        <div className="mb-6 rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
-          <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">WHERE TO FIND THE SLUG</p>
-          <p className="mt-3 text-[13px] font-light leading-relaxed text-[#888]">
-            The shop slug is in the merchant's Ventzon dashboard URL — it looks like{" "}
-            <span className="text-[#ededed]">ventzon.com/merchant/sunrise-bakery</span>.
-            Ask the owner to share it with you after they sign up.
-          </p>
+      <div className="px-5 pb-8 space-y-4">
+        {/* Search */}
+        <div className="flex items-center gap-3 rounded-xl border border-[#333] bg-[#0d0d0d] px-4">
+          <Search className="h-4 w-4 shrink-0 text-[#444]" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by business name…"
+            autoFocus
+            className="flex-1 bg-transparent py-3.5 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#444]"
+          />
+          {searching && (
+            <div className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border border-[#333] border-t-[#666]" />
+          )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-2 block text-[11px] font-light tracking-[0.25em] text-[#aaa]">
-              SHOP SLUG *
-            </label>
-            <div className="flex items-center rounded-xl border border-[#333] bg-[#0d0d0d] px-4">
-              <span className="mr-1 text-[14px] font-light text-[#444]">ventzon.com/</span>
-              <input
-                type="text"
-                value={slug}
-                onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                placeholder="sunrise-bakery"
-                required
-                disabled={loading}
-                className="flex-1 bg-transparent py-3.5 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] disabled:opacity-40"
-              />
+        {error && (
+          <p className="rounded-xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-[13px] font-light text-red-300/80">
+            {error}
+          </p>
+        )}
+
+        {/* Results */}
+        {results.length > 0 && (
+          <div className="space-y-2">
+            {results.map(r => (
+              <div
+                key={r.slug}
+                className="flex items-center justify-between rounded-2xl border border-[#1a1a1a] bg-[#080808] px-5 py-4"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Store className="h-4 w-4 shrink-0 text-[#444]" />
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-light text-[#ededed] truncate">{r.name}</p>
+                    <p className="text-[11px] font-light text-[#444]">
+                      {r.plan === "pro" ? "Pro plan" : "Free plan"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="shrink-0 ml-3">
+                  {r.claimedByMe ? (
+                    <span className="text-[11px] font-light tracking-[0.1em] text-emerald-500">YOURS</span>
+                  ) : r.alreadyClaimed ? (
+                    <span className="text-[11px] font-light tracking-[0.1em] text-[#444]">CLAIMED</span>
+                  ) : (
+                    <button
+                      onClick={() => handleClaim(r.slug, r.name)}
+                      disabled={claiming === r.slug}
+                      className="rounded-full border border-[#ededed] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+                    >
+                      {claiming === r.slug ? "…" : "CLAIM"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {query.length >= 2 && !searching && results.length === 0 && (
+          <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] px-5 py-8 text-center">
+            <p className="text-[14px] font-light text-[#555]">No businesses found for "{query}"</p>
+            <p className="mt-2 text-[12px] font-light text-[#333]">
+              Make sure the owner has created their Ventzon account first.
+            </p>
+          </div>
+        )}
+
+        {query.length === 0 && (
+          <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+            <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">HOW IT WORKS</p>
+            <div className="mt-4 space-y-3">
+              {[
+                "Help the owner go to ventzon.com and create their account",
+                "Once they're signed up, search for their business name above",
+                "Tap Claim — they'll appear in your merchant list instantly",
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#333] text-[10px] font-light text-[#555]">
+                    {i + 1}
+                  </span>
+                  <p className="text-[13px] font-light leading-relaxed text-[#888]">{step}</p>
+                </div>
+              ))}
             </div>
           </div>
-
-          {error && (
-            <p className="rounded-xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-[13px] font-light text-red-300/80">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !slug.trim()}
-            className="w-full rounded-xl border border-[#ededed] py-4 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-200 hover:bg-[#ededed] hover:text-black disabled:opacity-30"
-          >
-            {loading ? "CLAIMING…" : "CLAIM MERCHANT"}
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );
