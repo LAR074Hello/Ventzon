@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       start_date: get("startDate") || null,
       sales_experience: get("salesExperience"),
       why_ventzon: get("whyVentzon"),
-      role: "summer-sales-intern",
+      role: "business-development-representative",
       submitted_at: new Date().toISOString(),
     };
 
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     const emailBody = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#000;color:#ededed">
         <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0">NEW APPLICATION</p>
-        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Summer Sales Intern</h1>
+        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Business Development Representative</h1>
         <p style="font-size:13px;color:#555;margin:0">${application.submitted_at}</p>
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
@@ -107,9 +107,9 @@ export async function POST(req: Request) {
 
     await resend.emails.send({
       from: "Ventzon Careers <rewards@ventzon.com>",
-      to: "lukerichardsschool@gmail.com",
+      to: "lukerichards@ventzon.com",
       replyTo: application.email,
-      subject: `New Application: ${application.first_name} ${application.last_name} — Summer Sales Intern`,
+      subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative`,
       html: emailBody,
       ...(resumeAttachment ? { attachments: [resumeAttachment] } : {}),
     });
