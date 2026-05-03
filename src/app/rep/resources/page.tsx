@@ -30,8 +30,8 @@ const sections = [
   {
     icon: HelpCircle,
     title: "Need help?",
-    body: "Text or message Luke directly. He's your main point of contact for anything — product questions, merchant issues, commission questions, whatever.",
-    contact: "lukerichards@ventzon.com",
+    body: "Reach out to the Ventzon team directly. We're your main point of contact for anything — product questions, merchant issues, commission questions, whatever.",
+    contact: "team@ventzon.com",
   },
 ];
 

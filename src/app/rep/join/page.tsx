@@ -65,7 +65,7 @@ function JoinForm() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
         <p className="text-[13px] font-light text-red-400">{inviteError}</p>
-        <p className="mt-3 text-[12px] font-light text-[#555]">Contact Luke for a new invite link.</p>
+        <p className="mt-3 text-[12px] font-light text-[#555]">Contact your Ventzon manager for a new invite link.</p>
       </main>
     );
   }

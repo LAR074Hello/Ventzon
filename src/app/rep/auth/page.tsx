@@ -26,11 +26,19 @@ export default function RepAuthPage() {
       return;
     }
 
+    // Admins go straight to admin page; reps go to home
+    const ADMIN_EMAILS = ["lukerichards@ventzon.com", "lukerichardsschool@gmail.com"];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && ADMIN_EMAILS.includes(user.email ?? "")) {
+      router.replace("/rep/admin");
+      return;
+    }
+
     // Verify they're actually a rep
     const res = await fetch("/api/rep/profile");
     if (!res.ok) {
       await supabase.auth.signOut();
-      setError("This account doesn't have rep access. Contact Luke if this is a mistake.");
+      setError("This account doesn't have rep access. Contact your Ventzon manager if this is a mistake.");
       setLoading(false);
       return;
     }
@@ -83,7 +91,7 @@ export default function RepAuthPage() {
         </form>
 
         <p className="mt-8 text-center text-[12px] font-light text-[#444]">
-          Don't have an account? You need an invite from Luke.
+          Don't have an account? You need an invite from Ventzon.
         </p>
       </div>
     </main>
