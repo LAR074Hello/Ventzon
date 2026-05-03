@@ -3,6 +3,37 @@ import { ArrowRight, Check } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import SiteFooter from "@/components/SiteFooter";
 
+const shops = [
+  {
+    name: "Sunrise Bakery",
+    deal: "Free coffee after 8 visits",
+    from: "from #1a0a00",
+    to: "to #0a0800",
+    img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=64&h=64&fit=crop&auto=format",
+  },
+  {
+    name: "Fresh Cuts",
+    deal: "Free cut after 10 visits",
+    from: "from #00111a",
+    to: "to #000a0a",
+    img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=64&h=64&fit=crop&auto=format",
+  },
+  {
+    name: "The Daily Grind",
+    deal: "Free drink after 6 visits",
+    from: "from #0a001a",
+    to: "to #07000f",
+    img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=64&h=64&fit=crop&auto=format",
+  },
+  {
+    name: "Corner Deli",
+    deal: "Free sandwich after 12 visits",
+    from: "from #001a0a",
+    to: "to #000d06",
+    img: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=64&h=64&fit=crop&auto=format",
+  },
+];
+
 export default function CustomerAppPage() {
   return (
     <main className="min-h-screen bg-black text-[#ededed]">
@@ -49,7 +80,7 @@ export default function CustomerAppPage() {
               THE EXPERIENCE
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Three taps. No download.
+              Three taps. Instant loyalty.
             </h2>
           </ScrollReveal>
 
@@ -69,9 +100,11 @@ export default function CustomerAppPage() {
                 {/* Content */}
                 <div className="flex flex-col items-center px-4 pt-4 pb-4">
                   {/* Shop avatar */}
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#0a0a0a]">
-                    <span className="text-lg font-extralight text-[#555]">S</span>
-                  </div>
+                  <img
+                    src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=96&h=96&fit=crop&auto=format"
+                    alt="Sunrise Bakery"
+                    className="h-12 w-12 rounded-full object-cover border border-[#2a2a2a]"
+                  />
                   <p className="mt-2 text-[9px] font-light tracking-[0.25em] text-[#ededed]">
                     SUNRISE BAKERY
                   </p>
@@ -193,12 +226,6 @@ export default function CustomerAppPage() {
               </p>
             </ScrollReveal>
           </div>
-
-          <ScrollReveal className="mt-12 text-center">
-            <p className="text-[13px] font-light text-[#555]">
-              No app download required. Works on any phone via QR code.
-            </p>
-          </ScrollReveal>
         </div>
       </section>
 
@@ -227,21 +254,16 @@ export default function CustomerAppPage() {
                 NEARBY SHOPS
               </p>
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                {[
-                  { name: "Sunrise Bakery", deal: "Free coffee after 8 visits", from: "from #1a0a00", to: "to #0a0800" },
-                  { name: "Fresh Cuts", deal: "Free cut after 10 visits", from: "from #00111a", to: "to #000a0a" },
-                  { name: "The Daily Grind", deal: "Free drink after 6 visits", from: "from #0a001a", to: "to #07000f" },
-                  { name: "Corner Deli", deal: "Free sandwich after 12 visits", from: "from #001a0a", to: "to #000d06" },
-                ].map((shop) => (
+                {shops.map((shop) => (
                   <div
                     key={shop.name}
                     className={`flex-shrink-0 w-44 rounded-xl border border-[#1a1a1a] bg-gradient-to-br ${shop.from} ${shop.to} p-4 transition-colors duration-500 hover:border-[#333]`}
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#0a0a0a]">
-                      <span className="text-sm font-extralight text-[#555]">
-                        {shop.name[0]}
-                      </span>
-                    </div>
+                    <img
+                      src={shop.img}
+                      alt={shop.name}
+                      className="h-8 w-8 rounded-full object-cover border border-[#2a2a2a]"
+                    />
                     <p className="mt-3 text-[11px] font-light tracking-[0.15em] text-[#ededed]">
                       {shop.name}
                     </p>
