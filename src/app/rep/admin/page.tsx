@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Check, Users, DollarSign } from "lucide-react";
+import { Copy, Check, Users, DollarSign, Download } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type Rep = {
@@ -102,9 +102,18 @@ export default function RepAdminPage() {
 
   return (
     <div className="min-h-full bg-black">
-      <div className="px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 20px)" }}>
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">ADMIN</p>
-        <h1 className="mt-1 text-[22px] font-extralight text-[#ededed]">Rep Management</h1>
+      <div className="flex items-start justify-between px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 20px)" }}>
+        <div>
+          <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">ADMIN</p>
+          <h1 className="mt-1 text-[22px] font-extralight text-[#ededed]">Rep Management</h1>
+        </div>
+        <a
+          href="/api/rep/admin/export"
+          download
+          className="mt-1 flex items-center gap-2 rounded-full border border-[#222] px-4 py-2 text-[11px] font-light tracking-[0.1em] text-[#555] transition-colors hover:border-[#444] hover:text-[#888]"
+        >
+          <Download className="h-3.5 w-3.5" /> EXPORT CSV
+        </a>
       </div>
 
       <div className="px-5 pb-8 space-y-5">
