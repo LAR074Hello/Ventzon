@@ -16,7 +16,7 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/customer")) return null;
+  if (pathname?.startsWith("/customer") || pathname?.startsWith("/rep")) return null;
 
   // Close menu on route change
   useEffect(() => {

@@ -31,7 +31,7 @@ const sections = [
     icon: HelpCircle,
     title: "Need help?",
     body: "Reach out to the Ventzon team directly. We're your main point of contact for anything — product questions, merchant issues, commission questions, whatever.",
-    contact: "team@ventzon.com",
+    contact: "lukerichards@ventzon.com",
   },
 ];
 
