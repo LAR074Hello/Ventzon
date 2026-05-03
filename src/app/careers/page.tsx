@@ -48,24 +48,24 @@ export default function CareersPage() {
                   <span className="rounded-full border border-emerald-800/50 bg-emerald-950/30 px-2.5 py-1 text-[10px] font-light tracking-[0.15em] text-emerald-400">
                     HIRING
                   </span>
-                  <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">INTERNSHIP</span>
+                  <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 CONTRACTOR</span>
                 </div>
-                <h3 className="mt-3 text-[24px] font-extralight text-[#ededed]">Summer Sales Intern</h3>
+                <h3 className="mt-3 text-[24px] font-extralight text-[#ededed]">Business Development Representative</h3>
                 <div className="mt-2 flex flex-wrap items-center gap-4">
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
                     <MapPin className="h-3 w-3" /> Your city (field-based)
                   </span>
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
-                    <Clock className="h-3 w-3" /> Summer 2025 · Part-time or full-time
+                    <Clock className="h-3 w-3" /> Flexible · Work when you want
                   </span>
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
-                    <DollarSign className="h-3 w-3" /> Commission + bonus
+                    <DollarSign className="h-3 w-3" /> 20% monthly recurring commission
                   </span>
                 </div>
               </div>
 
               <Link
-                href="/careers/summer-sales-intern"
+                href="/careers/business-development-representative"
                 className="inline-flex shrink-0 items-center gap-2.5 rounded-full border border-[#ededed] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black"
               >
                 View & apply <ArrowRight className="h-3.5 w-3.5" />
@@ -76,42 +76,22 @@ export default function CareersPage() {
               <div>
                 <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">ABOUT THE ROLE</p>
                 <p className="mt-4 text-[14px] font-light leading-relaxed text-[#bbb]">
-                  We're looking for a driven, outgoing individual to hit the streets and bring local businesses onto the Ventzon platform. You'll be the face of Ventzon — walking into coffee shops, restaurants, salons, and retailers, pitching our loyalty product, and signing merchants up on the spot.
+                  As a Business Development Representative at Ventzon, you'll be the face of the company — walking into local businesses, building relationships with owners, and signing them up for the platform. This is a flexible, commission-based side hustle where you identify target businesses in your area, introduce them to Ventzon, and walk owners through a live demo on the spot.
                 </p>
                 <p className="mt-3 text-[14px] font-light leading-relaxed text-[#bbb]">
-                  This is a ground-floor opportunity at a fast-growing startup. If you close deals and love working with people, you'll earn well and have a direct line to the founders.
+                  Beyond the initial sale, you'll serve as the primary point of contact for your merchants — following up, answering questions, and making sure they're getting real value out of the platform.
                 </p>
-              </div>
-
-              <div>
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">WHAT YOU'LL DO</p>
-                <ul className="mt-4 space-y-2.5">
-                  {[
-                    "Walk into local businesses and pitch Ventzon's loyalty program face-to-face",
-                    "Sign up new merchants and get their profile live on the platform",
-                    "Build relationships with shop owners and check in on their progress",
-                    "Report weekly on outreach, conversions, and merchant feedback",
-                    "Help refine the sales pitch based on what you hear in the field",
-                    "Represent the Ventzon brand with professionalism and energy",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-3 text-[14px] font-light text-[#bbb]">
-                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#666]" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
               </div>
 
               <div>
                 <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">WHAT WE'RE LOOKING FOR</p>
                 <ul className="mt-4 space-y-2.5">
                   {[
-                    "Outgoing, confident, and genuinely excited to talk to strangers",
-                    "Strong communicator — you can explain things simply and persuasively",
-                    "Self-starter who doesn't need hand-holding to get moving",
-                    "Based locally — you'll be visiting businesses in person",
-                    "Previous sales, retail, or customer-facing experience is a plus but not required",
-                    "Hunger to grow — this role can turn into a full-time position",
+                    "Strong interpersonal skills — comfortable walking into a business cold",
+                    "Self-motivated and able to manage your own time and territory",
+                    "Reliable transportation and willingness to travel locally",
+                    "A smartphone capable of running the Ventzon app for live demos",
+                    "Prior customer-facing experience is a plus but not required",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3 text-[14px] font-light text-[#bbb]">
                       <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#666]" />
@@ -125,9 +105,9 @@ export default function CareersPage() {
                 <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">COMPENSATION</p>
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
-                    { label: "$50–100", detail: "Per merchant signed up and active" },
-                    { label: "Uncapped", detail: "No ceiling on what you can earn" },
-                    { label: "Bonus", detail: "Performance bonuses for top closers" },
+                    { label: "20%", detail: "Of monthly subscription revenue per merchant" },
+                    { label: "Recurring", detail: "Earn as long as your merchants stay active" },
+                    { label: "Uncapped", detail: "Your book of business grows over time" },
                   ].map(({ label, detail }) => (
                     <div key={label} className="rounded-xl border border-[#222] p-4">
                       <p className="text-[18px] font-extralight text-[#ededed]">{label}</p>
@@ -143,7 +123,7 @@ export default function CareersPage() {
                   Takes about 5 minutes. No resume required to get started.
                 </p>
                 <Link
-                  href="/careers/summer-sales-intern/apply"
+                  href="/careers/business-development-representative/apply"
                   className="mt-5 inline-flex items-center gap-2.5 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black"
                 >
                   Apply now <ArrowRight className="h-3.5 w-3.5" />
@@ -159,7 +139,7 @@ export default function CareersPage() {
         <div className="mx-auto max-w-3xl">
           <div className="border-t border-[#222] pt-16">
             <p className="text-[11px] font-light tracking-[0.4em] text-[#888]">WHY VENTZON</p>
-            <h2 className="mt-4 text-[22px] font-extralight text-[#ededed]">More than a summer job</h2>
+            <h2 className="mt-4 text-[22px] font-extralight text-[#ededed]">More than a side hustle</h2>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {perks.map(({ icon: Icon, label, detail }) => (
                 <div key={label} className="flex items-start gap-4 rounded-xl border border-[#222] p-5">
