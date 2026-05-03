@@ -81,7 +81,7 @@ export async function POST(req: Request) {
         status: isReward ? "reward" : "progress",
         visits: newVisits,
         goal,
-        remaining: isReward ? goal : goal - (newVisits % goal),
+        remaining: isReward ? 0 : goal - (newVisits % goal),
         new_customer: false,
       });
     } else {

@@ -48,6 +48,12 @@ export async function DELETE() {
       // Delete reward events
       await supabase.from("reward_events").delete().in("shop_slug", slugs);
 
+      // Delete promotions
+      await supabase.from("promotions").delete().in("shop_slug", slugs);
+
+      // Clear rep claims before deleting shops (avoids FK constraint)
+      await supabase.from("shops").update({ rep_id: null }).in("slug", slugs);
+
       // Delete shop settings
       await supabase.from("shop_settings").delete().in("shop_slug", slugs);
 
