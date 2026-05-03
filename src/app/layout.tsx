@@ -17,13 +17,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ventzon — Customer Rewards Platform",
   description:
-    "Ventzon helps local businesses increase repeat customers with simple app-based rewards. No app download needed.",
+    "Ventzon helps local businesses increase repeat customers with a simple loyalty app. Earn rewards, track visits, redeem in-store.",
   metadataBase: new URL("https://www.ventzon.com"),
   manifest: "/site.webmanifest",
   openGraph: {
     title: "Ventzon — Customer Rewards Platform",
     description:
-      "Turn one-time buyers into loyal regulars. app-based rewards for local businesses.",
+      "Turn one-time buyers into loyal regulars. App-based loyalty rewards for local businesses.",
     url: "https://www.ventzon.com",
     siteName: "Ventzon",
     type: "website",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Ventzon — Customer Rewards Platform",
     description:
-      "Turn one-time buyers into loyal regulars. app-based rewards for local businesses.",
+      "Turn one-time buyers into loyal regulars. App-based loyalty rewards for local businesses.",
   },
   robots: {
     index: true,

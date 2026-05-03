@@ -15,7 +15,7 @@ const customerSteps = [
   {
     number: "01",
     title: "Scan the shop QR",
-    body: "Use your phone camera to scan the QR code at checkout. No app download needed — it just works.",
+    body: "Download the Ventzon app or scan the QR code in-store with your camera. Either way, you're instantly connected to that shop's rewards.",
   },
   {
     number: "02",
@@ -246,7 +246,7 @@ export default function HowItWorksPage() {
                   <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
                     Customers scan the QR with their phone camera, enter their
                     phone or email, and they&rsquo;re checked in. One tap per day &mdash;
-                    no app download, no account to create.
+                    stamp collected, reward tracked, notification sent.
                   </p>
                 </div>
                 <div className="hidden lg:block" />
