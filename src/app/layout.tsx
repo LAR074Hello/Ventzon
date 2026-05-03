@@ -20,6 +20,13 @@ export const metadata: Metadata = {
     "Ventzon helps local businesses increase repeat customers with a simple loyalty app. Earn rewards, track visits, redeem in-store.",
   metadataBase: new URL("https://www.ventzon.com"),
   manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: "Ventzon",
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    "apple-itunes-app": "app-id=6763768638",
+  },
   openGraph: {
     title: "Ventzon — Customer Rewards Platform",
     description:

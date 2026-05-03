@@ -21,10 +21,8 @@ async function requestReview() {
     if (!Capacitor.isNativePlatform()) return;
     // Opens the App Store rating prompt via deep link
     // Replace APP_STORE_ID with your actual App Store ID when published
-    const appStoreId = "YOUR_APP_STORE_ID";
-    if (appStoreId !== "YOUR_APP_STORE_ID") {
-      window.open(`itms-apps://itunes.apple.com/app/idAPP_STORE_ID?action=write-review`, "_system");
-    }
+    const appStoreId = "6763768638";
+    window.open(`itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`, "_system");
   } catch {}
 }
 
