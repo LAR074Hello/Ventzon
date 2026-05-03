@@ -2,13 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { isAdmin, calcMerchantCommission, MONTHLY_FLAT, COMMISSION_RATE } from "@/lib/rep-utils";
 
 export const dynamic = "force-dynamic";
-
-const ADMIN_EMAILS = ["lukerichards@ventzon.com", "lukerichardsschool@gmail.com"];
-const MONTHLY_FLAT = 25;
-const PER_REWARD = 1.25;
-const COMMISSION_RATE = 0.20;
 
 export async function GET() {
   try {
@@ -20,7 +16,7 @@ export async function GET() {
     );
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) {
+    if (!user || !isAdmin(user.email)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -31,33 +27,47 @@ export async function GET() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const monthName = now.toLocaleString("default", { month: "long", year: "numeric" });
 
+    // Batch fetch all rep-owned shops
+    const { data: allShops } = await admin
+      .from("shops")
+      .select("slug, plan_type, subscription_status, rep_id, rep_claimed_at, created_at")
+      .not("rep_id", "is", null)
+      .order("rep_claimed_at", { ascending: false });
+
+    const shopsByRep: Record<string, typeof allShops> = {};
+    for (const shop of allShops ?? []) {
+      if (!shopsByRep[shop.rep_id]) shopsByRep[shop.rep_id] = [];
+      shopsByRep[shop.rep_id]!.push(shop);
+    }
+
+    // Batch fetch names and rewards
+    const allSlugs = (allShops ?? []).map(s => s.slug);
+    const { data: allSettings } = allSlugs.length > 0
+      ? await admin.from("shop_settings").select("shop_slug, shop_name").in("shop_slug", allSlugs)
+      : { data: [] };
+    const nameMap = Object.fromEntries((allSettings ?? []).map(s => [s.shop_slug, s.shop_name]));
+
+    const { data: allRewards } = allSlugs.length > 0
+      ? await admin.from("reward_events").select("shop_slug").in("shop_slug", allSlugs).gte("reward_date", monthStart)
+      : { data: [] };
+    const rewardCounts: Record<string, number> = {};
+    for (const r of allRewards ?? []) rewardCounts[r.shop_slug] = (rewardCounts[r.shop_slug] ?? 0) + 1;
+
+    const repMap = Object.fromEntries((reps ?? []).map(r => [r.id, r]));
+
     const rows: string[] = [];
 
-    // ── Sheet 1: Reps summary ──
+    // ── Reps Summary ──
     rows.push("REPS SUMMARY");
     rows.push(`"Name","Email","City","Joined","Total Merchants","Active Pro","Commission (${monthName})"`);
 
     for (const rep of reps ?? []) {
-      const { data: shops } = await admin
-        .from("shops")
-        .select("slug, plan_type, subscription_status")
-        .eq("rep_id", rep.id);
-
-      const myShops = shops ?? [];
+      const myShops = shopsByRep[rep.id] ?? [];
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
-      const slugs = myShops.map(s => s.slug);
-
-      let rewardCount = 0;
-      if (slugs.length > 0) {
-        const { count } = await admin
-          .from("reward_events")
-          .select("id", { count: "exact", head: true })
-          .in("shop_slug", slugs)
-          .gte("reward_date", monthStart);
-        rewardCount = count ?? 0;
-      }
-
-      const commission = (activePro * MONTHLY_FLAT * COMMISSION_RATE) + (rewardCount * PER_REWARD * COMMISSION_RATE);
+      const commission = myShops.reduce((sum, s) => {
+        const isPro = s.plan_type === "pro" && s.subscription_status === "active";
+        return sum + calcMerchantCommission(isPro, rewardCounts[s.slug] ?? 0);
+      }, 0);
 
       rows.push([
         `"${rep.full_name}"`,
@@ -70,39 +80,18 @@ export async function GET() {
       ].join(","));
     }
 
-    rows.push("");
-    rows.push("");
+    rows.push("", "");
 
-    // ── Sheet 2: All merchants ──
+    // ── All Merchants ──
     rows.push("ALL MERCHANTS");
     rows.push(`"Business Name","Slug","Plan","Status","Rep Name","Rep Email","Claimed Date","Rewards This Month","Commission This Month"`);
-
-    const { data: allShops } = await admin
-      .from("shops")
-      .select("slug, plan_type, subscription_status, rep_id, rep_claimed_at")
-      .order("rep_claimed_at", { ascending: false });
-
-    const repMap = Object.fromEntries((reps ?? []).map(r => [r.id, r]));
-
-    const slugs = (allShops ?? []).map(s => s.slug);
-    const { data: allSettings } = slugs.length > 0
-      ? await admin.from("shop_settings").select("shop_slug, shop_name").in("shop_slug", slugs)
-      : { data: [] };
-    const nameMap = Object.fromEntries((allSettings ?? []).map(s => [s.shop_slug, s.shop_name]));
-
-    const { data: allRewards } = slugs.length > 0
-      ? await admin.from("reward_events").select("shop_slug").in("shop_slug", slugs).gte("reward_date", monthStart)
-      : { data: [] };
-    const rewardCounts: Record<string, number> = {};
-    for (const r of allRewards ?? []) rewardCounts[r.shop_slug] = (rewardCounts[r.shop_slug] ?? 0) + 1;
 
     for (const shop of allShops ?? []) {
       const rep = shop.rep_id ? repMap[shop.rep_id] : null;
       const isPro = shop.plan_type === "pro" && shop.subscription_status === "active";
       const rewards = rewardCounts[shop.slug] ?? 0;
-      const commission = isPro
-        ? (MONTHLY_FLAT * COMMISSION_RATE) + (rewards * PER_REWARD * COMMISSION_RATE)
-        : rewards * PER_REWARD * COMMISSION_RATE;
+      const commission = calcMerchantCommission(isPro, rewards);
+      const claimedDate = shop.rep_claimed_at ?? shop.created_at;
 
       rows.push([
         `"${nameMap[shop.slug] ?? shop.slug}"`,
@@ -111,7 +100,7 @@ export async function GET() {
         `"${shop.subscription_status ?? "inactive"}"`,
         `"${rep?.full_name ?? "—"}"`,
         `"${rep?.email ?? "—"}"`,
-        `"${shop.rep_claimed_at ? new Date(shop.rep_claimed_at).toLocaleDateString() : "—"}"`,
+        `"${claimedDate ? new Date(claimedDate).toLocaleDateString() : "—"}"`,
         rewards,
         `"$${commission.toFixed(2)}"`,
       ].join(","));

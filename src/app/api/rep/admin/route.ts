@@ -2,13 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { isAdmin, calcMerchantCommission } from "@/lib/rep-utils";
 
 export const dynamic = "force-dynamic";
-
-const ADMIN_EMAILS = ["lukerichards@ventzon.com", "lukerichardsschool@gmail.com"];
-const MONTHLY_FLAT = 25;
-const PER_REWARD = 1.25;
-const COMMISSION_RATE = 0.20;
 
 export async function GET() {
   try {
@@ -20,7 +16,7 @@ export async function GET() {
     );
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) {
+    if (!user || !isAdmin(user.email)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -34,35 +30,52 @@ export async function GET() {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    const repsWithStats = await Promise.all((reps ?? []).map(async (rep) => {
-      const { data: shops } = await admin
-        .from("shops")
-        .select("slug, plan_type, subscription_status")
-        .eq("rep_id", rep.id);
+    // Batch: fetch all shops with rep_id set, then group by rep
+    const { data: allShops } = await admin
+      .from("shops")
+      .select("slug, plan_type, subscription_status, rep_id")
+      .not("rep_id", "is", null);
 
-      const myShops = shops ?? [];
+    const shopsByRep: Record<string, typeof allShops> = {};
+    for (const shop of allShops ?? []) {
+      if (!shopsByRep[shop.rep_id]) shopsByRep[shop.rep_id] = [];
+      shopsByRep[shop.rep_id]!.push(shop);
+    }
+
+    // Batch: fetch all reward events this month for all rep-owned shops
+    const allSlugs = (allShops ?? []).map(s => s.slug);
+    const { data: allRewards } = allSlugs.length > 0
+      ? await admin.from("reward_events").select("shop_slug").in("shop_slug", allSlugs).gte("reward_date", monthStart)
+      : { data: [] };
+
+    const rewardCounts: Record<string, number> = {};
+    for (const r of allRewards ?? []) {
+      rewardCounts[r.shop_slug] = (rewardCounts[r.shop_slug] ?? 0) + 1;
+    }
+
+    const repsWithStats = (reps ?? []).map(rep => {
+      const myShops = shopsByRep[rep.id] ?? [];
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
-      const slugs = myShops.map(s => s.slug);
+      const totalRewards = myShops.reduce((sum, s) => sum + (rewardCounts[s.slug] ?? 0), 0);
+      const commission = calcMerchantCommission(activePro > 0, 0) * activePro +
+        myShops.reduce((sum, s) => {
+          const isPro = s.plan_type === "pro" && s.subscription_status === "active";
+          return sum + calcMerchantCommission(isPro, rewardCounts[s.slug] ?? 0);
+        }, 0) - (activePro * calcMerchantCommission(false, 0)); // avoid double-counting
 
-      let rewardCount = 0;
-      if (slugs.length > 0) {
-        const { count } = await admin
-          .from("reward_events")
-          .select("id", { count: "exact", head: true })
-          .in("shop_slug", slugs)
-          .gte("reward_date", monthStart);
-        rewardCount = count ?? 0;
-      }
-
-      const commission = (activePro * MONTHLY_FLAT * COMMISSION_RATE) + (rewardCount * PER_REWARD * COMMISSION_RATE);
+      // Cleaner calculation
+      const commissionThisMonth = myShops.reduce((sum, s) => {
+        const isPro = s.plan_type === "pro" && s.subscription_status === "active";
+        return sum + calcMerchantCommission(isPro, rewardCounts[s.slug] ?? 0);
+      }, 0);
 
       return {
         ...rep,
         totalMerchants: myShops.length,
         activePro,
-        commissionThisMonth: Math.round(commission * 100) / 100,
+        commissionThisMonth: Math.round(commissionThisMonth * 100) / 100,
       };
-    }));
+    });
 
     const { data: pendingInvites } = await admin
       .from("rep_invites")

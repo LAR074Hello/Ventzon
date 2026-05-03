@@ -42,7 +42,7 @@ export default function RepHomePage() {
         setStats(d.stats);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();

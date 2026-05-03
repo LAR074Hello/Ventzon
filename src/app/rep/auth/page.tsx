@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { ADMIN_EMAILS } from "@/lib/rep-utils";
 
 export default function RepAuthPage() {
   const router = useRouter();
@@ -27,9 +28,8 @@ export default function RepAuthPage() {
     }
 
     // Admins go straight to admin page; reps go to home
-    const ADMIN_EMAILS = ["lukerichards@ventzon.com", "lukerichardsschool@gmail.com"];
     const { data: { user } } = await supabase.auth.getUser();
-    if (user && ADMIN_EMAILS.includes(user.email ?? "")) {
+    if (user && ADMIN_EMAILS.map(e => e.toLowerCase()).includes((user.email ?? "").toLowerCase())) {
       router.replace("/rep/admin");
       return;
     }

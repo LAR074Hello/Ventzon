@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { isAdmin } from "@/lib/rep-utils";
 
 export const dynamic = "force-dynamic";
-
-const ADMIN_EMAILS = ["lukerichards@ventzon.com", "lukerichardsschool@gmail.com"];
 
 // GET: validate an invite token
 export async function GET(req: Request) {
@@ -51,8 +50,9 @@ export async function POST(req: Request) {
       if (invite.used_at) return NextResponse.json({ error: "Already used." }, { status: 410 });
       if (new Date(invite.expires_at) < new Date()) return NextResponse.json({ error: "Expired." }, { status: 410 });
 
-      // Try to create a new Supabase auth user
       let userId: string;
+
+      // Try to create a new Supabase auth user
       const { data: authData, error: authError } = await admin.auth.admin.createUser({
         email: invite.email,
         password: body.password,
@@ -61,11 +61,22 @@ export async function POST(req: Request) {
       });
 
       if (authError) {
-        // If the email already exists, look up the existing user and update their password
+        // Email already registered — find existing user by paginating through all users
         if (authError.message?.toLowerCase().includes("already been registered") || authError.code === "email_exists") {
-          const { data: existingUsers } = await admin.auth.admin.listUsers();
-          const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === invite.email.toLowerCase());
-          if (!existing) return NextResponse.json({ error: authError.message }, { status: 400 });
+          let existing = null;
+          let page = 1;
+          const perPage = 1000;
+
+          while (!existing) {
+            const { data: pageData } = await admin.auth.admin.listUsers({ page, perPage });
+            if (!pageData?.users?.length) break;
+            existing = pageData.users.find(u => u.email?.toLowerCase() === invite.email.toLowerCase());
+            if (pageData.users.length < perPage) break; // last page
+            page++;
+          }
+
+          if (!existing) return NextResponse.json({ error: "Account not found. Please contact support." }, { status: 400 });
+
           // Update their password so they can sign in with the new one
           await admin.auth.admin.updateUserById(existing.id, { password: body.password });
           userId = existing.id;
@@ -76,7 +87,7 @@ export async function POST(req: Request) {
         userId = authData.user.id;
       }
 
-      // Create rep profile (skip if already exists)
+      // Create rep profile if it doesn't already exist
       const { data: existingProfile } = await admin
         .from("rep_profiles")
         .select("id")
@@ -107,7 +118,7 @@ export async function POST(req: Request) {
     );
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) {
+    if (!user || !isAdmin(user.email)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
