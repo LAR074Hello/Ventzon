@@ -51,7 +51,8 @@ export async function POST(req: Request) {
       if (invite.used_at) return NextResponse.json({ error: "Already used." }, { status: 410 });
       if (new Date(invite.expires_at) < new Date()) return NextResponse.json({ error: "Expired." }, { status: 410 });
 
-      // Create Supabase auth user
+      // Try to create a new Supabase auth user
+      let userId: string;
       const { data: authData, error: authError } = await admin.auth.admin.createUser({
         email: invite.email,
         password: body.password,
@@ -59,15 +60,37 @@ export async function POST(req: Request) {
         user_metadata: { full_name: invite.full_name },
       });
 
-      if (authError) return NextResponse.json({ error: authError.message }, { status: 400 });
+      if (authError) {
+        // If the email already exists, look up the existing user and update their password
+        if (authError.message?.toLowerCase().includes("already been registered") || authError.code === "email_exists") {
+          const { data: existingUsers } = await admin.auth.admin.listUsers();
+          const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === invite.email.toLowerCase());
+          if (!existing) return NextResponse.json({ error: authError.message }, { status: 400 });
+          // Update their password so they can sign in with the new one
+          await admin.auth.admin.updateUserById(existing.id, { password: body.password });
+          userId = existing.id;
+        } else {
+          return NextResponse.json({ error: authError.message }, { status: 400 });
+        }
+      } else {
+        userId = authData.user.id;
+      }
 
-      // Create rep profile
-      await admin.from("rep_profiles").insert({
-        user_id: authData.user.id,
-        email: invite.email,
-        full_name: invite.full_name,
-        invited_by_email: invite.invited_by_email,
-      });
+      // Create rep profile (skip if already exists)
+      const { data: existingProfile } = await admin
+        .from("rep_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .single();
+
+      if (!existingProfile) {
+        await admin.from("rep_profiles").insert({
+          user_id: userId,
+          email: invite.email,
+          full_name: invite.full_name,
+          invited_by_email: invite.invited_by_email,
+        });
+      }
 
       // Mark invite used
       await admin.from("rep_invites").update({ used_at: new Date().toISOString() }).eq("token", body.token);
