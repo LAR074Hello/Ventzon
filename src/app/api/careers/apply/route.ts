@@ -106,8 +106,8 @@ export async function POST(req: Request) {
     `;
 
     await resend.emails.send({
-      from: "Ventzon Careers <rewards@ventzon.com>",
-      to: "lukerichards@ventzon.com",
+      from: "Ventzon Careers <onboarding@resend.dev>",
+      to: "lukerichardsschool@gmail.com",
       replyTo: application.email,
       subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative`,
       html: emailBody,
