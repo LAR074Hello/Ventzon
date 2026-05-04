@@ -207,8 +207,15 @@ export async function POST(req: Request) {
     });
 
     if (checkinInsertErr) {
-      // If duplicate, they already checked in today
-      if (String(checkinInsertErr.message || "").toLowerCase().includes("duplicate")) {
+      // Check for unique-constraint violation (duplicate check-in today)
+      const errCode = (checkinInsertErr as any).code;
+      const errMsg = String(checkinInsertErr.message ?? "").toLowerCase();
+      const isDuplicate =
+        errCode === "23505" ||
+        errMsg.includes("duplicate") ||
+        errMsg.includes("unique");
+
+      if (isDuplicate) {
         const visits = Number(customer.visits ?? 0);
         return NextResponse.json(
           {
@@ -307,9 +314,22 @@ export async function POST(req: Request) {
     // ── Push notifications ──
     try {
       if (email && customer.id) {
-        // Look up auth user by email to find their device tokens
-        const { data: authUsers } = await supabase.auth.admin.listUsers();
-        const authUser = authUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+        // Look up auth user by email — paginate so we don't miss users past the
+        // default page size and don't silently skip large accounts.
+        let authUser: any = null;
+        let page = 1;
+        while (!authUser) {
+          const { data: authPage } = await supabase.auth.admin.listUsers({
+            page,
+            perPage: 1000,
+          });
+          if (!authPage?.users?.length) break;
+          authUser = authPage.users.find(
+            (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+          );
+          if (authPage.users.length < 1000) break;
+          page++;
+        }
         if (authUser) {
           const { data: tokenRows } = await supabase
             .from("device_tokens")

@@ -34,12 +34,13 @@ export async function GET() {
       shopMap[s.slug] = { logo_url: s.logo_url ?? null, created_at: s.created_at ?? null };
     }
 
-    // Get member counts per shop
+    // Get member counts per shop — bounded to 10k rows to avoid full table scans
     const { data: memberCounts } = slugs.length
       ? await supabase
           .from("customers")
           .select("shop_slug")
           .in("shop_slug", slugs)
+          .limit(10000)
       : { data: [] };
 
     const countMap: Record<string, number> = {};

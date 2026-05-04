@@ -153,7 +153,7 @@ export default function CustomerShopPage() {
   const checkedInToday = status?.last_checkin_date === today;
   const isReady = visits >= goal;
 
-  async function loadHistory(email: string) {
+  async function loadHistory() {
     const res = await fetch(`/api/customer/history?shop_slug=${shopSlug}`);
     if (res.ok) {
       const data = await res.json();
@@ -175,7 +175,7 @@ export default function CustomerShopPage() {
         const memberData = await memberRes.json();
         const match = (memberData.memberships ?? []).find((m: any) => m.shop_slug === shopSlug);
         if (match) setStatus({ visits: match.visits, last_checkin_date: match.last_checkin_date });
-        await loadHistory(session.user.email);
+        await loadHistory();
       }
 
       setLoading(false);
@@ -202,7 +202,7 @@ export default function CustomerShopPage() {
       const newVisits = json.visits as number;
       setNewStampIndex(Math.min(newVisits, goal) - 1);
       setStatus({ visits: newVisits, last_checkin_date: today });
-      await loadHistory(user.email);
+      await loadHistory();
       await haptic("success");
       setShowCheckinOverlay(true);
     } catch (e: any) {
@@ -219,7 +219,7 @@ export default function CustomerShopPage() {
     const memberData = await memberRes.json();
     const match = (memberData.memberships ?? []).find((m: any) => m.shop_slug === shopSlug);
     if (match) setStatus({ visits: match.visits, last_checkin_date: match.last_checkin_date });
-    if (user?.email) await loadHistory(user.email);
+    if (user?.email) await loadHistory();
     setNewStampIndex(null);
   }
 

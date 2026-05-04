@@ -48,8 +48,22 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: readErr.message }, { status: 500 });
     }
 
-    // 2) If missing, create a default settings row (so callers never crash on .single())
+    // 2) If missing, verify the shop actually exists before creating a settings row.
+    //    Without this check anyone could POST an arbitrary slug and pollute shop_settings.
     if (!existing) {
+      const { data: shopExists } = await supabase
+        .from("shops")
+        .select("slug")
+        .eq("slug", shop_slug)
+        .maybeSingle();
+
+      if (!shopExists) {
+        return NextResponse.json(
+          { error: "Shop not found" },
+          { status: 404 }
+        );
+      }
+
       const defaultShopName = shop_slug
         .split("-")
         .filter(Boolean)
