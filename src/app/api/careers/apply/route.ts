@@ -24,6 +24,9 @@ export async function POST(req: Request) {
       felony_explanation: get("felonyExplanation"),
       available_full_summer: get("availableFullSummer"),
       start_date: get("startDate") || null,
+      has_transportation: get("hasTransportation"),
+      comfortable_commission: get("comfortableCommission"),
+      has_sales_experience: get("hasSalesExperience"),
       sales_experience: get("salesExperience"),
       why_ventzon: get("whyVentzon"),
       role: "business-development-representative",
@@ -76,6 +79,15 @@ export async function POST(req: Request) {
           ${application.phone ? `<tr><td style="padding:8px 0;color:#555">Phone</td><td style="color:#ededed">${application.phone}</td></tr>` : ""}
           <tr><td style="padding:8px 0;color:#555">City</td><td style="color:#ededed">${application.city}</td></tr>
           ${application.linkedin_url ? `<tr><td style="padding:8px 0;color:#555">LinkedIn</td><td style="color:#ededed"><a href="https://${application.linkedin_url.replace(/^https?:\/\//, "")}" style="color:#888">${application.linkedin_url}</a></td></tr>` : ""}
+        </table>
+
+        <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
+
+        <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0 0 16px">ROLE REQUIREMENTS</p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;font-weight:300">
+          <tr><td style="padding:8px 0;color:#555;width:280px">Reliable transportation</td><td style="color:#ededed">${application.has_transportation}</td></tr>
+          <tr><td style="padding:8px 0;color:#555">Comfortable with commission-only / 1099</td><td style="color:#ededed">${application.comfortable_commission}</td></tr>
+          <tr><td style="padding:8px 0;color:#555">Prior sales/customer-facing experience</td><td style="color:#ededed">${application.has_sales_experience}</td></tr>
         </table>
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>

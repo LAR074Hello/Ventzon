@@ -20,6 +20,11 @@ type FormState = {
   felonyExplanation: string;
   startDate: string;
 
+  // Screening
+  hasTransportation: string;      // yes | no
+  comfortableCommission: string;  // yes | no
+  hasSalesExperience: string;     // yes | no
+
   // Experience
   salesExperience: string;
   whyVentzon: string;
@@ -33,6 +38,7 @@ const INITIAL: FormState = {
   firstName: "", lastName: "", email: "", phone: "", city: "",
   authorizedToWork: "", requiresSponsorship: "", over18: "", felony: "", felonyExplanation: "",
   startDate: "",
+  hasTransportation: "", comfortableCommission: "", hasSalesExperience: "",
   salesExperience: "", whyVentzon: "", linkedIn: "",
   resume: null,
 };
@@ -137,6 +143,10 @@ export default function ApplyPage() {
     }
     if (!form.authorizedToWork || !form.requiresSponsorship || !form.over18 || !form.felony) {
       setErr("Please answer all legal questions.");
+      return;
+    }
+    if (!form.hasTransportation || !form.comfortableCommission || !form.hasSalesExperience) {
+      setErr("Please answer all role requirement questions.");
       return;
     }
     if (!form.whyVentzon.trim()) {
@@ -294,9 +304,47 @@ export default function ApplyPage() {
             </div>
           </div>
 
-          {/* ── 3. Experience ── */}
+          {/* ── 3. Role requirements ── */}
           <div>
-            <SectionHeading number="3" title="Experience & motivation" />
+            <SectionHeading number="3" title="Role requirements" />
+            <div className="space-y-6">
+
+              <Field label="Do you have reliable transportation to visit local businesses in person?" required>
+                <RadioGroup
+                  name="hasTransportation"
+                  value={form.hasTransportation}
+                  onChange={set("hasTransportation")}
+                  options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]}
+                  disabled={submitting}
+                />
+              </Field>
+
+              <Field label="Are you comfortable with a commission-only, 1099 contractor position with no guaranteed base pay?" required>
+                <RadioGroup
+                  name="comfortableCommission"
+                  value={form.comfortableCommission}
+                  onChange={set("comfortableCommission")}
+                  options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]}
+                  disabled={submitting}
+                />
+              </Field>
+
+              <Field label="Do you have prior sales or customer-facing experience?" required>
+                <RadioGroup
+                  name="hasSalesExperience"
+                  value={form.hasSalesExperience}
+                  onChange={set("hasSalesExperience")}
+                  options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]}
+                  disabled={submitting}
+                />
+              </Field>
+
+            </div>
+          </div>
+
+          {/* ── 4. Experience ── */}
+          <div>
+            <SectionHeading number="4" title="Experience & motivation" />
             <div className="space-y-4">
               <Field label="Describe any sales, retail, or customer-facing experience you have" hint="No experience? Tell us about a time you persuaded someone of something.">
                 <Textarea
@@ -320,9 +368,9 @@ export default function ApplyPage() {
             </div>
           </div>
 
-          {/* ── 4. Resume ── */}
+          {/* ── 5. Resume ── */}
           <div>
-            <SectionHeading number="4" title="Resume" />
+            <SectionHeading number="5" title="Resume" />
             <Field label="Upload your resume" hint="PDF, DOC, or DOCX. Max 5 MB. Optional but recommended.">
               <div
                 onClick={() => fileRef.current?.click()}
