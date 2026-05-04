@@ -15,12 +15,24 @@ function escapeHtml(str: string) {
     .replace(/'/g, "&#39;");
 }
 
-export async function sendEmail(to: string, subject: string, body: string) {
+export async function sendEmail(
+  to: string,
+  subject: string,
+  body: string,
+  unsubscribeUrl?: string
+) {
   if (!process.env.RESEND_API_KEY) {
     throw new Error("Missing RESEND_API_KEY env var");
   }
 
   const safeBody = escapeHtml(body).replace(/\n/g, "<br/>");
+
+  const unsubscribeFooter = unsubscribeUrl
+    ? `<p style="font-size:12px;color:#999;margin:8px 0 0">
+        <a href="${unsubscribeUrl}" style="color:#999;text-decoration:underline">Unsubscribe</a>
+        &nbsp;from this loyalty program's emails.
+      </p>`
+    : "";
 
   return getResend().emails.send({
     from: "Ventzon Rewards <rewards@ventzon.com>",
@@ -30,6 +42,7 @@ export async function sendEmail(to: string, subject: string, body: string) {
       <p style="font-size:16px;line-height:1.6;margin:0">${safeBody}</p>
       <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
       <p style="font-size:12px;color:#999;margin:0">Sent by Ventzon Rewards</p>
+      ${unsubscribeFooter}
     </div>`,
   });
 }

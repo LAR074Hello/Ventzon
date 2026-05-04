@@ -61,14 +61,18 @@ export async function GET(req: Request) {
       );
     }
 
-    // Get reward goal
+    // Get reward goal and bonus days
     const { data: settingsRow } = await supabase
       .from("shop_settings")
-      .select("reward_goal")
+      .select("reward_goal, bonus_days")
       .eq("shop_slug", shop)
       .maybeSingle();
 
     const goal = Number(settingsRow?.reward_goal ?? 5);
+    // bonus_days is stored as an array of date strings e.g. ["2026-05-03"]
+    const bonusDaysSet = new Set<string>(
+      Array.isArray(settingsRow?.bonus_days) ? settingsRow.bonus_days : []
+    );
 
     // Calculate date range
     const now = new Date();
@@ -115,13 +119,20 @@ export async function GET(req: Request) {
       const date = row.checkin_date as string;
       const cid = row.customer_id as string;
 
-      customerVisits[cid] = (customerVisits[cid] || 0) + 1;
+      // Bonus days award 2 stamps instead of 1
+      const stampsAwarded = bonusDaysSet.has(date) ? 2 : 1;
+      const prevVisits = customerVisits[cid] || 0;
+      customerVisits[cid] = prevVisits + stampsAwarded;
 
       // Only accumulate counts within the selected period
       if (date >= startDate && date <= endDate) {
-        dailyCheckins[date] = (dailyCheckins[date] || 0) + 1;
+        dailyCheckins[date] = (dailyCheckins[date] || 0) + stampsAwarded;
 
-        if (customerVisits[cid] % goal === 0) {
+        // Check if the customer crossed the goal threshold with this checkin
+        // (handles both normal and bonus stamp cases)
+        const crossedGoal =
+          Math.floor(customerVisits[cid] / goal) > Math.floor(prevVisits / goal);
+        if (crossedGoal) {
           dailyRewards[date] = (dailyRewards[date] || 0) + 1;
         }
       }

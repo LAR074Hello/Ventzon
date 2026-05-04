@@ -69,12 +69,15 @@ export async function POST(req: Request) {
         return ok({ received: true, duplicate: true });
       }
 
-      console.warn("[WEBHOOK] stripe_events insert failed (non-fatal), continuing:", insertErr);
+      // Non-duplicate DB error — fail so Stripe retries the event
+      console.error("[WEBHOOK] stripe_events insert failed, returning 500 for retry:", insertErr);
+      return ok({ error: "Idempotency check failed, will retry" }, 500);
     } else {
       console.log("[WEBHOOK] recorded stripe_events", event.id);
     }
   } catch (e: any) {
-    console.warn("[WEBHOOK] stripe_events idempotency block error (non-fatal), continuing:", e);
+    console.error("[WEBHOOK] stripe_events idempotency block error, returning 500 for retry:", e);
+    return ok({ error: "Idempotency check failed, will retry" }, 500);
   }
 
   try {
