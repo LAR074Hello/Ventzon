@@ -46,7 +46,7 @@ function AppStoreBanner({ onDismiss }: { onDismiss: () => void }) {
         href={APP_STORE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded-full bg-[#22C55E] px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] text-black transition-colors duration-200 hover:bg-[#16a34a]"
+        className="shrink-0 rounded-full bg-[#ededed] px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] text-black transition-colors duration-200 hover:bg-[#d4d4d4]"
       >
         GET
       </a>
@@ -134,7 +134,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                 >
                   <div className="relative">
                     <Icon
-                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}
+                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}
                       strokeWidth={active ? 1.5 : 1}
                     />
                     {showBadge && (
@@ -143,7 +143,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                       </div>
                     )}
                   </div>
-                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}>
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>
@@ -155,8 +155,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               onClick={() => router.push("/customer/scan")}
               className="flex flex-1 flex-col items-center gap-1 py-1"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#22C55E] shadow-lg">
-                <ScanLine className="h-6 w-6 text-white" strokeWidth={2} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#ededed] shadow-lg">
+                <ScanLine className="h-6 w-6 text-black" strokeWidth={2} />
               </div>
             </button>
 
@@ -170,10 +170,10 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                   className="flex flex-1 flex-col items-center gap-1 py-1"
                 >
                   <Icon
-                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}
+                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}
                     strokeWidth={active ? 1.5 : 1}
                   />
-                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}>
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>

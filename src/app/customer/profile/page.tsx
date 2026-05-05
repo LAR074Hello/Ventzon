@@ -106,7 +106,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#22C55E]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
       </div>
     );
   }
@@ -120,7 +120,7 @@ export default function ProfilePage() {
         <p className="mt-5 text-[16px] font-semibold text-[#f5f5f5]">Not signed in</p>
         <button
           onClick={() => router.push("/customer/auth")}
-          className="mt-8 rounded-2xl bg-[#22C55E] px-8 py-4 text-[12px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a]"
+          className="mt-8 rounded-2xl bg-[#ededed] px-8 py-4 text-[12px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4]"
         >
           SIGN IN
         </button>
@@ -147,8 +147,8 @@ export default function ProfilePage() {
         {user.user_metadata?.avatar_url ? (
           <img src={user.user_metadata.avatar_url} alt={name} className="h-20 w-20 rounded-full border border-[#1f1f1f] object-cover" />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#22C55E]/15">
-            <span className="text-xl font-medium text-[#22C55E]">{initials}</span>
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#1a1a1a]">
+            <span className="text-xl font-medium text-[#888]">{initials}</span>
           </div>
         )}
         {editingName ? (
@@ -158,11 +158,11 @@ export default function ProfilePage() {
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
-              className="rounded-xl border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-[16px] font-normal text-[#f5f5f5] outline-none focus:border-[#22C55E] text-center"
+              className="rounded-xl border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-[16px] font-normal text-[#f5f5f5] outline-none focus:border-[#ededed] text-center"
               placeholder="Your name"
               maxLength={50}
             />
-            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E] disabled:opacity-40">
+            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ededed] disabled:opacity-40">
               <Check className="h-3.5 w-3.5 text-black" />
             </button>
             <button onClick={() => setEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#333]">
@@ -241,7 +241,7 @@ export default function ProfilePage() {
                       {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
                         <div
                           key={idx}
-                          className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#22C55E]" : "bg-[#1f1f1f]"}`}
+                          className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#ededed]" : "bg-[#1f1f1f]"}`}
                           style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
                         />
                       ))}

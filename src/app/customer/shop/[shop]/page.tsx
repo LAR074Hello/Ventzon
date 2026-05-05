@@ -58,7 +58,7 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
         style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)" }}
       >
         <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#22C55E]/30 bg-[#22C55E]/10">
-          <Check className="h-10 w-10 text-[#22C55E]" strokeWidth={1.5} />
+          <Check className="h-10 w-10 text-emerald-400" strokeWidth={1.5} />
         </div>
         <h2 className="mt-6 text-[22px] font-semibold tracking-[-0.01em] text-[#f5f5f5]">Checked in!</h2>
         <p className="mt-2 text-[14px] font-normal text-[#666]">
@@ -66,7 +66,7 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
         </p>
         <div className="mt-6 flex gap-2">
           {Array.from({ length: Math.min(goal, 10) }).map((_, i) => (
-            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "#22C55E" : "#1f1f1f" }} />
+            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "#4ade80" : "#1f1f1f" }} />
           ))}
         </div>
       </div>
@@ -114,7 +114,7 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
       <div className="px-5 pb-8 space-y-3">
         <button
           onClick={markRedeemed}
-          className="w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a]"
+          className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4]"
         >
           MARK AS REDEEMED
         </button>
@@ -234,7 +234,7 @@ export default function CustomerShopPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#22C55E]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
       </div>
     );
   }
@@ -319,7 +319,7 @@ export default function CustomerShopPage() {
                 key={i}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                   filled
-                    ? isReady ? "bg-yellow-400/90" : "bg-[#22C55E]"
+                    ? isReady ? "bg-yellow-400/90" : "bg-[#ededed]"
                     : "border-2 border-[#252525] bg-transparent"
                 } ${isNew ? "animate-stamp-pop" : ""}`}
               >
@@ -357,8 +357,8 @@ export default function CustomerShopPage() {
                 className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-[#111]" : ""}`}
               >
                 <p className="text-[13px] font-normal text-[#999]">{formatDate(entry.checkin_date)}</p>
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#22C55E]/15">
-                  <Check className="h-3 w-3 text-[#22C55E]" />
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1a1a1a]">
+                  <Check className="h-3 w-3 text-[#555]" />
                 </div>
               </div>
             ))}
@@ -381,7 +381,7 @@ export default function CustomerShopPage() {
         {!user && (
           <button
             onClick={() => router.push(`/customer/auth?redirect=/customer/shop/${shopSlug}`)}
-            className="w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a]"
+            className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4]"
           >
             SIGN IN TO TRACK PROGRESS
           </button>
@@ -390,7 +390,7 @@ export default function CustomerShopPage() {
           <button
             onClick={handleCheckin}
             disabled={checkinLoading}
-            className="w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a] disabled:opacity-40"
+            className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4] disabled:opacity-40"
           >
             {checkinLoading ? "CHECKING IN…" : "CHECK IN HERE"}
           </button>

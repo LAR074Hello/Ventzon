@@ -156,11 +156,38 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
     <button
       onClick={onClick}
       className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium tracking-[0.04em] transition-all duration-200 ${
-        active ? "bg-[#22C55E] text-black" : "bg-[#0f0f0f] text-[#666] border border-[#1f1f1f]"
+        active ? "bg-[#ededed] text-black" : "bg-[#0f0f0f] text-[#666] border border-[#1f1f1f]"
       }`}
     >
       {Icon && <Icon className="h-3 w-3" />}
       {label}
+    </button>
+  );
+}
+
+/* ── Compact grid card (2-col) ── */
+function GridCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
+  const [g0, g1] = getGradient(shop.shop_name);
+  const accent = getAccent(shop.shop_name);
+  return (
+    <button
+      onClick={onClick}
+      className="rounded-2xl bg-[#0d0d0d] border border-[#1f1f1f] p-3 text-left active:bg-[#111] transition-colors duration-150"
+    >
+      <div className="h-10 w-10 rounded-xl overflow-hidden mb-2.5">
+        {shop.logo_url ? (
+          <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${g0}, ${g1})` }}>
+            <span className="text-lg font-extralight" style={{ color: accent, opacity: 0.8 }}>
+              {shop.shop_name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+      </div>
+      <p className="text-[13px] font-medium text-[#f5f5f5] truncate">{shop.shop_name}</p>
+      <p className="mt-0.5 text-[12px] text-[#666] truncate">{shop.deal_title}</p>
+      <p className="mt-0.5 text-[11px] text-[#444]">{shop.reward_goal} visits to reward</p>
     </button>
   );
 }
@@ -321,10 +348,10 @@ export default function ExplorePage() {
               {deals.length > 0 && (
                 <>
                   <Divider />
-                  <div className="mb-2">
+                  <div className="mb-8">
                     <SectionHeader title="Deals & Offers" sub="Limited-time rewards" />
-                    <div className="divide-y divide-[#0f0f0f]">
-                      {deals.map((s) => <StoreCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} tag="DEAL" />)}
+                    <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
+                      {deals.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
@@ -347,13 +374,12 @@ export default function ExplorePage() {
               <Divider />
               <div>
                 <SectionHeader title={activeCategory === "all" ? "All Stores" : CATEGORIES.find(c => c.id === activeCategory)?.label ?? "Stores"} sub={`${all.length} store${all.length !== 1 ? "s" : ""} on Ventzon`} />
-                <div className="divide-y divide-[#0f0f0f]">
+                <div className="grid grid-cols-2 gap-3 px-5">
                   {all.map((s) => (
-                    <StoreCard
+                    <GridCard
                       key={s.shop_slug}
                       shop={s}
                       onClick={() => go(s.shop_slug)}
-                      tag={isNew(s) ? "NEW" : isLimitedDeal(s) ? "DEAL" : undefined}
                     />
                   ))}
                 </div>

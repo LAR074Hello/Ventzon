@@ -143,7 +143,7 @@ export default function HomePage() {
       {/* Pull indicator */}
       {pullProgress > 0 && (
         <div className="flex justify-center py-2" style={{ opacity: pullProgress }}>
-          <div className="h-4 w-4 rounded-full border border-[#333] border-t-[#22C55E]" style={{ transform: `rotate(${pullProgress * 360}deg)` }} />
+          <div className="h-4 w-4 rounded-full border border-[#333] border-t-[#ededed]" style={{ transform: `rotate(${pullProgress * 360}deg)` }} />
         </div>
       )}
 
@@ -158,7 +158,7 @@ export default function HomePage() {
       {/* Refresh indicator */}
       {refreshing && (
         <div className="flex justify-center pb-3">
-          <div className="h-4 w-4 animate-spin rounded-full border border-[#333] border-t-[#22C55E]" />
+          <div className="h-4 w-4 animate-spin rounded-full border border-[#333] border-t-[#ededed]" />
         </div>
       )}
 
@@ -248,7 +248,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: { membership: Memb
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           {checkedInToday && (
-            <span className="rounded-full border border-[#22C55E]/30 bg-[#22C55E]/10 px-2.5 py-1 text-[10px] font-light tracking-[0.1em] text-[#22C55E]">VISITED</span>
+            <span className="rounded-full border border-emerald-900/40 bg-emerald-950/20 px-2.5 py-1 text-[10px] font-light tracking-[0.1em] text-emerald-400/70">VISITED</span>
           )}
           {isReady && (
             <span className="rounded-full border border-yellow-900/40 bg-yellow-950/20 px-2.5 py-1 text-[10px] font-light tracking-[0.1em] text-yellow-400/70">REDEEM</span>
@@ -262,7 +262,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: { membership: Memb
             <div
               key={i}
               className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
-                i < progress ? isReady ? "bg-yellow-400/90" : "bg-[#22C55E]" : "border-2 border-[#252525] bg-transparent"
+                i < progress ? isReady ? "bg-yellow-400/90" : "bg-[#ededed]" : "border-2 border-[#252525] bg-transparent"
               }`}
             >
               {i < progress && <Check className="h-4 w-4 text-black" />}
@@ -289,7 +289,7 @@ function EmptyState({ onScan, onExplore }: { onScan: () => void; onExplore: () =
       </p>
       <button
         onClick={onScan}
-        className="mt-8 w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.15em] text-black transition-all duration-200 active:bg-[#16a34a]"
+        className="mt-8 w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.15em] text-black transition-all duration-200 active:bg-[#d4d4d4]"
       >
         SCAN A QR CODE
       </button>
