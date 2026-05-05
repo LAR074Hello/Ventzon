@@ -165,7 +165,49 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
   );
 }
 
-/* ── Compact grid card (2-col) ── */
+/* ── Deal card — leads with the reward text ── */
+function DealCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
+  const [g0, g1] = getGradient(shop.shop_name);
+  const accent = getAccent(shop.shop_name);
+  return (
+    <button
+      onClick={onClick}
+      className="shrink-0 w-52 rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-4 text-left active:bg-[#111] transition-colors duration-150"
+    >
+      {/* Shop identity */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-7 w-7 shrink-0 rounded-lg overflow-hidden">
+          {shop.logo_url ? (
+            <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${g0}, ${g1})` }}>
+              <span className="text-[11px] font-medium" style={{ color: accent }}>
+                {shop.shop_name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
+        <p className="text-[12px] font-medium text-[#888] truncate">{shop.shop_name}</p>
+      </div>
+
+      {/* The reward — this is the hero */}
+      <p className="text-[20px] font-semibold text-[#f5f5f5] leading-tight mb-1">{shop.deal_title}</p>
+      {shop.deal_details && (
+        <p className="text-[12px] font-normal text-[#666] line-clamp-2 mb-3">{shop.deal_details}</p>
+      )}
+
+      {/* Stamp requirement */}
+      <div className="flex items-center gap-1.5 mt-auto">
+        <div className="flex gap-0.5">
+          {Array.from({ length: Math.min(shop.reward_goal, 8) }).map((_, i) => (
+            <div key={i} className="h-1.5 w-1.5 rounded-full bg-[#2a2a2a]" />
+          ))}
+        </div>
+        <p className="text-[11px] font-normal text-[#555]">after {shop.reward_goal} visits</p>
+      </div>
+    </button>
+  );
+}
 
 /* ── Section header ── */
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
@@ -213,6 +255,8 @@ export default function ExplorePage() {
   const featured = filtered.slice(0, 8);
   const newArrivals = filtered.filter(isNew).slice(0, 6);
   const deals = filtered.filter(isLimitedDeal).slice(0, 5);
+  const popular = [...filtered].sort((a, b) => b.member_count - a.member_count).slice(0, 8);
+  const quickWins = [...filtered].sort((a, b) => a.reward_goal - b.reward_goal).slice(0, 8);
 
   return (
     <div className="flex min-h-full flex-col bg-black">
@@ -318,14 +362,40 @@ export default function ExplorePage() {
                 </div>
               )}
 
-              {/* Deals */}
-              {deals.length > 0 && (
+              {/* Today's Deals — explicit reward showcase */}
+              {filtered.length > 0 && (
                 <>
                   <Divider />
                   <div className="mb-8">
-                    <SectionHeader title="Deals & Offers" sub="Limited-time rewards" />
+                    <SectionHeader title="What you'll earn" sub="The actual rewards on offer" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                      {deals.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                      {filtered.map((s) => <DealCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Popular */}
+              {popular.length > 0 && (
+                <>
+                  <Divider />
+                  <div className="mb-8">
+                    <SectionHeader title="Popular" sub="Most members on Ventzon" />
+                    <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
+                      {popular.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Quick Wins */}
+              {quickWins.length > 0 && (
+                <>
+                  <Divider />
+                  <div className="mb-8">
+                    <SectionHeader title="Quick wins" sub="Earn a reward in fewer visits" />
+                    <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
+                      {quickWins.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
