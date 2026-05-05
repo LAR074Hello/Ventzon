@@ -57,16 +57,16 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
         className="flex flex-col items-center transition-all duration-500"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)" }}
       >
-        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#1e4a1e] bg-[#0a2e0a]">
-          <Check className="h-10 w-10 text-emerald-400" strokeWidth={1.5} />
+        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#22C55E]/30 bg-[#22C55E]/10">
+          <Check className="h-10 w-10 text-[#22C55E]" strokeWidth={1.5} />
         </div>
-        <h2 className="mt-6 text-[22px] font-extralight tracking-[-0.01em] text-[#ededed]">Checked in!</h2>
-        <p className="mt-2 text-[14px] font-light text-[#555]">
+        <h2 className="mt-6 text-[22px] font-semibold tracking-[-0.01em] text-[#f5f5f5]">Checked in!</h2>
+        <p className="mt-2 text-[14px] font-normal text-[#666]">
           {visits} of {goal} visit{goal !== 1 ? "s" : ""} collected
         </p>
         <div className="mt-6 flex gap-2">
           {Array.from({ length: Math.min(goal, 10) }).map((_, i) => (
-            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "#4ade80" : "#1a1a1a" }} />
+            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "#22C55E" : "#1f1f1f" }} />
           ))}
         </div>
       </div>
@@ -93,8 +93,8 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
   return (
     <div className="fixed inset-0 z-[150] flex flex-col bg-black" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
       <div className="flex justify-end px-5 pt-4">
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-          <X className="h-4 w-4 text-[#888]" />
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0a0a0a]">
+          <X className="h-4 w-4 text-[#999]" />
         </button>
       </div>
 
@@ -102,25 +102,25 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
         <div className="flex h-28 w-28 items-center justify-center rounded-3xl border border-yellow-900/40 bg-yellow-950/20">
           <Trophy className="h-12 w-12 text-yellow-400" strokeWidth={1} />
         </div>
-        <h2 className="mt-8 text-[28px] font-extralight tracking-[-0.02em] text-[#ededed]">Reward earned</h2>
-        <p className="mt-3 text-[15px] font-light text-[#555]">{shop.deal_title}</p>
-        {shop.deal_details && <p className="mt-1 text-[13px] font-light text-[#333]">{shop.deal_details}</p>}
+        <h2 className="mt-8 text-[28px] font-semibold tracking-[-0.02em] text-[#f5f5f5]">Reward earned</h2>
+        <p className="mt-3 text-[15px] font-normal text-[#666]">{shop.deal_title}</p>
+        {shop.deal_details && <p className="mt-1 text-[13px] font-normal text-[#444]">{shop.deal_details}</p>}
         <div className="mt-10 w-full rounded-2xl border border-yellow-900/30 bg-yellow-950/10 px-6 py-5">
           <p className="text-[11px] font-light tracking-[0.2em] text-yellow-600">SHOW THIS TO THE CASHIER</p>
-          <p className="mt-2 text-[13px] font-light text-[#888]">{shop.shop_name}</p>
+          <p className="mt-2 text-[13px] font-normal text-[#999]">{shop.shop_name}</p>
         </div>
       </div>
 
       <div className="px-5 pb-8 space-y-3">
         <button
           onClick={markRedeemed}
-          className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all active:bg-[#d0d0d0]"
+          className="w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a]"
         >
           MARK AS REDEEMED
         </button>
         <button
           onClick={share}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] py-4 text-[13px] font-light tracking-[0.15em] text-[#888]"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] py-4 text-[13px] font-normal tracking-[0.15em] text-[#999]"
         >
           <Share2 className="h-4 w-4" />
           SHARE WITH FRIENDS
@@ -234,7 +234,7 @@ export default function CustomerShopPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#22C55E]" />
       </div>
     );
   }
@@ -242,14 +242,14 @@ export default function CustomerShopPage() {
   if (!settings) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">NOT FOUND</p>
-        <h1 className="mt-4 text-2xl font-extralight text-[#ededed]">Shop not found</h1>
-        <p className="mt-3 text-[14px] font-light text-[#555]">
+        <p className="text-[11px] font-light tracking-[0.3em] text-[#666]">NOT FOUND</p>
+        <h1 className="mt-4 text-2xl font-semibold text-[#f5f5f5]">Shop not found</h1>
+        <p className="mt-3 text-[14px] font-normal text-[#666]">
           This shop doesn&rsquo;t exist or may have been removed.
         </p>
         <button
           onClick={() => router.push("/customer/explore")}
-          className="mt-8 rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:border-[#666]"
+          className="mt-8 rounded-full border border-[#333] px-6 py-3 text-[12px] font-normal tracking-[0.15em] text-[#f5f5f5] transition-all duration-300 hover:border-[#666]"
         >
           Explore shops
         </button>
@@ -271,44 +271,44 @@ export default function CustomerShopPage() {
       {/* Back */}
       <button
         onClick={() => router.back()}
-        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1a1a1a] bg-black/80 backdrop-blur-sm"
+        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-black/80 backdrop-blur-sm"
         style={{ top: "calc(env(safe-area-inset-top, 20px) + 8px)" }}
       >
-        <ArrowLeft className="h-4 w-4 text-[#ededed]" />
+        <ArrowLeft className="h-4 w-4 text-[#f5f5f5]" />
       </button>
 
       {/* Share */}
       <button
         onClick={handleShare}
-        className="fixed right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1a1a1a] bg-black/80 backdrop-blur-sm"
+        className="fixed right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-black/80 backdrop-blur-sm"
         style={{ top: "calc(env(safe-area-inset-top, 20px) + 8px)" }}
       >
-        <Share2 className="h-4 w-4 text-[#888]" />
+        <Share2 className="h-4 w-4 text-[#999]" />
       </button>
 
       {/* Hero */}
       <div className="flex flex-col items-center px-6 pb-8" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 64px)" }}>
         {settings?.logo_url ? (
-          <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-2xl border border-[#1a1a1a] object-cover" />
+          <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-2xl border border-[#1f1f1f] object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a]">
-            <span className="text-3xl font-extralight text-[#555]">{shopName.charAt(0).toUpperCase()}</span>
+          <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a]">
+            <span className="text-3xl font-light text-[#666]">{shopName.charAt(0).toUpperCase()}</span>
           </div>
         )}
-        <h1 className="mt-5 text-[20px] font-extralight tracking-[-0.01em] text-[#ededed]">{shopName}</h1>
+        <h1 className="mt-5 text-[20px] font-semibold tracking-[-0.01em] text-[#f5f5f5]">{shopName}</h1>
         {settings?.deal_title && (
-          <div className="mt-3 rounded-xl border border-[#1a1a1a] px-5 py-3 text-center">
-            <p className="text-[13px] font-light text-[#888]">{settings.deal_title}</p>
-            {settings.deal_details && <p className="mt-1 text-[12px] font-light text-[#555]">{settings.deal_details}</p>}
+          <div className="mt-3 rounded-xl border border-[#1f1f1f] px-5 py-3 text-center">
+            <p className="text-[13px] font-normal text-[#999]">{settings.deal_title}</p>
+            {settings.deal_details && <p className="mt-1 text-[12px] font-normal text-[#666]">{settings.deal_details}</p>}
           </div>
         )}
       </div>
 
       {/* Loyalty card */}
-      <div className="mx-5 rounded-2xl border border-[#1a1a1a] bg-[#080808] p-5">
+      <div className="mx-5 rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">YOUR PROGRESS</p>
-          <p className="text-[11px] font-light text-[#444]">{visits}/{goal}</p>
+          <p className="text-[11px] font-light tracking-[0.2em] text-[#666]">YOUR PROGRESS</p>
+          <p className="text-[11px] font-normal text-[#888]">{visits}/{goal}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: goal }).map((_, i) => {
@@ -317,10 +317,10 @@ export default function CustomerShopPage() {
             return (
               <div
                 key={i}
-                className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                   filled
-                    ? isReady ? "bg-yellow-400/90" : "bg-[#ededed]"
-                    : "border border-[#222] bg-transparent"
+                    ? isReady ? "bg-yellow-400/90" : "bg-[#22C55E]"
+                    : "border-2 border-[#252525] bg-transparent"
                 } ${isNew ? "animate-stamp-pop" : ""}`}
               >
                 {filled && <Check className="h-4 w-4 text-black" />}
@@ -328,7 +328,7 @@ export default function CustomerShopPage() {
             );
           })}
         </div>
-        <p className="mt-4 text-[12px] font-light text-[#444]">
+        <p className="mt-4 text-[12px] font-normal text-[#888]">
           {isReady
             ? "Tap below to view your reward"
             : checkedInToday
@@ -339,7 +339,7 @@ export default function CustomerShopPage() {
 
       {err && (
         <div className="mx-5 mt-4 rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-center">
-          <p className="text-[13px] font-light text-red-300/80">{err}</p>
+          <p className="text-[13px] font-normal text-red-300/80">{err}</p>
         </div>
       )}
 
@@ -347,18 +347,18 @@ export default function CustomerShopPage() {
       {history.length > 0 && (
         <div className="mx-5 mt-5">
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-3.5 w-3.5 text-[#444]" />
-            <p className="text-[11px] font-light tracking-[0.15em] text-[#444]">VISIT HISTORY</p>
+            <Clock className="h-3.5 w-3.5 text-[#555]" />
+            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">VISIT HISTORY</p>
           </div>
-          <div className="rounded-2xl border border-[#1a1a1a] overflow-hidden">
+          <div className="rounded-2xl border border-[#1f1f1f] overflow-hidden">
             {history.slice(0, 8).map((entry, i) => (
               <div
                 key={entry.checkin_date}
                 className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-[#111]" : ""}`}
               >
-                <p className="text-[13px] font-light text-[#888]">{formatDate(entry.checkin_date)}</p>
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1a1a1a]">
-                  <Check className="h-3 w-3 text-[#555]" />
+                <p className="text-[13px] font-normal text-[#999]">{formatDate(entry.checkin_date)}</p>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#22C55E]/15">
+                  <Check className="h-3 w-3 text-[#22C55E]" />
                 </div>
               </div>
             ))}
@@ -381,7 +381,7 @@ export default function CustomerShopPage() {
         {!user && (
           <button
             onClick={() => router.push(`/customer/auth?redirect=/customer/shop/${shopSlug}`)}
-            className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all active:bg-[#d0d0d0]"
+            className="w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a]"
           >
             SIGN IN TO TRACK PROGRESS
           </button>
@@ -390,14 +390,14 @@ export default function CustomerShopPage() {
           <button
             onClick={handleCheckin}
             disabled={checkinLoading}
-            className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all active:bg-[#d0d0d0] disabled:opacity-40"
+            className="w-full rounded-2xl bg-[#22C55E] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a] disabled:opacity-40"
           >
             {checkinLoading ? "CHECKING IN…" : "CHECK IN HERE"}
           </button>
         )}
         {user && checkedInToday && !isReady && (
-          <div className="w-full rounded-2xl border border-[#1a1a1a] py-4 text-center">
-            <p className="text-[12px] font-light tracking-[0.15em] text-[#444]">CHECKED IN TODAY</p>
+          <div className="w-full rounded-2xl border border-[#1f1f1f] py-4 text-center">
+            <p className="text-[12px] font-normal tracking-[0.15em] text-[#666]">CHECKED IN TODAY</p>
           </div>
         )}
       </div>

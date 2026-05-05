@@ -106,7 +106,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#22C55E]" />
       </div>
     );
   }
@@ -114,13 +114,13 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-          <User className="h-7 w-7 text-[#444]" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0a0a0a]">
+          <User className="h-7 w-7 text-[#555]" />
         </div>
-        <p className="mt-5 text-[16px] font-extralight text-[#ededed]">Not signed in</p>
+        <p className="mt-5 text-[16px] font-semibold text-[#f5f5f5]">Not signed in</p>
         <button
           onClick={() => router.push("/customer/auth")}
-          className="mt-8 rounded-2xl bg-[#ededed] px-8 py-4 text-[12px] font-light tracking-[0.2em] text-black transition-all active:bg-[#d0d0d0]"
+          className="mt-8 rounded-2xl bg-[#22C55E] px-8 py-4 text-[12px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#16a34a]"
         >
           SIGN IN
         </button>
@@ -139,16 +139,16 @@ export default function ProfilePage() {
     <div className="flex min-h-full flex-col bg-black pb-8">
       {/* Header */}
       <div className="px-5 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
-        <h1 className="text-[22px] font-extralight tracking-[-0.01em] text-[#ededed]">Profile</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-[#f5f5f5]">Profile</h1>
       </div>
 
       {/* Avatar */}
       <div className="flex flex-col items-center py-8">
         {user.user_metadata?.avatar_url ? (
-          <img src={user.user_metadata.avatar_url} alt={name} className="h-20 w-20 rounded-full border border-[#1a1a1a] object-cover" />
+          <img src={user.user_metadata.avatar_url} alt={name} className="h-20 w-20 rounded-full border border-[#1f1f1f] object-cover" />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-            <span className="text-xl font-extralight text-[#555]">{initials}</span>
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#22C55E]/15">
+            <span className="text-xl font-medium text-[#22C55E]">{initials}</span>
           </div>
         )}
         {editingName ? (
@@ -158,15 +158,15 @@ export default function ProfilePage() {
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
-              className="rounded-xl border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-[16px] font-extralight text-[#ededed] outline-none focus:border-[#555] text-center"
+              className="rounded-xl border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-[16px] font-normal text-[#f5f5f5] outline-none focus:border-[#22C55E] text-center"
               placeholder="Your name"
               maxLength={50}
             />
-            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ededed] disabled:opacity-40">
+            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22C55E] disabled:opacity-40">
               <Check className="h-3.5 w-3.5 text-black" />
             </button>
             <button onClick={() => setEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#333]">
-              <X className="h-3.5 w-3.5 text-[#555]" />
+              <X className="h-3.5 w-3.5 text-[#666]" />
             </button>
           </div>
         ) : (
@@ -174,11 +174,11 @@ export default function ProfilePage() {
             onClick={() => { setNameInput(name === "Customer" ? "" : name); setEditingName(true); }}
             className="mt-4 flex items-center gap-2 group"
           >
-            <p className="text-[18px] font-extralight text-[#ededed]">{name}</p>
-            <Pencil className="h-3.5 w-3.5 text-[#333] group-active:text-[#555]" />
+            <p className="text-[18px] font-medium text-[#f5f5f5]">{name}</p>
+            <Pencil className="h-3.5 w-3.5 text-[#444] group-active:text-[#666]" />
           </button>
         )}
-        <p className="mt-1 text-[13px] font-light text-[#555]">{user.email}</p>
+        <p className="mt-1 text-[13px] font-normal text-[#666]">{user.email}</p>
       </div>
 
       {/* Stats */}
@@ -188,9 +188,9 @@ export default function ProfilePage() {
           { label: "STAMPS", value: totalVisits },
           { label: "READY", value: readyCards.length },
         ].map(({ label, value }) => (
-          <div key={label} className="flex flex-col items-center rounded-2xl border border-[#1a1a1a] bg-[#080808] py-4">
-            <p className="text-[22px] font-extralight text-[#ededed]">{value}</p>
-            <p className="mt-1 text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
+          <div key={label} className="flex flex-col items-center rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] py-4">
+            <p className="text-[22px] font-semibold text-[#f5f5f5]">{value}</p>
+            <p className="mt-1 text-[9px] font-light tracking-[0.15em] text-[#666]">{label}</p>
           </div>
         ))}
       </div>
@@ -198,7 +198,7 @@ export default function ProfilePage() {
       {/* Rewards ready */}
       {readyCards.length > 0 && (
         <div className="mx-5 mb-6">
-          <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#444]">REWARDS READY</p>
+          <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#666]">REWARDS READY</p>
           <div className="space-y-2">
             {readyCards.map((m) => (
               <button
@@ -207,8 +207,8 @@ export default function ProfilePage() {
                 className="flex w-full items-center gap-3 rounded-2xl border border-yellow-900/30 bg-yellow-950/10 px-4 py-3.5 text-left active:bg-yellow-950/20"
               >
                 <Trophy className="h-4 w-4 shrink-0 text-yellow-500" strokeWidth={1.5} />
-                <p className="flex-1 text-[13px] font-light text-[#ededed]">{m.shop_name}</p>
-                <ChevronRight className="h-4 w-4 text-[#444]" />
+                <p className="flex-1 text-[13px] font-normal text-[#f5f5f5]">{m.shop_name}</p>
+                <ChevronRight className="h-4 w-4 text-[#555]" />
               </button>
             ))}
           </div>
@@ -218,8 +218,8 @@ export default function ProfilePage() {
       {/* All loyalty cards */}
       {memberships.length > 0 && (
         <div className="mx-5 mb-6">
-          <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#444]">YOUR CARDS</p>
-          <div className="rounded-2xl border border-[#1a1a1a] overflow-hidden">
+          <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#666]">YOUR CARDS</p>
+          <div className="rounded-2xl border border-[#1f1f1f] overflow-hidden">
             {memberships.map((m, i) => {
               const isReady = m.visits >= m.reward_goal;
               return (
@@ -231,17 +231,17 @@ export default function ProfilePage() {
                   {m.logo_url ? (
                     <img src={m.logo_url} alt={m.shop_name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
                   ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#1a1a1a] bg-[#111]">
-                      <span className="text-sm font-extralight text-[#555]">{m.shop_name.charAt(0).toUpperCase()}</span>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#1f1f1f] bg-[#111]">
+                      <span className="text-sm font-light text-[#666]">{m.shop_name.charAt(0).toUpperCase()}</span>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-light text-[#ededed] truncate">{m.shop_name}</p>
+                    <p className="text-[14px] font-medium text-[#f5f5f5] truncate">{m.shop_name}</p>
                     <div className="mt-1.5 flex gap-1">
                       {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
                         <div
                           key={idx}
-                          className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#ededed]" : "bg-[#1a1a1a]"}`}
+                          className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#22C55E]" : "bg-[#1f1f1f]"}`}
                           style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
                         />
                       ))}
@@ -249,8 +249,8 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {isReady && <span className="text-[10px] font-light text-yellow-500">READY</span>}
-                    <span className="text-[12px] font-light text-[#444]">{m.visits}/{m.reward_goal}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-[#333]" />
+                    <span className="text-[12px] font-normal text-[#666]">{m.visits}/{m.reward_goal}</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-[#444]" />
                   </div>
                 </button>
               );
@@ -260,28 +260,28 @@ export default function ProfilePage() {
       )}
 
       {/* Settings */}
-      <div className="mx-5 rounded-2xl border border-[#1a1a1a] overflow-hidden">
+      <div className="mx-5 rounded-2xl border border-[#1f1f1f] overflow-hidden">
         <button
           onClick={shareApp}
           className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] border-b border-[#111]"
         >
-          <Share2 className="h-4 w-4 text-[#555]" />
-          <span className="flex-1 text-[14px] font-light text-[#888]">Share Ventzon</span>
+          <Share2 className="h-4 w-4 text-[#666]" />
+          <span className="flex-1 text-[14px] font-normal text-[#aaa]">Share Ventzon</span>
         </button>
         <button
           onClick={toggleNotifications}
           className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] border-b border-[#111]"
         >
-          {notifEnabled ? <Bell className="h-4 w-4 text-[#555]" /> : <BellOff className="h-4 w-4 text-[#555]" />}
-          <span className="flex-1 text-[14px] font-light text-[#888]">Notifications</span>
-          <span className="text-[12px] font-light text-[#333]">{notifEnabled ? "On" : "Off"}</span>
+          {notifEnabled ? <Bell className="h-4 w-4 text-[#666]" /> : <BellOff className="h-4 w-4 text-[#666]" />}
+          <span className="flex-1 text-[14px] font-normal text-[#aaa]">Notifications</span>
+          <span className="text-[12px] font-normal text-[#444]">{notifEnabled ? "On" : "Off"}</span>
         </button>
         <button
           onClick={signOut}
           className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] border-b border-[#111]"
         >
-          <LogOut className="h-4 w-4 text-[#555]" />
-          <span className="text-[14px] font-light text-[#888]">Sign out</span>
+          <LogOut className="h-4 w-4 text-[#666]" />
+          <span className="text-[14px] font-normal text-[#aaa]">Sign out</span>
         </button>
         <button
           onClick={deleteAccount}
@@ -289,14 +289,14 @@ export default function ProfilePage() {
           className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors active:bg-[#0a0a0a] disabled:opacity-40"
         >
           <Trash2 className="h-4 w-4 text-red-900/60" />
-          <span className="text-[14px] font-light text-red-900/60">
+          <span className="text-[14px] font-normal text-red-900/60">
             {deletingAccount ? "Deleting account…" : "Delete account"}
           </span>
         </button>
       </div>
 
       <div className="mt-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.15em] text-[#222]">VENTZON</p>
+        <p className="text-[11px] font-light tracking-[0.15em] text-[#333]">VENTZON</p>
       </div>
     </div>
   );

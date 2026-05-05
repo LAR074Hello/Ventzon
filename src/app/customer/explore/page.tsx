@@ -96,7 +96,7 @@ function FeaturedCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
         )}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%)" }} />
         <div className="absolute bottom-3 left-4 right-4">
-          <p className="text-[16px] font-light text-white leading-tight">{shop.shop_name}</p>
+          <p className="text-[16px] font-medium text-white leading-tight">{shop.shop_name}</p>
           <p className="mt-0.5 text-[12px] text-white/60 truncate">{shop.deal_title}</p>
         </div>
         <div className="absolute top-3 right-3 rounded-full px-2.5 py-1" style={{ backgroundColor: accent + "30", border: `1px solid ${accent}50` }}>
@@ -131,18 +131,18 @@ function StoreCard({ shop, onClick, tag }: { shop: Shop; onClick: () => void; ta
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[15px] font-light text-[#ededed] truncate">{shop.shop_name}</p>
+          <p className="text-[15px] font-medium text-[#f5f5f5] truncate">{shop.shop_name}</p>
           {tag && (
             <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-light tracking-[0.1em]" style={{ backgroundColor: accent + "20", color: accent }}>
               {tag}
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-[12px] font-light text-[#555] truncate">{shop.deal_title}</p>
-        <p className="mt-0.5 text-[11px] font-light text-[#333]">
+        <p className="mt-0.5 text-[12px] font-normal text-[#666] truncate">{shop.deal_title}</p>
+        <p className="mt-0.5 text-[11px] font-normal text-[#444]">
           {shop.reward_goal} visits to reward
           {shop.member_count > 0 && (
-            <span className="ml-2 text-[#2a2a2a]">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
+            <span className="ml-2 text-[#333]">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
           )}
         </p>
       </div>
@@ -155,8 +155,8 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
   return (
     <button
       onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-light tracking-[0.04em] transition-all duration-200 ${
-        active ? "bg-[#ededed] text-black" : "bg-[#0f0f0f] text-[#555] border border-[#1a1a1a]"
+      className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium tracking-[0.04em] transition-all duration-200 ${
+        active ? "bg-[#22C55E] text-black" : "bg-[#0f0f0f] text-[#666] border border-[#1f1f1f]"
       }`}
     >
       {Icon && <Icon className="h-3 w-3" />}
@@ -169,8 +169,8 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="px-5 mb-4">
-      <h2 className="text-[18px] font-light text-[#ededed] tracking-[-0.01em]">{title}</h2>
-      {sub && <p className="mt-0.5 text-[12px] font-light text-[#444]">{sub}</p>}
+      <h2 className="text-[18px] font-semibold text-[#f5f5f5] tracking-[-0.01em]">{title}</h2>
+      {sub && <p className="mt-0.5 text-[12px] font-normal text-[#666]">{sub}</p>}
     </div>
   );
 }
@@ -218,24 +218,24 @@ export default function ExplorePage() {
 
       {/* Header */}
       <div className="px-5 pt-2 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
-        <p className="text-[13px] font-light text-[#555]">{greeting()}</p>
-        <h1 className="mt-0.5 text-[26px] font-extralight tracking-[-0.02em] text-[#ededed] leading-tight">
+        <p className="text-[13px] font-normal text-[#666]">{greeting()}</p>
+        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] text-[#f5f5f5] leading-tight">
           Discover rewards<br />near you
         </h1>
 
         {/* Search */}
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5">
-          <Search className="h-4 w-4 shrink-0 text-[#333]" />
+        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5">
+          <Search className="h-4 w-4 shrink-0 text-[#444]" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search stores, deals…"
-            className="flex-1 bg-transparent text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333]"
+            className="flex-1 bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="text-[#444] active:text-[#888]">
+            <button onClick={() => setQuery("")} className="text-[#666] active:text-[#999]">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -280,13 +280,13 @@ export default function ExplorePage() {
         <div className="flex-1 pb-4">
           {searchResults.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center px-8">
-              <MapPin className="h-8 w-8 text-[#222]" />
-              <p className="mt-4 text-[15px] font-extralight text-[#ededed]">No results for "{query}"</p>
-              <p className="mt-1 text-[13px] font-light text-[#444]">Try a different store name or deal</p>
+              <MapPin className="h-8 w-8 text-[#333]" />
+              <p className="mt-4 text-[15px] font-semibold text-[#f5f5f5]">No results for "{query}"</p>
+              <p className="mt-1 text-[13px] font-normal text-[#666]">Try a different store name or deal</p>
             </div>
           ) : (
             <>
-              <p className="px-5 pb-3 text-[12px] font-light text-[#444]">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
+              <p className="px-5 pb-3 text-[12px] font-normal text-[#666]">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
               <div className="divide-y divide-[#0f0f0f]">
                 {searchResults.map((s) => <StoreCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
               </div>
@@ -300,8 +300,8 @@ export default function ExplorePage() {
         <div className="flex-1 pb-8">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center px-8">
-              <p className="text-[15px] font-extralight text-[#ededed]">No stores in this category yet</p>
-              <button onClick={() => setActiveCategory("all")} className="mt-5 rounded-full border border-[#222] px-6 py-2.5 text-[12px] font-light tracking-[0.15em] text-[#666]">
+              <p className="text-[15px] font-semibold text-[#f5f5f5]">No stores in this category yet</p>
+              <button onClick={() => setActiveCategory("all")} className="mt-5 rounded-full border border-[#222] px-6 py-2.5 text-[12px] font-normal tracking-[0.15em] text-[#666]">
                 SEE ALL STORES
               </button>
             </div>

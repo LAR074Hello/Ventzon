@@ -34,25 +34,25 @@ const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
 
 function AppStoreBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="flex items-center gap-3 border-b border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3">
+    <div className="flex items-center gap-3 border-b border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black ring-1 ring-[#2a2a2a]">
-        <span className="text-[11px] font-light tracking-[0.15em] text-[#ededed]">V</span>
+        <span className="text-[11px] font-light tracking-[0.15em] text-[#f5f5f5]">V</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-light text-[#ededed]">Ventzon</p>
-        <p className="text-[11px] font-light text-[#555]">Get the app for the best experience</p>
+        <p className="text-[13px] font-medium text-[#f5f5f5]">Ventzon</p>
+        <p className="text-[11px] font-light text-[#666]">Get the app for the best experience</p>
       </div>
       <a
         href={APP_STORE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded-full bg-[#ededed] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-black transition-colors duration-200 hover:bg-white"
+        className="shrink-0 rounded-full bg-[#22C55E] px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] text-black transition-colors duration-200 hover:bg-[#16a34a]"
       >
         GET
       </a>
       <button
         onClick={onDismiss}
-        className="shrink-0 text-[#444] transition-colors duration-200 hover:text-[#888]"
+        className="shrink-0 text-[#666] transition-colors duration-200 hover:text-[#999]"
         aria-label="Dismiss"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -118,7 +118,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
       {!hideNav && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#1a1a1a] bg-black/90 backdrop-blur-md"
+          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#1f1f1f] bg-black/90 backdrop-blur-md"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <div className="flex items-center px-2 py-2">
@@ -134,7 +134,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                 >
                   <div className="relative">
                     <Icon
-                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
+                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}
                       strokeWidth={active ? 1.5 : 1}
                     />
                     {showBadge && (
@@ -143,7 +143,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                       </div>
                     )}
                   </div>
-                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}>
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>
@@ -155,10 +155,9 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               onClick={() => router.push("/customer/scan")}
               className="flex flex-1 flex-col items-center gap-1 py-1"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#2a2a2a] bg-[#111]">
-                <ScanLine className="h-4 w-4 text-[#888]" strokeWidth={1.5} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#22C55E] shadow-lg">
+                <ScanLine className="h-6 w-6 text-white" strokeWidth={2} />
               </div>
-              <span className="text-[10px] font-light tracking-[0.15em] text-[#444]">SCAN</span>
             </button>
 
             {/* Right tabs */}
@@ -171,10 +170,10 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                   className="flex flex-1 flex-col items-center gap-1 py-1"
                 >
                   <Icon
-                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}
+                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}
                     strokeWidth={active ? 1.5 : 1}
                   />
-                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#444]"}`}>
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#22C55E]" : "text-[#555]"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>
