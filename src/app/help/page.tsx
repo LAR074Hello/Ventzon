@@ -14,7 +14,7 @@ const customerFaqs: FAQ[] = [
   },
   {
     q: "How do I redeem my reward?",
-    a: "When you've collected enough stamps, you'll see a gold "Reward ready!" banner on your home screen. Open the card and show it to the cashier at the register — they'll mark it as redeemed and your card will reset for the next round.",
+    a: "When you've collected enough stamps, you'll see a gold 'Reward ready!' banner on your home screen. Open the card and show it to the cashier at the register — they'll mark it as redeemed and your card will reset for the next round.",
   },
   {
     q: "Can I earn more than one stamp per day?",
