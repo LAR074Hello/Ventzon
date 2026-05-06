@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Locate, X, ChevronRight, MapPin } from "lucide-react";
+import "leaflet/dist/leaflet.css";
 
 type ShopPin = {
   slug: string;
@@ -57,7 +58,6 @@ export default function MapPage() {
 
     (async () => {
       const L = (await import("leaflet")).default;
-      await import("leaflet/dist/leaflet.css");
 
       if (cancelled || !mapRef.current) return;
 
