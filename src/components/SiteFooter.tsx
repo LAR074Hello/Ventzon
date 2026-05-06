@@ -48,6 +48,14 @@ export default function SiteFooter() {
           >
             Careers
           </Link>
+          <a
+            href="https://apps.apple.com/app/id6763768638"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors duration-300 hover:text-[#999]"
+          >
+            Download
+          </a>
           <Link
             href="/privacy-policy"
             className="transition-colors duration-300 hover:text-[#999]"

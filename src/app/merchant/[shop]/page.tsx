@@ -1169,6 +1169,17 @@ function MerchantShopPage() {
                           Print this QR code and place it near your register.
                           Customers scan to join your rewards program instantly.
                         </p>
+                        <p className="mt-3 text-[12px] font-light text-[#333]">
+                          Customers can also download the app:{" "}
+                          <a
+                            href="https://www.ventzon.com/download"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[#555] underline underline-offset-2 transition-colors hover:text-[#ededed]"
+                          >
+                            ventzon.com/download
+                          </a>
+                        </p>
                       </>
                     ) : (
                       <>
