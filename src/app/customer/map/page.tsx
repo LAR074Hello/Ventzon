@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Locate, X, ChevronRight, MapPin } from "lucide-react";
+import { Locate, X, ChevronRight } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
 type ShopPin = {
@@ -166,7 +166,7 @@ export default function MapPage() {
           <div className="flex-1 rounded-2xl border border-[#2a2a2a] bg-black/80 backdrop-blur-md px-4 py-3">
             <p className="text-[11px] font-light tracking-[0.15em] text-[#555]">NEARBY</p>
             <p className="text-[15px] font-semibold text-[#f5f5f5] mt-0.5">
-              {loading ? "Loading stores…" : shops.length === 0 ? "No stores with map data yet" : `${shops.length} store${shops.length === 1 ? "" : "s"} on Ventzon`}
+              {loading ? "Loading stores…" : shops.length === 0 ? "Explore nearby stores" : `${shops.length} store${shops.length === 1 ? "" : "s"} nearby`}
             </p>
           </div>
           <button
@@ -182,20 +182,6 @@ export default function MapPage() {
       {/* Map */}
       <div ref={mapRef} className="flex-1 w-full" style={{ minHeight: "100dvh" }} />
 
-      {/* Empty state overlay */}
-      {!loading && shops.length === 0 && (
-        <div className="absolute inset-0 z-[999] flex items-center justify-center pointer-events-none">
-          <div className="mx-8 rounded-3xl border border-[#1f1f1f] bg-black/90 backdrop-blur-md p-8 text-center">
-            <div className="mb-4 inline-flex items-center justify-center rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-4">
-              <MapPin className="h-7 w-7 text-[#333]" />
-            </div>
-            <p className="text-[17px] font-semibold text-[#f0f0f0]">No stores on the map yet</p>
-            <p className="mt-2 text-[13px] text-[#666] leading-relaxed">
-              Stores appear here once they add their address in their merchant dashboard.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Shop detail sheet */}
       {selected && (
