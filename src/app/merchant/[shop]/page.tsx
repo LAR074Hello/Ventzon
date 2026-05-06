@@ -169,6 +169,7 @@ function MerchantShopPage() {
   const [shopLoadError, setShopLoadError] = useState("");
   const [waitingForPayment, setWaitingForPayment] = useState(isCheckoutReturn);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteConfirmStep, setDeleteConfirmStep] = useState(0); // 0=none, 1=confirming, 2=deleting
   const pollCountRef = useRef(0);
 
   const [origin, setOrigin] = useState("");
@@ -487,15 +488,11 @@ function MerchantShopPage() {
   }
 
   async function handleDeleteAccount() {
-    const confirmed = window.confirm(
-      "Are you sure you want to permanently delete your Ventzon account?\n\nThis will:\n• Cancel your subscription\n• Delete all your shops and customer data\n• Remove your account permanently\n\nThis cannot be undone."
-    );
-    if (!confirmed) return;
-    const doubleConfirmed = window.confirm(
-      "Last chance — this is permanent and cannot be reversed. Delete account?"
-    );
-    if (!doubleConfirmed) return;
-
+    if (deleteConfirmStep === 0) {
+      setDeleteConfirmStep(1);
+      return;
+    }
+    setDeleteConfirmStep(2);
     setDeletingAccount(true);
     try {
       const res = await fetch("/api/merchant/delete-account", { method: "DELETE" });
@@ -507,8 +504,9 @@ function MerchantShopPage() {
       await supabase.auth.signOut();
       logoutRouter.push("/");
     } catch (e: any) {
-      alert(e?.message ?? "Something went wrong. Please try again.");
       setDeletingAccount(false);
+      setDeleteConfirmStep(0);
+      alert(e?.message ?? "Something went wrong. Please try again.");
     }
   }
 
@@ -716,20 +714,20 @@ function MerchantShopPage() {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Total signups */}
                 <div className="group rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
-                  <SectionLabel>TOTAL SIGNUPS</SectionLabel>
+                  <SectionLabel>TOTAL CUSTOMERS</SectionLabel>
                   <div className="mt-4 text-5xl font-extralight tracking-tight text-white">
                     {loading ? "…" : (data?.totals?.total ?? 0).toLocaleString()}
                   </div>
-                  <p className="mt-3 text-[12px] font-light text-[#444]">All time</p>
+                  <p className="mt-3 text-[12px] font-light text-[#444]">All-time loyalty members</p>
                 </div>
 
                 {/* Today */}
                 <div className="group rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
-                  <SectionLabel>TODAY</SectionLabel>
+                  <SectionLabel>CHECK-INS TODAY</SectionLabel>
                   <div className="mt-4 text-5xl font-extralight tracking-tight text-white">
                     {loading ? "…" : (data?.totals?.today ?? 0).toLocaleString()}
                   </div>
-                  <p className="mt-3 text-[12px] font-light text-[#444]">New York time</p>
+                  <p className="mt-3 text-[12px] font-light text-[#444]">Since midnight</p>
                 </div>
 
                 {/* Reward goal */}
@@ -744,18 +742,15 @@ function MerchantShopPage() {
 
               {/* Refresh controls */}
               <div className="mt-4 flex flex-wrap items-center gap-4">
-                <GhostButton onClick={loadStats}>Refresh</GhostButton>
-                <label className="flex items-center gap-2 text-[12px] font-light text-[#555]">
-                  <input
-                    type="checkbox"
-                    className="h-3.5 w-3.5 accent-white"
-                    checked={autoRefresh}
-                    onChange={(e) => setAutoRefresh(e.target.checked)}
-                  />
-                  Auto-refresh
-                </label>
+                <GhostButton onClick={loadStats}>Refresh stats</GhostButton>
+                <button
+                  onClick={() => setAutoRefresh(v => !v)}
+                  className={`text-[11px] font-light tracking-[0.1em] transition-colors duration-300 ${autoRefresh ? "text-emerald-400" : "text-[#444] hover:text-[#888]"}`}
+                >
+                  {autoRefresh ? "● Live" : "Auto-refresh off"}
+                </button>
                 {lastUpdated && (
-                  <span className="text-[11px] font-light text-[#333]">
+                  <span className="text-[11px] font-light text-[#2a2a2a]">
                     Updated {lastUpdated}
                   </span>
                 )}
@@ -1198,19 +1193,9 @@ function MerchantShopPage() {
                 LATEST SIGNUPS
                 ============================================================ */}
             <section className="mt-14">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <SectionLabel>ACTIVITY</SectionLabel>
-                  <SectionTitle>Latest signups</SectionTitle>
-                </div>
-                <a
-                  href={statsUrl}
-                  className="text-[11px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Raw JSON
-                </a>
+              <div>
+                <SectionLabel>RECENT ACTIVITY</SectionLabel>
+                <SectionTitle>Latest check-ins</SectionTitle>
               </div>
 
               <div className="mt-6 overflow-hidden rounded-2xl border border-[#1a1a1a]">
@@ -1218,7 +1203,7 @@ function MerchantShopPage() {
                   <thead>
                     <tr className="border-b border-[#1a1a1a]">
                       <th className="px-6 py-4 text-[11px] font-light tracking-[0.2em] text-[#555]">
-                        PHONE
+                        CONTACT
                       </th>
                       <th className="px-6 py-4 text-[11px] font-light tracking-[0.2em] text-[#555]">
                         TIME
@@ -1228,8 +1213,8 @@ function MerchantShopPage() {
                   <tbody className="divide-y divide-[#111]">
                     {(data?.latest ?? []).length === 0 ? (
                       <tr>
-                        <td className="px-6 py-6 text-[13px] font-light text-[#444]" colSpan={2}>
-                          {loading ? "Loading…" : "No signups yet."}
+                        <td className="px-6 py-8 text-[13px] font-light text-[#444]" colSpan={2}>
+                          {loading ? "Loading…" : "No check-ins yet — share your QR code to get started."}
                         </td>
                       </tr>
                     ) : (
@@ -1582,50 +1567,6 @@ function MerchantShopPage() {
               </section>
             )}
 
-            {/* ============================================================
-                QUICK START
-                ============================================================ */}
-            <section className="mt-14">
-              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
-
-              <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
-                <SectionLabel>QUICK START</SectionLabel>
-                <SectionTitle>Customer join page</SectionTitle>
-
-                <div className="mt-6 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">JOIN URL</p>
-                  <p className="mt-2 break-all font-mono text-[13px] font-light text-[#888]">
-                    {paid ? joinUrl : "(locked — activate to reveal your join link)"}
-                  </p>
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {paid ? (
-                    <>
-                      <a
-                        href={joinUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
-                      >
-                        Open join page
-                      </a>
-                      <span className="text-[#333]">·</span>
-                      <button
-                        onClick={copyJoinLink}
-                        className="text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
-                      >
-                        {copied ? "Copied" : "Copy link"}
-                      </button>
-                    </>
-                  ) : (
-                    <PrimaryButton href={`/merchant/subscribe?shop=${encodeURIComponent(shopSlug)}`}>
-                      Activate now
-                    </PrimaryButton>
-                  )}
-                </div>
-              </div>
-            </section>
           </>
         )}
       </div>
@@ -1637,19 +1578,43 @@ function MerchantShopPage() {
         <div className="rounded-2xl border border-red-950/30 p-8">
           <p className="text-[11px] font-light tracking-[0.3em] text-red-900/60">DANGER ZONE</p>
           <div className="mt-6 flex items-start justify-between gap-8">
-            <div>
+            <div className="flex-1">
               <p className="text-[14px] font-light text-[#888]">Delete account</p>
               <p className="mt-1 text-[12px] font-light text-[#444]">
                 Permanently removes your account, all shops, all customer data, and cancels your subscription.
               </p>
+              {deleteConfirmStep === 1 && (
+                <div className="mt-4 rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
+                  <p className="text-[12px] font-light text-red-300/80">
+                    This cannot be undone. All customer data and your subscription will be permanently deleted.
+                  </p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={deletingAccount}
+                      className="rounded-lg border border-red-800/60 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-red-400 transition-colors hover:bg-red-950/30 disabled:opacity-40"
+                    >
+                      Yes, permanently delete
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirmStep(0)}
+                      className="text-[11px] font-light text-[#555] transition-colors hover:text-[#888]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              onClick={handleDeleteAccount}
-              disabled={deletingAccount}
-              className="shrink-0 rounded-xl border border-red-950/40 px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-red-900/60 transition-colors hover:border-red-900/60 hover:text-red-400 disabled:opacity-40"
-            >
-              {deletingAccount ? "Deleting…" : "Delete account"}
-            </button>
+            {deleteConfirmStep === 0 && (
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount}
+                className="shrink-0 rounded-xl border border-red-950/40 px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-red-900/60 transition-colors hover:border-red-900/60 hover:text-red-400 disabled:opacity-40"
+              >
+                Delete account
+              </button>
+            )}
           </div>
         </div>
       </section>
