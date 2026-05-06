@@ -668,6 +668,57 @@ export default function Home() {
       </section>
 
       {/* ============================================================
+          SECTION 6b — APP STORE DOWNLOAD
+          ============================================================ */}
+      <section className="px-8 py-20 sm:py-28">
+        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+        <ScrollReveal className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+            CUSTOMER APP
+          </p>
+          <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            Download the Ventzon app.
+          </h2>
+          <p className="mt-5 text-[15px] font-light leading-relaxed text-[#666]">
+            Track stamps, redeem rewards, and discover local businesses —
+            all in one place. Free for customers.
+          </p>
+
+          {/* Feature pills */}
+          <div className="mt-8 flex flex-wrap justify-center gap-2">
+            {["Loyalty cards", "Explore map", "Push notifications", "Instant rewards"].map((f) => (
+              <span key={f} className="rounded-full border border-[#1f1f1f] px-4 py-1.5 text-[12px] font-light text-[#555]">
+                {f}
+              </span>
+            ))}
+          </div>
+
+          {/* App Store badge */}
+          <div className="mt-10 flex justify-center">
+            <a
+              href="https://apps.apple.com/app/id6763768638"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3.5 rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] px-6 py-4 transition-all duration-300 hover:border-[#444] hover:bg-[#111]"
+            >
+              {/* Apple logo SVG */}
+              <svg className="h-7 w-7 fill-[#ededed]" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
+                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.3-166.8-117.8C114.5 726 48.1 612.7 48.1 505c0-176 114.8-268.8 227.9-268.8 60.1 0 110.1 39.5 147.7 39.5 36 0 92.2-41.8 160.8-41.8 26.1 0 108.2 2.6 168.4 76.4zm-120.4-198.2c28.3-35.3 49-84.2 49-133.1 0-6.5-.6-13-1.3-19.4-46.1 1.9-101 31.1-133.8 71.2-27.1 32-51.3 80.9-51.3 130.5 0 7.1.6 14.3 1.3 16.5 2.6.5 6.5.9 10.4.9 41.5 0 93.8-28.3 125.7-66.6z" />
+              </svg>
+              <div className="text-left">
+                <p className="text-[10px] font-light tracking-[0.15em] text-[#666]">DOWNLOAD ON THE</p>
+                <p className="text-[18px] font-light tracking-[-0.01em] text-[#ededed]">App Store</p>
+              </div>
+            </a>
+          </div>
+
+          <p className="mt-4 text-[11px] font-light text-[#444]">
+            Available on iPhone &middot; iOS 16+
+          </p>
+        </ScrollReveal>
+      </section>
+
+      {/* ============================================================
           SECTION 7 — FINAL CTA
           ============================================================ */}
       <section className="px-8 py-28 sm:py-36">
