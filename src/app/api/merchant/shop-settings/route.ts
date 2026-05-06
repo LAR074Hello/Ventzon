@@ -38,7 +38,14 @@ export async function GET(req: Request) {
       .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    return NextResponse.json({ ok: true, settings: data ?? null });
+    // Also fetch address from shops table
+    const { data: shopData } = await supabase
+      .from("shops")
+      .select("address,latitude,longitude")
+      .eq("slug", shop_slug)
+      .maybeSingle();
+
+    return NextResponse.json({ ok: true, settings: { ...(data ?? {}), address: shopData?.address ?? null, latitude: shopData?.latitude ?? null, longitude: shopData?.longitude ?? null } });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
   }
@@ -105,6 +112,7 @@ export async function PATCH(req: Request) {
     const shop_name = clampStr(body.shop_name, 120);
     const deal_title = clampStr(body.deal_title, 120);
     const deal_details = clampStr(body.deal_details, 300);
+    const address = "address" in body ? clampStr(body.address, 300) : undefined;
 
     // Register PIN (4 digits, nullable — empty string clears it)
     const register_pin_raw = body.register_pin;
@@ -150,17 +158,48 @@ export async function PATCH(req: Request) {
     if (bonus_days !== undefined) update.bonus_days = bonus_days;
     if (register_pin !== undefined) update.register_pin = register_pin;
 
-    if (Object.keys(update).length === 0) {
+    if (Object.keys(update).length === 0 && address === undefined) {
       return NextResponse.json(
         {
           error:
-            "No valid fields provided. Send at least one of: reward_goal, shop_name, deal_title, deal_details",
+            "No valid fields provided. Send at least one of: reward_goal, shop_name, deal_title, deal_details, address",
         },
         { status: 400 }
       );
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Geocode address if provided and non-empty
+    if (address !== undefined) {
+      if (address) {
+        try {
+          const geo = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+            { headers: { "User-Agent": "Ventzon/1.0 (support@ventzon.com)" } }
+          );
+          const geoJson = await geo.json();
+          if (geoJson?.[0]) {
+            await supabase
+              .from("shops")
+              .update({ address, latitude: parseFloat(geoJson[0].lat), longitude: parseFloat(geoJson[0].lon) })
+              .eq("slug", shop_slug);
+          } else {
+            // Save address text even if geocoding fails
+            await supabase.from("shops").update({ address, latitude: null, longitude: null }).eq("slug", shop_slug);
+          }
+        } catch {
+          await supabase.from("shops").update({ address }).eq("slug", shop_slug);
+        }
+      } else {
+        // Empty address — clear location
+        await supabase.from("shops").update({ address: null, latitude: null, longitude: null }).eq("slug", shop_slug);
+      }
+    }
+
+    if (Object.keys(update).length === 0) {
+      return NextResponse.json({ ok: true, settings: null }, { status: 200 });
+    }
 
     const { data, error } = await supabase
       .from("shop_settings")

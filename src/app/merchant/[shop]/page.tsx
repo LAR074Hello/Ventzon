@@ -182,6 +182,7 @@ function MerchantShopPage() {
   const [shopNameDraft, setShopNameDraft] = useState("");
   const [dealTitleDraft, setDealTitleDraft] = useState("");
   const [dealDetailsDraft, setDealDetailsDraft] = useState("");
+  const [addressDraft, setAddressDraft] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
   const [saveSettingsMsg, setSaveSettingsMsg] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -346,6 +347,7 @@ function MerchantShopPage() {
       setShopNameDraft(String(s?.shop_name ?? ""));
       setDealTitleDraft(String(s?.deal_title ?? ""));
       setDealDetailsDraft(String(s?.deal_details ?? ""));
+      setAddressDraft(String((s as any)?.address ?? ""));
       setRewardExpiresDaysDraft(s?.reward_expires_days ?? "");
       setBonusDaysDraft(Array.isArray(s?.bonus_days) ? s.bonus_days : []);
       // Load register_pin status from authenticated endpoint
@@ -395,6 +397,7 @@ function MerchantShopPage() {
           shop_name: shopNameDraft.trim() || null,
           deal_title: dealTitleDraft.trim() || null,
           deal_details: dealDetailsDraft.trim() || null,
+          address: addressDraft.trim() || null,
           reward_expires_days: rewardExpiresDaysDraft === "" ? null : Number(rewardExpiresDaysDraft),
           bonus_days: bonusDaysDraft,
           ...(registerPinDraft !== "" ? { register_pin: registerPinDraft } : {}),
@@ -1368,6 +1371,25 @@ function MerchantShopPage() {
                           {settingsLoading ? "Loading…" : settings?.deal_details || "—"}
                         </div>
                       )}
+                    </div>
+
+                    <div>
+                      <FieldLabel>STORE ADDRESS</FieldLabel>
+                      {paid ? (
+                        <input
+                          value={addressDraft}
+                          onChange={(e) => setAddressDraft(e.target.value)}
+                          placeholder="e.g., 123 Main St, Brooklyn, NY 11201"
+                          className="mt-2 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] focus:border-[#333]"
+                        />
+                      ) : (
+                        <div className="mt-2 text-[14px] font-light text-[#888]">
+                          {settingsLoading ? "Loading…" : (settings as any)?.address || "—"}
+                        </div>
+                      )}
+                      <p className="mt-1.5 text-[11px] font-light text-[#333]">
+                        Shows your store as a pin on the customer map.
+                      </p>
                     </div>
 
                     <div>

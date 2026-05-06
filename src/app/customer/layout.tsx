@@ -2,13 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Compass, CreditCard, User, ScanLine } from "lucide-react";
+import { Compass, CreditCard, User, ScanLine, Map } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 const tabs = [
   { href: "/customer/explore", label: "Explore", icon: Compass },
   { href: "/customer/home", label: "My Cards", icon: CreditCard },
+  { href: "/customer/map", label: "Map", icon: Map },
   { href: "/customer/profile", label: "Profile", icon: User },
 ];
 
