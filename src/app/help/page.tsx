@@ -26,7 +26,7 @@ const customerFaqs: FAQ[] = [
   },
   {
     q: "How do I join a loyalty program?",
-    a: "You can join two ways: scan the QR code posted in-store with the Ventzon app, or search for the store on the Explore tab and tap "Join." Your card will appear instantly in My Cards.",
+    a: "You can join two ways: scan the QR code posted in-store with the Ventzon app, or search for the store on the Explore tab and tap 'Join.' Your card will appear instantly in My Cards.",
   },
   {
     q: "Is Ventzon free for customers?",
@@ -38,7 +38,7 @@ const customerFaqs: FAQ[] = [
   },
   {
     q: "How do I delete my account?",
-    a: "Go to the Profile tab → scroll to the bottom → tap "Delete account." This permanently removes your account and all associated data. This action cannot be undone.",
+    a: "Go to the Profile tab → scroll to the bottom → tap 'Delete account.' This permanently removes your account and all associated data. This action cannot be undone.",
   },
 ];
 
@@ -57,7 +57,7 @@ const merchantFaqs: FAQ[] = [
   },
   {
     q: "Can I customize the reward?",
-    a: "Yes. You can set the number of visits required (2–12), write a custom deal title (e.g. "Free coffee after 8 visits"), and add deal details customers will see in the app.",
+    a: "Yes. You can set the number of visits required (2-12), write a custom deal title (e.g. 'Free coffee after 8 visits'), and add deal details customers will see in the app.",
   },
   {
     q: "How do I see who my customers are?",
@@ -69,7 +69,7 @@ const merchantFaqs: FAQ[] = [
   },
   {
     q: "What happens when a customer redeems a reward?",
-    a: "The customer shows you their "Reward ready" screen. You click "Mark as redeemed" in your dashboard (or they can show you the screen and you manually confirm). Their card resets to zero stamps automatically.",
+    a: "The customer shows you their 'Reward ready' screen. You click 'Mark as redeemed' in your dashboard (or they can show you the screen and you manually confirm). Their card resets to zero stamps automatically.",
   },
   {
     q: "Can I pause or cancel my subscription?",
