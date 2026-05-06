@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Ventzon — Customer Rewards Platform",
     description:
       "Turn one-time buyers into loyal regulars. App-based loyalty rewards for local businesses.",
