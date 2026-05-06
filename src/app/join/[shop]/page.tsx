@@ -103,7 +103,8 @@ function CustomerJoinPage() {
       setErr(null);
       setTokenInvalid(false);
       try {
-        const qs = new URLSearchParams({ shop_slug: shopSlug, t: token });
+        const qs = new URLSearchParams({ shop_slug: shopSlug });
+        if (token) qs.set("t", token);
         const res = await fetch(`/api/join/settings?${qs}`, {
           signal: AbortSignal.timeout(10_000),
         });

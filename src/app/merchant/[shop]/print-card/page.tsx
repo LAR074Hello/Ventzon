@@ -1,35 +1,61 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
 import { QRCodeCanvas } from "qrcode.react";
 
 export default function PrintCardPage() {
   const params = useParams();
+  const router = useRouter();
   const shopSlug = String(params?.shop ?? "").toLowerCase();
 
   const [shopName, setShopName] = useState<string | null>(null);
+  const [joinUrl, setJoinUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const joinUrl = `https://www.ventzon.com/join/${shopSlug}`;
 
   useEffect(() => {
     if (!shopSlug) return;
 
-    fetch(`/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.ok && data.settings?.shop_name) {
-          setShopName(data.settings.shop_name);
-        } else {
-          setError("Shop not found");
+    (async () => {
+      // Auth guard — redirect to login if not signed in
+      const supabase = createSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+
+      try {
+        // Fetch settings (no token needed here — server returns the join_token in response)
+        const res = await fetch(
+          `/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`,
+          { cache: "no-store" }
+        );
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          setError(data.error ?? "Shop not found");
+          return;
         }
-      })
-      .catch(() => setError("Failed to load shop"))
-      .finally(() => setLoading(false));
-  }, [shopSlug]);
+
+        const name = data.settings?.shop_name ?? null;
+        const token: string | undefined = data.join_token;
+
+        setShopName(name);
+
+        // Build the join URL — always include the token so the QR scan works
+        const base = `https://www.ventzon.com/join/${shopSlug}`;
+        setJoinUrl(token ? `${base}?t=${token}` : base);
+      } catch {
+        setError("Failed to load shop");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [shopSlug, router]);
 
   if (loading) {
     return (
@@ -102,7 +128,7 @@ export default function PrintCardPage() {
                 className="bg-white border border-stone-200 flex items-center justify-center"
                 style={{ width: "180px", height: "180px" }}
               >
-                <QRCodeCanvas value={joinUrl} size={160} />
+                {joinUrl && <QRCodeCanvas value={joinUrl} size={160} />}
               </div>
               <p
                 className="text-[9px] tracking-widest text-stone-400"
