@@ -1585,7 +1585,7 @@ function MerchantShopPage() {
                       </span>
                       <span className="text-[13px] font-light text-[#666]">
                         {billingData.plan_type === "pro"
-                          ? "$19.99/mo \u00b7 All rewards included"
+                          ? "$25/mo \u00b7 + $0.85 per reward redeemed"
                           : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month \u2192 ${billingData.estimated_charge}`}
                       </span>
                     </div>

@@ -141,7 +141,7 @@ export default function RepHomePage() {
           <div className="mt-4 space-y-3">
             {[
               { label: "Pro merchant active", value: "$5.00/mo", detail: "20% of $25 subscription" },
-              { label: "Per reward redeemed", value: "$0.25", detail: "20% of $1.25 per redemption" },
+              { label: "Per reward redeemed", value: "$0.17", detail: "20% of $0.85 per redemption" },
             ].map(({ label, value, detail }) => (
               <div key={label} className="flex items-center justify-between">
                 <div>
