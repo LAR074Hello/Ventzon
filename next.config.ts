@@ -1,5 +1,6 @@
 import path from "path";
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -26,4 +27,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "ventzon",
+  project: "ventzon-web",
+  // Only upload source maps in CI (Vercel builds), not local dev
+  silent: true,
+  // Disable source map upload until SENTRY_AUTH_TOKEN is configured
+  disableSourceMapUpload: !process.env.SENTRY_AUTH_TOKEN,
+  // Tree-shake Sentry debug logging in production
+  disableLogger: true,
+});

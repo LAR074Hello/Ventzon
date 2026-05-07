@@ -202,6 +202,9 @@ function MerchantShopPage() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customersLoaded, setCustomersLoaded] = useState(false);
+  const [customersPage, setCustomersPage] = useState(1);
+  const [customersHasMore, setCustomersHasMore] = useState(false);
+  const [customersTotal, setCustomersTotal] = useState(0);
   const [customerSearch, setCustomerSearch] = useState("");
   const [customerTab, setCustomerTab] = useState<"all" | "lapsed">("all");
 
@@ -510,13 +513,20 @@ function MerchantShopPage() {
     }
   }
 
-  async function loadCustomers() {
+  async function loadCustomers(page = 1) {
     if (!shopSlug || customersLoading) return;
     setCustomersLoading(true);
     try {
-      const res = await fetch(`/api/merchant/customers?shop_slug=${encodeURIComponent(shopSlug)}`);
+      const res = await fetch(`/api/merchant/customers?shop_slug=${encodeURIComponent(shopSlug)}&page=${page}`);
       const json = await res.json();
-      if (res.ok) { setCustomers(json.customers ?? []); setCustomersLoaded(true); }
+      if (res.ok) {
+        const next = json.customers ?? [];
+        setCustomers(prev => page === 1 ? next : [...prev, ...next]);
+        setCustomersPage(page);
+        setCustomersHasMore(json.pagination?.has_more ?? false);
+        setCustomersTotal(json.pagination?.total ?? next.length);
+        setCustomersLoaded(true);
+      }
     } finally {
       setCustomersLoading(false);
     }
@@ -539,7 +549,7 @@ function MerchantShopPage() {
         setManualResult(json);
         setManualContact("");
         // Refresh customer list if open
-        if (customersLoaded) loadCustomers();
+        if (customersLoaded) loadCustomers(1);
       }
     } catch (e: any) {
       setManualError(e?.message ?? "Unknown error");
@@ -796,7 +806,11 @@ function MerchantShopPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">CUSTOMERS</p>
-                    <p className="mt-1 text-[13px] font-light text-[#444]">Everyone who has joined your loyalty program</p>
+                    <p className="mt-1 text-[13px] font-light text-[#444]">
+                      {customersLoaded
+                        ? `${customersTotal.toLocaleString()} loyalty member${customersTotal !== 1 ? "s" : ""}`
+                        : "Everyone who has joined your loyalty program"}
+                    </p>
                   </div>
                   <div className="flex gap-3">
                     <GhostButton onClick={() => setShowManualCheckin(true)}>
@@ -808,7 +822,7 @@ function MerchantShopPage() {
                       </GhostButton>
                     )}
                     {!customersLoaded && (
-                      <GhostButton onClick={loadCustomers} disabled={customersLoading}>
+                      <GhostButton onClick={() => loadCustomers(1)} disabled={customersLoading}>
                         {customersLoading ? "Loading…" : "Load customers"}
                       </GhostButton>
                     )}
@@ -910,6 +924,15 @@ function MerchantShopPage() {
                         </tbody>
                       </table>
                     )}
+                  </div>
+                )}
+
+                {/* Load more */}
+                {customersLoaded && customersHasMore && !customerSearch && customerTab === "all" && (
+                  <div className="mt-4 flex justify-center">
+                    <GhostButton onClick={() => loadCustomers(customersPage + 1)} disabled={customersLoading}>
+                      {customersLoading ? "Loading…" : `Load more · ${customers.length} of ${customersTotal.toLocaleString()}`}
+                    </GhostButton>
                   </div>
                 )}
               </section>
