@@ -12,7 +12,7 @@ const sections = [
     items: [
       { q: "\"We already have a loyalty program\"", a: "That's great — Ventzon replaces paper punch cards and works automatically. No manual tracking, no lost cards, and you get to see who your regulars actually are." },
       { q: "\"We're too busy right now\"", a: "Totally understand. Setup takes 5 minutes and I can do it while you serve customers. You don't need to stop what you're doing." },
-      { q: "\"How much does it cost?\"", a: "Free plan is completely free — you only pay $1.25 per reward redeemed. Pro plan is $25/month and adds analytics, campaigns, and priority support." },
+      { q: "\"How much does it cost?\"", a: "$25/month — or $240/year if they want to save $60. Plus $0.85 per reward redeemed, which only happens when the loyalty program actually works." },
       { q: "\"We're not very tech savvy\"", a: "That's exactly who this is built for. There's nothing to install — just a QR code you print and put on your counter. Customers do the rest." },
     ],
   },

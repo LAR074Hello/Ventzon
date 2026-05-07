@@ -586,80 +586,63 @@ export default function Home() {
               PRICING
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Start free. Upgrade anytime.
+              Simple pricing.
             </h2>
             <p className="mt-5 text-[15px] font-light text-[#666]">
-              No commitment on the Free plan. Pay only when customers redeem.
+              $25/month to run your loyalty program — plus $0.85 for every customer who earns their reward.
             </p>
           </ScrollReveal>
 
-          <div className="mt-14 grid gap-8 sm:grid-cols-2">
-            {/* Free */}
-            <ScrollReveal delay={1}>
-              <div className="rounded-lg border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#333]">
-                <p className="text-[12px] font-light tracking-[0.2em] text-[#666]">
-                  FREE
-                </p>
-                <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
-                  $0
-                  <span className="text-lg font-light text-[#555]">/mo</span>
+          <div className="mt-14 mx-auto max-w-lg">
+            <ScrollReveal>
+              <div className="rounded-lg border border-[#2a2a2a] p-8 transition-colors duration-500 hover:border-[#444]">
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] font-light tracking-[0.2em] text-[#666]">
+                    VENTZON PRO
+                  </p>
+                  <span className="rounded-full bg-[#ededed] px-3 py-1 text-[10px] font-normal tracking-[0.2em] text-black">
+                    SAVE $60 YEARLY
+                  </span>
                 </div>
-                <p className="mt-3 text-[13px] font-light text-[#555]">
-                  $1.25 per reward redeemed
-                </p>
-                <ul className="mt-8 space-y-4 text-[14px] font-light text-[#888]">
+
+                <div className="mt-6 flex items-end gap-6">
+                  <div>
+                    <div className="text-4xl font-extralight tracking-tight text-[#ededed]">
+                      $25
+                      <span className="text-lg font-light text-[#555]">/mo</span>
+                    </div>
+                    <p className="mt-1 text-[12px] font-light text-[#555]">or $240/yr</p>
+                  </div>
+                  <div className="mb-1 h-8 w-[1px] bg-[#1a1a1a]" />
+                  <div>
+                    <div className="text-2xl font-extralight tracking-tight text-[#888]">
+                      + $0.85
+                    </div>
+                    <p className="mt-1 text-[12px] font-light text-[#555]">per reward redeemed</p>
+                  </div>
+                </div>
+
+                <ul className="mt-8 grid grid-cols-2 gap-3 text-[13px] font-light text-[#888]">
                   {[
                     "QR code + join page",
                     "Unlimited check-ins",
                     "Push notification rewards",
-                    "Basic dashboard",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#444]" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/signup"
-                  className="mt-10 block rounded-full border border-[#333] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
-                >
-                  Get started free
-                </Link>
-              </div>
-            </ScrollReveal>
-
-            {/* Pro */}
-            <ScrollReveal delay={2}>
-              <div className="relative rounded-lg border border-[#2a2a2a] p-8 transition-colors duration-500 hover:border-[#444]">
-                <div className="absolute -top-3 left-8 rounded-full bg-[#ededed] px-4 py-1 text-[10px] font-normal tracking-[0.2em] text-black">
-                  RECOMMENDED
-                </div>
-                <p className="text-[12px] font-light tracking-[0.2em] text-[#666]">
-                  PRO
-                </p>
-                <div className="mt-4 text-4xl font-extralight tracking-tight text-[#ededed]">
-                  $19.99
-                  <span className="text-lg font-light text-[#555]">/mo</span>
-                </div>
-                <ul className="mt-8 space-y-4 text-[14px] font-light text-[#888]">
-                  {[
-                    "Everything in Free",
-                    "Custom reward goals",
                     "Analytics dashboard",
+                    "Customer list & CSV export",
                     "Email campaigns",
                   ].map((item) => (
-                    <li key={item} className="flex items-start gap-3">
+                    <li key={item} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ededed]" />
                       {item}
                     </li>
                   ))}
                 </ul>
+
                 <Link
                   href="/pricing"
                   className="mt-10 block rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
                 >
-                  View Pro plan
+                  Get started
                 </Link>
               </div>
             </ScrollReveal>
