@@ -13,7 +13,7 @@ const stripe = new Stripe(STRIPE_SECRET_KEY);
 export async function POST(req: Request) {
   // Rate limit: 5 checkout sessions per IP per minute
   const ip = getClientIp(req);
-  const rl = rateLimit(`checkout:${ip}`, 5, 60_000);
+  const rl = await rateLimit(`checkout:${ip}`, 5, 60_000);
   if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
 
   try {

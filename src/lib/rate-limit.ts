@@ -1,30 +1,96 @@
 // src/lib/rate-limit.ts
-// Simple in-memory sliding-window rate limiter for Vercel serverless.
 //
-// Each warm function instance maintains its own window. This won't
-// persist across cold starts, but effectively blocks rapid-fire abuse
-// from a single IP during a warm period. For stricter limits at scale,
-// swap this out for Upstash Redis (@upstash/ratelimit).
+// Persistent sliding-window rate limiter backed by Upstash Redis.
+// All Vercel serverless instances share the same counters, so limits
+// hold across cold starts and parallel instances.
+//
+// Falls back to a simple in-memory limiter if Upstash env vars aren't
+// set (e.g. local dev without Redis configured).
+
+import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit";
+
+// ---------------------------------------------------------------------------
+// Upstash-backed limiter (production)
+// ---------------------------------------------------------------------------
+
+let redis: Redis | null = null;
+
+function getRedis(): Redis | null {
+  if (redis) return redis;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  redis = new Redis({ url, token });
+  return redis;
+}
+
+// Cache of Ratelimit instances keyed by "limit:windowMs"
+const limiters = new Map<string, Ratelimit>();
+
+function getLimiter(limit: number, windowMs: number): Ratelimit | null {
+  const r = getRedis();
+  if (!r) return null;
+
+  const key = `${limit}:${windowMs}`;
+  if (!limiters.has(key)) {
+    limiters.set(
+      key,
+      new Ratelimit({
+        redis: r,
+        limiter: Ratelimit.slidingWindow(limit, `${windowMs} ms`),
+        analytics: false,
+      })
+    );
+  }
+  return limiters.get(key)!;
+}
+
+// ---------------------------------------------------------------------------
+// In-memory fallback (local dev / no Redis)
+// ---------------------------------------------------------------------------
 
 type Entry = { timestamps: number[] };
-
 const store = new Map<string, Entry>();
-
-// Clean up stale entries every 60 seconds to prevent memory leaks
 const CLEANUP_INTERVAL = 60_000;
 let lastCleanup = Date.now();
 
-function cleanup(windowMs: number) {
+function cleanupMemory(windowMs: number) {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL) return;
   lastCleanup = now;
-
   const cutoff = now - windowMs;
-  for (const [key, entry] of store) {
+  for (const [k, entry] of store) {
     entry.timestamps = entry.timestamps.filter((t) => t > cutoff);
-    if (entry.timestamps.length === 0) store.delete(key);
+    if (entry.timestamps.length === 0) store.delete(k);
   }
 }
+
+function memoryRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number
+): { limited: boolean; remaining: number; retryAfterMs: number } {
+  cleanupMemory(windowMs);
+  const now = Date.now();
+  const cutoff = now - windowMs;
+  let entry = store.get(key);
+  if (!entry) {
+    entry = { timestamps: [] };
+    store.set(key, entry);
+  }
+  entry.timestamps = entry.timestamps.filter((t) => t > cutoff);
+  if (entry.timestamps.length >= limit) {
+    const retryAfterMs = Math.max(entry.timestamps[0] + windowMs - now, 0);
+    return { limited: true, remaining: 0, retryAfterMs };
+  }
+  entry.timestamps.push(now);
+  return { limited: false, remaining: limit - entry.timestamps.length, retryAfterMs: 0 };
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
 /**
  * Check whether a request should be rate-limited.
@@ -32,45 +98,22 @@ function cleanup(windowMs: number) {
  * @param key      Unique identifier (usually IP + route)
  * @param limit    Max requests allowed in the window
  * @param windowMs Window duration in milliseconds (default 60s)
- * @returns        { limited: boolean, remaining: number, retryAfterMs: number }
  */
-export function rateLimit(
+export async function rateLimit(
   key: string,
   limit: number,
   windowMs: number = 60_000
-): { limited: boolean; remaining: number; retryAfterMs: number } {
-  cleanup(windowMs);
+): Promise<{ limited: boolean; remaining: number; retryAfterMs: number }> {
+  const limiter = getLimiter(limit, windowMs);
 
-  const now = Date.now();
-  const cutoff = now - windowMs;
-
-  let entry = store.get(key);
-  if (!entry) {
-    entry = { timestamps: [] };
-    store.set(key, entry);
+  if (limiter) {
+    const { success, remaining, reset } = await limiter.limit(key);
+    const retryAfterMs = success ? 0 : Math.max(reset - Date.now(), 0);
+    return { limited: !success, remaining, retryAfterMs };
   }
 
-  // Remove timestamps outside the window
-  entry.timestamps = entry.timestamps.filter((t) => t > cutoff);
-
-  if (entry.timestamps.length >= limit) {
-    // Rate limited
-    const oldestInWindow = entry.timestamps[0];
-    const retryAfterMs = oldestInWindow + windowMs - now;
-    return {
-      limited: true,
-      remaining: 0,
-      retryAfterMs: Math.max(retryAfterMs, 0),
-    };
-  }
-
-  // Allow request
-  entry.timestamps.push(now);
-  return {
-    limited: false,
-    remaining: limit - entry.timestamps.length,
-    retryAfterMs: 0,
-  };
+  // Fallback: in-memory (local dev)
+  return memoryRateLimit(key, limit, windowMs);
 }
 
 /**
@@ -79,10 +122,7 @@ export function rateLimit(
  */
 export function getClientIp(req: Request): string {
   const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    // x-forwarded-for can be "client, proxy1, proxy2"
-    return forwarded.split(",")[0].trim();
-  }
+  if (forwarded) return forwarded.split(",")[0].trim();
   const realIp = req.headers.get("x-real-ip");
   if (realIp) return realIp.trim();
   return "unknown";

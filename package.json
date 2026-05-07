@@ -23,6 +23,8 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "@types/leaflet": "^1.9.21",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "jose": "^6.2.3",
     "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",

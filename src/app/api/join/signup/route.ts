@@ -9,7 +9,7 @@ function isE164(phone: string) {
 export async function POST(req: Request) {
   // Rate limit: 10 signups per IP per minute
   const ip = getClientIp(req);
-  const rl = rateLimit(`signup:${ip}`, 10, 60_000);
+  const rl = await rateLimit(`signup:${ip}`, 10, 60_000);
   if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
 
   const supabaseUrl = process.env.SUPABASE_URL;

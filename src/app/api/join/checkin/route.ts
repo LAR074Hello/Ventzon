@@ -53,7 +53,7 @@ export async function GET() {
 export async function POST(req: Request) {
   // Rate limit: 20 check-ins per IP per minute
   const ip = getClientIp(req);
-  const rl = rateLimit(`checkin:${ip}`, 20, 60_000);
+  const rl = await rateLimit(`checkin:${ip}`, 20, 60_000);
   if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
 
   try {
