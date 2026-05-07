@@ -33,7 +33,7 @@ export default withSentryConfig(nextConfig, {
   // Only upload source maps in CI (Vercel builds), not local dev
   silent: true,
   // Disable source map upload until SENTRY_AUTH_TOKEN is configured
-  disableSourceMapUpload: !process.env.SENTRY_AUTH_TOKEN,
-  // Tree-shake Sentry debug logging in production
-  disableLogger: true,
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
 });
