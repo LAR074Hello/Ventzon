@@ -703,6 +703,55 @@ function MerchantShopPage() {
           </div>
         </header>
 
+        {/* ============================================================
+            ONBOARDING CHECKLIST (shown until all steps complete)
+            ============================================================ */}
+        {!isMissingShop && !settingsLoading && (() => {
+          const hasLogo = !!logoUrl;
+          const hasDeal = !!(settings?.deal_title?.trim());
+          const hasAddress = !!(addressDraft?.trim());
+          const allDone = hasLogo && hasDeal && hasAddress;
+          if (allDone) return null;
+          const steps = [
+            { done: true, label: "Create your shop", action: null },
+            { done: hasDeal, label: "Set your reward deal", action: () => document.getElementById("settings-section")?.scrollIntoView({ behavior: "smooth" }) },
+            { done: hasLogo, label: "Upload your logo", action: () => document.getElementById("settings-section")?.scrollIntoView({ behavior: "smooth" }) },
+            { done: hasAddress, label: "Add your business address", action: () => document.getElementById("settings-section")?.scrollIntoView({ behavior: "smooth" }) },
+            { done: false, label: "Print your QR code", action: null, href: `/merchant/${shopSlug}/print-card` },
+          ];
+          const doneCount = steps.filter(s => s.done).length;
+          return (
+            <section className="animate-fade-in-up anim-delay-300 mt-10 opacity-0">
+              <div className="rounded-2xl border border-[#1e1e1e] bg-[#050505] p-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">GETTING STARTED</p>
+                  <p className="text-[11px] font-light text-[#333]">{doneCount}/{steps.length} complete</p>
+                </div>
+                <div className="mt-1 h-1 w-full rounded-full bg-[#111]">
+                  <div className="h-1 rounded-full bg-[#ededed] transition-all duration-700" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+                </div>
+                <ul className="mt-5 space-y-3">
+                  {steps.map((step, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${step.done ? "border-emerald-700 bg-emerald-950" : "border-[#2a2a2a]"}`}>
+                        {step.done && <span className="text-[10px] text-emerald-400">✓</span>}
+                      </div>
+                      <span className={`text-[13px] font-light ${step.done ? "text-[#444] line-through" : "text-[#bbb]"}`}>
+                        {step.label}
+                      </span>
+                      {!step.done && (step.href ? (
+                        <a href={step.href} className="ml-auto text-[11px] font-light tracking-[0.1em] text-[#555] underline decoration-[#333] underline-offset-2 hover:text-[#ededed]">Go →</a>
+                      ) : step.action ? (
+                        <button onClick={step.action} className="ml-auto text-[11px] font-light tracking-[0.1em] text-[#555] underline decoration-[#333] underline-offset-2 hover:text-[#ededed]">Go →</button>
+                      ) : null)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          );
+        })()}
+
         {isMissingShop ? (
           /* ── Missing shop fallback ── */
           <section className="mt-16 rounded-2xl border border-[#1a1a1a] p-8">
@@ -1328,7 +1377,7 @@ function MerchantShopPage() {
             <section className="mt-14">
               <div className="luxury-divider mx-auto mb-14 max-w-xs" />
 
-              <div className="flex items-end justify-between gap-4">
+              <div id="settings-section" className="flex items-end justify-between gap-4">
                 <div>
                   <SectionLabel>SETTINGS</SectionLabel>
                   <SectionTitle>Offer & reward</SectionTitle>

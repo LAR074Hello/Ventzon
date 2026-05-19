@@ -1,43 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Users, TrendingUp, QrCode, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 /* ── Mock data ── */
 const DEMO_SHOP = {
   name: "Sunrise Coffee",
   deal_title: "Free medium coffee after 8 visits",
   deal_details: "Any handcrafted drink, hot or iced",
+  goal: 8,
 };
 
-type DemoResult = {
-  status: "progress" | "reward";
-  visits: number;
-  goal: number;
-  remaining: number;
-  message: string;
-};
+const MOCK_CUSTOMERS = [
+  { contact: "***-***-4821", visits: 7, last: "Today" },
+  { contact: "***-***-3302", visits: 5, last: "Yesterday" },
+  { contact: "j***@gmail.com", visits: 8, last: "Today", redeemed: true },
+  { contact: "***-***-9174", visits: 3, last: "2 days ago" },
+  { contact: "***-***-6650", visits: 6, last: "Today" },
+];
 
 /* ── Helpers ── */
 function formatPhoneDisplay(value: string) {
   const cleaned = value.replace(/\D/g, "");
   if (cleaned.length <= 3) return cleaned;
-  if (cleaned.length <= 6)
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+  if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
   return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
 }
 
-/* ── Progress dots ── */
 function ProgressDots({ visits, goal }: { visits: number; goal: number }) {
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex items-center justify-center gap-2 flex-wrap">
       {Array.from({ length: goal }).map((_, i) => (
         <div
           key={i}
           className={`flex h-6 w-6 items-center justify-center rounded-full transition-all duration-500 ${
-            i < visits
-              ? "bg-[#ededed]"
-              : "border border-[#333] bg-transparent"
+            i < visits ? "bg-[#ededed]" : "border border-[#333] bg-transparent"
           }`}
         >
           {i < visits && <Check className="h-3 w-3 text-black" />}
@@ -47,328 +45,266 @@ function ProgressDots({ visits, goal }: { visits: number; goal: number }) {
   );
 }
 
-export default function DemoPage() {
+/* ── Merchant Dashboard Demo ── */
+function MerchantDemo() {
+  const [checkins, setCheckins] = useState(23);
+  const [total, setTotal] = useState(1247);
+  const [showCheckinFlash, setShowCheckinFlash] = useState(false);
+
+  function simulateCheckin() {
+    setShowCheckinFlash(true);
+    setCheckins(c => c + 1);
+    setTotal(t => t + 1);
+    setTimeout(() => setShowCheckinFlash(false), 2000);
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className={`rounded-2xl border p-6 transition-all duration-500 ${showCheckinFlash ? "border-emerald-700 bg-emerald-950/20" : "border-[#1a1a1a]"}`}>
+          <p className="text-[10px] font-light tracking-[0.3em] text-[#555]">TOTAL CUSTOMERS</p>
+          <div className="mt-3 text-4xl font-extralight tracking-tight text-white">{total.toLocaleString()}</div>
+          <p className="mt-2 text-[11px] font-light text-[#444]">All-time loyalty members</p>
+        </div>
+        <div className={`rounded-2xl border p-6 transition-all duration-500 ${showCheckinFlash ? "border-emerald-700 bg-emerald-950/20" : "border-[#1a1a1a]"}`}>
+          <p className="text-[10px] font-light tracking-[0.3em] text-[#555]">CHECK-INS TODAY</p>
+          <div className="mt-3 text-4xl font-extralight tracking-tight text-white">{checkins}</div>
+          <p className="mt-2 text-[11px] font-light text-[#444]">Since midnight</p>
+        </div>
+        <div className="rounded-2xl border border-[#1a1a1a] p-6">
+          <p className="text-[10px] font-light tracking-[0.3em] text-[#555]">REWARD GOAL</p>
+          <div className="mt-3 text-4xl font-extralight tracking-tight text-white">8</div>
+          <p className="mt-2 text-[11px] font-light text-[#444]">Visits to earn reward</p>
+        </div>
+      </div>
+
+      {/* Simulate check-in button */}
+      <button
+        onClick={simulateCheckin}
+        className="w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+      >
+        {showCheckinFlash ? "✓ Customer checked in!" : "Simulate a customer check-in →"}
+      </button>
+
+      {/* Customer list */}
+      <div className="rounded-2xl border border-[#1a1a1a] overflow-hidden">
+        <div className="border-b border-[#1a1a1a] px-5 py-4">
+          <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">RECENT CUSTOMERS</p>
+        </div>
+        <div className="divide-y divide-[#111]">
+          {MOCK_CUSTOMERS.map((c, i) => (
+            <div key={i} className="flex items-center justify-between px-5 py-3.5">
+              <div>
+                <p className="text-[13px] font-light text-[#bbb]">{c.contact}</p>
+                <p className="text-[11px] font-light text-[#444]">Last visit: {c.last}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1">
+                  {Array.from({ length: DEMO_SHOP.goal }).map((_, j) => (
+                    <div key={j} className={`h-2 w-2 rounded-full ${j < c.visits ? "bg-[#ededed]" : "bg-[#1a1a1a]"}`} />
+                  ))}
+                </div>
+                {c.redeemed && (
+                  <span className="rounded-full bg-emerald-950/50 px-2 py-0.5 text-[10px] font-light tracking-[0.1em] text-emerald-400">REDEEMED</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* QR preview */}
+      <div className="rounded-2xl border border-[#1a1a1a] p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#2a2a2a] bg-[#0a0a0a]">
+            <QrCode className="h-6 w-6 text-[#555]" />
+          </div>
+          <div>
+            <p className="text-[13px] font-light text-[#bbb]">Your QR code is ready to print</p>
+            <p className="mt-1 text-[12px] font-light text-[#555]">Post it at your register — customers scan it to join and check in.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Customer Check-in Demo ── */
+function CustomerDemo() {
   const [contactMethod, setContactMethod] = useState<"phone" | "email">("phone");
   const [phoneRaw, setPhoneRaw] = useState("");
   const [emailRaw, setEmailRaw] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<DemoResult | null>(null);
-  const [scenario, setScenario] = useState<"progress" | "reward">("progress");
+  const [result, setResult] = useState<"progress" | "reward" | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-
-    // Simulate network delay
     await new Promise((r) => setTimeout(r, 800));
-
-    if (scenario === "reward") {
-      setResult({
-        status: "reward",
-        visits: 8,
-        goal: 8,
-        remaining: 0,
-        message: "🎉 You earned a free coffee!",
-      });
-    } else {
-      setResult({
-        status: "progress",
-        visits: 5,
-        goal: 8,
-        remaining: 3,
-        message: "Checked in! 3 more visits to go.",
-      });
-    }
-
+    // Alternate between progress and reward for demo effect
+    setResult(Math.random() > 0.4 ? "progress" : "reward");
     setSubmitting(false);
   }
 
+  function reset() {
+    setResult(null);
+    setPhoneRaw("");
+    setEmailRaw("");
+  }
+
   return (
-    <main className="flex min-h-screen flex-col bg-black">
-      {/* Demo banner */}
-      <div className="border-b border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-center">
-        <p className="text-[11px] font-light tracking-[0.15em] text-[#888]">
-          DEMO &mdash; THIS IS A SAMPLE CUSTOMER EXPERIENCE
-        </p>
-        <p className="mt-1 text-[11px] font-light text-[#555]">
-          No real data is sent. This shows what customers see when they check in via the app or QR code.
-        </p>
+    <div className="flex flex-col items-center">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+        <span className="text-xl font-extralight text-[#555]">S</span>
       </div>
+      <h2 className="mt-4 text-[13px] font-light tracking-[0.3em] text-[#ededed]">
+        {DEMO_SHOP.name.toUpperCase()}
+      </h2>
 
-      <div className="flex flex-1 flex-col items-center px-6 pt-16 pb-8">
-        {/* Logo placeholder */}
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-          <span className="text-2xl font-extralight text-[#555]">S</span>
-        </div>
-
-        {/* Shop name */}
-        <h1 className="mt-5 text-[13px] font-light tracking-[0.3em] text-[#ededed]">
-          {DEMO_SHOP.name.toUpperCase()}
-        </h1>
-
-        {/* Deal info */}
-        {!result && (
-          <div className="mt-6 rounded-lg border border-[#1a1a1a] px-5 py-3.5 text-center">
-            <p className="text-[13px] font-light text-[#888]">
-              {DEMO_SHOP.deal_title}
-            </p>
-            <p className="mt-1 text-[12px] font-light text-[#555]">
-              {DEMO_SHOP.deal_details}
-            </p>
+      {!result ? (
+        <>
+          <div className="mt-5 rounded-lg border border-[#1a1a1a] px-5 py-3 text-center">
+            <p className="text-[13px] font-light text-[#888]">{DEMO_SHOP.deal_title}</p>
+            <p className="mt-1 text-[12px] font-light text-[#555]">{DEMO_SHOP.deal_details}</p>
           </div>
-        )}
 
-        {/* Scenario toggle (demo only) */}
-        {!result && (
-          <div className="mt-6 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setScenario("progress")}
-              className={`rounded-full px-4 py-1.5 text-[10px] font-light tracking-[0.1em] transition-all ${
-                scenario === "progress"
-                  ? "border border-[#ededed] text-[#ededed]"
-                  : "border border-[#333] text-[#555]"
-              }`}
-            >
-              PROGRESS
-            </button>
-            <button
-              type="button"
-              onClick={() => setScenario("reward")}
-              className={`rounded-full px-4 py-1.5 text-[10px] font-light tracking-[0.1em] transition-all ${
-                scenario === "reward"
-                  ? "border border-emerald-500/50 text-emerald-400"
-                  : "border border-[#333] text-[#555]"
-              }`}
-            >
-              REWARD
-            </button>
-          </div>
-        )}
-
-        {/* ── Result state ── */}
-        {result ? (
-          <div className="mt-10 w-full max-w-sm animate-fade-in opacity-0">
-            <div className="rounded-xl border border-[#1a1a1a] p-8 text-center">
-              {result.status === "reward" ? (
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
-                  <Check className="h-7 w-7 text-emerald-400" />
-                </div>
-              ) : (
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-                  <span className="font-mono text-[18px] font-light text-[#ededed]">
-                    {result.visits}
-                  </span>
-                </div>
-              )}
-
-              <p className="mt-5 text-[16px] font-extralight text-[#ededed]">
-                {result.message}
-              </p>
-
-              <div className="mt-6">
-                <ProgressDots visits={result.visits} goal={result.goal} />
-              </div>
-
-              <p className="mt-5 text-[12px] font-light tracking-[0.1em] text-[#555]">
-                {result.visits}/{result.goal} visits
-                {result.remaining > 0 && (
-                  <span>
-                    {" "}&middot;{" "}
-                    {result.remaining} to go
-                  </span>
-                )}
-              </p>
-
-              {result.status === "reward" && (
-                <div className="mt-6 rounded-lg border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5">
-                  <p className="text-[12px] font-light tracking-[0.15em] text-emerald-300/80">
-                    SHOW THIS TO THE CASHIER TO REDEEM
-                  </p>
-                </div>
-              )}
-
-              {result.status !== "reward" && (
-                <p className="mt-4 text-[11px] font-light text-[#444]">
-                  1 check-in per day &middot; Progress resets after redeem
-                </p>
-              )}
-
-              <button
-                onClick={() => {
-                  setResult(null);
-                  setPhoneRaw("");
-                  setEmailRaw("");
-                }}
-                className="mt-8 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* ── Check-in form ── */
-          <form
-            onSubmit={onSubmit}
-            className="mt-10 w-full max-w-sm animate-fade-in opacity-0 anim-delay-200"
-          >
-            <div className="mb-6 flex items-center justify-center gap-1 rounded-full border border-[#1a1a1a] p-1">
-              <button
-                type="button"
-                onClick={() => setContactMethod("phone")}
-                className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${
-                  contactMethod === "phone"
-                    ? "bg-[#ededed] text-black"
-                    : "text-[#555] hover:text-[#ededed]"
-                }`}
-              >
-                PHONE
-              </button>
-              <button
-                type="button"
-                onClick={() => setContactMethod("email")}
-                className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${
-                  contactMethod === "email"
-                    ? "bg-[#ededed] text-black"
-                    : "text-[#555] hover:text-[#ededed]"
-                }`}
-              >
-                EMAIL
-              </button>
+          <form onSubmit={onSubmit} className="mt-8 w-full max-w-sm">
+            <div className="mb-5 flex rounded-full border border-[#1a1a1a] p-1">
+              {(["phone", "email"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setContactMethod(m)}
+                  className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${contactMethod === m ? "bg-[#ededed] text-black" : "text-[#555]"}`}
+                >
+                  {m.toUpperCase()}
+                </button>
+              ))}
             </div>
 
-            <div>
-              {contactMethod === "phone" ? (
-                <>
-                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
-                    PHONE NUMBER
-                  </label>
-                  <input
-                    type="tel"
-                    value={phoneRaw}
-                    onChange={(e) =>
-                      setPhoneRaw(formatPhoneDisplay(e.target.value))
-                    }
-                    placeholder="(555) 123-4567"
-                    maxLength={14}
-                    className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
-                    disabled={submitting}
-                  />
-                </>
-              ) : (
-                <>
-                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
-                    EMAIL ADDRESS
-                  </label>
-                  <input
-                    type="email"
-                    value={emailRaw}
-                    onChange={(e) => setEmailRaw(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
-                    disabled={submitting}
-                  />
-                </>
-              )}
-            </div>
+            {contactMethod === "phone" ? (
+              <input
+                type="tel"
+                value={phoneRaw}
+                onChange={(e) => setPhoneRaw(formatPhoneDisplay(e.target.value))}
+                placeholder="(555) 123-4567"
+                maxLength={14}
+                className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#444]"
+                disabled={submitting}
+              />
+            ) : (
+              <input
+                type="email"
+                value={emailRaw}
+                onChange={(e) => setEmailRaw(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#444]"
+                disabled={submitting}
+              />
+            )}
 
             <button
               type="submit"
               disabled={submitting || (contactMethod === "phone" ? !phoneRaw.trim() : !emailRaw.trim())}
-              className="mt-6 w-full rounded-full border border-[#ededed] py-4 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-30"
+              className="mt-5 w-full rounded-full border border-[#ededed] py-4 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-30"
             >
-              {submitting ? "CHECKING IN\u2026" : "CHECK IN"}
+              {submitting ? "CHECKING IN…" : "CHECK IN"}
             </button>
           </form>
-        )}
-      </div>
+        </>
+      ) : (
+        <div className="mt-8 w-full max-w-sm rounded-xl border border-[#1a1a1a] p-8 text-center">
+          {result === "reward" ? (
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
+              <Check className="h-7 w-7 text-emerald-400" />
+            </div>
+          ) : (
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
+              <span className="font-mono text-[18px] font-light text-[#ededed]">5</span>
+            </div>
+          )}
+          <p className="mt-5 text-[16px] font-extralight text-[#ededed]">
+            {result === "reward" ? "🎉 You earned a free coffee!" : "Checked in! 3 more visits to go."}
+          </p>
+          <div className="mt-5">
+            <ProgressDots visits={result === "reward" ? 8 : 5} goal={8} />
+          </div>
+          {result === "reward" && (
+            <div className="mt-5 rounded-lg border border-emerald-900/30 bg-emerald-950/20 px-4 py-3">
+              <p className="text-[12px] font-light tracking-[0.15em] text-emerald-300/80">SHOW THIS TO THE CASHIER TO REDEEM</p>
+            </div>
+          )}
+          <button onClick={reset} className="mt-6 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black">
+            Try again
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <div className="px-8 pb-8 pt-4">
-        <p className="text-center text-[11px] font-light leading-relaxed text-[#444]">
-          By checking in you agree to receive reward notifications.
-          <br />
-          {"Unsubscribe or disable notifications anytime."}
+/* ── Main Demo Page ── */
+export default function DemoPage() {
+  const [view, setView] = useState<"merchant" | "customer">("merchant");
+
+  return (
+    <main className="min-h-screen bg-black text-[#ededed]">
+
+      {/* Banner */}
+      <div className="border-b border-[#1a1a1a] bg-[#050505] px-4 py-3 text-center">
+        <p className="text-[11px] font-light tracking-[0.15em] text-[#888]">
+          LIVE DEMO — NO ACCOUNT REQUIRED
+        </p>
+        <p className="mt-0.5 text-[11px] font-light text-[#555]">
+          See exactly what you and your customers experience.
         </p>
       </div>
 
-      {/* How it works */}
-      <div className="border-t border-[#1a1a1a] px-6 py-10">
-        <div className="mx-auto max-w-lg">
-          <h2 className="text-center text-[11px] font-light tracking-[0.3em] text-[#555]">
-            HOW VENTZON WORKS
-          </h2>
+      <div className="mx-auto max-w-2xl px-6 pb-20 pt-12">
 
-          <div className="mt-8 space-y-6">
-            <div className="rounded-lg border border-[#1a1a1a] p-5">
-              <p className="text-[12px] font-light tracking-[0.1em] text-[#ededed]">
-                1. SCAN &amp; CHECK IN
-              </p>
-              <p className="mt-2 text-[12px] font-light text-[#555]">
-                Customers scan a QR code at the register and enter their phone number or email to check in.
-              </p>
-            </div>
+        {/* View toggle */}
+        <div className="flex rounded-full border border-[#1a1a1a] p-1">
+          <button
+            onClick={() => setView("merchant")}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${view === "merchant" ? "bg-[#ededed] text-black" : "text-[#555] hover:text-[#ededed]"}`}
+          >
+            <TrendingUp className="h-3.5 w-3.5" />
+            MERCHANT VIEW
+          </button>
+          <button
+            onClick={() => setView("customer")}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${view === "customer" ? "bg-[#ededed] text-black" : "text-[#555] hover:text-[#ededed]"}`}
+          >
+            <Users className="h-3.5 w-3.5" />
+            CUSTOMER VIEW
+          </button>
+        </div>
 
-            <div className="rounded-lg border border-[#1a1a1a] p-5">
-              <p className="text-[12px] font-light tracking-[0.1em] text-[#ededed]">
-                2. TRACK PROGRESS
-              </p>
-              <p className="mt-2 text-[12px] font-light text-[#555]">
-                Stamps accumulate with each check-in. Customers can view their progress in the Ventzon app or on the check-in page.
-              </p>
-            </div>
+        {/* Label */}
+        <p className="mt-5 text-center text-[12px] font-light text-[#555]">
+          {view === "merchant"
+            ? "This is your dashboard — see check-ins, customers, and stats in real time."
+            : "This is what your customers see when they scan your QR code."}
+        </p>
 
-            <div className="rounded-lg border border-[#1a1a1a] p-5">
-              <p className="text-[12px] font-light tracking-[0.1em] text-[#ededed]">
-                3. EARN REWARDS
-              </p>
-              <p className="mt-2 text-[12px] font-light text-[#555]">
-                When the visit goal is reached, the customer unlocks their reward in the app and shows it to the cashier to redeem.
-              </p>
-            </div>
+        {/* Content */}
+        <div className="mt-8">
+          {view === "merchant" ? <MerchantDemo /> : <CustomerDemo />}
+        </div>
 
-            <div className="rounded-lg border border-[#1a1a1a] p-5">
-              <p className="text-[12px] font-light tracking-[0.1em] text-[#ededed]">
-                4. PUSH NOTIFICATIONS
-              </p>
-              <p className="mt-2 text-[12px] font-light text-[#555]">
-                App users receive push notifications when they earn rewards or are one visit away. No SMS required.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-5">
-            <p className="text-[11px] font-light tracking-[0.1em] text-[#888]">
-              SAMPLE PUSH NOTIFICATIONS
-            </p>
-            <div className="mt-3 space-y-3">
-              <div className="rounded-md bg-[#111] px-3 py-2.5">
-                <p className="text-[12px] font-light text-[#ededed]">
-                  &ldquo;Almost there! Just 1 more visit to earn your reward at Sunrise Coffee.&rdquo;
-                </p>
-              </div>
-              <div className="rounded-md bg-[#111] px-3 py-2.5">
-                <p className="text-[12px] font-light text-[#ededed]">
-                  &ldquo;🏆 Reward earned! You've earned your reward at Sunrise Coffee. Show the app at the register.&rdquo;
-                </p>
-              </div>
-              <div className="rounded-md bg-[#111] px-3 py-2.5">
-                <p className="text-[12px] font-light text-[#ededed]">
-                  &ldquo;Email: Check-in confirmed at Sunrise Coffee ✅ You're at 5/8 stamps. 3 more to go!&rdquo;
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <p className="mt-6 text-center text-[11px] font-light text-[#444]">
-            Questions? Contact{" "}
-            <a
-              href="mailto:support@ventzon.com"
-              className="text-[#888] underline decoration-[#333] underline-offset-2 transition-colors hover:text-[#ededed]"
-            >
-              support@ventzon.com
-            </a>
-          </p>
+        {/* CTA */}
+        <div className="mt-12 rounded-2xl border border-[#1e1e1e] bg-[#050505] p-8 text-center">
+          <p className="text-[11px] font-light tracking-[0.4em] text-[#555]">READY TO START?</p>
+          <h2 className="mt-4 text-2xl font-extralight text-white">Get your shop on Ventzon.</h2>
+          <p className="mt-3 text-[13px] font-light text-[#555]">5 minutes to set up. $25/month. Cancel anytime.</p>
+          <Link
+            href="/get-started"
+            className="mt-6 inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+          >
+            Get started free
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
     </main>

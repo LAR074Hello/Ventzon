@@ -49,10 +49,10 @@ export default function Home() {
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link
-              href="/how-it-works"
+              href="/demo"
               className="text-[12px] font-light tracking-[0.15em] text-white/40 transition-colors duration-500 hover:text-white"
             >
-              Discover how it works
+              See a live demo
             </Link>
           </div>
         </div>

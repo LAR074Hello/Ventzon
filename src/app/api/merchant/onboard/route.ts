@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { sendEmail } from "@/lib/resend";
 
 /**
  * Generate a URL-safe slug.
@@ -104,7 +105,39 @@ export async function POST(req: Request) {
       console.warn("shop_settings insert failed (non-fatal):", settingsErr.message);
     }
 
-    // 6) Done
+    // 6) Send welcome email (best-effort — don't fail the whole onboard if email fails)
+    try {
+      const userEmail = user.email;
+      if (userEmail) {
+        await sendEmail(
+          userEmail,
+          `Welcome to Ventzon — ${shopName} is live 🎉`,
+          `Hi there,
+
+Your shop "${shopName}" is set up on Ventzon. Here's what to do next to start building customer loyalty:
+
+1. Set your reward deal — tell customers what they're working toward (e.g. "Free coffee after 8 visits"). Go to your dashboard → Settings.
+
+2. Upload your logo — helps customers recognize your shop in the app.
+
+3. Print your QR code — this is what customers scan to check in. Go to your dashboard → QR Code → Print Card.
+
+4. Post your QR code — at the register, on the counter, on your door. The more visible, the more check-ins.
+
+Your dashboard: https://ventzon.com/merchant/${shopRow.slug}
+
+Once customers start checking in you'll see them appear in your dashboard in real time.
+
+Any questions? Reply to this email or reach us at support@ventzon.com.
+
+— The Ventzon Team`
+        );
+      }
+    } catch (emailErr) {
+      console.warn("Welcome email failed (non-fatal):", emailErr);
+    }
+
+    // 7) Done
     return NextResponse.json({ shopSlug: shopRow.slug }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
