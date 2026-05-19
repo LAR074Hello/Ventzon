@@ -152,7 +152,7 @@ function PricingContent() {
       {/* ============================================================
           HERO
           ============================================================ */}
-      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden px-8 pt-24">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden px-4 sm:px-8 pt-24">
         {/* Subtle radial glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.04),transparent)]" />
 
@@ -179,7 +179,7 @@ function PricingContent() {
           ONBOARDING STEP INDICATOR (shown when coming from get-started)
           ============================================================ */}
       {shopFromQuery && (
-        <section className="px-8 pb-4">
+        <section className="px-4 sm:px-8 pb-4">
           <div className="mx-auto flex max-w-4xl items-center justify-center gap-3">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#333]">

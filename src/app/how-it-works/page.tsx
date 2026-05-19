@@ -130,7 +130,7 @@ export default function HowItWorksPage() {
       {/* ============================================================
           HERO — Full-viewport cinematic opener
           ============================================================ */}
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-8">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 sm:px-8">
         {/* Subtle radial glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.04),transparent)]" />
 
@@ -178,7 +178,7 @@ export default function HowItWorksPage() {
           THE THREE STEPS — Cinematic image-driven storytelling
           ============================================================ */}
       <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl px-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
               THREE STEPS
@@ -191,7 +191,7 @@ export default function HowItWorksPage() {
 
         {/* ── Step 1 — Print your QR code ── */}
         <div className="mt-20 space-y-32 lg:space-y-40">
-          <div className="mx-auto max-w-6xl px-8">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step1.jpg */}
@@ -223,7 +223,7 @@ export default function HowItWorksPage() {
           </div>
 
           {/* ── Step 2 — Customer checks in ── */}
-          <div className="mx-auto max-w-6xl px-8">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step2.jpg */}
@@ -255,7 +255,7 @@ export default function HowItWorksPage() {
           </div>
 
           {/* ── Step 3 — They earn rewards ── */}
-          <div className="mx-auto max-w-6xl px-8">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step3.jpg */}

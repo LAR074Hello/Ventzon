@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import crypto from "crypto";
-import { sendEmail } from "@/lib/resend";
+import { sendEmail, buildRewardEmail } from "@/lib/resend";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { sendPushToDeviceTokens } from "@/lib/push";
 
@@ -365,9 +365,12 @@ export async function POST(req: Request) {
       if (contactMethod === "email") {
         try {
           const subject = hitGoal
-            ? `You earned a reward at ${shopName}!`
-            : `Check-in at ${shopName}`;
-          await sendEmail(email, subject, message);
+            ? `You earned a reward at ${shopName}! 🏆`
+            : `Checked in at ${shopName} ✅`;
+          const htmlOverride = hitGoal
+            ? buildRewardEmail({ shopName, dealTitle, goal })
+            : undefined;
+          await sendEmail(email, subject, message, undefined, htmlOverride);
         } catch (emailErr: any) {
           console.error("Email send failed:", emailErr?.message);
         }

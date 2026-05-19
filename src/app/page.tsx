@@ -113,7 +113,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/55" />
 
         {/* Hero content */}
-        <div className="relative z-10 mx-auto max-w-3xl px-8 text-center">
+        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-8 text-center">
           <h1 className="animate-fade-in anim-delay-200 text-5xl font-extralight tracking-[0.35em] text-white opacity-0 sm:text-6xl lg:text-7xl">
             VENTZON
           </h1>
@@ -148,7 +148,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 2 — VALUE PROPS
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
           {[
@@ -171,7 +171,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 3 — HOW IT WORKS
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
           {/* Section header */}
           <ScrollReveal className="text-center">
@@ -268,7 +268,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 3b — CUSTOMER EXPERIENCE (Join page mock)
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
@@ -421,7 +421,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 4 — FEATURES (Why Ventzon)
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
@@ -480,7 +480,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 4b — ANALYTICS DASHBOARD FEATURE
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
@@ -604,7 +604,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 5 — TESTIMONIALS
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
@@ -660,7 +660,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 6 — PRICING
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
@@ -735,7 +735,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 6b — APP STORE DOWNLOAD
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <ScrollReveal className="mx-auto max-w-2xl text-center">
           <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
@@ -786,7 +786,7 @@ export default function Home() {
       {/* ============================================================
           SECTION 7 — FINAL CTA
           ============================================================ */}
-      <section className="px-8 py-28 sm:py-36">
+      <section className="px-4 sm:px-8 py-28 sm:py-36">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
             Ready to begin?
