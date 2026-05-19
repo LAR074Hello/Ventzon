@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing — Ventzon",
+  title: "Pricing — Ventzon Loyalty App",
   description:
-    "Start free — pay $1.25 per reward redeemed. Upgrade to Pro at $19.99/month for analytics, customer list, and advanced tools.",
+    "$25/month for a complete digital loyalty program. Includes QR code check-ins, customer analytics, push notifications, and email campaigns. Plus $0.85 per reward redeemed.",
   openGraph: {
-    title: "Pricing — Ventzon",
+    title: "Pricing — Ventzon Loyalty App",
     description:
-      "Start free with Ventzon loyalty rewards. Pro plan at $19.99/month for the full suite.",
+      "$25/month or $240/year. No hardware, no setup fees. Cancel anytime.",
   },
 };
 

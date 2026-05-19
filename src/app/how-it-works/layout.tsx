@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "How It Works — Ventzon",
+  title: "How It Works — Ventzon Loyalty Rewards",
   description:
-    "Learn how Ventzon helps local businesses build customer loyalty with simple app-based rewards. Set up in minutes.",
+    "See how Ventzon works: merchants post a QR code, customers scan to earn stamps, and get rewarded after a set number of visits. No hardware, no app download required for check-in.",
   openGraph: {
-    title: "How It Works — Ventzon",
+    title: "How It Works — Ventzon Loyalty Rewards",
     description:
-      "Simple app-based loyalty rewards for local businesses. Set up in minutes.",
+      "QR code loyalty program for local businesses. Customers scan, earn stamps, and come back for rewards.",
   },
 };
 

@@ -3,9 +3,91 @@ import { ArrowRight, Check } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import SiteFooter from "@/components/SiteFooter";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Ventzon",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "iOS, Web",
+      "url": "https://www.ventzon.com",
+      "description": "Digital loyalty rewards program for local businesses. Replace paper punch cards with QR code check-ins, real-time analytics, and push notifications.",
+      "offers": {
+        "@type": "Offer",
+        "price": "25.00",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "25.00",
+          "priceCurrency": "USD",
+          "unitText": "MONTH"
+        }
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "42"
+      }
+    },
+    {
+      "@type": "Organization",
+      "name": "Ventzon",
+      "url": "https://www.ventzon.com",
+      "logo": "https://www.ventzon.com/ventzoncompanylogo.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@ventzon.com",
+        "contactType": "customer support"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does Ventzon cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "$25/month or $240/year. Plus $0.85 per reward redeemed. No hardware required, cancel anytime."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do customers need to download an app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Customers can check in by scanning a QR code and entering their phone number or email — no app download required. The Ventzon app is available for customers who want push notifications and to track their rewards."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What kind of businesses use Ventzon?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Restaurants, coffee shops, cafes, salons, barbershops, retail stores, and any local business that wants to reward repeat customers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I set up Ventzon for my business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sign up at ventzon.com, create your shop, set your reward goal, and print your QR code. The whole process takes about 5 minutes."
+          }
+        }
+      ]
+    }
+  ]
+};
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-black text-[#ededed]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ============================================================
           SECTION 1 — HERO (full-screen video)
           ============================================================

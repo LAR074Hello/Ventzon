@@ -15,11 +15,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ventzon — Customer Rewards Platform",
+  title: "Ventzon — Loyalty Rewards App for Local Businesses",
   description:
-    "Ventzon helps local businesses increase repeat customers with a simple loyalty app. Earn rewards, track visits, redeem in-store.",
+    "Ventzon is a digital loyalty program for restaurants, cafes, salons, and local shops. Replace paper punch cards with a QR code loyalty app. $25/month, no hardware needed.",
   metadataBase: new URL("https://www.ventzon.com"),
   manifest: "/site.webmanifest",
+  keywords: [
+    "loyalty app for small business",
+    "digital loyalty card",
+    "customer loyalty program",
+    "loyalty rewards app",
+    "digital punch card",
+    "loyalty program for restaurants",
+    "loyalty app for coffee shops",
+    "stamp card app",
+    "local business loyalty program",
+    "repeat customer app",
+  ],
   appleWebApp: {
     title: "Ventzon",
     statusBarStyle: "black-translucent",
@@ -28,18 +40,18 @@ export const metadata: Metadata = {
     "apple-itunes-app": "app-id=6763768638",
   },
   openGraph: {
-    title: "Ventzon — Customer Rewards Platform",
+    title: "Ventzon — Loyalty Rewards App for Local Businesses",
     description:
-      "Turn one-time buyers into loyal regulars. App-based loyalty rewards for local businesses.",
+      "Replace paper punch cards with a digital loyalty program. QR code check-ins, real-time analytics, push notifications. Set up in 5 minutes.",
     url: "https://www.ventzon.com",
     siteName: "Ventzon",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ventzon — Customer Rewards Platform",
+    title: "Ventzon — Loyalty Rewards App for Local Businesses",
     description:
-      "Turn one-time buyers into loyal regulars. App-based loyalty rewards for local businesses.",
+      "Replace paper punch cards with a digital loyalty program. QR code check-ins, real-time analytics, push notifications.",
   },
   robots: {
     index: true,
