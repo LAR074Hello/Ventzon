@@ -59,6 +59,56 @@ export async function sendEmail(
   });
 }
 
+/** Build a rich HTML "almost there" email (1 stamp away) */
+export function buildAlmostThereEmail(opts: {
+  shopName: string;
+  dealTitle: string;
+  goal: number;
+}): string {
+  const { shopName, dealTitle, goal } = opts;
+  const safeName = escapeHtml(shopName);
+  const safeDeal = escapeHtml(dealTitle);
+  const filled = goal - 1;
+
+  const dots = Array.from({ length: Math.min(goal, 12) })
+    .map((_, i) =>
+      i < filled
+        ? `<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#ededed;margin:0 3px"></span>`
+        : `<span style="display:inline-block;width:16px;height:16px;border-radius:50%;border:1px solid #444;background:transparent;margin:0 3px"></span>`
+    )
+    .join("");
+
+  return `
+<div style="background:#000;padding:0;margin:0">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;background:#000;color:#ededed">
+    <div style="padding:32px 32px 0">
+      <p style="font-size:11px;letter-spacing:0.4em;color:#555;margin:0">VENTZON REWARDS</p>
+    </div>
+    <div style="padding:36px 32px 28px;text-align:center">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:#1c1400;margin-bottom:20px">
+        <span style="font-size:28px">⭐</span>
+      </div>
+      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">Just one more visit!</h1>
+      <p style="font-size:13px;font-weight:300;letter-spacing:0.05em;color:#888;margin:0">${safeName.toUpperCase()}</p>
+    </div>
+    <div style="padding:0 32px 28px;text-align:center">
+      ${dots}
+      <p style="font-size:11px;letter-spacing:0.15em;color:#555;margin:12px 0 0">${filled}/${goal} STAMPS · 1 TO GO</p>
+    </div>
+    <div style="margin:0 32px 28px;border:1px solid #1a1a1a;border-radius:12px;padding:20px 24px;text-align:center">
+      <p style="font-size:11px;letter-spacing:0.2em;color:#555;margin:0 0 8px">YOUR UPCOMING REWARD</p>
+      <p style="font-size:18px;font-weight:300;color:#ededed;margin:0">${safeDeal}</p>
+    </div>
+    <div style="margin:0 32px 36px;background:#1c1400;border:1px solid #3d2e00;border-radius:12px;padding:18px 24px;text-align:center">
+      <p style="font-size:12px;font-weight:300;color:#fbbf24;margin:0">Come back one more time to claim your reward at ${safeName}!</p>
+    </div>
+    <div style="border-top:1px solid #1a1a1a;padding:20px 32px">
+      <p style="font-size:11px;color:#444;margin:0">Sent by Ventzon Rewards · <a href="https://www.ventzon.com" style="color:#444;text-decoration:none">ventzon.com</a></p>
+    </div>
+  </div>
+</div>`;
+}
+
 /** Build a rich HTML reward email */
 export function buildRewardEmail(opts: {
   shopName: string;

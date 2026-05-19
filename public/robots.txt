@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Private routes — no need to index
+Disallow: /api/
+Disallow: /merchant/
+Disallow: /customer/
+Disallow: /rep/
+Disallow: /join/
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://www.ventzon.com/sitemap.xml
