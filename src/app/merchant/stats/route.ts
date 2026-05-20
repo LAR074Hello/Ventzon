@@ -130,7 +130,7 @@ export async function GET(req: Request) {
     // Latest signups
     const latestRes = await supabase
       .from("signups")
-      .select("phone, created_at")
+      .select("phone, email, created_at")
       .eq("shop_slug", shop_slug)
       .order("created_at", { ascending: false })
       .limit(10);

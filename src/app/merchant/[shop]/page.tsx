@@ -16,7 +16,7 @@ import MerchantAnalytics from "@/components/MerchantAnalytics";
 type StatsResponse = {
   shop_slug: string;
   totals: { total: number; today: number };
-  latest: Array<{ phone: string; created_at: string }>;
+  latest: Array<{ phone: string | null; email: string | null; created_at: string }>;
   is_paid?: boolean;
   subscription_status?: string | null;
 };
@@ -861,7 +861,7 @@ function MerchantShopPage() {
                         : "Everyone who has joined your loyalty program"}
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <GhostButton onClick={() => setShowManualCheckin(true)}>
                       + Manual stamp
                     </GhostButton>
@@ -1244,12 +1244,12 @@ function MerchantShopPage() {
                         <p className="mt-3 text-[12px] font-light text-[#333]">
                           Customers can also download the app:{" "}
                           <a
-                            href="https://www.ventzon.com/download"
+                            href="https://apps.apple.com/us/app/ventzon/id6763768638"
                             target="_blank"
                             rel="noreferrer"
                             className="text-[#555] underline underline-offset-2 transition-colors hover:text-[#ededed]"
                           >
-                            ventzon.com/download
+                            App Store
                           </a>
                         </p>
                       </>
@@ -1307,7 +1307,7 @@ function MerchantShopPage() {
                           className="transition-colors duration-300 hover:bg-white/[0.02]"
                         >
                           <td className="px-6 py-4 font-mono text-[13px] font-light text-[#ededed]">
-                            {maskPhone(row.phone)}
+                            {row.phone ? maskPhone(row.phone) : row.email ? row.email.replace(/(.{2}).+(@.+)/, "$1***$2") : "—"}
                           </td>
                           <td className="px-6 py-4 font-mono text-[13px] font-light text-[#555]">
                             {formatShortNY(row.created_at)}
