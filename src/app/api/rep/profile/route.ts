@@ -7,7 +7,7 @@ import { calcMerchantCommission } from "@/lib/rep-utils";
 export const dynamic = "force-dynamic";
 
 const MONTHLY_FLAT = 25;
-const COMMISSION_RATE = 0.20;
+const COMMISSION_RATE = 0.50;
 
 export async function GET() {
   try {

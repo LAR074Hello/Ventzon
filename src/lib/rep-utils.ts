@@ -9,8 +9,8 @@ export function isAdmin(email: string | null | undefined): boolean {
 
 // Commission constants
 export const MONTHLY_FLAT = 25;     // Pro plan $/month
-export const PER_REWARD = 1.25;     // $/reward redemption
-export const COMMISSION_RATE = 0.20;
+export const PER_REWARD = 0.85;     // $/reward redemption
+export const COMMISSION_RATE = 0.50;
 
 export function calcMerchantCommission(isPro: boolean, rewardCount: number): number {
   const flat = isPro ? MONTHLY_FLAT * COMMISSION_RATE : 0;
