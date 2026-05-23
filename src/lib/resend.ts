@@ -85,10 +85,7 @@ export function buildAlmostThereEmail(opts: {
       <p style="font-size:11px;letter-spacing:0.4em;color:#555;margin:0">VENTZON REWARDS</p>
     </div>
     <div style="padding:36px 32px 28px;text-align:center">
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:#1c1400;margin-bottom:20px">
-        <span style="font-size:28px">⭐</span>
-      </div>
-      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">Just one more visit!</h1>
+      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">Just one more visit.</h1>
       <p style="font-size:13px;font-weight:300;letter-spacing:0.05em;color:#888;margin:0">${safeName.toUpperCase()}</p>
     </div>
     <div style="padding:0 32px 28px;text-align:center">
@@ -138,10 +135,7 @@ export function buildRewardEmail(opts: {
 
     <!-- Hero -->
     <div style="padding:36px 32px 28px;text-align:center">
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:#052e16;margin-bottom:20px">
-        <span style="font-size:28px">🏆</span>
-      </div>
-      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">You earned a reward!</h1>
+      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">You earned a reward.</h1>
       <p style="font-size:13px;font-weight:300;letter-spacing:0.05em;color:#888;margin:0">${safeName.toUpperCase()}</p>
     </div>
 
