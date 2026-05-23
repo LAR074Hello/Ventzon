@@ -307,8 +307,8 @@ export async function POST(req: Request) {
       remaining: hitGoal ? 0 : Math.max(goal - nextVisits, 0),
     };
 
-    const rewardTpl = "You've earned your reward at {{shop_name}} 🎉 Show the app at the register to redeem: {{deal_title}}";
-    const progressTpl = "Checked in at {{shop_name}} ✅ You're at {{visits}}/{{goal}} stamps. {{remaining}} more to go!";
+    const rewardTpl = "You've earned your reward at {{shop_name}}. Show the app at the register to redeem: {{deal_title}}";
+    const progressTpl = "Checked in at {{shop_name}}. You're at {{visits}}/{{goal}} stamps. {{remaining}} more to go!";
 
     const message = hitGoal
       ? applyTemplate(rewardTpl, vars)
@@ -343,7 +343,7 @@ export async function POST(req: Request) {
             if (hitGoal) {
               await sendPushToDeviceTokens(
                 tokens,
-                "🏆 Reward earned!",
+                "Reward earned!",
                 `You've earned your reward at ${shopName}. Show the app at the register.`,
                 { shop_slug, type: "reward" }
               );
@@ -369,10 +369,10 @@ export async function POST(req: Request) {
         try {
           const isAlmost = !hitGoal && nextVisits === goal - 1;
           const subject = hitGoal
-            ? `You earned a reward at ${shopName}! 🏆`
+            ? `You earned a reward at ${shopName}`
             : isAlmost
-            ? `One more visit to earn your reward at ${shopName} ⭐`
-            : `Checked in at ${shopName} ✅`;
+            ? `One more visit to earn your reward at ${shopName}`
+            : `Checked in at ${shopName}`;
           const htmlOverride = hitGoal
             ? buildRewardEmail({ shopName, dealTitle, goal })
             : isAlmost
