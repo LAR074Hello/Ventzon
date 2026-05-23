@@ -106,9 +106,9 @@ export async function GET(req: Request) {
     // ✅ New York local midnight → UTC ISO string
     const startOfTodayNYUTC = getStartOfTodayNYAsUTCISOString();
 
-    // Total signups for this shop
+    // Total customers for this shop
     const totalRes = await supabase
-      .from("signups")
+      .from("customers")
       .select("id", { count: "exact", head: true })
       .eq("shop_slug", shop_slug);
 
@@ -116,9 +116,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: totalRes.error.message }, { status: 500 });
     }
 
-    // Signups today (New York local day)
+    // New customers today (New York local day)
     const todayRes = await supabase
-      .from("signups")
+      .from("customers")
       .select("id", { count: "exact", head: true })
       .eq("shop_slug", shop_slug)
       .gte("created_at", startOfTodayNYUTC);
@@ -127,9 +127,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: todayRes.error.message }, { status: 500 });
     }
 
-    // Latest signups
+    // Latest customers
     const latestRes = await supabase
-      .from("signups")
+      .from("customers")
       .select("phone, email, created_at")
       .eq("shop_slug", shop_slug)
       .order("created_at", { ascending: false })
