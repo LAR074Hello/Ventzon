@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Business Development Representative — Ventzon Careers",
-  description: "Join Ventzon as a Business Development Representative. Help local businesses build loyalty and earn 20% recurring commission.",
+  description: "Join Ventzon as a Business Development Representative. Help local businesses build loyalty and earn 33.33% recurring commission.",
 };
 
 export default function BDRPage() {
@@ -41,7 +41,7 @@ export default function BDRPage() {
               <Clock className="h-3.5 w-3.5" /> Flexible · Work when you want
             </span>
             <span className="flex items-center gap-1.5 text-[13px] font-light text-[#aaa]">
-              <DollarSign className="h-3.5 w-3.5" /> 20% monthly recurring commission
+              <DollarSign className="h-3.5 w-3.5" /> 33.33% monthly recurring commission
             </span>
           </div>
 
@@ -127,11 +127,11 @@ export default function BDRPage() {
               This role is designed as a flexible, commission-based side hustle rather than a traditional full-time position. There is no set schedule — you work when you want, in your own area, at your own pace.
             </p>
             <p className="mt-4 text-[14px] font-light leading-relaxed text-[#bbb]">
-              Compensation is <span className="text-[#ededed]">20% of the monthly subscription revenue</span> generated from every merchant you sign up, paid out for the duration of your employment with Ventzon. The more merchants you onboard and keep active, the more you earn — and your book of business grows over time.
+              Compensation is <span className="text-[#ededed]">33.33% of the monthly subscription revenue</span> generated from every merchant you sign up, paid out for the duration of your employment with Ventzon. The more merchants you onboard and keep active, the more you earn — and your book of business grows over time.
             </p>
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
-                { label: "20%", detail: "Of monthly subscription revenue per merchant" },
+                { label: "33.33%", detail: "Of monthly subscription revenue per merchant" },
                 { label: "Recurring", detail: "Earn every month merchants stay active" },
                 { label: "Uncapped", detail: "Your book of business grows over time" },
               ].map(({ label, detail }) => (
