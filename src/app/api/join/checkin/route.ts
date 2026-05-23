@@ -199,10 +199,13 @@ export async function POST(req: Request) {
     }
 
     // Enforce 1 check-in/day via checkins table (unique index must exist)
+    // TEST_MODE=true bypasses the 1/day limit for testing purposes
+    const testMode = process.env.TEST_MODE === "true";
+    const checkinDate = testMode ? `${today}-${Date.now()}` : today;
     const { error: checkinInsertErr } = await supabase.from("checkins").insert({
       shop_slug,
       customer_id: customer.id,
-      checkin_date: today,
+      checkin_date: checkinDate,
       created_at: now.toISOString(),
     });
 
