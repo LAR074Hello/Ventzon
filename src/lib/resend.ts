@@ -52,7 +52,7 @@ export async function sendEmail(
 </div>`;
 
   return getResend().emails.send({
-    from: "Ventzon Rewards <rewards@ventzon.com>",
+    from: "Ventzon Rewards <onboarding@resend.dev>",
     to,
     subject,
     html: htmlOverride ?? defaultHtml,
