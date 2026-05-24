@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="mt-4 text-[14px] font-light text-[#555]">
-          Effective date: April 28, 2026
+          Effective date: May 23, 2026
         </p>
 
         <div className="mt-12 space-y-6">
@@ -150,6 +150,18 @@ export default function PrivacyPolicyPage() {
             <p>
               We do not sell, rent, or share your personal data with third
               parties for their own marketing purposes.
+            </p>
+          </Section>
+
+          <Section title="Aggregated analytics">
+            <p>
+              Ventzon may generate and share <span className="font-normal text-[#ededed]">aggregated, anonymized analytics</span> derived from platform activity — such as visit frequency trends, customer retention rates, foot traffic patterns by business category, and neighborhood-level activity data. This information does not identify any individual customer and cannot be used to do so.
+            </p>
+            <p>
+              These aggregated insights may be shared with or licensed to third parties including commercial real estate firms, market research companies, financial institutions, and brands for purposes such as location analysis, market research, and consumer behavior research.
+            </p>
+            <p>
+              At no point is your name, email address, phone number, or any other personally identifiable information included in these reports.
             </p>
           </Section>
 

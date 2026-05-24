@@ -150,6 +150,9 @@ export default function TermsPage() {
               , which describes what data we collect, how we use it, and how you
               can manage your information.
             </p>
+            <p>
+              By using the Service, you acknowledge that Ventzon may generate and license <span className="font-normal text-[#ededed]">aggregated, anonymized analytics</span> derived from platform activity across all merchants and customers. This includes aggregated visit frequency, retention trends, foot traffic patterns by business category, and neighborhood-level activity data. These reports contain no personally identifiable information and are used for market research, commercial real estate analysis, and related purposes. Individual customer or merchant data is never sold or disclosed.
+            </p>
           </Section>
 
           <Section title="Intellectual property">
