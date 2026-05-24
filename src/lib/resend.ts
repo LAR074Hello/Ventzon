@@ -106,6 +106,42 @@ export function buildAlmostThereEmail(opts: {
 </div>`;
 }
 
+/** Build a win-back email for lapsed customers */
+export function buildWinBackEmail(opts: {
+  shopName: string;
+  dealTitle: string;
+  goal: number;
+  daysSince: number;
+}): string {
+  const { shopName, dealTitle, goal, daysSince } = opts;
+  const safeName = escapeHtml(shopName);
+  const safeDeal = escapeHtml(dealTitle);
+
+  return `
+<div style="background:#000;padding:0;margin:0">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;background:#000;color:#ededed">
+    <div style="padding:32px 32px 0">
+      <p style="font-size:11px;letter-spacing:0.4em;color:#555;margin:0">VENTZON REWARDS</p>
+    </div>
+    <div style="padding:36px 32px 28px;text-align:center">
+      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">We miss you.</h1>
+      <p style="font-size:13px;font-weight:300;letter-spacing:0.05em;color:#888;margin:0">${safeName.toUpperCase()}</p>
+    </div>
+    <div style="margin:0 32px 28px;border:1px solid #1a1a1a;border-radius:12px;padding:20px 24px;text-align:center">
+      <p style="font-size:11px;letter-spacing:0.2em;color:#555;margin:0 0 8px">YOUR REWARD IS WAITING</p>
+      <p style="font-size:18px;font-weight:300;color:#ededed;margin:0 0 6px">${safeDeal}</p>
+      <p style="font-size:12px;font-weight:300;color:#666;margin:0">after ${goal} visits</p>
+    </div>
+    <div style="margin:0 32px 36px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:12px;padding:18px 24px;text-align:center">
+      <p style="font-size:13px;font-weight:300;color:#999;margin:0">It's been ${daysSince} days since your last visit. Stop by and pick up where you left off.</p>
+    </div>
+    <div style="border-top:1px solid #1a1a1a;padding:20px 32px">
+      <p style="font-size:11px;color:#444;margin:0">Sent by Ventzon Rewards · <a href="https://www.ventzon.com" style="color:#444;text-decoration:none">ventzon.com</a></p>
+    </div>
+  </div>
+</div>`;
+}
+
 /** Build a rich HTML reward email */
 export function buildRewardEmail(opts: {
   shopName: string;

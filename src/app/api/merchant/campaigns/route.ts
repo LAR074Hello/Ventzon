@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { sendEmail } from "@/lib/resend";
+import { sendEmail, buildWinBackEmail } from "@/lib/resend";
 import { generateUnsubscribeToken } from "@/app/api/unsubscribe/route";
 
 export const dynamic = "force-dynamic";
 
 // POST /api/merchant/campaigns
-// Body: { shop_slug, subject, body }
-// Sends an email campaign to all non-opted-out customers with an email address.
+// Body: { shop_slug, subject, body, target?: "all" | "lapsed" }
+// Sends an email campaign to opted-in customers with an email address.
+// target="lapsed" restricts to customers with no visit in 30+ days.
 
 export async function POST(req: Request) {
   try {
@@ -26,10 +27,15 @@ export async function POST(req: Request) {
     const shopSlug = String(body?.shop_slug ?? "").trim().toLowerCase();
     const subject = String(body?.subject ?? "").trim();
     const message = String(body?.body ?? "").trim();
+    const target: "all" | "lapsed" = body?.target === "lapsed" ? "lapsed" : "all";
+    // win_back mode: auto-generate a rich win-back email, no custom subject/body needed
+    const isWinBack = body?.win_back === true;
 
     if (!shopSlug) return NextResponse.json({ error: "Missing shop_slug" }, { status: 400 });
-    if (!subject) return NextResponse.json({ error: "Missing subject" }, { status: 400 });
-    if (!message) return NextResponse.json({ error: "Missing body" }, { status: 400 });
+    if (!isWinBack) {
+      if (!subject) return NextResponse.json({ error: "Missing subject" }, { status: 400 });
+      if (!message) return NextResponse.json({ error: "Missing body" }, { status: 400 });
+    }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
@@ -42,17 +48,44 @@ export async function POST(req: Request) {
       .maybeSingle();
     if (!shop) return NextResponse.json({ error: "Shop not found" }, { status: 404 });
 
-    // Fetch all non-opted-out customers with email
+    // For win-back emails, pull shop settings (shop name, deal, goal)
+    let shopName = shopSlug;
+    let dealTitle = "your reward";
+    let goalNum = 5;
+    if (isWinBack) {
+      const { data: settings } = await supabase
+        .from("shop_settings")
+        .select("shop_name, deal_title, reward_goal")
+        .eq("shop_slug", shopSlug)
+        .maybeSingle();
+      shopName = settings?.shop_name ?? shopSlug;
+      dealTitle = settings?.deal_title ?? "your reward";
+      goalNum = Number(settings?.reward_goal ?? 5);
+    }
+
+    // Fetch opted-in customers with email
     const { data: customers, error } = await supabase
       .from("customers")
-      .select("id, email")
+      .select("id, email, last_checkin_date")
       .eq("shop_slug", shopSlug)
       .eq("opted_out", false)
       .not("email", "is", null);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    const targets = (customers ?? []).filter((c) => c.email);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10);
+
+    const targets = (customers ?? []).filter((c) => {
+      if (!c.email) return false;
+      if (target === "lapsed") {
+        // Include customers with no check-in in 30+ days (or never checked in)
+        if (!c.last_checkin_date) return true;
+        return c.last_checkin_date < thirtyDaysAgoStr;
+      }
+      return true;
+    });
 
     if (targets.length === 0) {
       return NextResponse.json({ ok: true, sent: 0, failed: 0, message: "No eligible customers" });
@@ -67,7 +100,20 @@ export async function POST(req: Request) {
     for (const customer of targets) {
       try {
         const unsubscribeUrl = `${baseUrl}/api/unsubscribe?id=${customer.id}&token=${generateUnsubscribeToken(customer.id)}`;
-        await sendEmail(customer.email!, subject, message, unsubscribeUrl);
+
+        if (isWinBack) {
+          // Calculate days since last visit
+          let daysSince = 45;
+          if (customer.last_checkin_date) {
+            const last = new Date(customer.last_checkin_date + "T12:00:00");
+            daysSince = Math.floor((Date.now() - last.getTime()) / (1000 * 60 * 60 * 24));
+          }
+          const htmlOverride = buildWinBackEmail({ shopName, dealTitle, goal: goalNum, daysSince });
+          const winBackSubject = `We miss you at ${shopName}`;
+          await sendEmail(customer.email!, winBackSubject, "", unsubscribeUrl, htmlOverride);
+        } else {
+          await sendEmail(customer.email!, subject, message, unsubscribeUrl);
+        }
         sent++;
       } catch (e) {
         failed++;

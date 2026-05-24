@@ -221,6 +221,11 @@ function MerchantShopPage() {
   const [campaignMsg, setCampaignMsg] = useState("");
   const [campaignError, setCampaignError] = useState("");
 
+  // Win-back campaign
+  const [winBackSending, setWinBackSending] = useState(false);
+  const [winBackMsg, setWinBackMsg] = useState("");
+  const [winBackError, setWinBackError] = useState("");
+
   // Deal-change warning
   const [dealChangeWarning, setDealChangeWarning] = useState<{ affectedCount: number; knownCount: boolean } | null>(null);
 
@@ -602,6 +607,31 @@ function MerchantShopPage() {
     }
   }
 
+  /* ── Win-back campaign (lapsed customers only) ── */
+  async function sendWinBack() {
+    setWinBackSending(true);
+    setWinBackMsg("");
+    setWinBackError("");
+    try {
+      const res = await fetch("/api/merchant/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, target: "lapsed", win_back: true }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to send");
+      setWinBackMsg(
+        json.sent === 0
+          ? "No lapsed customers with an email address on file."
+          : `Win-back email sent to ${json.sent} lapsed customer${json.sent !== 1 ? "s" : ""}${json.failed > 0 ? ` (${json.failed} failed)` : ""}.`
+      );
+    } catch (err: any) {
+      setWinBackError(err?.message ?? "Error sending win-back email");
+    } finally {
+      setWinBackSending(false);
+    }
+  }
+
   /* ── Auto-dismiss deal-change warning when drafts revert to saved values ── */
   useEffect(() => {
     if (!dealChangeWarning) return;
@@ -880,20 +910,41 @@ function MerchantShopPage() {
 
                 {/* Tabs */}
                 {customersLoaded && (
-                  <div className="mb-4 flex gap-1 rounded-full border border-[#1a1a1a] p-1 w-fit">
-                    {(["all", "lapsed"] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setCustomerTab(tab)}
-                        className={`rounded-full px-4 py-1.5 text-[11px] font-light tracking-[0.1em] transition-all duration-300 ${
-                          customerTab === tab
-                            ? "bg-[#ededed] text-black"
-                            : "text-[#555] hover:text-[#ededed]"
-                        }`}
-                      >
-                        {tab === "all" ? "ALL" : "LAPSED 30+ DAYS"}
-                      </button>
-                    ))}
+                  <div className="mb-4 flex flex-wrap items-center gap-3">
+                    <div className="flex gap-1 rounded-full border border-[#1a1a1a] p-1">
+                      {(["all", "lapsed"] as const).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setCustomerTab(tab)}
+                          className={`rounded-full px-4 py-1.5 text-[11px] font-light tracking-[0.1em] transition-all duration-300 ${
+                            customerTab === tab
+                              ? "bg-[#ededed] text-black"
+                              : "text-[#555] hover:text-[#ededed]"
+                          }`}
+                        >
+                          {tab === "all" ? "ALL" : "LAPSED 30+ DAYS"}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Win-back button — only visible on lapsed tab */}
+                    {customerTab === "lapsed" && paid && (
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={sendWinBack}
+                          disabled={winBackSending}
+                          className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#ededed] hover:text-[#ededed] disabled:opacity-40"
+                        >
+                          {winBackSending ? "Sending…" : "Send win-back email"}
+                        </button>
+                        {winBackMsg && (
+                          <p className="text-[11px] font-light text-emerald-400">{winBackMsg}</p>
+                        )}
+                        {winBackError && (
+                          <p className="text-[11px] font-light text-red-400">{winBackError}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1000,7 +1051,7 @@ function MerchantShopPage() {
                   {manualResult ? (
                     <div className="mt-6 rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-5 py-4">
                       <p className="text-[14px] font-light text-emerald-400">
-                        {manualResult.status === "reward" ? "🎉 Reward earned!" : "✓ Stamp added"}
+                        {manualResult.status === "reward" ? "Reward earned." : "Stamp added."}
                       </p>
                       <p className="mt-1 text-[12px] font-light text-[#555]">
                         {manualResult.new_customer ? "New customer · " : ""}{manualResult.visits} / {manualResult.goal} stamps
