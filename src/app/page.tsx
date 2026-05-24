@@ -455,7 +455,7 @@ export default function Home() {
               },
               {
                 title: "Track everything",
-                desc: "Real-time dashboard shows signups, check-ins, and redemptions.",
+                desc: "Foot traffic analytics — busiest days, peak hours, new vs. returning, and who's at risk of lapsing.",
               },
               {
                 title: "Simple pricing",
@@ -490,111 +490,128 @@ export default function Home() {
                 ANALYTICS
               </p>
               <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-                Know your customers.
+                Know your foot traffic.
               </h2>
               <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
-                See who&rsquo;s coming back, track check-ins over time, and
-                measure reward redemptions &mdash; all in one dashboard.
+                Your dashboard shows you exactly what&rsquo;s happening in your shop &mdash; not just totals, but patterns. See which days bring the most customers, what time of day is busiest, how many are first-timers vs. regulars, and who&rsquo;s at risk of lapsing.
               </p>
+              <ul className="mt-8 space-y-3">
+                {[
+                  "Busiest days of the week",
+                  "Peak time of day — morning, afternoon, evening",
+                  "New vs. returning customers",
+                  "Lapsed customers (no visit in 30+ days)",
+                  "Retention rate and avg visits per customer",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-[13px] font-light text-[#888]">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-[#444]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               <Link
                 href="/signup"
                 className="mt-10 inline-flex items-center gap-3 rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
               >
-                View dashboard
+                See your dashboard
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </ScrollReveal>
 
-            {/* Right — Visual mock of the analytics charts */}
+            {/* Right — Visual mock of the analytics dashboard */}
             <ScrollReveal delay={2}>
-              <div className="rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] p-6 sm:p-8">
-                {/* Mini chart header */}
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] p-6 sm:p-7 space-y-5">
+
+                {/* Period tabs */}
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
-                    CUSTOMER CHECK-INS
-                  </p>
+                  <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">ANALYTICS</p>
                   <div className="flex gap-1.5">
                     {["7d", "30d", "60d"].map((p) => (
-                      <span
-                        key={p}
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-light ${
-                          p === "30d"
-                            ? "bg-[#ededed] text-black"
-                            : "text-[#444]"
-                        }`}
-                      >
+                      <span key={p} className={`rounded-full px-2.5 py-1 text-[10px] font-light ${p === "30d" ? "bg-[#ededed] text-black" : "text-[#444]"}`}>
                         {p}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                {/* SVG chart illustration */}
-                <div className="mt-6 h-[140px] w-full">
-                  <svg
-                    viewBox="0 0 400 120"
-                    className="h-full w-full"
-                    preserveAspectRatio="none"
-                  >
-                    {/* Grid lines */}
-                    {[0, 30, 60, 90].map((y) => (
-                      <line
-                        key={y}
-                        x1="0"
-                        y1={y}
-                        x2="400"
-                        y2={y}
-                        stroke="#1a1a1a"
-                        strokeWidth="1"
-                      />
-                    ))}
-                    {/* Area fill */}
-                    <path
-                      d="M0,100 C30,90 60,85 90,70 C120,55 150,60 180,45 C210,30 240,35 270,25 C300,15 330,20 360,10 C380,5 400,8 400,8 L400,120 L0,120 Z"
-                      fill="url(#chartGrad)"
-                      opacity="0.15"
-                    />
-                    {/* Line */}
-                    <path
-                      d="M0,100 C30,90 60,85 90,70 C120,55 150,60 180,45 C210,30 240,35 270,25 C300,15 330,20 360,10 C380,5 400,8 400,8"
-                      fill="none"
-                      stroke="#ededed"
-                      strokeWidth="1.5"
-                    />
-                    <defs>
-                      <linearGradient
-                        id="chartGrad"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop offset="0%" stopColor="#ededed" />
-                        <stop offset="100%" stopColor="#ededed" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
+                {/* Stat cards row */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "CHECK-INS", value: "1,247" },
+                    { label: "RETENTION", value: "68%" },
+                    { label: "LAPSED", value: "14" },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="rounded-xl border border-[#1a1a1a] px-3 py-3">
+                      <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
+                      <p className="mt-1.5 text-xl font-extralight text-white">{value}</p>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Mini stats row */}
-                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-[#1a1a1a] pt-5">
-                  <div>
-                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">
-                      CHECK-INS
-                    </p>
-                    <p className="mt-1 text-2xl font-extralight text-white">
-                      1,247
-                    </p>
+                {/* New vs returning */}
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: "NEW CUSTOMERS", value: "43", sub: "First visit this month" },
+                    { label: "RETURNING", value: "89", sub: "Repeat visitors" },
+                  ].map(({ label, value, sub }) => (
+                    <div key={label} className="rounded-xl border border-[#1a1a1a] px-3 py-3">
+                      <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
+                      <p className="mt-1 text-xl font-extralight text-white">{value}</p>
+                      <p className="mt-0.5 text-[9px] font-light text-[#333]">{sub}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Busiest days mini bar chart */}
+                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">BUSIEST DAYS</p>
+                    <span className="rounded-full border border-[#222] px-2 py-0.5 text-[9px] font-light text-[#666]">Peak: Fri</span>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">
-                      REWARDS
-                    </p>
-                    <p className="mt-1 text-2xl font-extralight text-white">
-                      83
-                    </p>
+                  <div className="flex items-end gap-1.5 h-10">
+                    {[
+                      { d: "M", h: 45 },
+                      { d: "T", h: 60 },
+                      { d: "W", h: 55 },
+                      { d: "T", h: 70 },
+                      { d: "F", h: 100 },
+                      { d: "S", h: 85 },
+                      { d: "S", h: 35 },
+                    ].map(({ d, h }, i) => (
+                      <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                        <div
+                          className={`w-full rounded-sm transition-all ${h === 100 ? "bg-[#ededed]" : "bg-[#2a2a2a]"}`}
+                          style={{ height: `${h}%` }}
+                        />
+                        <span className="text-[8px] font-light text-[#444]">{d}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
+
+                {/* Time of day blocks */}
+                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">TIME OF DAY</p>
+                    <span className="rounded-full border border-[#222] px-2 py-0.5 text-[9px] font-light text-[#666]">Peak: Afternoon</span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { label: "Morning", pct: 28 },
+                      { label: "Afternoon", pct: 100 },
+                      { label: "Evening", pct: 55 },
+                      { label: "Night", pct: 8 },
+                    ].map(({ label, pct }) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <span className="w-16 text-[9px] font-light text-[#555]">{label}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-[#1a1a1a] overflow-hidden">
+                          <div className={`h-full rounded-full ${pct === 100 ? "bg-[#ededed]" : "bg-[#333]"}`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             </ScrollReveal>
           </div>
