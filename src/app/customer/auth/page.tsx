@@ -20,11 +20,13 @@ function AuthForm() {
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [isNative, setIsNative] = useState(false);
+  const [isIos, setIsIos] = useState(false);
 
   const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
     setIsNative(Capacitor.isNativePlatform());
+    setIsIos(Capacitor.getPlatform() === "ios");
 
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace(redirectTo);
@@ -234,8 +236,8 @@ function AuthForm() {
                 {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
               </p>
 
-              {/* Apple — only shown on native iOS */}
-              {isNative && (
+              {/* Apple — only shown on native iOS, not Android */}
+              {isNative && isIos && (
                 <>
                   <button
                     onClick={handleApple}
