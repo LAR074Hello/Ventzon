@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Users, TrendingUp, QrCode, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
