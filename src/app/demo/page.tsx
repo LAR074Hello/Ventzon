@@ -306,6 +306,10 @@ function CustomerDemo() {
 /* ── Main Demo Page ── */
 export default function DemoPage() {
   const [view, setView] = useState<"merchant" | "customer">("merchant");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'customer') setView('customer');
+  }, []);
 
   return (
     <main className="min-h-screen bg-black text-[#ededed]">
