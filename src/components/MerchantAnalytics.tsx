@@ -133,13 +133,20 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export default function MerchantAnalytics({ shopSlug }: { shopSlug: string }) {
+export default function MerchantAnalytics({
+  shopSlug,
+  mockData,
+}: {
+  shopSlug: string;
+  mockData?: AnalyticsResponse;
+}) {
   const [period, setPeriod] = useState("30d");
-  const [data, setData] = useState<AnalyticsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<AnalyticsResponse | null>(mockData ?? null);
+  const [loading, setLoading] = useState(!mockData);
   const [error, setError] = useState("");
 
   const fetchAnalytics = useCallback(async () => {
+    if (mockData) { setData(mockData); setLoading(false); return; }
     if (!shopSlug) return;
     setLoading(true);
     setError("");
@@ -156,7 +163,7 @@ export default function MerchantAnalytics({ shopSlug }: { shopSlug: string }) {
     } finally {
       setLoading(false);
     }
-  }, [shopSlug, period]);
+  }, [shopSlug, period, mockData]);
 
   useEffect(() => {
     fetchAnalytics();

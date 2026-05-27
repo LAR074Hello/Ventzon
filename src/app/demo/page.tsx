@@ -3,6 +3,62 @@
 import { useState } from "react";
 import { Check, Users, TrendingUp, QrCode, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import MerchantAnalytics from "@/components/MerchantAnalytics";
+
+/* ── Realistic 30-day mock analytics ── */
+const MOCK_ANALYTICS = {
+  shop: "demo",
+  period: "30d",
+  goal: 8,
+  startDate: "2026-04-28",
+  endDate: "2026-05-27",
+  checkins: (() => {
+    const days = [];
+    const pattern = [4, 6, 8, 10, 18, 22, 12]; // Mon–Sun: big Fri/Sat
+    const base = new Date("2026-04-28");
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(base);
+      d.setDate(base.getDate() + i);
+      const noise = Math.floor(Math.random() * 3) - 1;
+      days.push({ date: d.toISOString().slice(0, 10), count: Math.max(0, pattern[d.getDay()] + noise) });
+    }
+    return days;
+  })(),
+  rewards: (() => {
+    const days = [];
+    const base = new Date("2026-04-28");
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(base);
+      d.setDate(base.getDate() + i);
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      days.push({ date: d.toISOString().slice(0, 10), count: isWeekend ? Math.floor(Math.random() * 3) + 1 : Math.random() > 0.6 ? 1 : 0 });
+    }
+    return days;
+  })(),
+  retention_rate: 68,
+  top_customers: [
+    { id: "1", phone: "***-***-4821", email: null, visits: 14 },
+    { id: "2", phone: "***-***-7703", email: null, visits: 11 },
+    { id: "3", phone: null, email: "j***@gmail.com", visits: 9 },
+    { id: "4", phone: "***-***-2290", email: null, visits: 8 },
+    { id: "5", phone: "***-***-5518", email: null, visits: 7 },
+  ],
+  day_of_week: [
+    { day: "Mon", count: 18 }, { day: "Tue", count: 24 }, { day: "Wed", count: 28 },
+    { day: "Thu", count: 33 }, { day: "Fri", count: 52 }, { day: "Sat", count: 61 }, { day: "Sun", count: 38 },
+  ],
+  hour_of_day: [],
+  time_blocks: [
+    { label: "Morning", sublabel: "6 AM – 11 AM", count: 94 },
+    { label: "Afternoon", sublabel: "12 PM – 5 PM", count: 138 },
+    { label: "Evening", sublabel: "6 PM – 10 PM", count: 21 },
+    { label: "Night", sublabel: "11 PM – 5 AM", count: 1 },
+  ],
+  new_vs_returning: { new: 14, returning: 42, total: 56 },
+  avg_visits_per_customer: 4.8,
+  lapsed_count: 7,
+  total_unique_customers: 56,
+};
 
 /* ── Mock data ── */
 const DEMO_SHOP = {
@@ -126,6 +182,9 @@ function MerchantDemo() {
           </div>
         </div>
       </div>
+
+      {/* Analytics */}
+      <MerchantAnalytics shopSlug="demo" mockData={MOCK_ANALYTICS} />
     </div>
   );
 }
