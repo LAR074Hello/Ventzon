@@ -4,6 +4,9 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // pdfkit uses Node.js built-ins (fs, stream, zlib) that can't be
+  // webpack-bundled — tell Next.js to require() them at runtime instead.
+  serverExternalPackages: ["pdfkit"],
   // Alias the community Apple Sign In package to our local stub.
   // The community package uses ESM-only dist with extensionless imports
   // that Turbopack can't resolve. Our stub calls registerPlugin() directly,

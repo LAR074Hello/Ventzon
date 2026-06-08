@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
+    "@capacitor/android": "^8.3.4",
     "@capacitor/app": "^8.1.0",
     "@capacitor/browser": "^8.0.3",
     "@capacitor/cli": "^8.3.1",
@@ -30,6 +31,8 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
+    "pdfkit": "^0.18.0",
+    "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -41,6 +44,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdfkit": "^0.17.6",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",

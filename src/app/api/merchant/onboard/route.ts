@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { sendEmail } from "@/lib/resend";
+import { scheduleOnboardingDrip } from "@/lib/onboarding-drip";
 
 /**
  * Generate a URL-safe slug.
@@ -105,7 +106,17 @@ export async function POST(req: Request) {
       console.warn("shop_settings insert failed (non-fatal):", settingsErr.message);
     }
 
-    // 6) Send welcome email (best-effort — don't fail the whole onboard if email fails)
+    // 6) Schedule onboarding drip (day1 / day3 / day7) — best-effort, non-fatal
+    try {
+      const userEmail = user.email;
+      if (userEmail) {
+        await scheduleOnboardingDrip(userEmail, shopRow.slug);
+      }
+    } catch (dripErr) {
+      console.warn("Drip scheduling failed (non-fatal):", dripErr);
+    }
+
+    // 7) Send welcome email (best-effort — don't fail the whole onboard if email fails)
     try {
       const userEmail = user.email;
       if (userEmail) {
@@ -137,7 +148,7 @@ Any questions? Reply to this email or reach us at support@ventzon.com.
       console.warn("Welcome email failed (non-fatal):", emailErr);
     }
 
-    // 7) Done
+    // 8) Done
     return NextResponse.json({ shopSlug: shopRow.slug }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });

@@ -6,7 +6,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, Sparkles, RefreshCw } from "lucide-react";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
 
 /* ------------------------------------------------------------------ */
@@ -226,6 +226,30 @@ function MerchantShopPage() {
   const [winBackMsg, setWinBackMsg] = useState("");
   const [winBackError, setWinBackError] = useState("");
 
+  // Promotions
+  const [promoBody, setPromoBody] = useState("");
+  const [promoSending, setPromoSending] = useState(false);
+  const [promoMsg, setPromoMsg] = useState("");
+  const [promoError, setPromoError] = useState("");
+  const [promotions, setPromotions] = useState<any[]>([]);
+  const [promotionsLoaded, setPromotionsLoaded] = useState(false);
+
+  // AI Promo Writer
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiGoal, setAiGoal] = useState("slow_day");
+  const [aiDetails, setAiDetails] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiOptions, setAiOptions] = useState<string[]>([]);
+  const [aiError, setAiError] = useState("");
+
+  // AI Insights
+  const [insight, setInsight] = useState<string | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insightError, setInsightError] = useState(false);
+
+  // QR card PDF download
+  const [qrCardDownloading, setQrCardDownloading] = useState(false);
+
   // Deal-change warning
   const [dealChangeWarning, setDealChangeWarning] = useState<{ affectedCount: number; knownCount: boolean } | null>(null);
 
@@ -242,6 +266,49 @@ function MerchantShopPage() {
   const [manualResult, setManualResult] = useState<any>(null);
   const [manualError, setManualError] = useState("");
   const logoutRouter = useRouter();
+
+  // Community Rewards
+  type CommunityGroupSetting = {
+    group_key: string;
+    label: string;
+    enabled: boolean;
+    boost: number;
+  };
+  const [communitySettings, setCommunitySettings] = useState<CommunityGroupSetting[]>([]);
+  const [communityMerchantId, setCommunityMerchantId] = useState("");
+  const [communityLoading, setCommunityLoading] = useState(false);
+  const [communitySaving, setCommunitySaving] = useState(false);
+  const [communityMsg, setCommunityMsg] = useState("");
+
+  // Community grant modal
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantContact, setGrantContact] = useState("");
+  const [grantGroup, setGrantGroup] = useState("care");
+  const [grantBoost, setGrantBoost] = useState(1.5);
+  const [grantExpires, setGrantExpires] = useState(12);
+  const [grantLoading, setGrantLoading] = useState(false);
+  const [grantMsg, setGrantMsg] = useState("");
+  const [grantError, setGrantError] = useState("");
+
+  // Community analytics
+  type CommunityAnalytics = {
+    total_community_scans: number;
+    total_community_customers: number;
+    total_merchant_scans: number;
+    verified_badges: number;
+    merchant_grants: number;
+    groups: Array<{
+      group_key: string;
+      scan_count: number;
+      unique_customers: number;
+      repeat_rate: number;
+      avg_boost: number;
+      total_boost_cost: number;
+    }>;
+  };
+  const [communityAnalytics, setCommunityAnalytics] = useState<CommunityAnalytics | null>(null);
+  const [communityAnalyticsLoading, setCommunityAnalyticsLoading] = useState(false);
+
   const [billingData, setBillingData] = useState<{
     plan_type: string;
     rewards_this_month: number;
@@ -632,6 +699,212 @@ function MerchantShopPage() {
     }
   }
 
+  /* ── Promotions ── */
+  async function loadPromotions() {
+    if (!shopSlug) return;
+    try {
+      const res = await fetch(`/api/promotions?shop_slug=${encodeURIComponent(shopSlug)}`);
+      const json = await res.json();
+      if (res.ok) { setPromotions(json.promotions ?? []); setPromotionsLoaded(true); }
+    } catch {}
+  }
+
+  async function submitPromo(e: React.FormEvent) {
+    e.preventDefault();
+    if (!promoBody.trim()) return;
+    setPromoSending(true);
+    setPromoMsg("");
+    setPromoError("");
+    try {
+      const res = await fetch("/api/promotions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, body: promoBody }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to submit");
+      setPromoMsg("Promotion submitted for review.");
+      setPromoBody("");
+      await loadPromotions();
+      setTimeout(() => setPromoMsg(""), 3000);
+    } catch (err: any) {
+      setPromoError(err?.message ?? "Error submitting promotion");
+    } finally {
+      setPromoSending(false);
+    }
+  }
+
+  async function generatePromoOptions() {
+    setAiGenerating(true);
+    setAiOptions([]);
+    setAiError("");
+    try {
+      const res = await fetch("/api/ai/promo-writer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shopSlug,
+          storeType: settings?.shop_name || shopSlug,
+          goal: aiGoal,
+          details: aiDetails,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Generation failed");
+      setAiOptions(json.options ?? []);
+    } catch (err: any) {
+      setAiError(err?.message ?? "Failed to generate options");
+    } finally {
+      setAiGenerating(false);
+    }
+  }
+
+  function pickAIOption(text: string) {
+    setPromoBody(text);
+    setShowAIModal(false);
+    setAiOptions([]);
+    setAiDetails("");
+  }
+
+  /* ── AI Insights ── */
+  const loadInsight = useCallback(async (refresh = false) => {
+    if (!shopSlug) return;
+    setInsightLoading(true);
+    setInsightError(false);
+    try {
+      const params = new URLSearchParams({ shop_slug: shopSlug });
+      if (refresh) params.set("refresh", "1");
+      const res = await fetch(`/api/ai/insights?${params}`, { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok || !json.insight) throw new Error(json.error ?? "No insight");
+      setInsight(json.insight);
+    } catch {
+      setInsightError(true);
+    } finally {
+      setInsightLoading(false);
+    }
+  }, [shopSlug]);
+
+  /* ── QR card PDF download ── */
+  async function downloadQRCard() {
+    if (!shopSlug) return;
+    setQrCardDownloading(true);
+    try {
+      const res = await fetch(`/api/merchant/qr-card?shop=${encodeURIComponent(shopSlug)}`);
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        alert(json.error ?? "Failed to generate PDF");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${shopSlug}-qr-card.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      alert(e?.message ?? "Download failed");
+    } finally {
+      setQrCardDownloading(false);
+    }
+  }
+
+  /* ── Community Rewards: load settings ── */
+  async function loadCommunitySettings() {
+    if (!shopSlug) return;
+    setCommunityLoading(true);
+    try {
+      const res = await fetch(`/api/merchant/community-settings?shop=${encodeURIComponent(shopSlug)}`);
+      const json = await res.json();
+      if (json.ok) {
+        setCommunitySettings(json.settings ?? []);
+        setCommunityMerchantId(json.merchant_id ?? "");
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setCommunityLoading(false);
+    }
+  }
+
+  async function saveCommunitySettings() {
+    if (!shopSlug) return;
+    setCommunitySaving(true);
+    setCommunityMsg("");
+    try {
+      const res = await fetch("/api/merchant/community-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shop: shopSlug,
+          updates: communitySettings.map((g) => ({
+            group_key: g.group_key,
+            enabled: g.enabled,
+            boost: g.boost,
+          })),
+        }),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setCommunityMsg("Saved.");
+        setTimeout(() => setCommunityMsg(""), 2500);
+      } else {
+        setCommunityMsg(json.error ?? "Save failed");
+      }
+    } catch (e: any) {
+      setCommunityMsg(e?.message ?? "Save failed");
+    } finally {
+      setCommunitySaving(false);
+    }
+  }
+
+  async function loadCommunityAnalytics() {
+    if (!shopSlug) return;
+    setCommunityAnalyticsLoading(true);
+    try {
+      const res = await fetch(`/api/merchant/community-analytics?shop=${encodeURIComponent(shopSlug)}`);
+      const json = await res.json();
+      if (json.ok) setCommunityAnalytics(json);
+    } catch {
+      // non-fatal
+    } finally {
+      setCommunityAnalyticsLoading(false);
+    }
+  }
+
+  async function submitGrant() {
+    if (!grantContact.trim() || !shopSlug) return;
+    setGrantLoading(true);
+    setGrantError("");
+    setGrantMsg("");
+    try {
+      const res = await fetch("/api/merchant/community-grants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shop: shopSlug,
+          contact: grantContact.trim(),
+          group_key: grantGroup,
+          boost: grantBoost,
+          expires_months: grantExpires,
+        }),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setGrantMsg("Perk granted.");
+        setGrantContact("");
+        setTimeout(() => { setShowGrantModal(false); setGrantMsg(""); }, 1800);
+      } else {
+        setGrantError(json.error ?? "Failed to grant perk");
+      }
+    } catch (e: any) {
+      setGrantError(e?.message ?? "Failed");
+    } finally {
+      setGrantLoading(false);
+    }
+  }
+
   /* ── Auto-dismiss deal-change warning when drafts revert to saved values ── */
   useEffect(() => {
     if (!dealChangeWarning) return;
@@ -644,10 +917,15 @@ function MerchantShopPage() {
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
     let cancelled = false;
-    (async () => { if (!cancelled) await Promise.all([loadStats(), loadSettings(), loadBilling()]); })();
+    (async () => { if (!cancelled) await Promise.all([loadStats(), loadSettings(), loadBilling(), loadCommunitySettings(), loadCommunityAnalytics()]); })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsUrl]);
+
+  useEffect(() => {
+    if (shopSlug) loadInsight();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shopSlug]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -870,6 +1148,45 @@ function MerchantShopPage() {
                 </p>
               </div>
             )}
+
+            {/* ============================================================
+                AI INSIGHT CARD
+                ============================================================ */}
+            <section className="mt-8">
+              <div className="rounded-2xl border border-[#1a1a1a] bg-[#040404] p-6 transition-all duration-500 hover:border-[#2a2a2a]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-[#555]" />
+                    <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">THIS WEEK&apos;S INSIGHT</p>
+                  </div>
+                  <button
+                    onClick={() => loadInsight(true)}
+                    disabled={insightLoading}
+                    title="Refresh insight"
+                    className="flex items-center gap-1.5 rounded-full border border-[#1a1a1a] px-3 py-1.5 text-[11px] font-light text-[#444] transition-all duration-300 hover:border-[#333] hover:text-[#888] disabled:opacity-40"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${insightLoading ? "animate-spin" : ""}`} />
+                    Refresh
+                  </button>
+                </div>
+
+                {insightLoading ? (
+                  /* Skeleton */
+                  <div className="space-y-2 animate-pulse">
+                    <div className="h-3.5 w-full rounded-full bg-[#111]" />
+                    <div className="h-3.5 w-4/5 rounded-full bg-[#111]" />
+                  </div>
+                ) : insightError ? (
+                  <p className="text-[13px] font-light text-[#444]">
+                    Check back after more customers visit — insights appear once you have a week of data.
+                  </p>
+                ) : insight ? (
+                  <p className="text-[14px] font-light leading-relaxed text-[#bbb]">{insight}</p>
+                ) : (
+                  <p className="text-[13px] font-light text-[#444]">Loading your insight…</p>
+                )}
+              </div>
+            </section>
 
             {/* ============================================================
                 ANALYTICS
@@ -1225,6 +1542,104 @@ function MerchantShopPage() {
             )}
 
             {/* ============================================================
+                PROMOTIONS
+                ============================================================ */}
+            {paid && (
+              <section className="mt-14">
+                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+                <div>
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">PROMOTIONS</p>
+                  <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">Send a promotion</h2>
+                  <p className="mt-1 text-[13px] font-light text-[#444]">
+                    Write a short message to share with your customers. Promotions are reviewed before going out.
+                  </p>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+                  <form onSubmit={submitPromo} className="space-y-4">
+                    <div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <label className="block text-[11px] font-light tracking-[0.15em] text-[#555]">MESSAGE</label>
+                        <button
+                          type="button"
+                          onClick={() => { setShowAIModal(true); setAiOptions([]); setAiError(""); }}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] px-3.5 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#ededed] hover:text-[#ededed]"
+                        >
+                          <span>✦</span> Write with AI
+                        </button>
+                      </div>
+                      <textarea
+                        value={promoBody}
+                        onChange={e => setPromoBody(e.target.value)}
+                        placeholder="e.g. It's a slow Tuesday — come in today and get a free cookie with any drink ☕"
+                        required
+                        rows={4}
+                        maxLength={160}
+                        className="w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                      />
+                      <p className={`mt-1 text-right text-[11px] font-light ${promoBody.length > 140 ? "text-yellow-500/70" : "text-[#333]"}`}>
+                        {promoBody.length}/160
+                      </p>
+                    </div>
+
+                    {promoMsg && (
+                      <div className="rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-4 py-3">
+                        <p className="text-[13px] font-light text-emerald-400">{promoMsg}</p>
+                      </div>
+                    )}
+                    {promoError && (
+                      <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
+                        <p className="text-[13px] font-light text-red-400">{promoError}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3">
+                      <PrimaryButton disabled={promoSending || !promoBody.trim()}>
+                        {promoSending ? "Submitting…" : "Submit for review"}
+                      </PrimaryButton>
+                      {!promotionsLoaded && (
+                        <button type="button" onClick={loadPromotions} className="text-[11px] font-light text-[#444] hover:text-[#888] transition-colors">
+                          View history
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* Promotion history */}
+                {promotionsLoaded && promotions.length > 0 && (
+                  <div className="mt-5 rounded-2xl border border-[#1a1a1a] overflow-hidden">
+                    <div className="border-b border-[#111] px-5 py-3">
+                      <p className="text-[10px] font-light tracking-[0.3em] text-[#555]">HISTORY</p>
+                    </div>
+                    <div className="divide-y divide-[#0d0d0d]">
+                      {promotions.map((p) => (
+                        <div key={p.id} className="px-5 py-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <p className="text-[13px] font-light leading-relaxed text-[#bbb]">{p.body}</p>
+                            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-light tracking-[0.1em] ${
+                              p.status === "approved" ? "border border-emerald-900/40 text-emerald-500" :
+                              p.status === "rejected" ? "border border-red-900/40 text-red-500" :
+                              "border border-[#2a2a2a] text-[#555]"
+                            }`}>
+                              {p.status?.toUpperCase()}
+                            </span>
+                          </div>
+                          {p.reject_reason && (
+                            <p className="mt-1.5 text-[11px] font-light text-[#444]">Reason: {p.reject_reason}</p>
+                          )}
+                          <p className="mt-1 text-[11px] font-light text-[#333]">
+                            {new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ============================================================
                 QR CODE & JOIN LINK
                 ============================================================ */}
             <section className="mt-14">
@@ -1265,6 +1680,9 @@ function MerchantShopPage() {
                         <div className="mt-5 flex flex-wrap items-center gap-3">
                           <GhostButton onClick={copyJoinLink}>
                             {copied ? "Copied" : "Copy link"}
+                          </GhostButton>
+                          <GhostButton onClick={downloadQRCard} disabled={qrCardDownloading}>
+                            {qrCardDownloading ? "Generating…" : "↓ Download Print-Ready Card (PDF)"}
                           </GhostButton>
                           <Link
                             href={`/merchant/${shopSlug}/qr`}
@@ -1671,6 +2089,204 @@ function MerchantShopPage() {
             </section>
 
             {/* ============================================================
+                COMMUNITY REWARDS SETTINGS  (Phase 2 + 4 + 5)
+                ============================================================ */}
+            <section className="mt-14">
+              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <SectionLabel>COMMUNITY REWARDS</SectionLabel>
+                  <SectionTitle>Give extra stamps to special customers</SectionTitle>
+                </div>
+                <GhostButton onClick={loadCommunitySettings}>Refresh</GhostButton>
+              </div>
+
+              <div className="mt-8 space-y-4">
+                {communityLoading ? (
+                  <p className="text-[13px] font-light text-[#444]">Loading…</p>
+                ) : (
+                  <>
+                    {/* Per-group toggles */}
+                    <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                      <p className="text-[11px] font-light tracking-[0.3em] text-[#555] mb-6">
+                        GROUPS &amp; BOOST MULTIPLIERS
+                      </p>
+                      <div className="space-y-5">
+                        {(communitySettings.length > 0
+                          ? communitySettings
+                          : [
+                              { group_key: "veteran", label: "Veterans", enabled: false, boost: 1.5 },
+                              { group_key: "student", label: "Students", enabled: false, boost: 1.5 },
+                              { group_key: "senior", label: "Seniors (60+)", enabled: false, boost: 1.5 },
+                              { group_key: "first_responder", label: "First Responders", enabled: false, boost: 1.5 },
+                              { group_key: "care", label: "Care Community", enabled: false, boost: 1.5 },
+                            ]
+                        ).map((g) => (
+                          <div key={g.group_key} className="flex items-center justify-between gap-4">
+                            {/* Toggle */}
+                            <button
+                              onClick={() => {
+                                if (!paid) return;
+                                setCommunitySettings((prev) =>
+                                  prev.map((x) =>
+                                    x.group_key === g.group_key ? { ...x, enabled: !x.enabled } : x
+                                  )
+                                );
+                              }}
+                              className={`flex items-center gap-3 text-left transition-colors ${paid ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+                            >
+                              <span
+                                className={`inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full border transition-colors duration-300 ${
+                                  g.enabled ? "border-[#ededed] bg-[#ededed]" : "border-[#333] bg-transparent"
+                                }`}
+                              >
+                                <span
+                                  className={`h-3.5 w-3.5 rounded-full transition-transform duration-300 ${
+                                    g.enabled ? "translate-x-4 bg-black" : "translate-x-0.5 bg-[#444]"
+                                  }`}
+                                />
+                              </span>
+                              <span className="text-[14px] font-light text-[#ededed]">{g.label}</span>
+                            </button>
+
+                            {/* Boost multiplier */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-light text-[#555]">BOOST</span>
+                              <input
+                                type="number"
+                                min={1.0}
+                                max={5.0}
+                                step={0.25}
+                                disabled={!paid || !g.enabled}
+                                value={g.boost}
+                                onChange={(e) => {
+                                  const val = Math.min(5, Math.max(1, parseFloat(e.target.value) || 1));
+                                  setCommunitySettings((prev) =>
+                                    prev.map((x) =>
+                                      x.group_key === g.group_key ? { ...x, boost: val } : x
+                                    )
+                                  );
+                                }}
+                                className="w-16 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-2 py-1.5 text-center text-[13px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333] disabled:opacity-30"
+                              />
+                              <span className="text-[11px] font-light text-[#444]">×</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {paid ? (
+                        <div className="mt-6 flex items-center justify-between">
+                          <button
+                            onClick={saveCommunitySettings}
+                            disabled={communitySaving}
+                            className="rounded-full border border-[#ededed] px-6 py-2.5 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+                          >
+                            {communitySaving ? "Saving…" : "Save boosts"}
+                          </button>
+                          {communityMsg && (
+                            <p className="text-[12px] font-light text-[#555]">{communityMsg}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="mt-6 text-[11px] font-light text-[#444]">Activate to enable community rewards</p>
+                      )}
+                    </div>
+
+                    {/* How verification works */}
+                    <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5">
+                      <p className="text-[11px] font-light tracking-[0.3em] text-[#555] mb-3">HOW IT WORKS</p>
+                      <div className="space-y-2 text-[12px] font-light text-[#444] leading-relaxed">
+                        <p>🎖 <strong className="text-[#666] font-light">Veterans</strong> — verified via VA Lighthouse API (global badge, works at all merchants)</p>
+                        <p>🎓 <strong className="text-[#666] font-light">Students</strong> — verified via .edu email link (global badge)</p>
+                        <p>👴 <strong className="text-[#666] font-light">Seniors</strong> — derived from date of birth at scan time, no badge stored</p>
+                        <p>🚒 <strong className="text-[#666] font-light">First Responders</strong> — merchant grant only (use &quot;Grant a perk&quot; below)</p>
+                        <p>💙 <strong className="text-[#666] font-light">Care Community</strong> — merchant grant only, cancer patients &amp; family</p>
+                        <p className="mt-2 text-[#333]">Boosts resolve as max, not stack. A customer who qualifies for multiple groups gets the highest boost only.</p>
+                      </div>
+                    </div>
+
+                    {/* Grant a perk */}
+                    {paid && (
+                      <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">MANUAL GRANTS</p>
+                            <p className="mt-2 text-[15px] font-extralight text-[#ededed]">Grant a perk</p>
+                            <p className="mt-1 text-[12px] font-light text-[#444]">
+                              Give a community boost to a specific customer by phone or email.
+                            </p>
+                          </div>
+                          <GhostButton onClick={() => { setShowGrantModal(true); setGrantError(""); setGrantMsg(""); }}>
+                            + Grant
+                          </GhostButton>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Community analytics */}
+                    {communityAnalytics && (communityAnalytics.total_community_scans > 0) && (
+                      <div className="rounded-2xl border border-[#1a1a1a] p-8 transition-all duration-500 hover:border-[#333]">
+                        <div className="flex items-center justify-between mb-6">
+                          <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">COMMUNITY ANALYTICS · 90 DAYS</p>
+                          <button
+                            onClick={loadCommunityAnalytics}
+                            disabled={communityAnalyticsLoading}
+                            className="text-[11px] font-light text-[#444] hover:text-[#888] transition-colors disabled:opacity-40"
+                          >
+                            {communityAnalyticsLoading ? "…" : "Refresh"}
+                          </button>
+                        </div>
+
+                        {/* Summary row */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="rounded-xl border border-[#1a1a1a] px-4 py-3 text-center">
+                            <p className="text-[22px] font-extralight text-white">{communityAnalytics.total_community_scans}</p>
+                            <p className="text-[10px] font-light tracking-[0.2em] text-[#555] mt-1">COMMUNITY SCANS</p>
+                          </div>
+                          <div className="rounded-xl border border-[#1a1a1a] px-4 py-3 text-center">
+                            <p className="text-[22px] font-extralight text-white">{communityAnalytics.total_community_customers}</p>
+                            <p className="text-[10px] font-light tracking-[0.2em] text-[#555] mt-1">UNIQUE CUSTOMERS</p>
+                          </div>
+                          <div className="rounded-xl border border-[#1a1a1a] px-4 py-3 text-center">
+                            <p className="text-[22px] font-extralight text-white">
+                              {communityAnalytics.verified_badges}
+                              <span className="text-[14px] text-[#555]"> / {communityAnalytics.verified_badges + communityAnalytics.merchant_grants}</span>
+                            </p>
+                            <p className="text-[10px] font-light tracking-[0.2em] text-[#555] mt-1">VERIFIED / TOTAL</p>
+                          </div>
+                        </div>
+
+                        {/* Per-group rows */}
+                        {communityAnalytics.groups.length > 0 && (
+                          <div className="space-y-3">
+                            {communityAnalytics.groups.map((g) => (
+                              <div key={g.group_key} className="flex items-center justify-between rounded-xl border border-[#111] px-4 py-3">
+                                <div>
+                                  <p className="text-[13px] font-light text-[#ededed] capitalize">
+                                    {g.group_key.replace("_", " ")}
+                                  </p>
+                                  <p className="text-[11px] font-light text-[#555]">
+                                    {g.unique_customers} customer{g.unique_customers !== 1 ? "s" : ""} · {g.repeat_rate}% repeat
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[13px] font-light text-[#ededed]">{g.scan_count} scans</p>
+                                  <p className="text-[11px] font-light text-[#555]">{g.avg_boost}× avg boost</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </section>
+
+            {/* ============================================================
                 BILLING (small, understated)
                 ============================================================ */}
             {paid && billingData && (
@@ -1752,6 +2368,224 @@ function MerchantShopPage() {
           </div>
         </div>
       </section>
+
+      {/* ============================================================
+          AI PROMO WRITER MODAL
+          ============================================================ */}
+      {showAIModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
+          onClick={() => { setShowAIModal(false); setAiOptions([]); setAiError(""); }}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl border border-[#1a1a1a] bg-[#080808] p-8 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">AI PROMO WRITER</p>
+                <p className="mt-2 text-[18px] font-extralight text-[#ededed]">Generate options</p>
+              </div>
+              <button
+                onClick={() => { setShowAIModal(false); setAiOptions([]); setAiError(""); }}
+                className="text-[#555] hover:text-[#ededed] text-[22px] leading-none transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            {aiOptions.length === 0 ? (
+              <div className="space-y-5">
+                {/* Goal dropdown */}
+                <div>
+                  <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">
+                    WHAT&apos;S THE GOAL?
+                  </label>
+                  <select
+                    value={aiGoal}
+                    onChange={e => setAiGoal(e.target.value)}
+                    className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333]"
+                  >
+                    <option value="slow_day">Slow day traffic boost</option>
+                    <option value="new_item">New item announcement</option>
+                    <option value="holiday">Holiday / weekend special</option>
+                    <option value="win_back">Win back lapsed customers</option>
+                    <option value="appreciation">General appreciation</option>
+                  </select>
+                </div>
+
+                {/* Details field */}
+                <div>
+                  <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">
+                    ANYTHING SPECIFIC TO MENTION? <span className="text-[#333]">(optional)</span>
+                  </label>
+                  <input
+                    value={aiDetails}
+                    onChange={e => setAiDetails(e.target.value)}
+                    placeholder="e.g. 20% off lattes, new fall menu, free cookie…"
+                    className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                  />
+                </div>
+
+                {aiError && (
+                  <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
+                    <p className="text-[13px] font-light text-red-400">{aiError}</p>
+                  </div>
+                )}
+
+                <button
+                  onClick={generatePromoOptions}
+                  disabled={aiGenerating}
+                  className="w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+                >
+                  {aiGenerating ? "Generating…" : "Generate Options"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-[11px] font-light tracking-[0.15em] text-[#555] mb-4">PICK ONE TO USE</p>
+                {aiOptions.map((opt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => pickAIOption(opt)}
+                    className="group w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-5 py-4 text-left transition-all duration-300 hover:border-[#ededed] hover:bg-[#111]"
+                  >
+                    <p className="text-[13px] font-light leading-relaxed text-[#bbb] group-hover:text-[#ededed] transition-colors">{opt}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className={`text-[11px] font-light ${opt.length > 140 ? "text-yellow-500/70" : "text-[#333]"}`}>
+                        {opt.length}/155 chars
+                      </p>
+                      <p className="text-[11px] font-light tracking-[0.1em] text-[#444] group-hover:text-[#888] transition-colors">
+                        Use this →
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                <button
+                  onClick={() => { setAiOptions([]); setAiError(""); }}
+                  className="mt-2 w-full text-center text-[11px] font-light text-[#444] hover:text-[#888] transition-colors"
+                >
+                  ← Try different options
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================
+          GRANT A PERK MODAL
+          ============================================================ */}
+      {showGrantModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          style={{ background: "rgba(0,0,0,0.85)" }}
+          onClick={() => setShowGrantModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-t-3xl border border-[#1a1a1a] bg-[#0d0d0d] p-8 sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6 flex items-start justify-between">
+              <div>
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">COMMUNITY REWARDS</p>
+                <p className="mt-2 text-[18px] font-extralight text-[#ededed]">Grant a perk</p>
+              </div>
+              <button
+                onClick={() => setShowGrantModal(false)}
+                className="text-[#555] hover:text-[#ededed] text-[22px] leading-none transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              {/* Customer lookup */}
+              <div>
+                <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">
+                  CUSTOMER PHONE OR EMAIL
+                </label>
+                <input
+                  value={grantContact}
+                  onChange={(e) => setGrantContact(e.target.value)}
+                  placeholder="+1 555 000 0000 or name@example.com"
+                  className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                />
+              </div>
+
+              {/* Group picker */}
+              <div>
+                <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">
+                  GROUP
+                </label>
+                <select
+                  value={grantGroup}
+                  onChange={(e) => setGrantGroup(e.target.value)}
+                  className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333]"
+                >
+                  <option value="care">💙 Care Community (cancer patients &amp; family)</option>
+                  <option value="first_responder">🚒 First Responder</option>
+                  <option value="veteran">🎖 Veteran</option>
+                  <option value="student">🎓 Student</option>
+                </select>
+              </div>
+
+              {/* Boost */}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">
+                    BOOST MULTIPLIER
+                  </label>
+                  <input
+                    type="number"
+                    min={1.0}
+                    max={5.0}
+                    step={0.25}
+                    value={grantBoost}
+                    onChange={(e) => setGrantBoost(Math.min(5, Math.max(1, parseFloat(e.target.value) || 1)))}
+                    className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333]"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">
+                    EXPIRES (MONTHS)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={60}
+                    step={1}
+                    value={grantExpires}
+                    onChange={(e) => setGrantExpires(Math.max(1, parseInt(e.target.value) || 12))}
+                    className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333]"
+                  />
+                </div>
+              </div>
+
+              {grantError && (
+                <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
+                  <p className="text-[13px] font-light text-red-400">{grantError}</p>
+                </div>
+              )}
+              {grantMsg && (
+                <p className="text-[13px] font-light text-green-400">{grantMsg}</p>
+              )}
+
+              <button
+                onClick={submitGrant}
+                disabled={grantLoading || !grantContact.trim()}
+                className="w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+              >
+                {grantLoading ? "Granting…" : "Grant perk"}
+              </button>
+
+              <p className="text-[11px] font-light text-[#333] text-center">
+                Grants are for this shop only · Default 12-month expiry · Customer is not notified of revocation
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ============================================================
           PRINT STYLES — Only show QR panel when printing

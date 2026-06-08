@@ -258,6 +258,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: updateErr.message }, { status: 500 });
     }
 
+    // ── Community boost: award_scan_points (non-fatal) ───────
+    // Resolve shop UUID, then call the RPC so loyalty_events gets a row
+    // with matched_groups/applied_boost. Duplicate scan_id is idempotent.
+    try {
+      const { data: shopRow } = await supabase
+        .from("shops")
+        .select("id")
+        .eq("slug", shop_slug)
+        .maybeSingle();
+
+      if (shopRow) {
+        const scanId = crypto.randomUUID();
+        await supabase.rpc("award_scan_points", {
+          p_customer_id: customer.id,
+          p_merchant_id: shopRow.id,
+          p_base_points: stampBonus,
+          p_scan_id: scanId,
+        });
+      }
+    } catch (communityErr: any) {
+      console.warn("[checkin] community boost non-fatal:", communityErr?.message);
+    }
+
     // ── Record reward event + report Stripe metered usage ──
     if (hitGoal) {
       // Insert reward_events row
