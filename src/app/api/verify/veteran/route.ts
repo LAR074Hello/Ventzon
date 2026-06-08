@@ -115,11 +115,12 @@ export async function POST(req: Request) {
     }
 
     // Badge the customer profile (non-fatal)
-    await supabase
-      .from("customers")
-      .update({ community_badge: "veteran" })
-      .eq("id", customerId)
-      .catch(() => null);
+    try {
+      await supabase
+        .from("customers")
+        .update({ community_badge: "veteran" })
+        .eq("id", customerId);
+    } catch (_) { /* non-fatal */ }
 
     return NextResponse.json({ ok: true, status: "confirmed" });
   } catch (e: any) {

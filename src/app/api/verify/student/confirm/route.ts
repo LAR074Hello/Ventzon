@@ -68,11 +68,12 @@ export async function GET(req: Request) {
       .eq("id", pending.id);
 
     // Badge customer profile (non-fatal)
-    await supabase
-      .from("customers")
-      .update({ community_badge: "student" })
-      .eq("id", pending.customer_id)
-      .catch(() => null);
+    try {
+      await supabase
+        .from("customers")
+        .update({ community_badge: "student" })
+        .eq("id", pending.customer_id);
+    } catch (_) { /* non-fatal */ }
 
     return NextResponse.redirect(`${BASE_URL}/customer/profile?verified=student`);
   } catch (e: any) {
