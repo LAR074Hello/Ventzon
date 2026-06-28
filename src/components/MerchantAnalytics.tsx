@@ -43,6 +43,14 @@ type AnalyticsResponse = {
   avg_visits_per_customer: number | null;
   lapsed_count: number;
   total_unique_customers: number;
+  // New metrics
+  at_risk_count: number;
+  churned_count: number;
+  avg_lifetime_days: number | null;
+  loyal_count: number;
+  redemption_rate: number | null;
+  period_vs_previous: { checkins_pct_change: number | null; customers_pct_change: number | null };
+  lifecycle: { new: number; returning: number; loyal: number };
 };
 
 type Period = {
@@ -129,6 +137,16 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ChangeBadge({ pct }: { pct: number | null }) {
+  if (pct === null) return null;
+  const up = pct >= 0;
+  return (
+    <span className={`ml-2 text-[11px] font-light ${up ? "text-emerald-500" : "text-red-500"}`}>
+      {up ? "↑" : "↓"}{Math.abs(pct)}%
+    </span>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -184,6 +202,13 @@ export default function MerchantAnalytics({
   const avgVisits = data?.avg_visits_per_customer ?? null;
   const lapsedCount = data?.lapsed_count ?? 0;
   const totalUniqueCustomers = data?.total_unique_customers ?? 0;
+  const atRiskCount = data?.at_risk_count ?? 0;
+  const churnedCount = data?.churned_count ?? 0;
+  const avgLifetimeDays = data?.avg_lifetime_days ?? null;
+  const loyalCount = data?.loyal_count ?? 0;
+  const redemptionRate = data?.redemption_rate ?? null;
+  const periodVsPrevious = data?.period_vs_previous ?? { checkins_pct_change: null, customers_pct_change: null };
+  const lifecycle = data?.lifecycle ?? { new: 0, returning: 0, loyal: 0 };
 
   // Peak day
   const peakDay = dayOfWeek.length
@@ -241,13 +266,18 @@ export default function MerchantAnalytics({
           <SectionLabel>CHECK-INS</SectionLabel>
           <p className="mt-2 text-3xl font-extralight tracking-tight text-white">
             {loading ? "..." : totalCheckins.toLocaleString()}
+            {!loading && <ChangeBadge pct={periodVsPrevious.checkins_pct_change} />}
           </p>
+          <p className="mt-1 text-[11px] font-light text-[#444]">vs previous period</p>
         </div>
         <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
           <SectionLabel>REWARDS REDEEMED</SectionLabel>
           <p className="mt-2 text-3xl font-extralight tracking-tight text-white">
             {loading ? "..." : totalRewards.toLocaleString()}
           </p>
+          {!loading && redemptionRate !== null && (
+            <p className="mt-1 text-[11px] font-light text-[#444]">{redemptionRate}% redemption rate</p>
+          )}
         </div>
         <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
           <SectionLabel>RETENTION RATE</SectionLabel>
@@ -258,12 +288,13 @@ export default function MerchantAnalytics({
         </div>
       </div>
 
-      {/* ── Row 2: Customer stats ── */}
+      {/* ── Row 2: Period customer stats ── */}
       <div className="mt-4 grid gap-4 sm:grid-cols-4">
         <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
           <SectionLabel>NEW CUSTOMERS</SectionLabel>
           <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
             {loading ? "..." : newVsReturning.new.toLocaleString()}
+            {!loading && <ChangeBadge pct={periodVsPrevious.customers_pct_change} />}
           </p>
           <p className="mt-1 text-[11px] font-light text-[#444]">First visit in period</p>
         </div>
@@ -282,15 +313,98 @@ export default function MerchantAnalytics({
           <p className="mt-1 text-[11px] font-light text-[#444]">In period</p>
         </div>
         <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
-          <SectionLabel>LAPSED</SectionLabel>
+          <SectionLabel>AVG CUSTOMER LIFETIME</SectionLabel>
           <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
-            {loading ? "..." : lapsedCount.toLocaleString()}
+            {loading ? "..." : avgLifetimeDays !== null ? `${avgLifetimeDays}d` : "—"}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">No visit in 30+ days</p>
+          <p className="mt-1 text-[11px] font-light text-[#444]">First to last visit</p>
         </div>
       </div>
 
-      {/* ── Row 3: Foot traffic charts ── */}
+      {/* ── Row 3: Customer lifecycle ── */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {/* Lifecycle funnel */}
+        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+          <SectionLabel>CUSTOMER LIFECYCLE</SectionLabel>
+          <p className="mt-1 text-[11px] font-light text-[#444]">All-time — {totalUniqueCustomers} total customers</p>
+          {loading ? (
+            <p className="mt-4 text-[13px] font-light text-[#333]">Loading...</p>
+          ) : totalUniqueCustomers === 0 ? (
+            <p className="mt-4 text-[13px] font-light text-[#444]">No data yet</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {[
+                { label: "New", sub: "1 visit", count: lifecycle.new, color: "#555" },
+                { label: "Returning", sub: "2+ visits", count: lifecycle.returning, color: "#888" },
+                { label: "Loyal", sub: `Earned a reward`, count: loyalCount, color: "#ededed" },
+              ].map((stage) => (
+                <div key={stage.label}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[13px] font-light" style={{ color: stage.color }}>{stage.label}</span>
+                      <span className="ml-2 text-[11px] font-light text-[#444]">{stage.sub}</span>
+                    </div>
+                    <span className="text-[12px] font-light text-[#888]">{stage.count}</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a1a]">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${Math.round((stage.count / totalUniqueCustomers) * 100)}%`,
+                        backgroundColor: stage.color,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* At-risk breakdown */}
+        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+          <SectionLabel>CUSTOMER HEALTH</SectionLabel>
+          <p className="mt-1 text-[11px] font-light text-[#444]">By recency of last visit</p>
+          {loading ? (
+            <p className="mt-4 text-[13px] font-light text-[#333]">Loading...</p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[13px] font-light text-[#ededed]">Active</span>
+                  <span className="ml-2 text-[11px] font-light text-[#444]">visited in last 14 days</span>
+                </div>
+                <span className="text-[13px] font-light text-[#ededed]">
+                  {(totalUniqueCustomers - atRiskCount - lapsedCount - churnedCount).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[13px] font-light text-yellow-500">At risk</span>
+                  <span className="ml-2 text-[11px] font-light text-[#444]">14–29 days ago</span>
+                </div>
+                <span className="text-[13px] font-light text-yellow-500">{atRiskCount.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[13px] font-light text-orange-500">Lapsed</span>
+                  <span className="ml-2 text-[11px] font-light text-[#444]">30–59 days ago</span>
+                </div>
+                <span className="text-[13px] font-light text-orange-500">{lapsedCount.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[13px] font-light text-red-500">Churned</span>
+                  <span className="ml-2 text-[11px] font-light text-[#444]">60+ days ago</span>
+                </div>
+                <span className="text-[13px] font-light text-red-500">{churnedCount.toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Row 4: Foot traffic charts ── */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
 
         {/* Day of week */}
@@ -383,7 +497,7 @@ export default function MerchantAnalytics({
         </div>
       </div>
 
-      {/* ── Row 4: Time series charts ── */}
+      {/* ── Row 5: Time series charts ── */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* Check-ins line chart */}
         <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">

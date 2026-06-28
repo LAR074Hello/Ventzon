@@ -249,16 +249,99 @@ export async function GET(req: Request) {
         ? Math.round((totalVisitsInPeriod / activeInPeriodCount) * 10) / 10
         : null;
 
-    // Lapsed customers: had at least 1 visit ever but none in the last 30 days
+    // At-risk / lapsed / churned segmentation
+    const fourteenDaysAgo = new Date(now);
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().slice(0, 10);
+
     const thirtyDaysAgo = new Date(now);
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10);
 
-    let lapsedCount = 0;
-    for (const [cid, lastSeen] of Object.entries(customerLastSeen)) {
-      if (lastSeen < thirtyDaysAgoStr) {
-        lapsedCount++;
+    const sixtyDaysAgo = new Date(now);
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+    const sixtyDaysAgoStr = sixtyDaysAgo.toISOString().slice(0, 10);
+
+    let atRiskCount = 0;  // last visit 14–29 days ago
+    let lapsedCount = 0;  // last visit 30–59 days ago
+    let churnedCount = 0; // last visit 60+ days ago
+    for (const lastSeen of Object.values(customerLastSeen)) {
+      if (lastSeen < sixtyDaysAgoStr) churnedCount++;
+      else if (lastSeen < thirtyDaysAgoStr) lapsedCount++;
+      else if (lastSeen < fourteenDaysAgoStr) atRiskCount++;
+    }
+
+    // Avg customer lifetime: mean days between first and last visit (customers with >1 visit)
+    const lifetimes: number[] = [];
+    for (const [cid, firstSeen] of Object.entries(customerFirstSeen)) {
+      const lastSeen = customerLastSeen[cid];
+      if (lastSeen && lastSeen !== firstSeen) {
+        const days = Math.round(
+          (new Date(lastSeen).getTime() - new Date(firstSeen).getTime()) / 86400000
+        );
+        if (days > 0) lifetimes.push(days);
       }
+    }
+    const avgLifetimeDays =
+      lifetimes.length > 0
+        ? Math.round(lifetimes.reduce((a, b) => a + b, 0) / lifetimes.length)
+        : null;
+
+    // Loyal customers: total stamps >= goal (earned at least 1 reward)
+    const loyalCount = Object.values(customerVisits).filter((v) => v >= goal).length;
+
+    // Redemption rate: rewards per check-in in period (%)
+    const totalCheckinsInPeriod = checkins.reduce((s, d) => s + d.count, 0);
+    const totalRewardsInPeriod = rewards.reduce((s, d) => s + d.count, 0);
+    const redemptionRate =
+      totalCheckinsInPeriod > 0
+        ? Math.round((totalRewardsInPeriod / totalCheckinsInPeriod) * 1000) / 10
+        : null;
+
+    // Period-over-period comparison (only for named periods, not "all")
+    let periodVsPrevious: {
+      checkins_pct_change: number | null;
+      customers_pct_change: number | null;
+    } = { checkins_pct_change: null, customers_pct_change: null };
+
+    const periodDays = PERIOD_DAYS[period];
+    if (periodDays) {
+      const prevEndDate = new Date(startDate + "T00:00:00");
+      prevEndDate.setDate(prevEndDate.getDate() - 1);
+      const prevEndStr = prevEndDate.toISOString().slice(0, 10);
+      const prevStartDate = new Date(prevEndDate);
+      prevStartDate.setDate(prevStartDate.getDate() - periodDays + 1);
+      const prevStartStr = prevStartDate.toISOString().slice(0, 10);
+
+      let prevCheckinsCount = 0;
+      const prevCustomers = new Set<string>();
+      for (const row of allCheckins || []) {
+        const date = row.checkin_date as string;
+        if (date >= prevStartStr && date <= prevEndStr) {
+          prevCheckinsCount++;
+          prevCustomers.add(row.customer_id as string);
+        }
+      }
+      periodVsPrevious = {
+        checkins_pct_change:
+          prevCheckinsCount > 0
+            ? Math.round(((totalCheckinsInPeriod - prevCheckinsCount) / prevCheckinsCount) * 100)
+            : null,
+        customers_pct_change:
+          prevCustomers.size > 0
+            ? Math.round(
+                ((customersActiveinPeriod.size - prevCustomers.size) / prevCustomers.size) * 100
+              )
+            : null,
+      };
+    }
+
+    // Customer lifecycle funnel (all-time visit counts)
+    const lifecycle = { new: 0, returning: 0, loyal: 0 };
+    for (const visits of Object.values(customerVisits)) {
+      if (visits >= goal) lifecycle.loyal++;
+      else if (visits > 1) lifecycle.returning++;
+      else lifecycle.new++;
     }
 
     // Top 5 customers by total visits
@@ -291,6 +374,14 @@ export async function GET(req: Request) {
       avg_visits_per_customer: avgVisitsPerCustomer,
       lapsed_count: lapsedCount,
       total_unique_customers: totalUniqueCustomers,
+      // New metrics
+      at_risk_count: atRiskCount,
+      churned_count: churnedCount,
+      avg_lifetime_days: avgLifetimeDays,
+      loyal_count: loyalCount,
+      redemption_rate: redemptionRate,
+      period_vs_previous: periodVsPrevious,
+      lifecycle,
     });
   } catch (err: any) {
     return NextResponse.json(
