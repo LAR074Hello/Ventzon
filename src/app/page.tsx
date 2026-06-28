@@ -153,7 +153,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
           {[
             { title: "Effortless Check-ins", desc: "Customers scan, enter their contact, and they're in. Zero friction at the register." },
-            { title: "Real-time Insights", desc: "See who visits, how often, and what keeps them coming back." },
+            { title: "Real-time Insights", desc: "See who visits, how often, who's at risk of leaving — and compare this month to last." },
             { title: "Built for Local", desc: "Designed from the ground up for independent businesses." },
           ].map((item) => (
             <div key={item.title} className="text-center">
@@ -455,7 +455,7 @@ export default function Home() {
               },
               {
                 title: "Track everything",
-                desc: "Foot traffic analytics — busiest days, peak hours, new vs. returning, and who's at risk of lapsing.",
+                desc: "Busiest days, peak hours, new vs. returning, customer lifetime, redemption rate, and who's at risk of churning — all in one dashboard.",
               },
               {
                 title: "Simple pricing",
@@ -493,15 +493,15 @@ export default function Home() {
                 Know your foot traffic.
               </h2>
               <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
-                Your dashboard shows you exactly what&rsquo;s happening in your shop &mdash; not just totals, but patterns. See which days bring the most customers, what time of day is busiest, how many are first-timers vs. regulars, and who&rsquo;s at risk of lapsing.
+                Your dashboard shows you exactly what&rsquo;s happening in your shop &mdash; not just totals, but trends. Compare this period to last, see which customers are loyal vs. at risk, and understand your foot traffic at a glance.
               </p>
               <ul className="mt-8 space-y-3">
                 {[
-                  "Busiest days of the week",
-                  "Peak time of day — morning, afternoon, evening",
-                  "New vs. returning customers",
-                  "Lapsed customers (no visit in 30+ days)",
-                  "Retention rate and avg visits per customer",
+                  "Period-over-period comparison — ↑18% vs last month",
+                  "Customer lifecycle: new → returning → loyal",
+                  "At-risk, lapsed, and churned customer breakdown",
+                  "Avg customer lifetime and redemption rate",
+                  "Busiest days and peak hours of the day",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3 text-[13px] font-light text-[#888]">
                     <span className="h-1 w-1 shrink-0 rounded-full bg-[#444]" />
@@ -537,29 +537,56 @@ export default function Home() {
                 {/* Stat cards row */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: "CHECK-INS", value: "1,247" },
-                    { label: "RETENTION", value: "68%" },
-                    { label: "LAPSED", value: "14" },
-                  ].map(({ label, value }) => (
+                    { label: "CHECK-INS", value: "1,247", change: "↑18%", up: true },
+                    { label: "RETENTION", value: "68%", change: null, up: true },
+                    { label: "REDEMPTION", value: "12.5%", change: null, up: true },
+                  ].map(({ label, value, change, up }) => (
                     <div key={label} className="rounded-xl border border-[#1a1a1a] px-3 py-3">
                       <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
-                      <p className="mt-1.5 text-xl font-extralight text-white">{value}</p>
+                      <p className="mt-1.5 text-xl font-extralight text-white">
+                        {value}
+                        {change && <span className="ml-1 text-[10px] text-emerald-500">{change}</span>}
+                      </p>
                     </div>
                   ))}
                 </div>
 
-                {/* New vs returning */}
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "NEW CUSTOMERS", value: "43", sub: "First visit this month" },
-                    { label: "RETURNING", value: "89", sub: "Repeat visitors" },
-                  ].map(({ label, value, sub }) => (
-                    <div key={label} className="rounded-xl border border-[#1a1a1a] px-3 py-3">
-                      <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
-                      <p className="mt-1 text-xl font-extralight text-white">{value}</p>
-                      <p className="mt-0.5 text-[9px] font-light text-[#333]">{sub}</p>
-                    </div>
-                  ))}
+                {/* Customer lifecycle */}
+                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
+                  <p className="mb-3 text-[9px] font-light tracking-[0.15em] text-[#444]">CUSTOMER LIFECYCLE</p>
+                  <div className="space-y-2">
+                    {[
+                      { label: "Loyal", count: 31, pct: 55, color: "#ededed" },
+                      { label: "Returning", count: 11, pct: 20, color: "#888" },
+                      { label: "New", count: 14, pct: 25, color: "#555" },
+                    ].map(({ label, count, pct, color }) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <span className="w-14 text-[9px] font-light" style={{ color }}>{label}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-[#1a1a1a] overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
+                        </div>
+                        <span className="text-[9px] font-light text-[#444]">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Customer health */}
+                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
+                  <p className="mb-3 text-[9px] font-light tracking-[0.15em] text-[#444]">CUSTOMER HEALTH</p>
+                  <div className="space-y-2">
+                    {[
+                      { label: "Active", value: "32", color: "#ededed" },
+                      { label: "At risk", value: "9", color: "#eab308" },
+                      { label: "Lapsed", value: "7", color: "#f97316" },
+                      { label: "Churned", value: "4", color: "#ef4444" },
+                    ].map(({ label, value, color }) => (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className="text-[9px] font-light" style={{ color }}>{label}</span>
+                        <span className="text-[9px] font-light" style={{ color }}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Busiest days mini bar chart */}
@@ -570,43 +597,12 @@ export default function Home() {
                   </div>
                   <div className="flex items-end gap-1.5 h-10">
                     {[
-                      { d: "M", h: 45 },
-                      { d: "T", h: 60 },
-                      { d: "W", h: 55 },
-                      { d: "T", h: 70 },
-                      { d: "F", h: 100 },
-                      { d: "S", h: 85 },
-                      { d: "S", h: 35 },
+                      { d: "M", h: 45 }, { d: "T", h: 60 }, { d: "W", h: 55 },
+                      { d: "T", h: 70 }, { d: "F", h: 100 }, { d: "S", h: 85 }, { d: "S", h: 35 },
                     ].map(({ d, h }, i) => (
                       <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                        <div
-                          className={`w-full rounded-sm transition-all ${h === 100 ? "bg-[#ededed]" : "bg-[#2a2a2a]"}`}
-                          style={{ height: `${h}%` }}
-                        />
+                        <div className={`w-full rounded-sm ${h === 100 ? "bg-[#ededed]" : "bg-[#2a2a2a]"}`} style={{ height: `${h}%` }} />
                         <span className="text-[8px] font-light text-[#444]">{d}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Time of day blocks */}
-                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">TIME OF DAY</p>
-                    <span className="rounded-full border border-[#222] px-2 py-0.5 text-[9px] font-light text-[#666]">Peak: Afternoon</span>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { label: "Morning", pct: 28 },
-                      { label: "Afternoon", pct: 100 },
-                      { label: "Evening", pct: 55 },
-                      { label: "Night", pct: 8 },
-                    ].map(({ label, pct }) => (
-                      <div key={label} className="flex items-center gap-2">
-                        <span className="w-16 text-[9px] font-light text-[#555]">{label}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-[#1a1a1a] overflow-hidden">
-                          <div className={`h-full rounded-full ${pct === 100 ? "bg-[#ededed]" : "bg-[#333]"}`} style={{ width: `${pct}%` }} />
-                        </div>
                       </div>
                     ))}
                   </div>
