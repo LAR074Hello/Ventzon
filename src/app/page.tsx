@@ -119,7 +119,7 @@ export default function Home() {
           </h1>
 
           <p className="animate-fade-in anim-delay-600 mt-5 text-[13px] font-light tracking-[0.3em] text-white/70 opacity-0">
-            Unbridled Loyalty
+            Know Your Customers
           </p>
 
           <div className="animate-fade-in-up anim-delay-1000 mt-16 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
@@ -152,9 +152,9 @@ export default function Home() {
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
           {[
-            { title: "Effortless Check-ins", desc: "Customers scan, enter their contact, and they're in. Zero friction at the register." },
-            { title: "Real-time Insights", desc: "See who visits, how often, who's at risk of leaving — and compare this month to last." },
-            { title: "Built for Local", desc: "Designed from the ground up for independent businesses." },
+            { title: "Customer Intelligence", desc: "Understand who your customers are, when they come back, and who's about to stop." },
+            { title: "Delivered as Loyalty", desc: "Customers scan to earn rewards. You get rich behavioral data — without them thinking twice." },
+            { title: "Built for Local", desc: "No enterprise contract. No data team required. Just answers." },
           ].map((item) => (
             <div key={item.title} className="text-center">
               <h3 className="text-lg font-extralight tracking-[0.15em] text-[#ededed]">
@@ -179,7 +179,7 @@ export default function Home() {
               HOW IT WORKS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              Three steps. Five minutes.
+              A loyalty program on the surface.<br className="hidden sm:block" />A data engine underneath.
             </h2>
           </ScrollReveal>
 
@@ -204,9 +204,9 @@ export default function Home() {
                   Print your QR code
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  Sign up, name your shop, set your reward. Print the loyalty
-                  card and place it near your register.
-                  Takes&nbsp;under&nbsp;five&nbsp;minutes.
+                  Sign up, name your shop, set your reward. Print the QR card
+                  and place it near your register. Takes under five minutes —
+                  and from that moment, every visit becomes a data point.
                 </p>
               </ScrollReveal>
             </div>
@@ -230,8 +230,9 @@ export default function Home() {
                   Customers check in
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  They enter their phone number or email. One check-in per day
-                  keeps it honest and simple.
+                  They enter their phone or email to earn their next stamp.
+                  To them, it&rsquo;s a punch card. To you, it&rsquo;s a growing
+                  picture of exactly who walks through your door.
                 </p>
               </ScrollReveal>
             </div>
@@ -255,9 +256,10 @@ export default function Home() {
                   They earn rewards via the app
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  After enough visits they unlock their reward in the app.
-                  Push notifications keep them engaged. You set the goal,
-                  you set the offer. It&rsquo;s that simple.
+                  After enough visits they unlock their reward. Push
+                  notifications bring them back. And your dashboard tells
+                  you who your loyal customers are, who&rsquo;s drifting, and
+                  what&rsquo;s actually working.
                 </p>
               </ScrollReveal>
             </div>
@@ -429,9 +431,7 @@ export default function Home() {
               WHY VENTZON
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              Everything you need.
-              <br className="hidden sm:block" />
-              Nothing you don&rsquo;t.
+              Built to learn.<br className="hidden sm:block" />Designed to look simple.
             </h2>
           </ScrollReveal>
 
@@ -487,13 +487,13 @@ export default function Home() {
             {/* Left — Text */}
             <ScrollReveal>
               <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-                ANALYTICS
+                CUSTOMER INTELLIGENCE
               </p>
               <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-                Know your foot traffic.
+                The loyalty card is the door.<br />The analytics is the point.
               </h2>
               <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
-                Your dashboard shows you exactly what&rsquo;s happening in your shop &mdash; not just totals, but trends. Compare this period to last, see which customers are loyal vs. at risk, and understand your foot traffic at a glance.
+                Every check-in builds a clearer picture of your customer base. Who comes back, who&rsquo;s fading, how this month compares to last. Ventzon turns foot traffic into intelligence &mdash; automatically, in the background, every day.
               </p>
               <ul className="mt-8 space-y-3">
                 {[
