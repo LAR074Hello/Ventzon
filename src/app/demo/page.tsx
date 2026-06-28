@@ -58,6 +58,13 @@ const MOCK_ANALYTICS = {
   avg_visits_per_customer: 4.8,
   lapsed_count: 7,
   total_unique_customers: 56,
+  at_risk_count: 9,
+  churned_count: 4,
+  avg_lifetime_days: 38,
+  loyal_count: 31,
+  redemption_rate: 12.5,
+  period_vs_previous: { checkins_pct_change: 18, customers_pct_change: 7 },
+  lifecycle: { new: 14, returning: 11, loyal: 31 },
 };
 
 /* ── Mock data ── */
