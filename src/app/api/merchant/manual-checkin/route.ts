@@ -177,7 +177,7 @@ export async function POST(req: Request) {
 // In stamps mode a unique (shop,customer,date) index may reject a duplicate;
 // that's fine and expected.
 async function recordCheckin(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   shopSlug: string,
   customerId: string,
   date: string,
@@ -201,7 +201,7 @@ async function recordCheckin(
 }
 
 async function recordReward(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   shopSlug: string,
   customerId: string,
   date: string
