@@ -73,7 +73,15 @@ const jsonLd = {
           "name": "How do I set up Ventzon for my business?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sign up at ventzon.com, create your shop, set your reward goal, and print your QR code. The whole process takes about 5 minutes."
+            "text": "Sign up at ventzon.com, create your shop, choose a stamp card or a points program, set your reward goal, and print your QR code. The whole process takes about 5 minutes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Ventzon do stamp cards or points?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both. You can run a classic stamp card (a reward after N visits) or a points program where each visit earns points toward a larger reward goal — with your own earn rate. Either way, customers check themselves in by scanning a QR code and entering their phone or email. There's no cashier step and no dollar amount to enter."
           }
         }
       ]
@@ -204,9 +212,10 @@ export default function Home() {
                   Print your QR code
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  Sign up, name your shop, set your reward. Print the QR card
-                  and place it near your register. Takes under five minutes —
-                  and from that moment, every visit becomes a data point.
+                  Sign up, name your shop, and pick your reward — a classic
+                  stamp card or a points program. Print the QR card and place it
+                  near your register. Takes under five minutes — and from that
+                  moment, every visit becomes a data point.
                 </p>
               </ScrollReveal>
             </div>
@@ -450,8 +459,8 @@ export default function Home() {
                 desc: "Rewards and milestones are delivered instantly via push. No algorithm, no noise.",
               },
               {
-                title: "One check-in per day",
-                desc: "Built-in fraud protection. Each customer checks in once every 24 hours.",
+                title: "Stamps or points",
+                desc: "Run a classic punch card, or a points program with your own earn rate and reward goal. Both are self check-in — no cashier, no dollar entry.",
               },
               {
                 title: "Track everything",
