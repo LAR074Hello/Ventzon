@@ -51,6 +51,14 @@ type AnalyticsResponse = {
   redemption_rate: number | null;
   period_vs_previous: { checkins_pct_change: number | null; customers_pct_change: number | null };
   lifecycle: { new: number; returning: number; loyal: number };
+  reward_mode?: "stamps" | "points";
+  revenue?: {
+    period_revenue: number;
+    avg_ticket: number | null;
+    transactions: number;
+    lifetime_revenue: number;
+    revenue_per_customer: number | null;
+  } | null;
 };
 
 type Period = {
@@ -209,6 +217,9 @@ export default function MerchantAnalytics({
   const redemptionRate = data?.redemption_rate ?? null;
   const periodVsPrevious = data?.period_vs_previous ?? { checkins_pct_change: null, customers_pct_change: null };
   const lifecycle = data?.lifecycle ?? { new: 0, returning: 0, loyal: 0 };
+  const revenue = data?.revenue ?? null;
+  const money = (n: number | null) =>
+    n === null || n === undefined ? "—" : `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 
   // Peak day
   const peakDay = dayOfWeek.length
@@ -257,6 +268,43 @@ export default function MerchantAnalytics({
       {error && (
         <div className="mt-6 rounded-2xl border border-red-900/30 p-4 text-[13px] font-light text-red-400">
           {error}
+        </div>
+      )}
+
+      {/* ── Revenue (points mode only) ── */}
+      {revenue && (
+        <div className="mt-8">
+          <SectionLabel>REVENUE</SectionLabel>
+          <div className="mt-3 grid gap-4 sm:grid-cols-4">
+            <div className="rounded-2xl border border-emerald-900/20 bg-emerald-950/5 px-6 py-5">
+              <SectionLabel>REVENUE (PERIOD)</SectionLabel>
+              <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+                {loading ? "..." : money(revenue.period_revenue)}
+              </p>
+              <p className="mt-1 text-[11px] font-light text-[#444]">{revenue.transactions} transactions</p>
+            </div>
+            <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5">
+              <SectionLabel>AVG TICKET</SectionLabel>
+              <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+                {loading ? "..." : money(revenue.avg_ticket)}
+              </p>
+              <p className="mt-1 text-[11px] font-light text-[#444]">Per transaction</p>
+            </div>
+            <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5">
+              <SectionLabel>REVENUE / CUSTOMER</SectionLabel>
+              <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+                {loading ? "..." : money(revenue.revenue_per_customer)}
+              </p>
+              <p className="mt-1 text-[11px] font-light text-[#444]">Lifetime average</p>
+            </div>
+            <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5">
+              <SectionLabel>LIFETIME REVENUE</SectionLabel>
+              <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+                {loading ? "..." : money(revenue.lifetime_revenue)}
+              </p>
+              <p className="mt-1 text-[11px] font-light text-[#444]">All tracked spend</p>
+            </div>
+          </div>
         </div>
       )}
 

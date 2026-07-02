@@ -29,6 +29,8 @@ type ShopSettings = {
   reward_goal: number | null;
   reward_expires_days: number | null;
   bonus_days: number[] | null;
+  reward_mode?: "stamps" | "points" | null;
+  points_per_dollar?: number | null;
 };
 
 /* ------------------------------------------------------------------ */
@@ -259,9 +261,14 @@ function MerchantShopPage() {
   const [registerPinDraft, setRegisterPinDraft] = useState("");
   const [registerPinSet, setRegisterPinSet] = useState(false); // whether DB has a PIN
 
+  // Reward mode (stamps vs points)
+  const [rewardModeDraft, setRewardModeDraft] = useState<"stamps" | "points">("stamps");
+  const [pointsPerDollarDraft, setPointsPerDollarDraft] = useState<number>(1);
+
   // Manual check-in modal
   const [showManualCheckin, setShowManualCheckin] = useState(false);
   const [manualContact, setManualContact] = useState("");
+  const [manualAmount, setManualAmount] = useState("");
   const [manualLoading, setManualLoading] = useState(false);
   const [manualResult, setManualResult] = useState<any>(null);
   const [manualError, setManualError] = useState("");
@@ -426,12 +433,18 @@ function MerchantShopPage() {
       setAddressDraft(String((s as any)?.address ?? ""));
       setRewardExpiresDaysDraft(s?.reward_expires_days ?? "");
       setBonusDaysDraft(Array.isArray(s?.bonus_days) ? s.bonus_days : []);
-      // Load register_pin status from authenticated endpoint
+      // Load register_pin status + reward mode from authenticated endpoint
       try {
         const pinRes = await fetch(`/api/merchant/shop-settings?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
         if (pinRes.ok) {
           const pinJson = await pinRes.json();
-          setRegisterPinSet(!!(pinJson.settings as any)?.register_pin);
+          const ms = (pinJson.settings ?? {}) as any;
+          setRegisterPinSet(!!ms?.register_pin);
+          const mode = ms?.reward_mode === "points" ? "points" : "stamps";
+          setRewardModeDraft(mode);
+          setPointsPerDollarDraft(Number.isFinite(Number(ms?.points_per_dollar)) ? Number(ms.points_per_dollar) : 1);
+          // Merge into settings so the rest of the UI can label correctly
+          setSettings((prev) => (prev ? { ...prev, reward_mode: mode, points_per_dollar: Number(ms?.points_per_dollar ?? 1) } : prev));
         }
       } catch { /* non-fatal */ }
     } catch (e: any) {
@@ -444,10 +457,12 @@ function MerchantShopPage() {
   async function saveShopSettings() {
     if (!shopSlug) return;
 
-    // Check if deal_title or reward_goal changed — warn if customers have stamps in progress
+    // Check if deal_title, reward_goal, or reward mode changed — warn if
+    // customers have progress that the change would invalidate.
     const dealChanged =
       dealTitleDraft.trim() !== (settings?.deal_title ?? "") ||
-      rewardGoalDraft !== (settings?.reward_goal ?? 5);
+      rewardGoalDraft !== (settings?.reward_goal ?? 5) ||
+      rewardModeDraft !== (settings?.reward_mode ?? "stamps");
 
     if (dealChanged && !dealChangeWarning) {
       const affectedCount = customersLoaded
@@ -476,6 +491,8 @@ function MerchantShopPage() {
           address: addressDraft.trim() || null,
           reward_expires_days: rewardExpiresDaysDraft === "" ? null : Number(rewardExpiresDaysDraft),
           bonus_days: bonusDaysDraft,
+          reward_mode: rewardModeDraft,
+          points_per_dollar: pointsPerDollarDraft,
           ...(registerPinDraft !== "" ? { register_pin: registerPinDraft } : {}),
         }),
       });
@@ -613,13 +630,18 @@ function MerchantShopPage() {
       const res = await fetch("/api/merchant/manual-checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, contact: manualContact.trim() }),
+        body: JSON.stringify({
+          shop_slug: shopSlug,
+          contact: manualContact.trim(),
+          ...(rewardModeDraft === "points" ? { amount: Number(manualAmount) } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) { setManualError(json.error ?? "Failed"); }
       else {
         setManualResult(json);
         setManualContact("");
+        setManualAmount("");
         // Refresh customer list if open
         if (customersLoaded) loadCustomers(1);
       }
@@ -910,9 +932,10 @@ function MerchantShopPage() {
     if (!dealChangeWarning) return;
     const dealUnchanged =
       dealTitleDraft.trim() === (settings?.deal_title ?? "") &&
-      rewardGoalDraft === (settings?.reward_goal ?? 5);
+      rewardGoalDraft === (settings?.reward_goal ?? 5) &&
+      rewardModeDraft === (settings?.reward_mode ?? "stamps");
     if (dealUnchanged) setDealChangeWarning(null);
-  }, [dealTitleDraft, rewardGoalDraft, settings, dealChangeWarning]);
+  }, [dealTitleDraft, rewardGoalDraft, rewardModeDraft, settings, dealChangeWarning]);
 
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
@@ -1103,7 +1126,9 @@ function MerchantShopPage() {
                   <div className="mt-4 text-5xl font-extralight tracking-tight text-white">
                     {settingsLoading ? "…" : (settings?.reward_goal ?? rewardGoalDraft)}
                   </div>
-                  <p className="mt-3 text-[12px] font-light text-[#444]">Visits to earn reward</p>
+                  <p className="mt-3 text-[12px] font-light text-[#444]">
+                    {rewardModeDraft === "points" ? "Points to earn reward" : "Visits to earn reward"}
+                  </p>
                 </div>
               </div>
 
@@ -1361,20 +1386,31 @@ function MerchantShopPage() {
             {showManualCheckin && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }}>
                 <div className="w-full max-w-md rounded-2xl border border-[#1a1a1a] bg-[#080808] p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
-                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">MANUAL STAMP</p>
-                  <p className="mt-2 text-[18px] font-extralight text-[#ededed]">Add a stamp</p>
-                  <p className="mt-1 text-[13px] font-light text-[#444]">Enter a customer's phone number or email to add a stamp manually.</p>
+                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">{rewardModeDraft === "points" ? "MANUAL POINTS" : "MANUAL STAMP"}</p>
+                  <p className="mt-2 text-[18px] font-extralight text-[#ededed]">{rewardModeDraft === "points" ? "Add points" : "Add a stamp"}</p>
+                  <p className="mt-1 text-[13px] font-light text-[#444]">
+                    {rewardModeDraft === "points"
+                      ? "Enter the customer's phone or email and the purchase amount."
+                      : "Enter a customer's phone number or email to add a stamp manually."}
+                  </p>
 
                   {manualResult ? (
                     <div className="mt-6 rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-5 py-4">
                       <p className="text-[14px] font-light text-emerald-400">
-                        {manualResult.status === "reward" ? "Reward earned." : "Stamp added."}
+                        {manualResult.status === "reward"
+                          ? "Reward earned."
+                          : manualResult.unit === "points"
+                          ? `+${manualResult.earned} points added.`
+                          : "Stamp added."}
                       </p>
                       <p className="mt-1 text-[12px] font-light text-[#555]">
-                        {manualResult.new_customer ? "New customer · " : ""}{manualResult.visits} / {manualResult.goal} stamps
+                        {manualResult.new_customer ? "New customer · " : ""}
+                        {manualResult.unit === "points"
+                          ? `${manualResult.visits} / ${manualResult.goal} points`
+                          : `${manualResult.visits} / ${manualResult.goal} stamps`}
                         {manualResult.status !== "reward" && ` · ${manualResult.remaining} to go`}
                       </p>
-                      <button onClick={() => setManualResult(null)} className="mt-4 text-[12px] font-light text-[#555] hover:text-[#ededed]">
+                      <button onClick={() => { setManualResult(null); setManualAmount(""); }} className="mt-4 text-[12px] font-light text-[#555] hover:text-[#ededed]">
                         Add another →
                       </button>
                     </div>
@@ -1387,14 +1423,28 @@ function MerchantShopPage() {
                         placeholder="Phone (e.g. 5551234567) or email"
                         className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
                       />
+                      {rewardModeDraft === "points" && (
+                        <div className="flex items-center gap-2 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 focus-within:border-[#333]">
+                          <span className="text-[15px] font-light text-[#555]">$</span>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={manualAmount}
+                            onChange={e => setManualAmount(e.target.value)}
+                            placeholder="Purchase amount"
+                            className="w-full bg-transparent py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333]"
+                          />
+                        </div>
+                      )}
                       {manualError && (
                         <p className="text-[12px] font-light text-red-400">{manualError}</p>
                       )}
                       <div className="flex gap-3">
-                        <button type="submit" disabled={manualLoading || !manualContact.trim()} className="flex-1 rounded-xl border border-[#ededed] py-3 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40">
-                          {manualLoading ? "Adding…" : "Add stamp"}
+                        <button type="submit" disabled={manualLoading || !manualContact.trim() || (rewardModeDraft === "points" && !manualAmount.trim())} className="flex-1 rounded-xl border border-[#ededed] py-3 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40">
+                          {manualLoading ? "Adding…" : rewardModeDraft === "points" ? "Add points" : "Add stamp"}
                         </button>
-                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }} className="rounded-xl border border-[#1a1a1a] px-5 py-3 text-[12px] font-light text-[#555] hover:border-[#333]">
+                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); setManualAmount(""); }} className="rounded-xl border border-[#1a1a1a] px-5 py-3 text-[12px] font-light text-[#555] hover:border-[#333]">
                           Cancel
                         </button>
                       </div>
@@ -1929,22 +1979,95 @@ function MerchantShopPage() {
                       </p>
                     </div>
 
+                    {/* Reward mode: stamps vs points */}
                     <div>
-                      <FieldLabel>VISITS TO EARN REWARD</FieldLabel>
-                      <div className="mt-2 flex flex-wrap items-center gap-3">
-                        <select
-                          value={rewardGoalDraft}
-                          onChange={(e) => setRewardGoalDraft(Number(e.target.value))}
-                          disabled={!paid}
-                          className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 focus:border-[#333] disabled:opacity-40"
-                        >
-                          {Array.from({ length: 30 }, (_, i) => i + 2).map((n) => (
-                            <option key={n} value={n}>{n} visits</option>
-                          ))}
-                        </select>
+                      <FieldLabel>REWARD TYPE</FieldLabel>
+                      <div className="mt-2 flex gap-2">
+                        {([
+                          { key: "stamps", label: "Stamps", sub: "Earn per visit" },
+                          { key: "points", label: "Points", sub: "Earn per dollar" },
+                        ] as const).map((opt) => {
+                          const active = rewardModeDraft === opt.key;
+                          return (
+                            <button
+                              key={opt.key}
+                              type="button"
+                              disabled={!paid}
+                              onClick={() => {
+                                setRewardModeDraft(opt.key);
+                                // Give the goal a sensible default when switching modes
+                                if (opt.key === "points" && rewardGoalDraft < 50) setRewardGoalDraft(100);
+                                if (opt.key === "stamps" && rewardGoalDraft > 31) setRewardGoalDraft(8);
+                              }}
+                              className={`flex-1 rounded-xl border px-4 py-3 text-left transition-all duration-300 disabled:opacity-40 ${
+                                active ? "border-[#ededed] bg-[#ededed]/5" : "border-[#1a1a1a] hover:border-[#333]"
+                              }`}
+                            >
+                              <span className={`block text-[13px] font-light ${active ? "text-[#ededed]" : "text-[#888]"}`}>{opt.label}</span>
+                              <span className="mt-0.5 block text-[11px] font-light text-[#444]">{opt.sub}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                       <p className="mt-2 text-[11px] font-light text-[#333]">
-                        Coffee shops: 5–10 visits. Salons: 2–5.
+                        Stamps reward how often people visit. Points reward how much they spend — and unlock revenue analytics.
+                      </p>
+                    </div>
+
+                    {rewardModeDraft === "points" && (
+                      <div>
+                        <FieldLabel>POINTS PER DOLLAR</FieldLabel>
+                        <div className="mt-2 flex items-center gap-3">
+                          <input
+                            type="number"
+                            min={0.1}
+                            max={100}
+                            step={0.5}
+                            value={pointsPerDollarDraft}
+                            onChange={(e) => setPointsPerDollarDraft(Number(e.target.value) || 1)}
+                            disabled={!paid}
+                            className="w-28 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
+                          />
+                          <span className="text-[12px] font-light text-[#444]">points per $1 spent</span>
+                        </div>
+                        <p className="mt-2 text-[11px] font-light text-[#333]">
+                          Example: at {pointsPerDollarDraft} pt/$, a ${(rewardGoalDraft / (pointsPerDollarDraft || 1)).toFixed(0)} purchase earns a reward.
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <FieldLabel>{rewardModeDraft === "points" ? "POINTS TO EARN REWARD" : "VISITS TO EARN REWARD"}</FieldLabel>
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        {rewardModeDraft === "points" ? (
+                          <input
+                            type="number"
+                            min={10}
+                            max={100000}
+                            step={10}
+                            value={rewardGoalDraft}
+                            onChange={(e) => setRewardGoalDraft(Number(e.target.value) || 100)}
+                            disabled={!paid}
+                            className="w-36 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
+                          />
+                        ) : (
+                          <select
+                            value={rewardGoalDraft}
+                            onChange={(e) => setRewardGoalDraft(Number(e.target.value))}
+                            disabled={!paid}
+                            className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 focus:border-[#333] disabled:opacity-40"
+                          >
+                            {Array.from({ length: 30 }, (_, i) => i + 2).map((n) => (
+                              <option key={n} value={n}>{n} visits</option>
+                            ))}
+                          </select>
+                        )}
+                        {rewardModeDraft === "points" && <span className="text-[12px] font-light text-[#444]">points</span>}
+                      </div>
+                      <p className="mt-2 text-[11px] font-light text-[#333]">
+                        {rewardModeDraft === "points"
+                          ? "Common: 100 points = one reward."
+                          : "Coffee shops: 5–10 visits. Salons: 2–5."}
                       </p>
                     </div>
 

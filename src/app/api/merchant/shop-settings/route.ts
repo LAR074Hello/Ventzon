@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabase
       .from("shop_settings")
-      .select("shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin")
+      .select("shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_dollar")
       .eq("shop_slug", shop_slug)
       .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,6 +53,7 @@ export async function GET(req: Request) {
 
 const MIN_GOAL = 2;
 const MAX_GOAL = 31;
+const MAX_POINTS_GOAL = 100000;
 
 function clampStr(v: unknown, maxLen: number) {
   const s = String(v ?? "").trim();
@@ -136,17 +137,60 @@ export async function PATCH(req: Request) {
     const bonus_days =
       bonus_days_raw === undefined ? undefined : Array.isArray(bonus_days_raw) ? bonus_days_raw : null;
 
+    // Reward mode: 'stamps' | 'points'
+    const reward_mode_raw = body.reward_mode;
+    const reward_mode =
+      reward_mode_raw === undefined
+        ? undefined
+        : reward_mode_raw === "points"
+        ? "points"
+        : "stamps";
+
+    // Points earned per dollar spent (points mode)
+    const points_per_dollar_raw = body.points_per_dollar;
+    const points_per_dollar =
+      points_per_dollar_raw === undefined || points_per_dollar_raw === null || points_per_dollar_raw === ""
+        ? undefined
+        : Number(points_per_dollar_raw);
+
     // Build update payload with only fields the client sent.
     const update: Record<string, any> = {};
 
+    // In points mode the goal is a points threshold (e.g. 100), so allow a
+    // much larger ceiling. In stamps mode keep the punch-card range. When the
+    // request doesn't include reward_mode, fall back to the shop's stored mode
+    // so a points shop can change its goal without re-sending the mode.
+    let effectiveMode = reward_mode;
+    if (effectiveMode === undefined && reward_goal !== undefined) {
+      const { data: cur } = await supabaseCheck
+        .from("shop_settings")
+        .select("reward_mode")
+        .eq("shop_slug", shop_slug)
+        .maybeSingle();
+      effectiveMode = (cur as any)?.reward_mode === "points" ? "points" : "stamps";
+    }
     if (reward_goal !== undefined) {
-      if (!Number.isFinite(reward_goal) || reward_goal < MIN_GOAL || reward_goal > MAX_GOAL) {
+      const isPoints = effectiveMode === "points";
+      const minGoal = MIN_GOAL;
+      const maxGoal = isPoints ? MAX_POINTS_GOAL : MAX_GOAL;
+      if (!Number.isFinite(reward_goal) || reward_goal < minGoal || reward_goal > maxGoal) {
         return NextResponse.json(
-          { error: `reward_goal must be a number between ${MIN_GOAL} and ${MAX_GOAL}` },
+          { error: `reward_goal must be a number between ${minGoal} and ${maxGoal}` },
           { status: 400 }
         );
       }
-      update.reward_goal = reward_goal;
+      update.reward_goal = Math.round(reward_goal);
+    }
+
+    if (reward_mode !== undefined) update.reward_mode = reward_mode;
+    if (points_per_dollar !== undefined) {
+      if (!Number.isFinite(points_per_dollar) || points_per_dollar <= 0 || points_per_dollar > 100) {
+        return NextResponse.json(
+          { error: "points_per_dollar must be a number between 0 and 100" },
+          { status: 400 }
+        );
+      }
+      update.points_per_dollar = points_per_dollar;
     }
 
     // If these strings are present in the request, update them (even if empty string)
@@ -206,7 +250,7 @@ export async function PATCH(req: Request) {
       .update(update)
       .eq("shop_slug", shop_slug)
       .select(
-        "shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin"
+        "shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_dollar"
       )
       .single();
 

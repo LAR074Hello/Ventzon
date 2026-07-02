@@ -36,7 +36,7 @@ export async function GET() {
     const [{ data: settings }, { data: shops }] = await Promise.all([
       supabase
         .from("shop_settings")
-        .select("shop_slug, shop_name, deal_title, reward_goal")
+        .select("shop_slug, shop_name, deal_title, reward_goal, reward_mode")
         .in("shop_slug", slugs),
       supabase
         .from("shops")
@@ -55,6 +55,7 @@ export async function GET() {
       shop_name: settingsMap[c.shop_slug]?.shop_name ?? c.shop_slug,
       deal_title: settingsMap[c.shop_slug]?.deal_title ?? null,
       reward_goal: settingsMap[c.shop_slug]?.reward_goal ?? 5,
+      reward_mode: settingsMap[c.shop_slug]?.reward_mode === "points" ? "points" : "stamps",
       visits: c.visits ?? 0,
       last_checkin_date: c.last_checkin_date,
       logo_url: logoMap[c.shop_slug] ?? null,

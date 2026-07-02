@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { sendEmail, buildRewardEmail, buildAlmostThereEmail } from "@/lib/resend";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { sendPushToDeviceTokens } from "@/lib/push";
+import { normalizeMode, earnedForCheckin, applyReward } from "@/lib/reward";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,6 +72,10 @@ export async function POST(req: Request) {
     const phone = String(body?.phone ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
     const pin = String(body?.pin ?? "").trim();
+    // Optional dollar amount (points mode). Only trusted when a register PIN
+    // gate is used upstream; self-serve QR scans send no amount → 0 points.
+    const amountNum = Number(body?.amount ?? 0);
+    const amount = Number.isFinite(amountNum) && amountNum > 0 ? amountNum : 0;
 
     // Customer must provide either phone or email
     if (!shop_slug || (!phone && !email)) {
@@ -105,7 +110,7 @@ export async function POST(req: Request) {
     const { data: settings, error: settingsErr } = await supabase
       .from("shop_settings")
       .select(
-        "shop_slug, shop_name, deal_title, reward_goal, bonus_days"
+        "shop_slug, shop_name, deal_title, reward_goal, bonus_days, reward_mode, points_per_dollar"
       )
       .eq("shop_slug", shop_slug)
       .limit(1)
@@ -118,11 +123,13 @@ export async function POST(req: Request) {
     const shopName = settings?.shop_name || shop_slug;
     const dealTitle = settings?.deal_title || "your reward";
     const goal = Number(settings?.reward_goal ?? 5);
+    const mode = normalizeMode((settings as any)?.reward_mode);
+    const pointsPerDollar = Number((settings as any)?.points_per_dollar ?? 1);
 
     // Find or create customer (by phone or email)
     let findQuery = supabase
       .from("customers")
-      .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date, opted_out")
+      .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date, opted_out, total_spend")
       .eq("shop_slug", shop_slug);
 
     if (email) {
@@ -207,6 +214,7 @@ export async function POST(req: Request) {
       customer_id: customer.id,
       checkin_date: checkinDate,
       created_at: now.toISOString(),
+      amount: amount > 0 ? amount : null,
     });
 
     if (checkinInsertErr) {
@@ -236,19 +244,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: checkinInsertErr.message }, { status: 500 });
     }
 
-    // New check-in → increment visits (double on bonus days)
+    // New check-in → add to balance.
+    //   stamps: 1 (2 on bonus days), reset to 0 on reward
+    //   points: round(amount * rate), carry remainder on reward
     const currentVisits = Number(customer.visits ?? 0);
-    const stampBonus = isBonusDay ? 2 : 1;
-    const nextVisits = currentVisits + stampBonus;
+    const earned = earnedForCheckin({ mode, amount, pointsPerDollar, isBonusDay });
+    const rawBalance = currentVisits + earned;
+    const { newBalance, hitGoal } = applyReward({
+      mode,
+      currentBalance: currentVisits,
+      goal,
+      earned,
+    });
 
-    const hitGoal = nextVisits >= goal;
-
-    const newVisitsValue = hitGoal ? 0 : nextVisits;
+    // Values the message/response/push logic use for display.
+    const nextVisits = rawBalance;
+    const newVisitsValue = newBalance;
     const { data: updatedCustomer, error: updateErr } = await supabase
       .from("customers")
       .update({
         visits: newVisitsValue,
         last_checkin_date: today,
+        total_spend: Number((customer as any).total_spend ?? 0) + amount,
       })
       .eq("id", customer.id)
       .select("id, shop_slug, phone, email, visits, last_checkin_date")
@@ -273,7 +290,7 @@ export async function POST(req: Request) {
         await supabase.rpc("award_scan_points", {
           p_customer_id: customer.id,
           p_merchant_id: shopRow.id,
-          p_base_points: stampBonus,
+          p_base_points: earned,
           p_scan_id: scanId,
         });
       }
@@ -322,16 +339,26 @@ export async function POST(req: Request) {
       }
     }
 
+    // Balance to surface: stamps show a full card on reward (goal); points
+    // show the carried-over remainder.
+    const displayBalance = hitGoal
+      ? mode === "points"
+        ? newVisitsValue
+        : goal
+      : nextVisits;
+    const unit = mode === "points" ? "points" : "stamps";
+
     const vars = {
       shop_name: shopName,
       deal_title: dealTitle,
-      visits: hitGoal ? goal : nextVisits,
+      visits: displayBalance,
       goal,
-      remaining: hitGoal ? 0 : Math.max(goal - nextVisits, 0),
+      unit,
+      remaining: Math.max(goal - displayBalance, 0),
     };
 
     const rewardTpl = "You've earned your reward at {{shop_name}}. Show the app at the register to redeem: {{deal_title}}";
-    const progressTpl = "Checked in at {{shop_name}}. You're at {{visits}}/{{goal}} stamps. {{remaining}} more to go!";
+    const progressTpl = "Checked in at {{shop_name}}. You're at {{visits}}/{{goal}} {{unit}}. {{remaining}} more to go!";
 
     const message = hitGoal
       ? applyTemplate(rewardTpl, vars)
@@ -412,9 +439,12 @@ export async function POST(req: Request) {
       {
         ok: true,
         status: hitGoal ? "reward" : "progress",
-        visits: hitGoal ? goal : nextVisits,
+        visits: displayBalance,
         goal,
-        remaining: hitGoal ? 0 : Math.max(goal - nextVisits, 0),
+        mode,
+        unit,
+        earned,
+        remaining: Math.max(goal - displayBalance, 0),
         reset: hitGoal,
         message,
         customer: updatedCustomer,

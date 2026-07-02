@@ -14,6 +14,7 @@ type Membership = {
   shop_name: string;
   deal_title: string | null;
   reward_goal: number;
+  reward_mode?: "stamps" | "points";
   visits: number;
   logo_url: string | null;
 };
@@ -360,6 +361,8 @@ export default function ProfilePage() {
             <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
               {memberships.map((m, i) => {
                 const isReady = m.visits >= m.reward_goal;
+                const isPoints = m.reward_mode === "points";
+                const pct = m.reward_goal > 0 ? Math.min((m.visits / m.reward_goal) * 100, 100) : 0;
                 return (
                   <button
                     key={m.shop_slug}
@@ -375,19 +378,30 @@ export default function ProfilePage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium text-[#d0d0d0] truncate">{m.shop_name}</p>
-                      <div className="mt-1.5 flex gap-1">
-                        {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
+                      {isPoints ? (
+                        <div className="mt-2 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-[#1a1a1a]">
                           <div
-                            key={idx}
-                            className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#ededed]" : "bg-[#1a1a1a]"}`}
-                            style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
+                            className={`h-full rounded-full ${isReady ? "bg-yellow-400" : "bg-[#ededed]"}`}
+                            style={{ width: `${pct}%` }}
                           />
-                        ))}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="mt-1.5 flex gap-1">
+                          {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
+                            <div
+                              key={idx}
+                              className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#ededed]" : "bg-[#1a1a1a]"}`}
+                              style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {isReady && <span className="text-[10px] font-medium text-yellow-500">READY</span>}
-                      <span className="text-[12px] font-light text-[#555]">{m.visits}/{m.reward_goal}</span>
+                      <span className="text-[12px] font-light text-[#555]">
+                        {m.visits}/{m.reward_goal}{isPoints ? " pts" : ""}
+                      </span>
                       <ChevronRight className="h-3.5 w-3.5 text-[#333]" />
                     </div>
                   </button>
