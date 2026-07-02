@@ -30,7 +30,7 @@ type ShopSettings = {
   reward_expires_days: number | null;
   bonus_days: number[] | null;
   reward_mode?: "stamps" | "points" | null;
-  points_per_dollar?: number | null;
+  points_per_visit?: number | null;
 };
 
 /* ------------------------------------------------------------------ */
@@ -263,12 +263,11 @@ function MerchantShopPage() {
 
   // Reward mode (stamps vs points)
   const [rewardModeDraft, setRewardModeDraft] = useState<"stamps" | "points">("stamps");
-  const [pointsPerDollarDraft, setPointsPerDollarDraft] = useState<number>(1);
+  const [pointsPerVisitDraft, setPointsPerVisitDraft] = useState<number>(10);
 
   // Manual check-in modal
   const [showManualCheckin, setShowManualCheckin] = useState(false);
   const [manualContact, setManualContact] = useState("");
-  const [manualAmount, setManualAmount] = useState("");
   const [manualLoading, setManualLoading] = useState(false);
   const [manualResult, setManualResult] = useState<any>(null);
   const [manualError, setManualError] = useState("");
@@ -442,9 +441,9 @@ function MerchantShopPage() {
           setRegisterPinSet(!!ms?.register_pin);
           const mode = ms?.reward_mode === "points" ? "points" : "stamps";
           setRewardModeDraft(mode);
-          setPointsPerDollarDraft(Number.isFinite(Number(ms?.points_per_dollar)) ? Number(ms.points_per_dollar) : 1);
+          setPointsPerVisitDraft(Number.isFinite(Number(ms?.points_per_visit)) ? Number(ms.points_per_visit) : 10);
           // Merge into settings so the rest of the UI can label correctly
-          setSettings((prev) => (prev ? { ...prev, reward_mode: mode, points_per_dollar: Number(ms?.points_per_dollar ?? 1) } : prev));
+          setSettings((prev) => (prev ? { ...prev, reward_mode: mode, points_per_visit: Number(ms?.points_per_visit ?? 10) } : prev));
         }
       } catch { /* non-fatal */ }
     } catch (e: any) {
@@ -492,7 +491,7 @@ function MerchantShopPage() {
           reward_expires_days: rewardExpiresDaysDraft === "" ? null : Number(rewardExpiresDaysDraft),
           bonus_days: bonusDaysDraft,
           reward_mode: rewardModeDraft,
-          points_per_dollar: pointsPerDollarDraft,
+          points_per_visit: pointsPerVisitDraft,
           ...(registerPinDraft !== "" ? { register_pin: registerPinDraft } : {}),
         }),
       });
@@ -633,7 +632,6 @@ function MerchantShopPage() {
         body: JSON.stringify({
           shop_slug: shopSlug,
           contact: manualContact.trim(),
-          ...(rewardModeDraft === "points" ? { amount: Number(manualAmount) } : {}),
         }),
       });
       const json = await res.json();
@@ -641,7 +639,6 @@ function MerchantShopPage() {
       else {
         setManualResult(json);
         setManualContact("");
-        setManualAmount("");
         // Refresh customer list if open
         if (customersLoaded) loadCustomers(1);
       }
@@ -1390,7 +1387,7 @@ function MerchantShopPage() {
                   <p className="mt-2 text-[18px] font-extralight text-[#ededed]">{rewardModeDraft === "points" ? "Add points" : "Add a stamp"}</p>
                   <p className="mt-1 text-[13px] font-light text-[#444]">
                     {rewardModeDraft === "points"
-                      ? "Enter the customer's phone or email and the purchase amount."
+                      ? "Enter a customer's phone number or email to add points manually."
                       : "Enter a customer's phone number or email to add a stamp manually."}
                   </p>
 
@@ -1410,7 +1407,7 @@ function MerchantShopPage() {
                           : `${manualResult.visits} / ${manualResult.goal} stamps`}
                         {manualResult.status !== "reward" && ` · ${manualResult.remaining} to go`}
                       </p>
-                      <button onClick={() => { setManualResult(null); setManualAmount(""); }} className="mt-4 text-[12px] font-light text-[#555] hover:text-[#ededed]">
+                      <button onClick={() => setManualResult(null)} className="mt-4 text-[12px] font-light text-[#555] hover:text-[#ededed]">
                         Add another →
                       </button>
                     </div>
@@ -1423,28 +1420,14 @@ function MerchantShopPage() {
                         placeholder="Phone (e.g. 5551234567) or email"
                         className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
                       />
-                      {rewardModeDraft === "points" && (
-                        <div className="flex items-center gap-2 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 focus-within:border-[#333]">
-                          <span className="text-[15px] font-light text-[#555]">$</span>
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={manualAmount}
-                            onChange={e => setManualAmount(e.target.value)}
-                            placeholder="Purchase amount"
-                            className="w-full bg-transparent py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333]"
-                          />
-                        </div>
-                      )}
                       {manualError && (
                         <p className="text-[12px] font-light text-red-400">{manualError}</p>
                       )}
                       <div className="flex gap-3">
-                        <button type="submit" disabled={manualLoading || !manualContact.trim() || (rewardModeDraft === "points" && !manualAmount.trim())} className="flex-1 rounded-xl border border-[#ededed] py-3 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40">
+                        <button type="submit" disabled={manualLoading || !manualContact.trim()} className="flex-1 rounded-xl border border-[#ededed] py-3 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40">
                           {manualLoading ? "Adding…" : rewardModeDraft === "points" ? "Add points" : "Add stamp"}
                         </button>
-                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); setManualAmount(""); }} className="rounded-xl border border-[#1a1a1a] px-5 py-3 text-[12px] font-light text-[#555] hover:border-[#333]">
+                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }} className="rounded-xl border border-[#1a1a1a] px-5 py-3 text-[12px] font-light text-[#555] hover:border-[#333]">
                           Cancel
                         </button>
                       </div>
@@ -1984,8 +1967,8 @@ function MerchantShopPage() {
                       <FieldLabel>REWARD TYPE</FieldLabel>
                       <div className="mt-2 flex gap-2">
                         {([
-                          { key: "stamps", label: "Stamps", sub: "Earn per visit" },
-                          { key: "points", label: "Points", sub: "Earn per dollar" },
+                          { key: "stamps", label: "Stamps", sub: "1 per visit" },
+                          { key: "points", label: "Points", sub: "Set points per visit" },
                         ] as const).map((opt) => {
                           const active = rewardModeDraft === opt.key;
                           return (
@@ -2010,28 +1993,28 @@ function MerchantShopPage() {
                         })}
                       </div>
                       <p className="mt-2 text-[11px] font-light text-[#333]">
-                        Stamps reward how often people visit. Points reward how much they spend — and unlock revenue analytics.
+                        Both are self check-in — the customer scans and enters their phone. Points just let you set a custom earn rate and a bigger reward goal.
                       </p>
                     </div>
 
                     {rewardModeDraft === "points" && (
                       <div>
-                        <FieldLabel>POINTS PER DOLLAR</FieldLabel>
+                        <FieldLabel>POINTS PER VISIT</FieldLabel>
                         <div className="mt-2 flex items-center gap-3">
                           <input
                             type="number"
-                            min={0.1}
-                            max={100}
-                            step={0.5}
-                            value={pointsPerDollarDraft}
-                            onChange={(e) => setPointsPerDollarDraft(Number(e.target.value) || 1)}
+                            min={1}
+                            max={10000}
+                            step={1}
+                            value={pointsPerVisitDraft}
+                            onChange={(e) => setPointsPerVisitDraft(Number(e.target.value) || 10)}
                             disabled={!paid}
                             className="w-28 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
                           />
-                          <span className="text-[12px] font-light text-[#444]">points per $1 spent</span>
+                          <span className="text-[12px] font-light text-[#444]">points each check-in</span>
                         </div>
                         <p className="mt-2 text-[11px] font-light text-[#333]">
-                          Example: at {pointsPerDollarDraft} pt/$, a ${(rewardGoalDraft / (pointsPerDollarDraft || 1)).toFixed(0)} purchase earns a reward.
+                          At {pointsPerVisitDraft} pts/visit, a reward takes {Math.max(1, Math.ceil(rewardGoalDraft / (pointsPerVisitDraft || 1)))} visits.
                         </p>
                       </div>
                     )}

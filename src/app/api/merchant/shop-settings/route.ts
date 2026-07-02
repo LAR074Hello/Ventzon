@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabase
       .from("shop_settings")
-      .select("shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_dollar")
+      .select("shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_visit")
       .eq("shop_slug", shop_slug)
       .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -146,12 +146,12 @@ export async function PATCH(req: Request) {
         ? "points"
         : "stamps";
 
-    // Points earned per dollar spent (points mode)
-    const points_per_dollar_raw = body.points_per_dollar;
-    const points_per_dollar =
-      points_per_dollar_raw === undefined || points_per_dollar_raw === null || points_per_dollar_raw === ""
+    // Points earned per visit (points mode)
+    const points_per_visit_raw = body.points_per_visit;
+    const points_per_visit =
+      points_per_visit_raw === undefined || points_per_visit_raw === null || points_per_visit_raw === ""
         ? undefined
-        : Number(points_per_dollar_raw);
+        : Number(points_per_visit_raw);
 
     // Build update payload with only fields the client sent.
     const update: Record<string, any> = {};
@@ -183,14 +183,14 @@ export async function PATCH(req: Request) {
     }
 
     if (reward_mode !== undefined) update.reward_mode = reward_mode;
-    if (points_per_dollar !== undefined) {
-      if (!Number.isFinite(points_per_dollar) || points_per_dollar <= 0 || points_per_dollar > 100) {
+    if (points_per_visit !== undefined) {
+      if (!Number.isFinite(points_per_visit) || points_per_visit < 1 || points_per_visit > 10000) {
         return NextResponse.json(
-          { error: "points_per_dollar must be a number between 0 and 100" },
+          { error: "points_per_visit must be a number between 1 and 10000" },
           { status: 400 }
         );
       }
-      update.points_per_dollar = points_per_dollar;
+      update.points_per_visit = Math.round(points_per_visit);
     }
 
     // If these strings are present in the request, update them (even if empty string)
@@ -250,7 +250,7 @@ export async function PATCH(req: Request) {
       .update(update)
       .eq("shop_slug", shop_slug)
       .select(
-        "shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_dollar"
+        "shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_visit"
       )
       .single();
 

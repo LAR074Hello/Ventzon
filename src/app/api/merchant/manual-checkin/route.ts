@@ -14,7 +14,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const shopSlug = String(body.shop_slug ?? "").trim().toLowerCase();
     const contact = String(body.contact ?? "").trim().toLowerCase();
-    const amountRaw = body.amount;
 
     if (!shopSlug || !contact) {
       return NextResponse.json({ error: "Missing shop_slug or contact" }, { status: 400 });
@@ -29,24 +28,13 @@ export async function POST(req: Request) {
     // Get reward configuration
     const { data: settings } = await supabase
       .from("shop_settings")
-      .select("reward_goal, reward_mode, points_per_dollar")
+      .select("reward_goal, reward_mode, points_per_visit")
       .eq("shop_slug", shopSlug)
       .maybeSingle();
     const goal = Number(settings?.reward_goal ?? 5);
     const mode = normalizeMode(settings?.reward_mode);
-    const pointsPerDollar = Number(settings?.points_per_dollar ?? 1);
-
-    // Points mode requires a positive dollar amount
-    let amount = 0;
-    if (mode === "points") {
-      amount = Number(amountRaw);
-      if (!Number.isFinite(amount) || amount <= 0) {
-        return NextResponse.json(
-          { error: "Enter the purchase amount to award points." },
-          { status: 400 }
-        );
-      }
-    }
+    const pointsPerVisit = Number(settings?.points_per_visit ?? 10);
+    const unit = mode === "points" ? "points" : "stamps";
 
     // Detect phone vs email
     const isEmail = contact.includes("@");
@@ -66,27 +54,23 @@ export async function POST(req: Request) {
     }
 
     const today = new Date().toISOString().slice(0, 10);
-    const earned = earnedForCheckin({ mode, amount, pointsPerDollar, isBonusDay: false });
+    const earned = earnedForCheckin({ mode, pointsPerVisit, isBonusDay: false });
 
     // Find or create customer
     let query = supabase
       .from("customers")
-      .select("id, visits, last_checkin_date, total_spend")
+      .select("id, visits, last_checkin_date")
       .eq("shop_slug", shopSlug);
     if (email) query = query.eq("email", email);
     else query = query.eq("phone", phone!);
 
     const { data: existing } = await query.maybeSingle();
 
-    // Shared helper: label the balance for the response
-    const unit = mode === "points" ? "points" : "stamps";
-
     if (existing) {
-      // In stamps mode, enforce one stamp per day. In points mode a
-      // customer can make multiple purchases in a day, so allow it.
-      if (mode === "stamps" && existing.last_checkin_date === today) {
+      // One check-in per day (both modes)
+      if (existing.last_checkin_date === today) {
         return NextResponse.json({
-          error: "This customer already has a stamp for today.",
+          error: mode === "points" ? "This customer already checked in today." : "This customer already has a stamp for today.",
           visits: existing.visits,
           goal,
           mode,
@@ -103,16 +87,11 @@ export async function POST(req: Request) {
 
       const { error } = await supabase
         .from("customers")
-        .update({
-          visits: newBalance,
-          last_checkin_date: today,
-          total_spend: Number(existing.total_spend ?? 0) + amount,
-          last_seen_at: new Date().toISOString(),
-        })
+        .update({ visits: newBalance, last_checkin_date: today, last_seen_at: new Date().toISOString() })
         .eq("id", existing.id);
       if (error) throw error;
 
-      await recordCheckin(supabase, shopSlug, existing.id, today, amount);
+      await recordCheckin(supabase, shopSlug, existing.id, today);
       if (hitGoal) await recordReward(supabase, shopSlug, existing.id, today);
 
       return NextResponse.json({
@@ -128,12 +107,7 @@ export async function POST(req: Request) {
       });
     } else {
       // New customer
-      const { newBalance, hitGoal } = applyReward({
-        mode,
-        currentBalance: 0,
-        goal,
-        earned,
-      });
+      const { newBalance, hitGoal } = applyReward({ mode, currentBalance: 0, goal, earned });
 
       const { data: inserted, error } = await supabase
         .from("customers")
@@ -143,7 +117,6 @@ export async function POST(req: Request) {
           email: email ?? null,
           visits: newBalance,
           last_checkin_date: today,
-          total_spend: amount,
           first_seen_at: new Date().toISOString(),
           last_seen_at: new Date().toISOString(),
         })
@@ -152,7 +125,7 @@ export async function POST(req: Request) {
       if (error) throw error;
 
       if (inserted?.id) {
-        await recordCheckin(supabase, shopSlug, inserted.id, today, amount);
+        await recordCheckin(supabase, shopSlug, inserted.id, today);
         if (hitGoal) await recordReward(supabase, shopSlug, inserted.id, today);
       }
 
@@ -173,39 +146,22 @@ export async function POST(req: Request) {
   }
 }
 
-// Record a checkins row (non-fatal — do not block the stamp/point on failure).
-// In stamps mode a unique (shop,customer,date) index may reject a duplicate;
-// that's fine and expected.
-async function recordCheckin(
-  supabase: any,
-  shopSlug: string,
-  customerId: string,
-  date: string,
-  amount: number
-) {
-  // checkin_date stays a clean YYYY-MM-DD for analytics. A unique index on
-  // (customer_id, checkin_date) means only one foot-traffic row lands per day;
-  // additional same-day points purchases still accrue to the customer's
-  // balance and total_spend, so revenue is captured there.
+// Record a checkins row (non-fatal). A unique (customer_id, checkin_date)
+// index enforces one foot-traffic row per day.
+async function recordCheckin(supabase: any, shopSlug: string, customerId: string, date: string) {
   try {
     await supabase.from("checkins").insert({
       shop_slug: shopSlug,
       customer_id: customerId,
       checkin_date: date,
       created_at: new Date().toISOString(),
-      amount: amount > 0 ? amount : null,
     });
   } catch {
-    /* non-fatal — duplicate same-day row is expected in points mode */
+    /* non-fatal */
   }
 }
 
-async function recordReward(
-  supabase: any,
-  shopSlug: string,
-  customerId: string,
-  date: string
-) {
+async function recordReward(supabase: any, shopSlug: string, customerId: string, date: string) {
   try {
     await supabase.from("reward_events").insert({
       shop_slug: shopSlug,

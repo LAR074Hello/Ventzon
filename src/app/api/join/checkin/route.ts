@@ -72,10 +72,6 @@ export async function POST(req: Request) {
     const phone = String(body?.phone ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
     const pin = String(body?.pin ?? "").trim();
-    // Optional dollar amount (points mode). Only trusted when a register PIN
-    // gate is used upstream; self-serve QR scans send no amount → 0 points.
-    const amountNum = Number(body?.amount ?? 0);
-    const amount = Number.isFinite(amountNum) && amountNum > 0 ? amountNum : 0;
 
     // Customer must provide either phone or email
     if (!shop_slug || (!phone && !email)) {
@@ -110,7 +106,7 @@ export async function POST(req: Request) {
     const { data: settings, error: settingsErr } = await supabase
       .from("shop_settings")
       .select(
-        "shop_slug, shop_name, deal_title, reward_goal, bonus_days, reward_mode, points_per_dollar"
+        "shop_slug, shop_name, deal_title, reward_goal, bonus_days, reward_mode, points_per_visit"
       )
       .eq("shop_slug", shop_slug)
       .limit(1)
@@ -124,12 +120,12 @@ export async function POST(req: Request) {
     const dealTitle = settings?.deal_title || "your reward";
     const goal = Number(settings?.reward_goal ?? 5);
     const mode = normalizeMode((settings as any)?.reward_mode);
-    const pointsPerDollar = Number((settings as any)?.points_per_dollar ?? 1);
+    const pointsPerVisit = Number((settings as any)?.points_per_visit ?? 10);
 
     // Find or create customer (by phone or email)
     let findQuery = supabase
       .from("customers")
-      .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date, opted_out, total_spend")
+      .select("id, shop_slug, phone, email, pin_hash, visits, last_checkin_date, opted_out")
       .eq("shop_slug", shop_slug);
 
     if (email) {
@@ -214,7 +210,6 @@ export async function POST(req: Request) {
       customer_id: customer.id,
       checkin_date: checkinDate,
       created_at: now.toISOString(),
-      amount: amount > 0 ? amount : null,
     });
 
     if (checkinInsertErr) {
@@ -246,9 +241,9 @@ export async function POST(req: Request) {
 
     // New check-in → add to balance.
     //   stamps: 1 (2 on bonus days), reset to 0 on reward
-    //   points: round(amount * rate), carry remainder on reward
+    //   points: points_per_visit (2× on bonus days), carry remainder on reward
     const currentVisits = Number(customer.visits ?? 0);
-    const earned = earnedForCheckin({ mode, amount, pointsPerDollar, isBonusDay });
+    const earned = earnedForCheckin({ mode, pointsPerVisit, isBonusDay });
     const rawBalance = currentVisits + earned;
     const { newBalance, hitGoal } = applyReward({
       mode,
@@ -265,7 +260,6 @@ export async function POST(req: Request) {
       .update({
         visits: newVisitsValue,
         last_checkin_date: today,
-        total_spend: Number((customer as any).total_spend ?? 0) + amount,
       })
       .eq("id", customer.id)
       .select("id, shop_slug, phone, email, visits, last_checkin_date")

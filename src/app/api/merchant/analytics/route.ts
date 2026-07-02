@@ -99,7 +99,7 @@ export async function GET(req: Request) {
     // counts per customer (visits reset to 0 every time goal is reached).
     const { data: allCheckins, error: checkinsErr } = await supabase
       .from("checkins")
-      .select("customer_id, checkin_date, created_at, amount")
+      .select("customer_id, checkin_date, created_at")
       .eq("shop_slug", shop)
       .order("checkin_date", { ascending: true })
       .order("created_at", { ascending: true })
@@ -346,48 +346,6 @@ export async function GET(req: Request) {
       else lifecycle.new++;
     }
 
-    // Revenue analytics (points mode). Period revenue + avg ticket come from
-    // checkins.amount within the window; lifetime revenue from customers.total_spend.
-    let revenue: {
-      period_revenue: number;
-      avg_ticket: number | null;
-      transactions: number;
-      lifetime_revenue: number;
-      revenue_per_customer: number | null;
-    } | null = null;
-
-    if (rewardMode === "points") {
-      let periodRevenue = 0;
-      let txns = 0;
-      for (const row of allCheckins || []) {
-        const date = row.checkin_date as string;
-        const amt = Number((row as any).amount ?? 0);
-        if (date >= startDate && date <= endDate && amt > 0) {
-          periodRevenue += amt;
-          txns++;
-        }
-      }
-
-      const { data: spendRows } = await supabase
-        .from("customers")
-        .select("total_spend")
-        .eq("shop_slug", shop);
-      const lifetimeRevenue = (spendRows ?? []).reduce(
-        (s: number, r: any) => s + Number(r.total_spend ?? 0),
-        0
-      );
-      const payingCustomers = (spendRows ?? []).filter((r: any) => Number(r.total_spend ?? 0) > 0).length;
-
-      revenue = {
-        period_revenue: Math.round(periodRevenue * 100) / 100,
-        avg_ticket: txns > 0 ? Math.round((periodRevenue / txns) * 100) / 100 : null,
-        transactions: txns,
-        lifetime_revenue: Math.round(lifetimeRevenue * 100) / 100,
-        revenue_per_customer:
-          payingCustomers > 0 ? Math.round((lifetimeRevenue / payingCustomers) * 100) / 100 : null,
-      };
-    }
-
     // Top 5 customers by total visits
     const { data: topCustomerRows } = await supabase
       .from("customers")
@@ -427,7 +385,6 @@ export async function GET(req: Request) {
       period_vs_previous: periodVsPrevious,
       lifecycle,
       reward_mode: rewardMode,
-      revenue,
     });
   } catch (err: any) {
     return NextResponse.json(

@@ -6,9 +6,10 @@
 // threshold (shop_settings.reward_goal):
 //   stamps — each check-in earns 1 (2 on bonus days); balance resets
 //            to 0 when the goal is reached.
-//   points — each check-in earns round(amount * points_per_dollar);
-//            balance carries the remainder (balance -= goal) so points
-//            from a large purchase are not lost.
+//   points — each check-in earns points_per_visit (doubled on bonus
+//            days); balance carries the remainder (balance -= goal)
+//            when the goal is reached. No dollar amount is involved,
+//            so check-in stays fully self-serve (QR), same as stamps.
 
 export type RewardMode = "stamps" | "points";
 
@@ -19,19 +20,16 @@ export function normalizeMode(v: unknown): RewardMode {
 /**
  * Points earned for a single check-in.
  * - stamps: 1, or 2 on a bonus day
- * - points: round(amount * pointsPerDollar), never negative
+ * - points: pointsPerVisit, or 2× on a bonus day
  */
 export function earnedForCheckin(opts: {
   mode: RewardMode;
   isBonusDay?: boolean;
-  amount?: number;         // dollar amount (points mode)
-  pointsPerDollar?: number;
+  pointsPerVisit?: number;
 }): number {
   if (opts.mode === "points") {
-    const amt = Number(opts.amount ?? 0);
-    const rate = Number(opts.pointsPerDollar ?? 1);
-    if (!Number.isFinite(amt) || amt <= 0) return 0;
-    return Math.max(0, Math.round(amt * rate));
+    const base = Math.max(1, Math.round(Number(opts.pointsPerVisit ?? 10)));
+    return opts.isBonusDay ? base * 2 : base;
   }
   return opts.isBonusDay ? 2 : 1;
 }
