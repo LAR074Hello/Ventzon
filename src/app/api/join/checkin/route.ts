@@ -301,7 +301,7 @@ export async function POST(req: Request) {
         reward_date: today,
       });
 
-      // Report metered usage to Stripe for all subscribed shops ($0.95/redemption)
+      // Report metered usage to Stripe for all subscribed shops ($0.85/redemption)
       try {
         const { data: shopRow } = await supabase
           .from("shops")
