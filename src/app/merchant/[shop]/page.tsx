@@ -1008,6 +1008,12 @@ function MerchantShopPage() {
                 >
                   Register tool
                 </Link>
+                <Link
+                  href={`/merchant/${shopSlug}/ads`}
+                  className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#555] hover:text-[#ededed]"
+                >
+                  Advertising
+                </Link>
               </>
             )}
             {!paid && !waitingForPayment && isCheckoutReturn && (
