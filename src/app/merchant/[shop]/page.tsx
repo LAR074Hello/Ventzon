@@ -14,6 +14,10 @@ import MerchantAnalytics from "@/components/MerchantAnalytics";
 // to bring it back.
 const SHOW_COMMUNITY_REWARDS = false;
 
+// Merchant advertising marketplace is built and deployed but hidden from
+// the dashboard for now — flip to true to surface the "Advertising" entry.
+const SHOW_ADVERTISING = false;
+
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
@@ -976,12 +980,14 @@ function MerchantShopPage() {
                 >
                   Register tool
                 </Link>
-                <Link
-                  href={`/merchant/${shopSlug}/ads`}
-                  className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#555] hover:text-[#ededed]"
-                >
-                  Advertising
-                </Link>
+                {SHOW_ADVERTISING && (
+                  <Link
+                    href={`/merchant/${shopSlug}/ads`}
+                    className="rounded-full border border-[#2a2a2a] px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#555] hover:text-[#ededed]"
+                  >
+                    Advertising
+                  </Link>
+                )}
               </>
             )}
             {!paid && !waitingForPayment && isCheckoutReturn && (
