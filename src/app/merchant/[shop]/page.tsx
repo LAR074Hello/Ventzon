@@ -967,7 +967,7 @@ function MerchantShopPage() {
               }`}
             >
               {paid ? "Active" : waitingForPayment ? "Processing payment…" : "Inactive"}
-              {subscriptionStatus && subscriptionStatus !== "inactive" ? ` · ${subscriptionStatus}` : ""}
+              {subscriptionStatus && !["inactive", "active"].includes(subscriptionStatus) ? ` · ${subscriptionStatus}` : ""}
             </span>
             {paid && (
               <>
