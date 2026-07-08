@@ -16,12 +16,11 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (
+  // Hide the marketing header on app surfaces (customer, rep, merchant).
+  const hidden =
     pathname?.startsWith("/customer") ||
     pathname?.startsWith("/rep") ||
-    pathname?.startsWith("/merchant")
-  )
-    return null;
+    pathname?.startsWith("/merchant");
 
   // Close menu on route change
   useEffect(() => {
@@ -39,6 +38,10 @@ export default function SiteHeader() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  // Early return must come AFTER all hooks so the hook count is stable
+  // across renders (a conditional return before hooks throws React #300).
+  if (hidden) return null;
 
   return (
     <>
