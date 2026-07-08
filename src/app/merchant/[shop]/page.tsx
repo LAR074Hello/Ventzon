@@ -9,6 +9,11 @@ import Link from "next/link";
 import { LogOut, Sparkles, RefreshCw } from "lucide-react";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
 
+// Community Rewards (Veterans/Students/Seniors/etc boost multipliers) is
+// built and working but hidden from the dashboard for now — flip to true
+// to bring it back.
+const SHOW_COMMUNITY_REWARDS = false;
+
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
@@ -937,7 +942,12 @@ function MerchantShopPage() {
   /* ── Initial load + auto-refresh ── */
   useEffect(() => {
     let cancelled = false;
-    (async () => { if (!cancelled) await Promise.all([loadStats(), loadSettings(), loadBilling(), loadCommunitySettings(), loadCommunityAnalytics()]); })();
+    (async () => {
+      if (cancelled) return;
+      const tasks = [loadStats(), loadSettings(), loadBilling()];
+      if (SHOW_COMMUNITY_REWARDS) tasks.push(loadCommunitySettings(), loadCommunityAnalytics());
+      await Promise.all(tasks);
+    })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsUrl]);
@@ -2202,7 +2212,9 @@ function MerchantShopPage() {
 
             {/* ============================================================
                 COMMUNITY REWARDS SETTINGS  (Phase 2 + 4 + 5)
+                Hidden for now — set SHOW_COMMUNITY_REWARDS to true to bring back.
                 ============================================================ */}
+            {SHOW_COMMUNITY_REWARDS && (
             <section className="mt-14">
               <div className="luxury-divider mx-auto mb-14 max-w-xs" />
 
@@ -2397,6 +2409,7 @@ function MerchantShopPage() {
                 )}
               </div>
             </section>
+            )}
 
             {/* ============================================================
                 BILLING (small, understated)
