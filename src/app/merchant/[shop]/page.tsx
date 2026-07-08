@@ -233,14 +233,6 @@ function MerchantShopPage() {
   const [winBackMsg, setWinBackMsg] = useState("");
   const [winBackError, setWinBackError] = useState("");
 
-  // Promotions
-  const [promoBody, setPromoBody] = useState("");
-  const [promoSending, setPromoSending] = useState(false);
-  const [promoMsg, setPromoMsg] = useState("");
-  const [promoError, setPromoError] = useState("");
-  const [promotions, setPromotions] = useState<any[]>([]);
-  const [promotionsLoaded, setPromotionsLoaded] = useState(false);
-
   // AI Promo Writer
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiGoal, setAiGoal] = useState("slow_day");
@@ -724,40 +716,6 @@ function MerchantShopPage() {
   }
 
   /* ── Promotions ── */
-  async function loadPromotions() {
-    if (!shopSlug) return;
-    try {
-      const res = await fetch(`/api/promotions?shop_slug=${encodeURIComponent(shopSlug)}`);
-      const json = await res.json();
-      if (res.ok) { setPromotions(json.promotions ?? []); setPromotionsLoaded(true); }
-    } catch {}
-  }
-
-  async function submitPromo(e: React.FormEvent) {
-    e.preventDefault();
-    if (!promoBody.trim()) return;
-    setPromoSending(true);
-    setPromoMsg("");
-    setPromoError("");
-    try {
-      const res = await fetch("/api/promotions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, body: promoBody }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed to submit");
-      setPromoMsg("Promotion submitted for review.");
-      setPromoBody("");
-      await loadPromotions();
-      setTimeout(() => setPromoMsg(""), 3000);
-    } catch (err: any) {
-      setPromoError(err?.message ?? "Error submitting promotion");
-    } finally {
-      setPromoSending(false);
-    }
-  }
-
   async function generatePromoOptions() {
     setAiGenerating(true);
     setAiOptions([]);
@@ -784,7 +742,7 @@ function MerchantShopPage() {
   }
 
   function pickAIOption(text: string) {
-    setPromoBody(text);
+    setCampaignBody(text);
     setShowAIModal(false);
     setAiOptions([]);
     setAiDetails("");
@@ -1557,7 +1515,16 @@ function MerchantShopPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-light tracking-[0.15em] text-[#555] mb-2">MESSAGE</label>
+                      <div className="mb-2 flex items-center justify-between">
+                        <label className="block text-[11px] font-light tracking-[0.15em] text-[#555]">MESSAGE</label>
+                        <button
+                          type="button"
+                          onClick={() => { setShowAIModal(true); setAiOptions([]); setAiError(""); }}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] px-3.5 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#ededed] hover:text-[#ededed]"
+                        >
+                          <span>✦</span> Write with AI
+                        </button>
+                      </div>
                       <textarea
                         value={campaignBody}
                         onChange={e => setCampaignBody(e.target.value)}
@@ -1587,104 +1554,6 @@ function MerchantShopPage() {
                     </div>
                   </form>
                 </div>
-              </section>
-            )}
-
-            {/* ============================================================
-                PROMOTIONS
-                ============================================================ */}
-            {paid && (
-              <section className="mt-14">
-                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
-                <div>
-                  <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">PROMOTIONS</p>
-                  <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">Send a promotion</h2>
-                  <p className="mt-1 text-[13px] font-light text-[#444]">
-                    Write a short message to share with your customers. Promotions are reviewed before going out.
-                  </p>
-                </div>
-
-                <div className="mt-6 rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
-                  <form onSubmit={submitPromo} className="space-y-4">
-                    <div>
-                      <div className="mb-2 flex items-center justify-between">
-                        <label className="block text-[11px] font-light tracking-[0.15em] text-[#555]">MESSAGE</label>
-                        <button
-                          type="button"
-                          onClick={() => { setShowAIModal(true); setAiOptions([]); setAiError(""); }}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] px-3.5 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#ededed] hover:text-[#ededed]"
-                        >
-                          <span>✦</span> Write with AI
-                        </button>
-                      </div>
-                      <textarea
-                        value={promoBody}
-                        onChange={e => setPromoBody(e.target.value)}
-                        placeholder="e.g. It's a slow Tuesday — come in today and get a free cookie with any drink ☕"
-                        required
-                        rows={4}
-                        maxLength={160}
-                        className="w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
-                      />
-                      <p className={`mt-1 text-right text-[11px] font-light ${promoBody.length > 140 ? "text-yellow-500/70" : "text-[#333]"}`}>
-                        {promoBody.length}/160
-                      </p>
-                    </div>
-
-                    {promoMsg && (
-                      <div className="rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-4 py-3">
-                        <p className="text-[13px] font-light text-emerald-400">{promoMsg}</p>
-                      </div>
-                    )}
-                    {promoError && (
-                      <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
-                        <p className="text-[13px] font-light text-red-400">{promoError}</p>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-3">
-                      <PrimaryButton disabled={promoSending || !promoBody.trim()}>
-                        {promoSending ? "Submitting…" : "Submit for review"}
-                      </PrimaryButton>
-                      {!promotionsLoaded && (
-                        <button type="button" onClick={loadPromotions} className="text-[11px] font-light text-[#444] hover:text-[#888] transition-colors">
-                          View history
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                </div>
-
-                {/* Promotion history */}
-                {promotionsLoaded && promotions.length > 0 && (
-                  <div className="mt-5 rounded-2xl border border-[#1a1a1a] overflow-hidden">
-                    <div className="border-b border-[#111] px-5 py-3">
-                      <p className="text-[10px] font-light tracking-[0.3em] text-[#555]">HISTORY</p>
-                    </div>
-                    <div className="divide-y divide-[#0d0d0d]">
-                      {promotions.map((p) => (
-                        <div key={p.id} className="px-5 py-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <p className="text-[13px] font-light leading-relaxed text-[#bbb]">{p.body}</p>
-                            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-light tracking-[0.1em] ${
-                              p.status === "approved" ? "border border-emerald-900/40 text-emerald-500" :
-                              p.status === "rejected" ? "border border-red-900/40 text-red-500" :
-                              "border border-[#2a2a2a] text-[#555]"
-                            }`}>
-                              {p.status?.toUpperCase()}
-                            </span>
-                          </div>
-                          {p.reject_reason && (
-                            <p className="mt-1.5 text-[11px] font-light text-[#444]">Reason: {p.reject_reason}</p>
-                          )}
-                          <p className="mt-1 text-[11px] font-light text-[#333]">
-                            {new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </section>
             )}
 
@@ -2508,7 +2377,7 @@ function MerchantShopPage() {
           >
             <div className="flex items-start justify-between mb-6">
               <div>
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">AI PROMO WRITER</p>
+                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">WRITE WITH AI</p>
                 <p className="mt-2 text-[18px] font-extralight text-[#ededed]">Generate options</p>
               </div>
               <button
