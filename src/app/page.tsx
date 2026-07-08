@@ -546,9 +546,9 @@ export default function Home() {
                 {/* Stat cards row */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: "CHECK-INS", value: "1,247", change: "↑18%", up: true },
-                    { label: "RETENTION", value: "68%", change: null, up: true },
-                    { label: "REDEMPTION", value: "12.5%", change: null, up: true },
+                    { label: "CHECK-INS", value: "227", change: "↑18%", up: true },
+                    { label: "RETENTION", value: "70%", change: null, up: true },
+                    { label: "REDEMPTION", value: "13%", change: null, up: true },
                   ].map(({ label, value, change, up }) => (
                     <div key={label} className="rounded-xl border border-[#1a1a1a] px-3 py-3">
                       <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
@@ -565,9 +565,9 @@ export default function Home() {
                   <p className="mb-3 text-[9px] font-light tracking-[0.15em] text-[#444]">CUSTOMER LIFECYCLE</p>
                   <div className="space-y-2">
                     {[
-                      { label: "Loyal", count: 31, pct: 55, color: "#ededed" },
-                      { label: "Returning", count: 11, pct: 20, color: "#888" },
-                      { label: "New", count: 14, pct: 25, color: "#555" },
+                      { label: "Loyal", count: 30, pct: 64, color: "#ededed" },
+                      { label: "Returning", count: 11, pct: 23, color: "#888" },
+                      { label: "New", count: 6, pct: 13, color: "#555" },
                     ].map(({ label, count, pct, color }) => (
                       <div key={label} className="flex items-center gap-2">
                         <span className="w-14 text-[9px] font-light" style={{ color }}>{label}</span>
@@ -585,10 +585,10 @@ export default function Home() {
                   <p className="mb-3 text-[9px] font-light tracking-[0.15em] text-[#444]">CUSTOMER HEALTH</p>
                   <div className="space-y-2">
                     {[
-                      { label: "Active", value: "32", color: "#ededed" },
-                      { label: "At risk", value: "9", color: "#eab308" },
+                      { label: "Active", value: "27", color: "#ededed" },
+                      { label: "At risk", value: "7", color: "#eab308" },
                       { label: "Lapsed", value: "7", color: "#f97316" },
-                      { label: "Churned", value: "4", color: "#ef4444" },
+                      { label: "Churned", value: "6", color: "#ef4444" },
                     ].map(({ label, value, color }) => (
                       <div key={label} className="flex items-center justify-between">
                         <span className="text-[9px] font-light" style={{ color }}>{label}</span>
