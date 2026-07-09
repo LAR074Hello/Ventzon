@@ -31,6 +31,12 @@ export default function SiteFooter() {
             How it works
           </Link>
           <Link
+            href="/setup"
+            className="transition-colors duration-300 hover:text-[#999]"
+          >
+            Setup guide
+          </Link>
+          <Link
             href="/pricing"
             className="transition-colors duration-300 hover:text-[#999]"
           >

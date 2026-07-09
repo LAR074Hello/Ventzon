@@ -1055,6 +1055,14 @@ function MerchantShopPage() {
                     </li>
                   ))}
                 </ul>
+                <a
+                  href="/setup"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-block text-[11px] font-light tracking-[0.1em] text-[#555] transition-colors duration-300 hover:text-[#ededed]"
+                >
+                  New here? Read the setup guide →
+                </a>
               </div>
             </section>
           );

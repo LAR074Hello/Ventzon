@@ -59,7 +59,14 @@ function buildDripEmail(opts: {
     <div style="margin:0 32px 36px">
       <a href="${dashboardUrl}" style="display:inline-block;border:1px solid #ededed;border-radius:999px;padding:12px 28px;font-size:12px;font-weight:300;letter-spacing:0.15em;color:#ededed;text-decoration:none">
         Open dashboard
-      </a>
+      </a>${
+        day === 1
+          ? `
+      <a href="${baseUrl}/setup" style="display:inline-block;margin-left:18px;font-size:12px;font-weight:300;letter-spacing:0.1em;color:#888;text-decoration:none">
+        Read the setup guide &rarr;
+      </a>`
+          : ""
+      }
     </div>
     <div style="border-top:1px solid #1a1a1a;padding:20px 32px">
       <p style="font-size:11px;color:#444;margin:0">Ventzon · <a href="https://www.ventzon.com" style="color:#444;text-decoration:none">ventzon.com</a></p>
