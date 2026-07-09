@@ -1,0 +1,82 @@
+// Push-first customer notification with email fallback, used by the
+// birthday and occasions crons. App users (a device token on file) get
+// a push notification; everyone else gets an email.
+import { sendPushToDeviceTokens } from "@/lib/push";
+import { sendEmail } from "@/lib/resend";
+
+/**
+ * Build an email -> device-tokens map in bulk. Paginates the auth users
+ * once to resolve email -> user id, then fetches all device tokens for
+ * those users in one query. Cheap enough to call once per cron run.
+ */
+export async function buildTokenMap(
+  supabase: any,
+  emails: string[]
+): Promise<Record<string, string[]>> {
+  const wanted = new Set(
+    emails.map((e) => (e || "").toLowerCase().trim()).filter(Boolean)
+  );
+  if (wanted.size === 0) return {};
+
+  const emailToUid: Record<string, string> = {};
+  let page = 1;
+  // Stop early once we've matched everyone we care about.
+  while (Object.keys(emailToUid).length < wanted.size) {
+    const { data: authPage } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (!authPage?.users?.length) break;
+    for (const u of authPage.users) {
+      const e = u.email?.toLowerCase();
+      if (e && wanted.has(e)) emailToUid[e] = u.id;
+    }
+    if (authPage.users.length < 1000) break;
+    page++;
+  }
+
+  const uidToEmail: Record<string, string> = {};
+  for (const [e, u] of Object.entries(emailToUid)) uidToEmail[u] = e;
+  const uids = Object.keys(uidToEmail);
+
+  const emailToTokens: Record<string, string[]> = {};
+  if (uids.length) {
+    const { data: tokenRows } = await supabase
+      .from("device_tokens")
+      .select("user_id, token")
+      .in("user_id", uids);
+    for (const r of tokenRows ?? []) {
+      const e = uidToEmail[(r as any).user_id];
+      if (!e) continue;
+      (emailToTokens[e] ||= []).push((r as any).token);
+    }
+  }
+  return emailToTokens;
+}
+
+/**
+ * Notify one customer: push if they have device tokens, otherwise email.
+ * Returns the channel used (or "none" if both failed / unavailable).
+ */
+export async function pushOrEmail(opts: {
+  email: string;
+  tokens?: string[];
+  title: string;
+  body: string;
+  data?: Record<string, string>;
+  emailSubject: string;
+  emailText: string;
+  emailHtml?: string;
+}): Promise<"push" | "email" | "none"> {
+  if (opts.tokens && opts.tokens.length > 0) {
+    try {
+      await sendPushToDeviceTokens(opts.tokens, opts.title, opts.body, opts.data);
+      return "push";
+    } catch {
+      // fall through to email
+    }
+  }
+  try {
+    await sendEmail(opts.email, opts.emailSubject, opts.emailText, undefined, opts.emailHtml);
+    return "email";
+  } catch {
+    return "none";
+  }
+}

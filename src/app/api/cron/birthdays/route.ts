@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
-import { sendEmail, buildBirthdayEmail } from "@/lib/resend";
+import { buildBirthdayEmail } from "@/lib/resend";
+import { buildTokenMap, pushOrEmail } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -84,6 +85,13 @@ export async function GET(req: Request) {
         .eq("opted_out", false)
         .not("email", "is", null);
 
+      // Resolve which of these customers have the app (device tokens) so
+      // we can push them instead of emailing.
+      const tokenMap = await buildTokenMap(
+        supabase,
+        (customers ?? []).map((c: any) => c.email)
+      );
+
       let issued = 0;
 
       for (const cust of customers ?? []) {
@@ -134,32 +142,29 @@ export async function GET(req: Request) {
           }
         }
 
-        // 6. Email the customer (non-fatal).
-        let emailed = false;
-        try {
-          const html = buildBirthdayEmail({
-            shopName: cfg.shop_name || cfg.shop_slug,
+        // 6. Notify the customer: push if they have the app, else email.
+        const shopName = cfg.shop_name || cfg.shop_slug;
+        const channel = await pushOrEmail({
+          email,
+          tokens: tokenMap[email.toLowerCase()],
+          title: `Happy birthday! 🎂`,
+          body: `${shopName} has a gift for you: ${rewardTitle}. Show it at the register.`,
+          data: { type: "birthday", shop_slug: cfg.shop_slug },
+          emailSubject: `Happy birthday from ${shopName} 🎂`,
+          emailText: `Happy birthday! ${shopName} has a gift for you: ${rewardTitle}. Show this at the register to redeem.`,
+          emailHtml: buildBirthdayEmail({
+            shopName,
             rewardTitle,
             message: cfg.birthday_message || undefined,
             expiresDays: cfg.birthday_expiry_days ?? null,
-          });
-          await sendEmail(
-            email,
-            `Happy birthday from ${cfg.shop_name || cfg.shop_slug} 🎂`,
-            `Happy birthday! ${cfg.shop_name || cfg.shop_slug} has a gift for you: ${rewardTitle}. Show this email at the register to redeem.`,
-            undefined,
-            html
-          );
-          emailed = true;
-          totalEmails++;
-        } catch (emailErr: any) {
-          console.error("[cron/birthdays] email failed:", email, emailErr?.message);
-        }
+          }),
+        });
+        if (channel !== "none") totalEmails++;
 
         // 7. Record the outcome on the guard row for the audit trail.
         await supabase
           .from("birthday_reward_sends")
-          .update({ reward_event_id: rewardEventId, emailed })
+          .update({ reward_event_id: rewardEventId, emailed: channel !== "none" })
           .eq("id", (claim as any).id);
       }
 

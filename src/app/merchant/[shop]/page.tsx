@@ -278,6 +278,16 @@ function MerchantShopPage() {
   const [bdayExpiryDraft, setBdayExpiryDraft] = useState<number | "">("");
   const [bdayMessageDraft, setBdayMessageDraft] = useState("");
 
+  // Occasions (holidays / special dates)
+  type Occasion = { id: string; title: string; message: string | null; month: number; day: number; days_before: number; enabled: boolean };
+  const [occasions, setOccasions] = useState<Occasion[]>([]);
+  const [occTitle, setOccTitle] = useState("");
+  const [occMonth, setOccMonth] = useState<number>(1);
+  const [occDay, setOccDay] = useState<number>(1);
+  const [occMessage, setOccMessage] = useState("");
+  const [occSaving, setOccSaving] = useState(false);
+  const [occError, setOccError] = useState("");
+
   // Manual check-in modal
   const [showManualCheckin, setShowManualCheckin] = useState(false);
   const [manualContact, setManualContact] = useState("");
@@ -469,6 +479,51 @@ function MerchantShopPage() {
     } finally {
       setSettingsLoading(false);
     }
+  }
+
+  async function loadOccasions() {
+    if (!shopSlug) return;
+    try {
+      const res = await fetch(`/api/merchant/occasions?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
+      const json = await res.json();
+      if (res.ok) setOccasions(json.occasions ?? []);
+    } catch { /* non-fatal */ }
+  }
+
+  async function addOccasion(e: React.FormEvent) {
+    e.preventDefault();
+    setOccError("");
+    setOccSaving(true);
+    try {
+      const res = await fetch("/api/merchant/occasions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, title: occTitle.trim(), message: occMessage.trim() || null, month: occMonth, day: occDay, days_before: 0 }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? "Failed to add");
+      setOccTitle(""); setOccMessage(""); setOccMonth(1); setOccDay(1);
+      await loadOccasions();
+    } catch (err: any) {
+      setOccError(err?.message ?? "Failed to add occasion");
+    } finally {
+      setOccSaving(false);
+    }
+  }
+
+  async function toggleOccasion(occ: Occasion) {
+    const next = !occ.enabled;
+    setOccasions((prev) => prev.map((o) => (o.id === occ.id ? { ...o, enabled: next } : o)));
+    try {
+      await fetch(`/api/merchant/occasions/${occ.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: next }),
+      });
+    } catch { await loadOccasions(); }
+  }
+
+  async function deleteOccasion(id: string) {
+    setOccasions((prev) => prev.filter((o) => o.id !== id));
+    try { await fetch(`/api/merchant/occasions/${id}`, { method: "DELETE" }); } catch { await loadOccasions(); }
   }
 
   async function saveShopSettings() {
@@ -928,7 +983,7 @@ function MerchantShopPage() {
     let cancelled = false;
     (async () => {
       if (cancelled) return;
-      const tasks = [loadStats(), loadSettings(), loadBilling()];
+      const tasks = [loadStats(), loadSettings(), loadBilling(), loadOccasions()];
       if (SHOW_COMMUNITY_REWARDS) tasks.push(loadCommunitySettings(), loadCommunityAnalytics());
       await Promise.all(tasks);
     })();
@@ -2152,6 +2207,89 @@ function MerchantShopPage() {
                             />
                           </div>
                         </div>
+                      )}
+                    </div>
+
+                    {/* Special occasions (holidays / dates) */}
+                    <div className="rounded-2xl border border-[#1a1a1a] p-5">
+                      <FieldLabel>SPECIAL OCCASIONS</FieldLabel>
+                      <p className="mt-1 text-[11px] font-light text-[#444]">
+                        Announce a holiday or special-date offer to all your customers — a push notification for app users, an email for everyone else. No per-customer charge.
+                      </p>
+
+                      {occasions.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          {occasions.map((o) => (
+                            <div key={o.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#141414] px-4 py-3">
+                              <div className="min-w-0">
+                                <p className="text-[13px] font-light text-[#ededed] truncate">{o.title}</p>
+                                <p className="text-[11px] font-light text-[#555]">
+                                  {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][o.month - 1]} {o.day}
+                                  {o.message ? " · " + o.message : ""}
+                                </p>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleOccasion(o)}
+                                  className={`text-[11px] font-light ${o.enabled ? "text-emerald-400/80" : "text-[#555]"} hover:opacity-80`}
+                                >
+                                  {o.enabled ? "On" : "Off"}
+                                </button>
+                                <button type="button" onClick={() => deleteOccasion(o.id)} className="text-[11px] font-light text-[#555] hover:text-red-400">
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {paid && (
+                        <form onSubmit={addOccasion} className="mt-4 space-y-3 border-t border-[#141414] pt-4">
+                          <input
+                            value={occTitle}
+                            onChange={(e) => setOccTitle(e.target.value)}
+                            placeholder="Offer, e.g. 15% off for Valentine's Day"
+                            maxLength={120}
+                            className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                          />
+                          <div className="flex items-center gap-3">
+                            <select
+                              value={occMonth}
+                              onChange={(e) => setOccMonth(Number(e.target.value))}
+                              className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+                            >
+                              {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+                                <option key={m} value={i + 1}>{m}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={occDay}
+                              onChange={(e) => setOccDay(Number(e.target.value))}
+                              className="w-24 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+                            >
+                              {Array.from({ length: [31,29,31,30,31,30,31,31,30,31,30,31][occMonth - 1] }, (_, i) => i + 1).map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <input
+                            value={occMessage}
+                            onChange={(e) => setOccMessage(e.target.value)}
+                            placeholder="Optional note shown to customers"
+                            maxLength={300}
+                            className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333]"
+                          />
+                          {occError && <p className="text-[12px] font-light text-red-400">{occError}</p>}
+                          <button
+                            type="submit"
+                            disabled={occSaving || !occTitle.trim()}
+                            className="rounded-xl border border-[#2a2a2a] px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:border-[#555] disabled:opacity-40"
+                          >
+                            {occSaving ? "Adding…" : "Add occasion"}
+                          </button>
+                        </form>
                       )}
                     </div>
                   </div>

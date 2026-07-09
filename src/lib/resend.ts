@@ -255,3 +255,44 @@ export function buildBirthdayEmail(opts: {
   </div>
 </div>`;
 }
+
+/** Build a rich HTML occasion/holiday announcement email */
+export function buildOccasionEmail(opts: {
+  shopName: string;
+  title: string;
+  message?: string;
+}): string {
+  const { shopName, title, message } = opts;
+  const safeName = escapeHtml(shopName);
+  const safeTitle = escapeHtml(title);
+  const safeMessage = message ? escapeHtml(message).replace(/\n/g, "<br/>") : "";
+
+  return `
+<div style="background:#000;padding:0;margin:0">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;background:#000;color:#ededed">
+
+    <div style="padding:32px 32px 0">
+      <p style="font-size:11px;letter-spacing:0.4em;color:#555;margin:0">${safeName.toUpperCase()}</p>
+    </div>
+
+    <div style="padding:36px 32px 24px;text-align:center">
+      <h1 style="font-size:24px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0">${safeTitle}</h1>
+    </div>
+
+    ${
+      safeMessage
+        ? `<div style="padding:0 32px 24px;text-align:center"><p style="font-size:15px;line-height:1.7;color:#ccc;margin:0">${safeMessage}</p></div>`
+        : ""
+    }
+
+    <div style="margin:0 32px 36px;background:#052e16;border:1px solid #14532d;border-radius:12px;padding:18px 24px;text-align:center">
+      <p style="font-size:11px;letter-spacing:0.2em;color:#86efac;margin:0 0 4px">SHOW THIS AT THE REGISTER</p>
+      <p style="font-size:12px;font-weight:300;color:#4ade80;margin:0">at ${safeName}</p>
+    </div>
+
+    <div style="border-top:1px solid #1a1a1a;padding:20px 32px">
+      <p style="font-size:11px;color:#444;margin:0">Sent by Ventzon Rewards · <a href="https://www.ventzon.com" style="color:#444;text-decoration:none">ventzon.com</a></p>
+    </div>
+  </div>
+</div>`;
+}
