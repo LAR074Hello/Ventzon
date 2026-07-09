@@ -21,14 +21,20 @@ export async function GET() {
     // Look up all customer records by email across all shops
     const { data: customers, error } = await supabase
       .from("customers")
-      .select("shop_slug, visits, last_checkin_date")
+      .select("shop_slug, visits, last_checkin_date, birth_month, birth_day")
       .eq("email", user.email.toLowerCase());
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     if (!customers || customers.length === 0) {
-      return NextResponse.json({ memberships: [] });
+      return NextResponse.json({ memberships: [], birthday: null });
     }
+
+    // Birthday is the same person across shops — surface the first one set.
+    const withBday = customers.find((c: any) => c.birth_month != null && c.birth_day != null);
+    const birthday = withBday
+      ? { birth_month: (withBday as any).birth_month, birth_day: (withBday as any).birth_day }
+      : null;
 
     const slugs = customers.map((c) => c.shop_slug);
 
@@ -61,7 +67,7 @@ export async function GET() {
       logo_url: logoMap[c.shop_slug] ?? null,
     }));
 
-    return NextResponse.json({ memberships });
+    return NextResponse.json({ memberships, birthday });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
   }

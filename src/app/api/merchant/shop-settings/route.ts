@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabase
       .from("shop_settings")
-      .select("shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_visit")
+      .select("shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_visit,birthday_enabled,birthday_reward_title,birthday_days_before,birthday_expiry_days,birthday_message")
       .eq("shop_slug", shop_slug)
       .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -193,6 +193,30 @@ export async function PATCH(req: Request) {
       update.points_per_visit = Math.round(points_per_visit);
     }
 
+    // ── Birthday rewards ──
+    if ("birthday_enabled" in body) update.birthday_enabled = !!body.birthday_enabled;
+    if ("birthday_reward_title" in body) update.birthday_reward_title = clampStr(body.birthday_reward_title, 120) || null;
+    if ("birthday_message" in body) update.birthday_message = clampStr(body.birthday_message, 300) || null;
+    if (body.birthday_days_before !== undefined && body.birthday_days_before !== null) {
+      const d = Number(body.birthday_days_before);
+      if (!Number.isFinite(d) || d < 0 || d > 60) {
+        return NextResponse.json({ error: "birthday_days_before must be 0–60" }, { status: 400 });
+      }
+      update.birthday_days_before = Math.round(d);
+    }
+    if ("birthday_expiry_days" in body) {
+      const raw = body.birthday_expiry_days;
+      if (raw === null || raw === "") {
+        update.birthday_expiry_days = null;
+      } else {
+        const e = Number(raw);
+        if (!Number.isFinite(e) || e < 1 || e > 365) {
+          return NextResponse.json({ error: "birthday_expiry_days must be 1–365, or blank" }, { status: 400 });
+        }
+        update.birthday_expiry_days = Math.round(e);
+      }
+    }
+
     // If these strings are present in the request, update them (even if empty string)
     // So the UI can let merchants clear fields.
     if ("shop_name" in body) update.shop_name = shop_name;
@@ -250,7 +274,7 @@ export async function PATCH(req: Request) {
       .update(update)
       .eq("shop_slug", shop_slug)
       .select(
-        "shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_visit"
+        "shop_slug,shop_name,deal_title,deal_details,reward_goal,reward_expires_days,bonus_days,register_pin,reward_mode,points_per_visit,birthday_enabled,birthday_reward_title,birthday_days_before,birthday_expiry_days,birthday_message"
       )
       .single();
 

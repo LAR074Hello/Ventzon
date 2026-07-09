@@ -99,6 +99,10 @@ export default function ProfilePage() {
   const [nameInput, setNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [showCards, setShowCards] = useState(false);
+  const [birthMonth, setBirthMonth] = useState<number | "">("");
+  const [birthDay, setBirthDay] = useState<number | "">("");
+  const [savingBirthday, setSavingBirthday] = useState(false);
+  const [birthdaySaved, setBirthdaySaved] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -110,11 +114,34 @@ export default function ProfilePage() {
       if (res.ok) {
         const data = await res.json();
         setMemberships(data.memberships ?? []);
+        if (data.birthday) {
+          setBirthMonth(data.birthday.birth_month ?? "");
+          setBirthDay(data.birthday.birth_day ?? "");
+        }
       }
       setLoading(false);
     }
     load();
   }, []);
+
+  async function saveBirthday() {
+    if (birthMonth === "" || birthDay === "") return;
+    setSavingBirthday(true);
+    setBirthdaySaved(false);
+    try {
+      const res = await fetch("/api/customer/birthday", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ birth_month: birthMonth, birth_day: birthDay }),
+      });
+      if (res.ok) {
+        setBirthdaySaved(true);
+        setTimeout(() => setBirthdaySaved(false), 2000);
+      }
+    } finally {
+      setSavingBirthday(false);
+    }
+  }
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -325,6 +352,45 @@ export default function ProfilePage() {
             <p className="mt-1 text-[9px] font-medium tracking-[0.15em] text-[#555]">{label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Birthday */}
+      <div className="mx-5 mb-8">
+        <SectionLabel title="Birthday" />
+        <div className="rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-5">
+          <p className="text-[12px] font-light leading-relaxed text-[#888]">
+            Add your birthday to get a treat from the shops you visit. Month and day only — no year.
+          </p>
+          <div className="mt-4 flex items-center gap-3">
+            <select
+              value={birthMonth}
+              onChange={(e) => setBirthMonth(e.target.value === "" ? "" : Number(e.target.value))}
+              className="flex-1 rounded-xl border border-[#1f1f1f] bg-[#111] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+            >
+              <option value="">Month</option>
+              {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            <select
+              value={birthDay}
+              onChange={(e) => setBirthDay(e.target.value === "" ? "" : Number(e.target.value))}
+              className="w-24 rounded-xl border border-[#1f1f1f] bg-[#111] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+            >
+              <option value="">Day</option>
+              {Array.from({ length: birthMonth === "" ? 31 : [31,29,31,30,31,30,31,31,30,31,30,31][(birthMonth as number) - 1] }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={saveBirthday}
+            disabled={savingBirthday || birthMonth === "" || birthDay === ""}
+            className="mt-4 w-full rounded-xl border border-[#2a2a2a] py-3 text-[13px] font-medium text-[#ededed] transition-colors active:bg-[#151515] disabled:opacity-40"
+          >
+            {savingBirthday ? "Saving…" : birthdaySaved ? "Saved ✓" : "Save birthday"}
+          </button>
+        </div>
       </div>
 
       {/* Rewards ready */}

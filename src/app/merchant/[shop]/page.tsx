@@ -40,6 +40,11 @@ type ShopSettings = {
   bonus_days: number[] | null;
   reward_mode?: "stamps" | "points" | null;
   points_per_visit?: number | null;
+  birthday_enabled?: boolean | null;
+  birthday_reward_title?: string | null;
+  birthday_days_before?: number | null;
+  birthday_expiry_days?: number | null;
+  birthday_message?: string | null;
 };
 
 /* ------------------------------------------------------------------ */
@@ -266,6 +271,13 @@ function MerchantShopPage() {
   const [rewardModeDraft, setRewardModeDraft] = useState<"stamps" | "points">("stamps");
   const [pointsPerVisitDraft, setPointsPerVisitDraft] = useState<number>(10);
 
+  // Birthday rewards
+  const [bdayEnabledDraft, setBdayEnabledDraft] = useState(false);
+  const [bdayTitleDraft, setBdayTitleDraft] = useState("");
+  const [bdayDaysBeforeDraft, setBdayDaysBeforeDraft] = useState<number>(0);
+  const [bdayExpiryDraft, setBdayExpiryDraft] = useState<number | "">("");
+  const [bdayMessageDraft, setBdayMessageDraft] = useState("");
+
   // Manual check-in modal
   const [showManualCheckin, setShowManualCheckin] = useState(false);
   const [manualContact, setManualContact] = useState("");
@@ -443,6 +455,11 @@ function MerchantShopPage() {
           const mode = ms?.reward_mode === "points" ? "points" : "stamps";
           setRewardModeDraft(mode);
           setPointsPerVisitDraft(Number.isFinite(Number(ms?.points_per_visit)) ? Number(ms.points_per_visit) : 10);
+          setBdayEnabledDraft(!!ms?.birthday_enabled);
+          setBdayTitleDraft(String(ms?.birthday_reward_title ?? ""));
+          setBdayDaysBeforeDraft(Number.isFinite(Number(ms?.birthday_days_before)) ? Number(ms.birthday_days_before) : 0);
+          setBdayExpiryDraft(ms?.birthday_expiry_days ?? "");
+          setBdayMessageDraft(String(ms?.birthday_message ?? ""));
           // Merge into settings so the rest of the UI can label correctly
           setSettings((prev) => (prev ? { ...prev, reward_mode: mode, points_per_visit: Number(ms?.points_per_visit ?? 10) } : prev));
         }
@@ -493,6 +510,11 @@ function MerchantShopPage() {
           bonus_days: bonusDaysDraft,
           reward_mode: rewardModeDraft,
           points_per_visit: pointsPerVisitDraft,
+          birthday_enabled: bdayEnabledDraft,
+          birthday_reward_title: bdayTitleDraft.trim() || null,
+          birthday_days_before: bdayDaysBeforeDraft,
+          birthday_expiry_days: bdayExpiryDraft === "" ? null : Number(bdayExpiryDraft),
+          birthday_message: bdayMessageDraft.trim() || null,
           ...(registerPinDraft !== "" ? { register_pin: registerPinDraft } : {}),
         }),
       });
@@ -2040,6 +2062,97 @@ function MerchantShopPage() {
                           </button>
                         )}
                       </div>
+                    </div>
+
+                    {/* Birthday rewards */}
+                    <div className="rounded-2xl border border-[#1a1a1a] p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <FieldLabel>BIRTHDAY REWARDS</FieldLabel>
+                          <p className="mt-1 text-[11px] font-light text-[#444]">
+                            Automatically send a customer a reward around their birthday. Customers add their birthday in the app.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={bdayEnabledDraft}
+                          disabled={!paid}
+                          onClick={() => setBdayEnabledDraft((v) => !v)}
+                          className={`relative mt-1 h-6 w-11 shrink-0 rounded-full border transition-colors duration-300 disabled:opacity-40 ${
+                            bdayEnabledDraft ? "border-emerald-700 bg-emerald-900/40" : "border-[#2a2a2a] bg-[#0a0a0a]"
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 h-4 w-4 rounded-full transition-all duration-300 ${
+                              bdayEnabledDraft ? "left-[22px] bg-emerald-400" : "left-0.5 bg-[#555]"
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      {bdayEnabledDraft && (
+                        <div className="mt-5 space-y-5 border-t border-[#141414] pt-5">
+                          <div>
+                            <FieldLabel>REWARD</FieldLabel>
+                            <input
+                              value={bdayTitleDraft}
+                              onChange={(e) => setBdayTitleDraft(e.target.value)}
+                              disabled={!paid}
+                              placeholder="e.g. Free birthday dessert"
+                              maxLength={120}
+                              className="mt-2 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
+                            />
+                          </div>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                              <FieldLabel>SEND</FieldLabel>
+                              <div className="mt-2 flex items-center gap-3">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={60}
+                                  value={bdayDaysBeforeDraft}
+                                  onChange={(e) => setBdayDaysBeforeDraft(Math.max(0, Math.min(60, Number(e.target.value) || 0)))}
+                                  disabled={!paid}
+                                  className="w-24 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333] disabled:opacity-40"
+                                />
+                                <span className="text-[12px] font-light text-[#444]">
+                                  {bdayDaysBeforeDraft === 0 ? "on their birthday" : "days before"}
+                                </span>
+                              </div>
+                            </div>
+                            <div>
+                              <FieldLabel>EXPIRES AFTER</FieldLabel>
+                              <div className="mt-2 flex items-center gap-3">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={365}
+                                  value={bdayExpiryDraft}
+                                  onChange={(e) => setBdayExpiryDraft(e.target.value === "" ? "" : Math.max(1, Math.min(365, Number(e.target.value))))}
+                                  disabled={!paid}
+                                  placeholder="No expiry"
+                                  className="w-28 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
+                                />
+                                <span className="text-[12px] font-light text-[#444]">days</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <FieldLabel>MESSAGE (OPTIONAL)</FieldLabel>
+                            <textarea
+                              value={bdayMessageDraft}
+                              onChange={(e) => setBdayMessageDraft(e.target.value)}
+                              disabled={!paid}
+                              rows={2}
+                              maxLength={300}
+                              placeholder="A short note that appears in the birthday email."
+                              className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors placeholder:text-[#333] focus:border-[#333] disabled:opacity-40"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

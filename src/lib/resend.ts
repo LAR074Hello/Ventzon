@@ -200,3 +200,58 @@ export function buildRewardEmail(opts: {
   </div>
 </div>`;
 }
+
+/** Build a rich HTML birthday-reward email */
+export function buildBirthdayEmail(opts: {
+  shopName: string;
+  rewardTitle: string;
+  message?: string;
+  expiresDays?: number | null;
+}): string {
+  const { shopName, rewardTitle, message, expiresDays } = opts;
+  const safeName = escapeHtml(shopName);
+  const safeReward = escapeHtml(rewardTitle);
+  const safeMessage = message ? escapeHtml(message).replace(/\n/g, "<br/>") : "";
+
+  const expiryLine =
+    expiresDays && expiresDays > 0
+      ? `<p style="font-size:12px;font-weight:300;color:#4ade80;margin:6px 0 0">Valid for ${expiresDays} day${expiresDays === 1 ? "" : "s"}</p>`
+      : "";
+
+  return `
+<div style="background:#000;padding:0;margin:0">
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;background:#000;color:#ededed">
+
+    <div style="padding:32px 32px 0">
+      <p style="font-size:11px;letter-spacing:0.4em;color:#555;margin:0">VENTZON REWARDS</p>
+    </div>
+
+    <div style="padding:36px 32px 24px;text-align:center">
+      <div style="font-size:34px;line-height:1;margin:0 0 14px">🎂</div>
+      <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">Happy birthday!</h1>
+      <p style="font-size:13px;font-weight:300;letter-spacing:0.05em;color:#888;margin:0">A gift from ${safeName.toUpperCase()}</p>
+    </div>
+
+    ${
+      safeMessage
+        ? `<div style="padding:0 32px 24px;text-align:center"><p style="font-size:15px;line-height:1.7;color:#ccc;margin:0">${safeMessage}</p></div>`
+        : ""
+    }
+
+    <div style="margin:0 32px 24px;border:1px solid #1a1a1a;border-radius:12px;padding:20px 24px;text-align:center">
+      <p style="font-size:11px;letter-spacing:0.2em;color:#555;margin:0 0 8px">YOUR BIRTHDAY REWARD</p>
+      <p style="font-size:18px;font-weight:300;color:#ededed;margin:0">${safeReward}</p>
+    </div>
+
+    <div style="margin:0 32px 36px;background:#052e16;border:1px solid #14532d;border-radius:12px;padding:18px 24px;text-align:center">
+      <p style="font-size:11px;letter-spacing:0.2em;color:#86efac;margin:0 0 4px">SHOW THIS TO THE CASHIER</p>
+      <p style="font-size:12px;font-weight:300;color:#4ade80;margin:0">to redeem at ${safeName}</p>
+      ${expiryLine}
+    </div>
+
+    <div style="border-top:1px solid #1a1a1a;padding:20px 32px">
+      <p style="font-size:11px;color:#444;margin:0">Sent by Ventzon Rewards · <a href="https://www.ventzon.com" style="color:#444;text-decoration:none">ventzon.com</a></p>
+    </div>
+  </div>
+</div>`;
+}
