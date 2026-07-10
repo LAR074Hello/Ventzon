@@ -7,7 +7,7 @@ const SLIDES = [
   {
     icon: Compass,
     title: "Discover local rewards",
-    sub: "Find participating stores near you and start earning loyalty stamps every time you visit.",
+    sub: "Find participating stores near you and start earning rewards every time you visit.",
     accent: "#7c3aed",
   },
   {
@@ -19,7 +19,7 @@ const SLIDES = [
   {
     icon: Gift,
     title: "Get rewarded",
-    sub: "Earn your reward after a set number of visits. Show your card at the register and it's yours.",
+    sub: "Collect stamps or points with every visit. Hit your goal, show your card at the register, and the reward's yours.",
     accent: "#d97706",
   },
 ];

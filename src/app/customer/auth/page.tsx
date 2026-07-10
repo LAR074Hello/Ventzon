@@ -14,7 +14,8 @@ function AuthForm() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailExpanded, setEmailExpanded] = useState(false);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -60,11 +61,6 @@ function AuthForm() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        if (password !== confirmPassword) {
-          setErr("Passwords don't match");
-          setLoading(false);
-          return;
-        }
         const { error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
@@ -184,7 +180,7 @@ function AuthForm() {
             <span className="text-2xl font-extralight tracking-tight text-[#ededed]">V</span>
           </div>
           <p className="mt-4 text-[11px] font-light tracking-[0.5em] text-[#ededed]">VENTZON</p>
-          <p className="mt-2 text-[13px] font-light text-[#444]">Unbridled Loyalty</p>
+          <p className="mt-2 text-[13px] font-light text-[#444]">Your rewards, one tap away</p>
         </div>
 
         <div className="w-full max-w-sm">
@@ -267,80 +263,93 @@ function AuthForm() {
                 <div className="h-px flex-1 bg-[#1a1a1a]" />
               </div>
 
-              <form onSubmit={handleEmailAuth} className="space-y-3">
-                {mode === "signup" && (
+              {/* Errors/info shown regardless of whether the email form is
+                  expanded, so social-login failures are still visible. */}
+              {err && (
+                <div className="mb-3 rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                  {err}
+                </div>
+              )}
+              {info && (
+                <div className="mb-3 rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                  {info}
+                </div>
+              )}
+
+              {/* Progressive disclosure: keep the first screen calm — social
+                  buttons + a single "Continue with email" that expands the form. */}
+              {!emailExpanded ? (
+                <button
+                  onClick={() => setEmailExpanded(true)}
+                  className="w-full rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] py-4 text-[14px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111]"
+                >
+                  Continue with email
+                </button>
+              ) : (
+                <form onSubmit={handleEmailAuth} className="space-y-3">
+                  {mode === "signup" && (
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      required
+                      autoFocus
+                      className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                    />
+                  )}
                   <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address"
                     required
+                    autoFocus={mode !== "signup"}
+                    autoComplete="email"
                     className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
                   />
-                )}
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
-                  required
-                  autoComplete="email"
-                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  required
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  minLength={6}
-                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
-                />
-                {mode === "signup" && (
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm password"
-                    required
-                    autoComplete="new-password"
-                    minLength={6}
-                    className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
-                  />
-                )}
-
-                {err && (
-                  <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
-                    {err}
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password"
+                      required
+                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                      minLength={6}
+                      className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 pr-12 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-light tracking-[0.1em] text-[#444] active:text-[#888]"
+                    >
+                      {showPassword ? "HIDE" : "SHOW"}
+                    </button>
                   </div>
-                )}
-                {info && (
-                  <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
-                    {info}
-                  </div>
-                )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
-                >
-                  {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                  >
+                    {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
+                  </button>
 
-              {mode === "signin" && (
-                <button
-                  onClick={() => { setMode("forgot"); setErr(null); setInfo(null); }}
-                  className="mt-3 w-full text-center text-[12px] font-light text-[#333] transition-colors active:text-[#555]"
-                >
-                  Forgot password?
-                </button>
+                  {mode === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode("forgot"); setErr(null); setInfo(null); }}
+                      className="w-full text-center text-[12px] font-light text-[#333] transition-colors active:text-[#555]"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </form>
               )}
 
               <button
-                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setErr(null); setInfo(null); setConfirmPassword(""); }}
+                onClick={() => { const next = mode === "signin" ? "signup" : "signin"; setMode(next); if (next === "signup") setEmailExpanded(true); setErr(null); setInfo(null); }}
                 className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
               >
                 {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
