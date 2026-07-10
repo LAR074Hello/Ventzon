@@ -20,12 +20,13 @@ async function registerPushNotifications(userId: string) {
     const { PushNotifications } = await import("@capacitor/push-notifications");
     const permResult = await PushNotifications.requestPermissions();
     if (permResult.receive !== "granted") return;
+    const platform = Capacitor.getPlatform(); // "ios" | "android"
     await PushNotifications.register();
     PushNotifications.addListener("registration", async ({ value: token }) => {
       await fetch("/api/customer/device-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, platform: "ios", user_id: userId }),
+        body: JSON.stringify({ token, platform, user_id: userId }),
       });
     });
   } catch {}

@@ -1,18 +1,19 @@
 // Push-first customer notification with email fallback, used by the
 // birthday and occasions crons. App users (a device token on file) get
 // a push notification; everyone else gets an email.
-import { sendPushToDeviceTokens } from "@/lib/push";
+import { sendPushToDeviceTokens, type PushToken } from "@/lib/push";
 import { sendEmail } from "@/lib/resend";
 
 /**
  * Build an email -> device-tokens map in bulk. Paginates the auth users
  * once to resolve email -> user id, then fetches all device tokens for
  * those users in one query. Cheap enough to call once per cron run.
+ * Tokens carry their platform so push targets iOS vs Android correctly.
  */
 export async function buildTokenMap(
   supabase: any,
   emails: string[]
-): Promise<Record<string, string[]>> {
+): Promise<Record<string, PushToken[]>> {
   const wanted = new Set(
     emails.map((e) => (e || "").toLowerCase().trim()).filter(Boolean)
   );
@@ -36,16 +37,16 @@ export async function buildTokenMap(
   for (const [e, u] of Object.entries(emailToUid)) uidToEmail[u] = e;
   const uids = Object.keys(uidToEmail);
 
-  const emailToTokens: Record<string, string[]> = {};
+  const emailToTokens: Record<string, PushToken[]> = {};
   if (uids.length) {
     const { data: tokenRows } = await supabase
       .from("device_tokens")
-      .select("user_id, token")
+      .select("user_id, token, platform")
       .in("user_id", uids);
     for (const r of tokenRows ?? []) {
       const e = uidToEmail[(r as any).user_id];
       if (!e) continue;
-      (emailToTokens[e] ||= []).push((r as any).token);
+      (emailToTokens[e] ||= []).push({ token: (r as any).token, platform: (r as any).platform });
     }
   }
   return emailToTokens;
@@ -57,7 +58,7 @@ export async function buildTokenMap(
  */
 export async function pushOrEmail(opts: {
   email: string;
-  tokens?: string[];
+  tokens?: PushToken[];
   title: string;
   body: string;
   data?: Record<string, string>;
@@ -65,13 +66,13 @@ export async function pushOrEmail(opts: {
   emailText: string;
   emailHtml?: string;
 }): Promise<"push" | "email" | "none"> {
+  // Attempt push first — but only treat it as done if OneSignal actually
+  // accepted a recipient. Unconfigured keys or a dead token deliver 0,
+  // in which case we fall through to email so the customer is never
+  // silently dropped.
   if (opts.tokens && opts.tokens.length > 0) {
-    try {
-      await sendPushToDeviceTokens(opts.tokens, opts.title, opts.body, opts.data);
-      return "push";
-    } catch {
-      // fall through to email
-    }
+    const { delivered } = await sendPushToDeviceTokens(opts.tokens, opts.title, opts.body, opts.data);
+    if (delivered > 0) return "push";
   }
   try {
     await sendEmail(opts.email, opts.emailSubject, opts.emailText, undefined, opts.emailHtml);
