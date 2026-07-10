@@ -17,6 +17,8 @@ function AuthForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailExpanded, setEmailExpanded] = useState(false);
   const [name, setName] = useState("");
+  const [awaitingCode, setAwaitingCode] = useState(false);
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -61,16 +63,25 @@ function AuthForm() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim().toLowerCase(),
           password,
           options: {
             data: { full_name: name.trim() },
+            // Kept as a fallback: if the email template still sends a link,
+            // tapping it confirms the account just like before.
             emailRedirectTo: `${window.location.origin}/customer/auth/callback`,
           },
         });
         if (error) throw error;
-        setInfo("Check your email for a confirmation link.");
+        // If email confirmation is disabled, Supabase returns a session — go in.
+        if (data.session) {
+          router.replace(redirectTo);
+          return;
+        }
+        // Otherwise collect the 6-digit code in-app (no leaving the app).
+        setAwaitingCode(true);
+        setInfo(`We sent a 6-digit code to ${email.trim()}.`);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
@@ -81,6 +92,44 @@ function AuthForm() {
       }
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setInfo(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otp.trim(),
+        type: "signup",
+      });
+      if (error) throw error;
+      router.replace(redirectTo);
+    } catch (e: any) {
+      setErr(e?.message ?? "That code didn't work. Check it and try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resendCode() {
+    setErr(null);
+    setInfo(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim().toLowerCase(),
+      });
+      if (error) throw error;
+      setInfo("New code sent.");
+    } catch (e: any) {
+      setErr(e?.message ?? "Couldn't resend the code.");
     } finally {
       setLoading(false);
     }
@@ -185,8 +234,62 @@ function AuthForm() {
 
         <div className="w-full max-w-sm">
 
-          {/* ── FORGOT PASSWORD MODE ── */}
-          {mode === "forgot" ? (
+          {/* ── VERIFY CODE MODE (in-app, after signup) ── */}
+          {awaitingCode ? (
+            <>
+              <p className="mb-6 text-center text-[13px] font-light leading-relaxed text-[#555]">
+                Enter the 6-digit code we emailed to{" "}
+                <span className="text-[#888]">{email.trim()}</span>
+              </p>
+              <form onSubmit={handleVerifyOtp} className="space-y-3">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="000000"
+                  required
+                  autoFocus
+                  maxLength={6}
+                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[22px] font-light tracking-[0.5em] text-[#ededed] outline-none placeholder:text-[#222] focus:border-[#2a2a2a]"
+                />
+                {err && (
+                  <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                    {err}
+                  </div>
+                )}
+                {info && (
+                  <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                    {info}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={loading || otp.length < 6}
+                  className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                >
+                  {loading ? "…" : "VERIFY & CONTINUE"}
+                </button>
+              </form>
+              <button
+                onClick={resendCode}
+                disabled={loading}
+                className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888] disabled:opacity-40"
+              >
+                Didn&apos;t get it? Resend code
+              </button>
+              <p className="mt-3 text-center text-[11px] font-light leading-relaxed text-[#333]">
+                Or tap the link in that email to confirm.
+              </p>
+              <button
+                onClick={() => { setAwaitingCode(false); setOtp(""); setErr(null); setInfo(null); }}
+                className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
+              >
+                Back
+              </button>
+            </>
+          ) : mode === "forgot" ? (
             <>
               <p className="mb-6 text-center text-[13px] font-light text-[#555]">
                 Enter your email and we&apos;ll send a reset link
