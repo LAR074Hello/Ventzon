@@ -196,8 +196,8 @@ export default function HowItWorksPage() {
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step1.jpg */}
                 <img
-                  src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1400&q=80&auto=format&fit=crop"
-                  alt="Coffee shop counter with register and menu boards"
+                  src="/site-images/mykonos.jpg"
+                  alt="Seaside restaurant terrace with a view over the water"
                   className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
                 />
               </div>
@@ -228,8 +228,8 @@ export default function HowItWorksPage() {
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step2.jpg */}
                 <img
-                  src="https://images.unsplash.com/photo-1556742077-0a6b6a4a4ac4?w=1400&q=80&auto=format&fit=crop"
-                  alt="Person using their smartphone in a retail store"
+                  src="/site-images/japanese-room.jpg"
+                  alt="Minimalist wood-panelled restaurant dining counter"
                   className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
                 />
               </div>
@@ -260,8 +260,8 @@ export default function HowItWorksPage() {
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step3.jpg */}
                 <img
-                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&q=80&auto=format&fit=crop"
-                  alt="Happy small business owner smiling at camera"
+                  src="/site-images/gold-bar.jpg"
+                  alt="Gold-leaf restaurant bar with a ceremonial gong"
                   className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
                 />
               </div>

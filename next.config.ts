@@ -30,13 +30,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  org: "ventzon",
-  project: "ventzon-web",
-  // Only upload source maps in CI (Vercel builds), not local dev
-  silent: true,
-  // Disable source map upload until SENTRY_AUTH_TOKEN is configured
-  sourcemaps: {
-    disable: !process.env.SENTRY_AUTH_TOKEN,
-  },
-});
+// withSentryConfig runs the Sentry build plugin, which reaches out to Sentry's
+// servers at startup. In sandboxed/offline dev that call never returns and hangs
+// `next dev` before it can even print its banner. Only wrap for production builds
+// (Vercel/CI), where the network is available and source maps actually matter.
+const config =
+  process.env.NODE_ENV === "production"
+    ? withSentryConfig(nextConfig, {
+        org: "ventzon",
+        project: "ventzon-web",
+        // Only upload source maps in CI (Vercel builds), not local dev
+        silent: true,
+        // Disable source map upload until SENTRY_AUTH_TOKEN is configured
+        sourcemaps: {
+          disable: !process.env.SENTRY_AUTH_TOKEN,
+        },
+      })
+    : nextConfig;
+
+export default config;

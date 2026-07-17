@@ -198,8 +198,8 @@ export default function Home() {
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=900&q=80&auto=format&fit=crop"
-                    alt="Warm cafe counter with ambient lighting"
+                    src="/site-images/mykonos.jpg"
+                    alt="Seaside restaurant terrace with a view over the water"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
@@ -225,8 +225,8 @@ export default function Home() {
               <ScrollReveal className="order-1 lg:order-2">
                 <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1556742111-a301076d9d18?w=900&q=80&auto=format&fit=crop"
-                    alt="Customer scanning phone at checkout"
+                    src="/site-images/japanese-room.jpg"
+                    alt="Minimalist wood-panelled restaurant dining counter"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
@@ -251,8 +251,8 @@ export default function Home() {
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=900&q=80&auto=format&fit=crop"
-                    alt="Artisan bakery display with warm lighting"
+                    src="/site-images/seaside-toast.jpg"
+                    alt="Friends raising a toast at a seaside restaurant at sunset"
                     className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
                   />
                 </div>
