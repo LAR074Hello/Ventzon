@@ -299,6 +299,9 @@ export default function ExplorePage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, Progress>>({});
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [friendActivity, setFriendActivity] = useState<
+    { profile_id: string | null; display_name: string; avatar_url: string | null; shop_slug: string; shop_name: string; created_at: string }[]
+  >([]);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -322,6 +325,12 @@ export default function ExplorePage() {
         }
         setProgressMap(map);
       })
+      .catch(() => {});
+
+    // Friends' recent check-ins (creators the user follows) — quiet no-op signed out.
+    fetch("/api/customer/friend-activity")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.activity && setFriendActivity(d.activity))
       .catch(() => {});
 
     // Location is optional — used only to sort "near you", never sent anywhere.
@@ -500,6 +509,39 @@ export default function ExplorePage() {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Friends' recent check-ins — creators you follow */}
+              {friendActivity.length > 0 && (
+                <>
+                  {almostThere.length > 0 && <Divider />}
+                  <div className="mb-8">
+                    <SectionHeader title="Friends were here" sub="Recent check-ins from creators you follow" />
+                    <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
+                      {friendActivity.slice(0, 10).map((a, i) => (
+                        <button
+                          key={`${a.profile_id}-${a.created_at}-${i}`}
+                          onClick={() => router.push(`/customer/shop/${a.shop_slug}`)}
+                          className="flex shrink-0 items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] px-4 py-3 text-left active:bg-[#111]"
+                        >
+                          {a.avatar_url ? (
+                            <img src={a.avatar_url} alt={a.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
+                          ) : (
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1a1a1a]">
+                              <span className="text-[13px] font-medium text-[#888]">{a.display_name.charAt(0).toUpperCase()}</span>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-[13px] font-medium text-[#ededed] whitespace-nowrap">{a.display_name}</p>
+                            <p className="text-[11px] font-normal text-[#666] whitespace-nowrap">
+                              checked in at {a.shop_name}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
 
               {/* Near you — the fastest answer to "where do I go right now" */}

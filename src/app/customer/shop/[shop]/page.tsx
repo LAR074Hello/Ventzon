@@ -148,6 +148,15 @@ export default function CustomerShopPage() {
   const [user, setUser] = useState<any>(null);
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
+  const [myProfileId, setMyProfileId] = useState<string | null>(null);
+
+  // Capture a referral code from shared links (?ref=<profile id>).
+  useEffect(() => {
+    try {
+      const ref = new URLSearchParams(window.location.search).get("ref");
+      if (ref) localStorage.setItem("ventzon_ref", ref);
+    } catch {}
+  }, []);
 
   const today = new Date().toISOString().slice(0, 10);
   const visits = status?.visits ?? 0;
@@ -188,6 +197,14 @@ export default function CustomerShopPage() {
             );
           }
         } catch {}
+
+        try {
+          const profRes = await fetch("/api/customer/creator-profile");
+          if (profRes.ok) {
+            const profData = await profRes.json();
+            if (profData.profile?.id) setMyProfileId(profData.profile.id);
+          }
+        } catch {}
       }
 
       setLoading(false);
@@ -204,10 +221,16 @@ export default function CustomerShopPage() {
     setCheckinLoading(true);
     await haptic("medium");
     try {
+      let referredBy: string | null = null;
+      try { referredBy = localStorage.getItem("ventzon_ref"); } catch {}
       const res = await fetch("/api/join/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, email: user.email }),
+        body: JSON.stringify({
+          shop_slug: shopSlug,
+          email: user.email,
+          ...(referredBy ? { referred_by: referredBy } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Check-in failed");
@@ -261,7 +284,8 @@ export default function CustomerShopPage() {
 
   async function handleShare() {
     await haptic("light");
-    const joinUrl = `${window.location.origin}/join/${shopSlug}`;
+    const ref = myProfileId ? `?ref=${myProfileId}` : "";
+    const joinUrl = `${window.location.origin}/customer/shop/${shopSlug}${ref}`;
     try {
       await navigator.share({ title: settings?.shop_name ?? "Check this out", text: `Earn rewards at ${settings?.shop_name ?? "this store"} on Ventzon!`, url: joinUrl });
     } catch {}

@@ -30,6 +30,17 @@ function getAccent(name: string) {
   return ACCENT_COLORS[hashName(name) % ACCENT_COLORS.length];
 }
 
+// Same lightweight inference the explore feed uses — no category column exists yet.
+function inferCategory(name: string, deal: string | null, details: string | null): string {
+  const text = `${name} ${deal ?? ""} ${details ?? ""}`.toLowerCase();
+  if (/coffee|café|cafe|latte|espresso|brew|tea/.test(text)) return "Coffee";
+  if (/pizza|burger|taco|sushi|food|eat|restaurant|grill|bbq|sandwich|wrap|bao/.test(text)) return "Food";
+  if (/salon|spa|beauty|nail|hair|skin|barber|cut/.test(text)) return "Beauty";
+  if (/gym|fitness|yoga|workout|sport|crossfit|class/.test(text)) return "Fitness";
+  if (/flower|florist|bouquet|shop|store|retail|boutique|fashion|cloth|grocer/.test(text)) return "Retail";
+  return "Local";
+}
+
 export default function MapPage() {
   const router = useRouter();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -120,23 +131,35 @@ export default function MapPage() {
       shops.forEach((shop) => {
         const accent = getAccent(shop.shop_name);
         const initial = shop.shop_name.charAt(0).toUpperCase();
+        const p = progressMap[shop.slug];
+        const rewardReady = p && p.visits >= p.goal;
+        const ring = rewardReady ? "#facc15" : accent;
+
+        const face = shop.logo_url
+          ? `<img src="${shop.logo_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+          : `<span style="font-size:14px;font-weight:600;color:${accent};font-family:sans-serif;">${initial}</span>`;
 
         const iconHtml = `
-          <div style="
-            width:36px; height:36px; border-radius:50%;
-            background:${accent}22; border:2px solid ${accent};
-            display:flex; align-items:center; justify-content:center;
-            font-size:14px; font-weight:600; color:${accent};
-            box-shadow:0 2px 8px rgba(0,0,0,0.6);
-            font-family:sans-serif;
-          ">${initial}</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <div style="
+              width:38px; height:38px; border-radius:50%;
+              background:${accent}22; border:2px solid ${ring};
+              display:flex; align-items:center; justify-content:center;
+              overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.6);
+            ">${face}</div>
+            ${rewardReady ? `<div style="
+              background:#facc15;color:#000;border-radius:999px;
+              font-size:8px;font-weight:700;letter-spacing:0.05em;
+              padding:1px 6px;font-family:sans-serif;white-space:nowrap;
+            ">REWARD</div>` : ""}
+          </div>
         `;
 
         const icon = L.divIcon({
           html: iconHtml,
           className: "",
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
+          iconSize: [38, rewardReady ? 52 : 38],
+          iconAnchor: [19, rewardReady ? 26 : 19],
         });
 
         const marker = L.marker([shop.latitude, shop.longitude], { icon }).addTo(map);
@@ -154,7 +177,7 @@ export default function MapPage() {
     return () => {
       cancelled = true;
     };
-  }, [shops]);
+  }, [shops, progressMap]);
 
   function locateMe() {
     if (!mapInstance.current || locating) return;
@@ -220,7 +243,18 @@ export default function MapPage() {
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-[15px] font-semibold text-[#f5f5f5] truncate">{selected.shop_name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[15px] font-semibold text-[#f5f5f5] truncate">{selected.shop_name}</p>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium tracking-[0.08em]"
+                      style={{
+                        backgroundColor: getAccent(selected.shop_name) + "20",
+                        color: getAccent(selected.shop_name),
+                      }}
+                    >
+                      {inferCategory(selected.shop_name, selected.deal_title, selected.deal_details).toUpperCase()}
+                    </span>
+                  </div>
                   {selected.address && (
                     <p className="text-[12px] text-[#555] truncate mt-0.5">{selected.address}</p>
                   )}

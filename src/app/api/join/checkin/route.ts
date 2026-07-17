@@ -72,6 +72,7 @@ export async function POST(req: Request) {
     const phone = String(body?.phone ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
     const pin = String(body?.pin ?? "").trim();
+    const referredBy = String(body?.referred_by ?? "").trim(); // customer_profiles.id of the referrer
 
     // Customer must provide either phone or email
     if (!shop_slug || (!phone && !email)) {
@@ -150,6 +151,7 @@ export async function POST(req: Request) {
     const isBonusDay = Array.isArray(bonusDays) && bonusDays.includes(now.getDay()); // 0=Sun…6=Sat
 
     let customer = existing as any;
+    const isNewCustomer = !customer;
 
     if (!customer) {
       // Create customer; hash PIN only if one was provided
@@ -290,6 +292,29 @@ export async function POST(req: Request) {
       }
     } catch (communityErr: any) {
       console.warn("[checkin] community boost non-fatal:", communityErr?.message);
+    }
+
+    // ── Referral credit (non-fatal) ──
+    // Only on a brand-new membership, only with a real referrer profile,
+    // never self-referral. UNIQUE(referred_email) caps it at one credit
+    // per referred person, ever.
+    if (referredBy && isNewCustomer && email) {
+      try {
+        const { data: referrerProfile } = await supabase
+          .from("customer_profiles")
+          .select("email")
+          .eq("id", referredBy)
+          .maybeSingle();
+        if (referrerProfile && referrerProfile.email !== email) {
+          await supabase.from("referrals").insert({
+            referrer_email: referrerProfile.email,
+            referred_email: email,
+            shop_slug,
+          });
+        }
+      } catch (refErr: any) {
+        console.warn("[checkin] referral credit non-fatal:", refErr?.message);
+      }
     }
 
     // ── Record reward event + report Stripe metered usage ──

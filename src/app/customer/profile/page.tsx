@@ -6,7 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import {
   LogOut, User, ChevronRight, Trophy, Share2, Bell,
   Trash2, Pencil, Check, X, Camera, Mail, HelpCircle, FileText,
-  Shield, Star, MessageSquare, Info, ChevronDown,
+  Shield, Star, MessageSquare, Info, ChevronDown, Sparkles, Eye,
 } from "lucide-react";
 
 type Membership = {
@@ -108,6 +108,15 @@ export default function ProfilePage() {
     notify_reward_expiry: true,
     notify_new_nearby: true,
   });
+  const [creatorProfile, setCreatorProfile] = useState<{
+    id: string;
+    is_creator: boolean;
+    bio: string | null;
+    show_on_leaderboard: boolean;
+  } | null>(null);
+  const [bioInput, setBioInput] = useState("");
+  const [editingBio, setEditingBio] = useState(false);
+  const [savingBio, setSavingBio] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -129,6 +138,21 @@ export default function ProfilePage() {
         if (prefsRes.ok) {
           const prefsData = await prefsRes.json();
           if (prefsData.prefs) setNotifPrefs(prefsData.prefs);
+        }
+      } catch {}
+      try {
+        const creatorRes = await fetch("/api/customer/creator-profile");
+        if (creatorRes.ok) {
+          const creatorData = await creatorRes.json();
+          if (creatorData.profile) {
+            setCreatorProfile({
+              id: creatorData.profile.id,
+              is_creator: creatorData.profile.is_creator,
+              bio: creatorData.profile.bio,
+              show_on_leaderboard: creatorData.profile.show_on_leaderboard,
+            });
+            setBioInput(creatorData.profile.bio ?? "");
+          }
         }
       } catch {}
       setLoading(false);
@@ -242,6 +266,29 @@ export default function ProfilePage() {
     const next = !emailNotif;
     setEmailNotif(next);
     await supabase.auth.updateUser({ data: { email_notif: next } });
+  }
+
+  async function updateCreatorProfile(updates: Record<string, unknown>) {
+    if (!creatorProfile) return;
+    const prev = creatorProfile;
+    setCreatorProfile({ ...creatorProfile, ...updates } as typeof creatorProfile);
+    try {
+      const res = await fetch("/api/customer/creator-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) setCreatorProfile(prev);
+    } catch {
+      setCreatorProfile(prev);
+    }
+  }
+
+  async function saveBio() {
+    setSavingBio(true);
+    await updateCreatorProfile({ bio: bioInput.trim() });
+    setSavingBio(false);
+    setEditingBio(false);
   }
 
   async function toggleNotifPref(key: keyof typeof notifPrefs) {
@@ -573,6 +620,80 @@ export default function ProfilePage() {
             chevron={false}
             rightNode={<Toggle enabled={notifPrefs.notify_new_nearby} onToggle={() => toggleNotifPref("notify_new_nearby")} />}
           />
+        </div>
+      </div>
+
+      {/* ── CREATOR ── */}
+      <div className="mb-6">
+        <SectionLabel title="Creator" />
+        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+          <SettingsRow
+            icon={Sparkles}
+            label="Become a Creator"
+            chevron={false}
+            rightNode={
+              <Toggle
+                enabled={creatorProfile?.is_creator ?? false}
+                onToggle={() => updateCreatorProfile({ is_creator: !(creatorProfile?.is_creator ?? false) })}
+              />
+            }
+          />
+          {creatorProfile?.is_creator && (
+            <>
+              <div className="border-t border-[#161616]" />
+              <SettingsRow
+                icon={User}
+                label="View public profile"
+                onClick={() => router.push(`/customer/creator/${creatorProfile.id}`)}
+              />
+              <div className="border-t border-[#161616]" />
+              <SettingsRow
+                icon={Pencil}
+                label="Bio"
+                value={creatorProfile.bio ? creatorProfile.bio.slice(0, 24) + (creatorProfile.bio.length > 24 ? "…" : "") : "Add a bio"}
+                onClick={() => { setBioInput(creatorProfile.bio ?? ""); setEditingBio(true); }}
+              />
+              {editingBio && (
+                <div className="border-t border-[#161616] px-5 py-4">
+                  <textarea
+                    value={bioInput}
+                    onChange={(e) => setBioInput(e.target.value)}
+                    placeholder="Tell people what you love about your local spots…"
+                    rows={3}
+                    maxLength={500}
+                    className="w-full resize-none rounded-xl border border-[#252525] bg-[#0a0a0a] px-3 py-2.5 text-[13px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
+                  />
+                  <div className="mt-2 flex justify-end gap-2">
+                    <button
+                      onClick={() => setEditingBio(false)}
+                      className="rounded-full border border-[#252525] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-[#888]"
+                    >
+                      CANCEL
+                    </button>
+                    <button
+                      onClick={saveBio}
+                      disabled={savingBio}
+                      className="rounded-full bg-[#ededed] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
+                    >
+                      {savingBio ? "SAVING…" : "SAVE"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="border-t border-[#161616]" />
+              <SettingsRow
+                icon={Eye}
+                label="Show me on leaderboards"
+                chevron={false}
+                rightNode={
+                  <Toggle
+                    enabled={creatorProfile.show_on_leaderboard}
+                    onToggle={() => updateCreatorProfile({ show_on_leaderboard: !creatorProfile.show_on_leaderboard })}
+                  />
+                }
+              />
+            </>
+          )}
         </div>
       </div>
 

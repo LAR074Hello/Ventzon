@@ -2,14 +2,16 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Compass, CreditCard, User, ScanLine, Map } from "lucide-react";
+import { Home, Trophy, User, ScanLine, Map, Bell } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
+// Home (Discover) · Map · [scan] · Rewards · Notifications · Profile
 const tabs = [
-  { href: "/customer/explore", label: "Explore", icon: Compass },
-  { href: "/customer/home", label: "My Cards", icon: CreditCard },
+  { href: "/customer/explore", label: "Home", icon: Home },
   { href: "/customer/map", label: "Map", icon: Map },
+  { href: "/customer/home", label: "Rewards", icon: Trophy },
+  { href: "/customer/notifications", label: "Alerts", icon: Bell },
   { href: "/customer/profile", label: "Profile", icon: User },
 ];
 
@@ -124,7 +126,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <div className="flex items-center px-2 py-2">
-            {/* Left tabs */}
+            {/* Left tabs: Home, Map */}
             {tabs.slice(0, 2).map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname?.startsWith(href + "/");
               const showBadge = href === "/customer/home" && readyCount > 0;
@@ -162,19 +164,27 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               </div>
             </button>
 
-            {/* Right tabs */}
+            {/* Right tabs: Rewards, Alerts, Profile */}
             {tabs.slice(2).map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname?.startsWith(href + "/");
+              const showBadge = href === "/customer/home" && readyCount > 0;
               return (
                 <button
                   key={href}
                   onClick={() => router.push(href)}
                   className="flex flex-1 flex-col items-center gap-1 py-1"
                 >
-                  <Icon
-                    className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}
-                    strokeWidth={active ? 1.5 : 1}
-                  />
+                  <div className="relative">
+                    <Icon
+                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}
+                      strokeWidth={active ? 1.5 : 1}
+                    />
+                    {showBadge && (
+                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500">
+                        <span className="text-[9px] font-medium text-black">{readyCount}</span>
+                      </div>
+                    )}
+                  </div>
                   <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}>
                     {label.toUpperCase()}
                   </span>

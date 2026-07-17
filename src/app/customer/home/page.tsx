@@ -3,7 +3,26 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Check, Compass, Trophy, WifiOff, ChevronRight } from "lucide-react";
+import { Check, Compass, Trophy, WifiOff, ChevronRight, Stamp, Award, Medal } from "lucide-react";
+
+type Passport = {
+  period_label: string;
+  goal: number;
+  visited_new: number;
+  total_new: number;
+  unlocked: boolean;
+  spots: { shop_slug: string; shop_name: string }[];
+};
+
+type Leader = {
+  profile_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  places: number;
+  checkins: number;
+};
+
+type BadgeInfo = { id: string; label: string; description: string; earned: boolean };
 
 type Membership = {
   shop_slug: string;
@@ -73,6 +92,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [offline, setOffline] = useState(false);
+  const [passport, setPassport] = useState<Passport | null>(null);
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [leaderPeriod, setLeaderPeriod] = useState("");
+  const [badges, setBadges] = useState<BadgeInfo[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
@@ -110,6 +133,23 @@ export default function HomePage() {
       }
       setUser(data.session.user);
       loadMemberships().finally(() => setLoading(false));
+
+      // Passport, badges, and leaderboard load quietly alongside the cards.
+      fetch("/api/customer/passport")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d?.passport && setPassport(d.passport))
+        .catch(() => {});
+      fetch("/api/customer/creator-profile")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d?.badges && setBadges(d.badges))
+        .catch(() => {});
+      fetch("/api/customer/leaderboard")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.leaders) setLeaders(d.leaders);
+          if (d?.period_label) setLeaderPeriod(d.period_label);
+        })
+        .catch(() => {});
     });
   }, []);
 
@@ -166,7 +206,7 @@ export default function HomePage() {
         <p className="text-[13px] font-normal text-[#666]">
           {firstName ? `Welcome back, ${firstName}` : "Your loyalty cards"}
         </p>
-        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] text-[#f5f5f5]">My Cards</h1>
+        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] text-[#f5f5f5]">Rewards</h1>
       </div>
 
       {/* Refresh indicator */}
@@ -206,6 +246,47 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Local Passport — visit new spots this month, unlock the stamp */}
+      {!loading && passport && (
+        <div className="mx-5 mb-5 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Stamp className="h-3.5 w-3.5 text-[#666]" />
+              <p className="text-[11px] font-light tracking-[0.18em] text-[#666]">
+                LOCAL PASSPORT · {passport.period_label.toUpperCase()}
+              </p>
+            </div>
+            {passport.unlocked && (
+              <span className="rounded-full bg-emerald-950/40 border border-emerald-900/40 px-2.5 py-0.5 text-[10px] font-medium text-emerald-400">
+                EXPLORER UNLOCKED
+              </span>
+            )}
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            {Array.from({ length: passport.goal }).map((_, i) => (
+              <div
+                key={i}
+                className={`flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300 ${
+                  i < passport.visited_new
+                    ? "bg-[#ededed]"
+                    : "border-2 border-dashed border-[#2a2a2a]"
+                }`}
+              >
+                {i < passport.visited_new && <Check className="h-4 w-4 text-black" strokeWidth={2.5} />}
+              </div>
+            ))}
+            <p className="ml-auto text-[13px] font-semibold text-[#555]">
+              {passport.visited_new}<span className="text-[#2a2a2a]">/{passport.goal}</span>
+            </p>
+          </div>
+          <p className="mt-3 text-[12px] font-normal text-[#666]">
+            {passport.unlocked
+              ? `You explored ${passport.total_new} new spot${passport.total_new === 1 ? "" : "s"} in ${passport.period_label} — Explorer stamp earned`
+              : `Visit ${passport.goal - passport.visited_new} more new spot${passport.goal - passport.visited_new === 1 ? "" : "s"} in ${passport.period_label} to earn the Explorer stamp`}
+          </p>
+        </div>
+      )}
+
       {/* Cards */}
       <div className="flex-1 px-5 pb-4">
         {loading ? (
@@ -238,6 +319,60 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Badges — earned milestones */}
+      {!loading && badges.some((b) => b.earned) && (
+        <div className="px-5 pb-2">
+          <div className="mb-3 flex items-center gap-2">
+            <Award className="h-3.5 w-3.5 text-[#555]" />
+            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">YOUR BADGES</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {badges.filter((b) => b.earned).map((b) => (
+              <div key={b.id} className="rounded-full border border-[#2a2a2a] bg-[#0d0d0d] px-3.5 py-1.5">
+                <p className="text-[11px] font-medium text-[#d0d0d0]">{b.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top explorers — opt-in, creators only */}
+      {!loading && leaders.length > 0 && (
+        <div className="px-5 pb-8 pt-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Medal className="h-3.5 w-3.5 text-[#555]" />
+            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">
+              TOP EXPLORERS{leaderPeriod ? ` · ${leaderPeriod.toUpperCase()}` : ""}
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
+            {leaders.map((l, i) => (
+              <button
+                key={l.profile_id}
+                onClick={() => router.push(`/customer/creator/${l.profile_id}`)}
+                className={`flex w-full items-center gap-3.5 px-4 py-3 text-left active:bg-[#0d0d0d] ${i > 0 ? "border-t border-[#161616]" : ""}`}
+              >
+                <span className="w-5 text-center text-[13px] font-semibold text-[#555]">{i + 1}</span>
+                {l.avatar_url ? (
+                  <img src={l.avatar_url} alt={l.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1a1a1a]">
+                    <span className="text-[13px] font-medium text-[#888]">{l.display_name.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-medium text-[#d0d0d0] truncate">{l.display_name}</p>
+                  <p className="text-[11px] font-normal text-[#555]">
+                    {l.places} place{l.places === 1 ? "" : "s"} · {l.checkins} check-in{l.checkins === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#333]" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
