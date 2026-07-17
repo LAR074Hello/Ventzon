@@ -20,12 +20,12 @@ export async function GET() {
         address,
         latitude,
         longitude,
+        logo_url,
         shop_settings (
           shop_name,
           deal_title,
           deal_details,
-          reward_goal,
-          logo_url
+          reward_goal
         )
       `)
       .not("latitude", "is", null)
@@ -45,7 +45,7 @@ export async function GET() {
         deal_title: s?.deal_title ?? null,
         deal_details: s?.deal_details ?? null,
         reward_goal: s?.reward_goal ?? 5,
-        logo_url: s?.logo_url ?? null,
+        logo_url: row.logo_url ?? null,
       };
     });
 
