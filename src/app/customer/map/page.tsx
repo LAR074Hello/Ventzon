@@ -40,6 +40,7 @@ export default function MapPage() {
   const [selected, setSelected] = useState<ShopPin | null>(null);
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
+  const [progressMap, setProgressMap] = useState<Record<string, { visits: number; goal: number }>>({});
 
   // Load shops
   useEffect(() => {
@@ -48,6 +49,19 @@ export default function MapPage() {
       .then((d) => setShops(d.shops ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Live reward progress for the detail sheet — signed-out users skip this.
+    fetch("/api/customer/memberships")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d?.memberships) return;
+        const map: Record<string, { visits: number; goal: number }> = {};
+        for (const m of d.memberships) {
+          map[m.shop_slug] = { visits: m.visits ?? 0, goal: m.reward_goal ?? 5 };
+        }
+        setProgressMap(map);
+      })
+      .catch(() => {});
   }, []);
 
   // Init map
@@ -228,7 +242,33 @@ export default function MapPage() {
                 {selected.deal_details && (
                   <p className="mt-0.5 text-[12px] text-[#666]">{selected.deal_details}</p>
                 )}
-                <p className="mt-2 text-[11px] text-[#444]">After {selected.reward_goal} visits</p>
+                {(() => {
+                  const p = progressMap[selected.slug];
+                  if (!p) {
+                    return <p className="mt-2 text-[11px] text-[#444]">After {selected.reward_goal} visits</p>;
+                  }
+                  const remaining = Math.max(p.goal - p.visits, 0);
+                  const accent = getAccent(selected.shop_name);
+                  if (remaining === 0) {
+                    return <p className="mt-2 text-[11px] font-medium text-yellow-500">Your reward is ready to redeem</p>;
+                  }
+                  return (
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: Math.min(p.goal, 8) }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-1.5 w-1.5 rounded-full"
+                            style={{ backgroundColor: i < p.visits ? accent : "#2a2a2a" }}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-[11px]" style={{ color: accent }}>
+                        {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

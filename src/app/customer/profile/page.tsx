@@ -103,6 +103,11 @@ export default function ProfilePage() {
   const [birthDay, setBirthDay] = useState<number | "">("");
   const [savingBirthday, setSavingBirthday] = useState(false);
   const [birthdaySaved, setBirthdaySaved] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState({
+    notify_drops: true,
+    notify_reward_expiry: true,
+    notify_new_nearby: true,
+  });
 
   useEffect(() => {
     async function load() {
@@ -119,6 +124,13 @@ export default function ProfilePage() {
           setBirthDay(data.birthday.birth_day ?? "");
         }
       }
+      try {
+        const prefsRes = await fetch("/api/customer/notification-prefs");
+        if (prefsRes.ok) {
+          const prefsData = await prefsRes.json();
+          if (prefsData.prefs) setNotifPrefs(prefsData.prefs);
+        }
+      } catch {}
       setLoading(false);
     }
     load();
@@ -230,6 +242,21 @@ export default function ProfilePage() {
     const next = !emailNotif;
     setEmailNotif(next);
     await supabase.auth.updateUser({ data: { email_notif: next } });
+  }
+
+  async function toggleNotifPref(key: keyof typeof notifPrefs) {
+    const next = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(next); // optimistic
+    try {
+      const res = await fetch("/api/customer/notification-prefs", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: next[key] }),
+      });
+      if (!res.ok) setNotifPrefs(notifPrefs);
+    } catch {
+      setNotifPrefs(notifPrefs);
+    }
   }
 
   if (loading) {
@@ -524,6 +551,27 @@ export default function ProfilePage() {
             label="Email notifications"
             chevron={false}
             rightNode={<Toggle enabled={emailNotif} onToggle={toggleEmailNotif} />}
+          />
+          <div className="border-t border-[#161616]" />
+          <SettingsRow
+            icon={Bell}
+            label="Drops from followed stores"
+            chevron={false}
+            rightNode={<Toggle enabled={notifPrefs.notify_drops} onToggle={() => toggleNotifPref("notify_drops")} />}
+          />
+          <div className="border-t border-[#161616]" />
+          <SettingsRow
+            icon={Trophy}
+            label="Reward expiry reminders"
+            chevron={false}
+            rightNode={<Toggle enabled={notifPrefs.notify_reward_expiry} onToggle={() => toggleNotifPref("notify_reward_expiry")} />}
+          />
+          <div className="border-t border-[#161616]" />
+          <SettingsRow
+            icon={Info}
+            label="New places nearby"
+            chevron={false}
+            rightNode={<Toggle enabled={notifPrefs.notify_new_nearby} onToggle={() => toggleNotifPref("notify_new_nearby")} />}
           />
         </div>
       </div>

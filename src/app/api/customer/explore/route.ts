@@ -25,13 +25,21 @@ export async function GET() {
     const { data: shopRows } = slugs.length
       ? await supabase
           .from("shops")
-          .select("slug, logo_url, created_at")
+          .select("slug, logo_url, created_at, latitude, longitude")
           .in("slug", slugs)
       : { data: [] };
 
-    const shopMap: Record<string, { logo_url: string | null; created_at: string | null }> = {};
+    const shopMap: Record<
+      string,
+      { logo_url: string | null; created_at: string | null; latitude: number | null; longitude: number | null }
+    > = {};
     for (const s of shopRows ?? []) {
-      shopMap[s.slug] = { logo_url: s.logo_url ?? null, created_at: s.created_at ?? null };
+      shopMap[s.slug] = {
+        logo_url: s.logo_url ?? null,
+        created_at: s.created_at ?? null,
+        latitude: s.latitude ?? null,
+        longitude: s.longitude ?? null,
+      };
     }
 
     // Get member counts per shop — bounded to 10k rows to avoid full table scans
@@ -56,6 +64,8 @@ export async function GET() {
       reward_goal: s.reward_goal ?? 5,
       logo_url: shopMap[s.shop_slug]?.logo_url ?? null,
       created_at: shopMap[s.shop_slug]?.created_at ?? null,
+      latitude: shopMap[s.shop_slug]?.latitude ?? null,
+      longitude: shopMap[s.shop_slug]?.longitude ?? null,
       member_count: countMap[s.shop_slug] ?? 0,
     }));
 

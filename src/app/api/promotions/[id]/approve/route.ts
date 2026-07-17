@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { sendEmail } from "@/lib/resend";
+import { buildTokenMap, pushOrEmail } from "@/lib/notify";
+import { canNotify, claimNotification } from "@/lib/retention";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -92,12 +94,71 @@ export async function POST(
 
     if (custErr) return NextResponse.json({ error: custErr.message }, { status: 500 });
 
+    // Notify followers first — push when they have a device token,
+    // email otherwise — respecting per-type prefs and frequency caps.
+    // The unique claim on (email, 'drop', promo.id) keeps this idempotent.
+    const { data: followers } = await adminClient
+      .from("customer_follows")
+      .select("email")
+      .eq("shop_slug", promo.shop_slug);
+
+    const followerEmails = [
+      ...new Set(
+        (followers ?? [])
+          .map((f) => (f.email || "").toLowerCase().trim())
+          .filter(Boolean)
+      ),
+    ];
+
+    const alreadyNotified = new Set<string>();
+    let followersNotified = 0;
+
+    if (followerEmails.length > 0) {
+      const { data: shopSettings } = await adminClient
+        .from("shop_settings")
+        .select("shop_name")
+        .eq("shop_slug", promo.shop_slug)
+        .maybeSingle();
+      const shopName = shopSettings?.shop_name ?? promo.shop_slug;
+      const tokenMap = await buildTokenMap(adminClient, followerEmails);
+
+      for (const email of followerEmails) {
+        if (!(await canNotify(adminClient, email, "drop"))) continue;
+        const claimed = await claimNotification(adminClient, {
+          email,
+          type: "drop",
+          shopSlug: promo.shop_slug,
+          refId: promo.id,
+        });
+        if (!claimed) continue;
+
+        const channel = await pushOrEmail({
+          email,
+          tokens: tokenMap[email],
+          title: `${shopName} just posted`,
+          body: promo.body,
+          data: { shop_slug: promo.shop_slug, type: "drop" },
+          emailSubject: `New from ${shopName}`,
+          emailText: promo.body,
+        });
+        if (channel !== "none") {
+          alreadyNotified.add(email);
+          followersNotified++;
+        }
+      }
+    }
+
     // Send email notifications to each customer
     let sent = 0;
     let failed = 0;
 
     for (const customer of customers ?? []) {
       if (!customer.email) continue;
+      // Followers notified above shouldn't get the same promo twice.
+      if (alreadyNotified.has(customer.email.toLowerCase().trim())) {
+        sent++;
+        continue;
+      }
       let msgStatus: "sent" | "failed" = "sent";
       let errorMessage: string | null = null;
 
@@ -132,6 +193,7 @@ export async function POST(
         total_customers: (customers ?? []).length,
         sent,
         failed,
+        followers_notified: followersNotified,
       },
       { status: 200 }
     );

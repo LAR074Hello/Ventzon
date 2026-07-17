@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Check, ArrowLeft, Share2, Trophy, X, Clock } from "lucide-react";
+import { Check, ArrowLeft, Share2, Trophy, X, Clock, Bell, BellRing } from "lucide-react";
 
 type ShopSettings = {
   shop_slug: string;
@@ -146,6 +146,8 @@ export default function CustomerShopPage() {
   const [newStampIndex, setNewStampIndex] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [following, setFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
   const visits = status?.visits ?? 0;
@@ -176,6 +178,16 @@ export default function CustomerShopPage() {
         const match = (memberData.memberships ?? []).find((m: any) => m.shop_slug === shopSlug);
         if (match) setStatus({ visits: match.visits, last_checkin_date: match.last_checkin_date });
         await loadHistory();
+
+        try {
+          const followRes = await fetch("/api/customer/follows");
+          if (followRes.ok) {
+            const followData = await followRes.json();
+            setFollowing(
+              (followData.follows ?? []).some((f: any) => f.shop_slug === shopSlug)
+            );
+          }
+        } catch {}
       }
 
       setLoading(false);
@@ -221,6 +233,30 @@ export default function CustomerShopPage() {
     if (match) setStatus({ visits: match.visits, last_checkin_date: match.last_checkin_date });
     if (user?.email) await loadHistory();
     setNewStampIndex(null);
+  }
+
+  async function toggleFollow() {
+    if (!user?.email) {
+      router.push(`/customer/auth?redirect=/customer/shop/${shopSlug}`);
+      return;
+    }
+    if (followBusy) return;
+    const next = !following;
+    setFollowBusy(true);
+    setFollowing(next); // optimistic
+    await haptic("light");
+    try {
+      const res = await fetch("/api/customer/follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, follow: next }),
+      });
+      if (!res.ok) setFollowing(!next);
+    } catch {
+      setFollowing(!next);
+    } finally {
+      setFollowBusy(false);
+    }
   }
 
   async function handleShare() {
@@ -302,6 +338,21 @@ export default function CustomerShopPage() {
             {settings.deal_details && <p className="mt-1 text-[12px] font-normal text-[#666]">{settings.deal_details}</p>}
           </div>
         )}
+        <button
+          onClick={toggleFollow}
+          disabled={followBusy}
+          className={`mt-4 flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] transition-all duration-200 ${
+            following
+              ? "border border-[#333] bg-[#111] text-[#ededed]"
+              : "bg-[#ededed] text-black active:bg-[#d4d4d4]"
+          }`}
+        >
+          {following ? <BellRing className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
+          {following ? "FOLLOWING" : "FOLLOW"}
+        </button>
+        <p className="mt-2 text-[11px] font-normal text-[#555]">
+          {following ? "You'll hear about new drops from this store" : "Get notified when they post something new"}
+        </p>
       </div>
 
       {/* Loyalty card */}

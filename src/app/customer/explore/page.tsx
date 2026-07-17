@@ -12,8 +12,26 @@ type Shop = {
   reward_goal: number;
   logo_url: string | null;
   created_at: string | null;
+  latitude: number | null;
+  longitude: number | null;
   member_count: number;
 };
+
+type Progress = { visits: number; goal: number };
+
+function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function fmtMiles(mi: number) {
+  return mi < 0.1 ? "nearby" : mi < 10 ? `${mi.toFixed(1)} mi` : `${Math.round(mi)} mi`;
+}
 
 const CATEGORIES = [
   { id: "all", label: "All" },
@@ -75,9 +93,10 @@ function greeting() {
 }
 
 /* ── Large featured card (horizontal scroll) ── */
-function FeaturedCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
+function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void; progress?: Progress }) {
   const [g0, g1] = getGradient(shop.shop_name);
   const accent = getAccent(shop.shop_name);
+  const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
     <button
       onClick={onClick}
@@ -99,20 +118,35 @@ function FeaturedCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
           <p className="text-[16px] font-medium text-white leading-tight">{shop.shop_name}</p>
           <p className="mt-0.5 text-[12px] text-white/60 truncate">{shop.deal_title}</p>
         </div>
-        <div className="absolute top-3 right-3 rounded-full px-2.5 py-1" style={{ backgroundColor: accent + "30", border: `1px solid ${accent}50` }}>
-          <span className="text-[10px] font-light tracking-[0.08em]" style={{ color: accent }}>
-            {shop.reward_goal}× REWARD
-          </span>
-        </div>
+        {progress && remaining === 0 ? (
+          <div className="absolute top-3 right-3 rounded-full bg-yellow-400 px-2.5 py-1">
+            <span className="text-[10px] font-bold tracking-[0.08em] text-black">READY</span>
+          </div>
+        ) : progress && remaining !== null ? (
+          <div className="absolute top-3 right-3 rounded-full px-2.5 py-1" style={{ backgroundColor: accent + "30", border: `1px solid ${accent}50` }}>
+            <span className="text-[10px] font-medium tracking-[0.08em]" style={{ color: accent }}>
+              {remaining} TO GO
+            </span>
+          </div>
+        ) : (
+          <div className="absolute top-3 right-3 rounded-full px-2.5 py-1" style={{ backgroundColor: accent + "30", border: `1px solid ${accent}50` }}>
+            <span className="text-[10px] font-light tracking-[0.08em]" style={{ color: accent }}>
+              {shop.reward_goal}× REWARD
+            </span>
+          </div>
+        )}
       </div>
     </button>
   );
 }
 
 /* ── Store row card ── */
-function StoreCard({ shop, onClick, tag }: { shop: Shop; onClick: () => void; tag?: string }) {
+function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
+  shop: Shop; onClick: () => void; tag?: string; progress?: Progress; distanceMi?: number | null;
+}) {
   const [g0, g1] = getGradient(shop.shop_name);
   const accent = getAccent(shop.shop_name);
+  const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
     <button
       onClick={onClick}
@@ -139,12 +173,37 @@ function StoreCard({ shop, onClick, tag }: { shop: Shop; onClick: () => void; ta
           )}
         </div>
         <p className="mt-0.5 text-[12px] font-normal text-[#666] truncate">{shop.deal_title}</p>
-        <p className="mt-0.5 text-[11px] font-normal text-[#444]">
-          {shop.reward_goal} visits to reward
-          {shop.member_count > 0 && (
-            <span className="ml-2 text-[#333]">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
-          )}
-        </p>
+        {progress && remaining !== null && remaining > 0 ? (
+          <div className="mt-1 flex items-center gap-1.5">
+            <div className="flex gap-0.5">
+              {Array.from({ length: Math.min(progress.goal, 8) }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: i < progress.visits ? accent : "#2a2a2a" }}
+                />
+              ))}
+            </div>
+            <p className="text-[11px] font-normal" style={{ color: accent }}>
+              {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
+            </p>
+          </div>
+        ) : progress && remaining === 0 ? (
+          <p className="mt-1 text-[11px] font-medium text-yellow-500">Reward ready to redeem</p>
+        ) : (
+          <p className="mt-0.5 text-[11px] font-normal text-[#444]">
+            {shop.reward_goal} visits to reward
+            {shop.member_count > 0 && (
+              <span className="ml-2 text-[#333]">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
+            )}
+          </p>
+        )}
+        {distanceMi != null && (
+          <p className="mt-0.5 text-[11px] font-normal text-[#444]">
+            <MapPin className="mr-1 inline h-2.5 w-2.5 align-[-1px] text-[#444]" />
+            {fmtMiles(distanceMi)}
+          </p>
+        )}
       </div>
     </button>
   );
@@ -166,9 +225,11 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
 }
 
 /* ── Deal card — leads with the reward text ── */
-function DealCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
+function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void; progress?: Progress }) {
   const [g0, g1] = getGradient(shop.shop_name);
   const accent = getAccent(shop.shop_name);
+  const filledDots = progress ? Math.min(progress.visits, Math.min(shop.reward_goal, 8)) : 0;
+  const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
     <button
       onClick={onClick}
@@ -196,14 +257,24 @@ function DealCard({ shop, onClick }: { shop: Shop; onClick: () => void }) {
         <p className="text-[12px] font-normal text-[#666] line-clamp-2 mb-3">{shop.deal_details}</p>
       )}
 
-      {/* Stamp requirement */}
+      {/* Stamp requirement — filled with the customer's live progress */}
       <div className="flex items-center gap-1.5 mt-auto">
         <div className="flex gap-0.5">
           {Array.from({ length: Math.min(shop.reward_goal, 8) }).map((_, i) => (
-            <div key={i} className="h-1.5 w-1.5 rounded-full bg-[#2a2a2a]" />
+            <div
+              key={i}
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: i < filledDots ? accent : "#2a2a2a" }}
+            />
           ))}
         </div>
-        <p className="text-[11px] font-normal text-[#555]">after {shop.reward_goal} visits</p>
+        <p className="text-[11px] font-normal" style={{ color: progress && remaining !== null && remaining > 0 ? accent : "#555" }}>
+          {progress && remaining === 0
+            ? "ready to redeem"
+            : progress && remaining !== null
+            ? `${remaining} visit${remaining === 1 ? "" : "s"} to go`
+            : `after ${shop.reward_goal} visits`}
+        </p>
       </div>
     </button>
   );
@@ -226,6 +297,8 @@ function Divider() {
 
 export default function ExplorePage() {
   const [shops, setShops] = useState<Shop[]>([]);
+  const [progressMap, setProgressMap] = useState<Record<string, Progress>>({});
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -237,6 +310,28 @@ export default function ExplorePage() {
       .then((r) => r.json())
       .then((d) => setShops(d.shops ?? []))
       .finally(() => setLoading(false));
+
+    // Live reward progress — signed-out users simply get the default cards.
+    fetch("/api/customer/memberships")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d?.memberships) return;
+        const map: Record<string, Progress> = {};
+        for (const m of d.memberships) {
+          map[m.shop_slug] = { visits: m.visits ?? 0, goal: m.reward_goal ?? 5 };
+        }
+        setProgressMap(map);
+      })
+      .catch(() => {});
+
+    // Location is optional — used only to sort "near you", never sent anywhere.
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {},
+        { timeout: 6000, maximumAge: 300000 }
+      );
+    }
   }, []);
 
   const go = (slug: string) => router.push(`/customer/shop/${slug}`);
@@ -257,6 +352,41 @@ export default function ExplorePage() {
   const deals = filtered.filter(isLimitedDeal).slice(0, 5);
   const popular = [...filtered].sort((a, b) => b.member_count - a.member_count).slice(0, 8);
   const quickWins = [...filtered].sort((a, b) => a.reward_goal - b.reward_goal).slice(0, 8);
+
+  const distanceFor = (s: Shop): number | null =>
+    userLoc && s.latitude != null && s.longitude != null
+      ? haversineMiles(userLoc.lat, userLoc.lng, s.latitude, s.longitude)
+      : null;
+
+  // "Almost there" — cards with progress, closest to the reward first.
+  const almostThere = filtered
+    .filter((s) => {
+      const p = progressMap[s.shop_slug];
+      return p && p.visits > 0;
+    })
+    .sort((a, b) => {
+      const ra = Math.max(progressMap[a.shop_slug].goal - progressMap[a.shop_slug].visits, 0);
+      const rb = Math.max(progressMap[b.shop_slug].goal - progressMap[b.shop_slug].visits, 0);
+      return ra - rb;
+    })
+    .slice(0, 6);
+
+  // "Near you" — proximity first, nudged up by reward progress so the
+  // fastest answer to "where should I go right now" floats to the top.
+  const nearYou = userLoc
+    ? filtered
+        .filter((s) => s.latitude != null && s.longitude != null)
+        .map((s) => {
+          const dist = distanceFor(s) as number;
+          const p = progressMap[s.shop_slug];
+          const remaining = p ? Math.max(p.goal - p.visits, 0) : null;
+          const boost = remaining === 0 ? 2 : p && p.visits > 0 ? 1 : 0;
+          return { shop: s, dist, score: dist - boost };
+        })
+        .filter((x) => x.dist <= 25)
+        .sort((a, b) => a.score - b.score)
+        .slice(0, 8)
+    : [];
 
   return (
     <div className="flex min-h-full flex-col bg-black">
@@ -333,7 +463,9 @@ export default function ExplorePage() {
             <>
               <p className="px-5 pb-3 text-[12px] font-normal text-[#666]">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
               <div className="divide-y divide-[#0f0f0f]">
-                {searchResults.map((s) => <StoreCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                {searchResults.map((s) => (
+                  <StoreCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} distanceMi={distanceFor(s)} onClick={() => go(s.shop_slug)} />
+                ))}
               </div>
             </>
           )}
@@ -352,12 +484,53 @@ export default function ExplorePage() {
             </div>
           ) : (
             <>
+              {/* Almost there — your progress, closest reward first */}
+              {almostThere.length > 0 && (
+                <div className="mb-8">
+                  <SectionHeader title="Almost there" sub="You're close to these rewards" />
+                  <div className="divide-y divide-[#0f0f0f]">
+                    {almostThere.map((s) => (
+                      <StoreCard
+                        key={s.shop_slug}
+                        shop={s}
+                        progress={progressMap[s.shop_slug]}
+                        distanceMi={distanceFor(s)}
+                        onClick={() => go(s.shop_slug)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Near you — the fastest answer to "where do I go right now" */}
+              {nearYou.length > 0 && (
+                <>
+                  {almostThere.length > 0 && <Divider />}
+                  <div className="mb-8">
+                    <SectionHeader title="Near you" sub="Closest rewards first" />
+                    <div className="divide-y divide-[#0f0f0f]">
+                      {nearYou.map(({ shop: s, dist }) => (
+                        <StoreCard
+                          key={s.shop_slug}
+                          shop={s}
+                          progress={progressMap[s.shop_slug]}
+                          distanceMi={dist}
+                          onClick={() => go(s.shop_slug)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {(almostThere.length > 0 || nearYou.length > 0) && <Divider />}
+
               {/* Featured horizontal scroll */}
               {featured.length > 0 && (
                 <div className="mb-8">
                   <SectionHeader title="Featured" sub="Top reward programs" />
                   <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                    {featured.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                    {featured.map((s) => <FeaturedCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                   </div>
                 </div>
               )}
@@ -369,7 +542,7 @@ export default function ExplorePage() {
                   <div className="mb-8">
                     <SectionHeader title="What you'll earn" sub="The actual rewards on offer" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                      {filtered.map((s) => <DealCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                      {filtered.map((s) => <DealCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
@@ -382,7 +555,7 @@ export default function ExplorePage() {
                   <div className="mb-8">
                     <SectionHeader title="Popular" sub="Most members on Ventzon" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                      {popular.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                      {popular.map((s) => <FeaturedCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
@@ -395,7 +568,7 @@ export default function ExplorePage() {
                   <div className="mb-8">
                     <SectionHeader title="Quick wins" sub="Earn a reward in fewer visits" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                      {quickWins.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                      {quickWins.map((s) => <FeaturedCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
@@ -408,7 +581,7 @@ export default function ExplorePage() {
                   <div className="mb-2">
                     <SectionHeader title="New on Ventzon" sub="Recently joined" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                      {newArrivals.map((s) => <FeaturedCard key={s.shop_slug} shop={s} onClick={() => go(s.shop_slug)} />)}
+                      {newArrivals.map((s) => <FeaturedCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
