@@ -18,6 +18,28 @@ async function getSessionUser() {
   return user?.email ? user : null;
 }
 
+// GET /api/customer/posts → the current user's own posts (any role —
+// the Profile tab grid shows them even before becoming a creator)
+export async function GET() {
+  try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const admin = adminClient();
+    const { data, error } = await admin
+      .from("posts")
+      .select("id, body, shop_slug, media_url, media_type, created_at")
+      .eq("author_email", user.email!.toLowerCase())
+      .order("created_at", { ascending: false })
+      .limit(60);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ posts: data ?? [] });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+  }
+}
+
 // POST /api/customer/posts { body, shop_slug? } — creators only
 export async function POST(req: Request) {
   try {

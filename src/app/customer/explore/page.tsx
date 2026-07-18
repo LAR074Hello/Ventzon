@@ -316,6 +316,10 @@ export default function ExplorePage() {
     try {
       const t = localStorage.getItem("ventzon_home_tab");
       if (t === "explore" || t === "rewards") setHomeTab(t);
+      // Shared profile links land here carrying a referral code — stash it
+      // like the shop page does, credited on the first check-in.
+      const ref = new URLSearchParams(window.location.search).get("ref");
+      if (ref) localStorage.setItem("ventzon_ref", ref);
     } catch {}
   }, []);
 
