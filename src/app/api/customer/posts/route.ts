@@ -27,7 +27,17 @@ export async function POST(req: Request) {
     const payload = await req.json().catch(() => ({}));
     const text = String(payload?.body ?? "").trim().slice(0, 1000);
     const shopSlug = payload?.shop_slug ? String(payload.shop_slug).toLowerCase().trim() : null;
-    if (!text) return NextResponse.json({ error: "Post body required" }, { status: 400 });
+    const mediaUrl = payload?.media_url ? String(payload.media_url).trim() : null;
+    const mediaType =
+      payload?.media_type === "image" || payload?.media_type === "video"
+        ? payload.media_type
+        : null;
+    if (!text && !mediaUrl) {
+      return NextResponse.json({ error: "Post body or media required" }, { status: 400 });
+    }
+    if (mediaUrl && (!/^https:\/\//.test(mediaUrl) || !mediaType)) {
+      return NextResponse.json({ error: "Invalid media" }, { status: 400 });
+    }
 
     const admin = adminClient();
     const profile = await getOrCreateProfile(admin, user.email!);
@@ -50,8 +60,13 @@ export async function POST(req: Request) {
         author_email: user.email!.toLowerCase(),
         shop_slug: shopSlug,
         body: text,
+        media_url: mediaUrl,
+        media_type: mediaUrl ? mediaType : null,
+        // 'community' (no linked business) stays stubbed off — see the
+        // COMMUNITY_FEED_ENABLED note in /api/customer/feed.
+        post_kind: "business",
       })
-      .select("id, body, shop_slug, created_at")
+      .select("id, body, shop_slug, media_url, media_type, created_at")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

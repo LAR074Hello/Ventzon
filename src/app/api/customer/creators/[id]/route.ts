@@ -34,10 +34,10 @@ export async function GET(
 
     const { data: posts } = await admin
       .from("posts")
-      .select("id, body, shop_slug, created_at")
+      .select("id, body, shop_slug, media_url, media_type, created_at")
       .eq("author_email", profile.email)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(30);
 
     // Is the viewer following this creator? (optional — viewer may be signed out)
     let viewerFollows = false;

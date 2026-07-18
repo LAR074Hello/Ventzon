@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Check, ArrowLeft, Share2, Trophy, X, Clock, Bell, BellRing } from "lucide-react";
+import { Check, ArrowLeft, Share2, Trophy, X, Clock, Bell, BellRing, Grid3x3 } from "lucide-react";
+import PostGrid, { type GridPost } from "../../components/PostGrid";
 
 type ShopSettings = {
   shop_slug: string;
@@ -149,6 +150,7 @@ export default function CustomerShopPage() {
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
+  const [shopPosts, setShopPosts] = useState<GridPost[]>([]);
 
   // Capture a referral code from shared links (?ref=<profile id>).
   useEffect(() => {
@@ -180,6 +182,12 @@ export default function CustomerShopPage() {
       const res = await fetch(`/api/join/settings?shop_slug=${shopSlug}`);
       const json = await res.json();
       if (res.ok) setSettings(json.settings);
+
+      // Posts featuring this business — same grid as creator profiles.
+      fetch(`/api/customer/feed?shop_slug=${shopSlug}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d?.posts && setShopPosts(d.posts))
+        .catch(() => {});
 
       if (session?.user?.email) {
         const memberRes = await fetch("/api/customer/memberships");
@@ -415,6 +423,17 @@ export default function CustomerShopPage() {
       {err && (
         <div className="mx-5 mt-4 rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-center">
           <p className="text-[13px] font-normal text-red-300/80">{err}</p>
+        </div>
+      )}
+
+      {/* Posts featuring this business */}
+      {shopPosts.length > 0 && (
+        <div className="mx-5 mt-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Grid3x3 className="h-3.5 w-3.5 text-[#555]" />
+            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">POSTS</p>
+          </div>
+          <PostGrid posts={shopPosts} />
         </div>
       )}
 

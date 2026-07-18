@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Share2, Award, MapPin, Send, Trash2, UserPlus, UserCheck } from "lucide-react";
+import { ArrowLeft, Share2, Award, Send, UserPlus, UserCheck, ImagePlus, X } from "lucide-react";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import PostGrid, { type GridPost } from "../../components/PostGrid";
 
 type CreatorProfile = {
   id: string;
@@ -22,15 +24,7 @@ type Stats = {
 };
 
 type Badge = { id: string; label: string; description: string; earned: boolean };
-type Post = { id: string; body: string; shop_slug: string | null; created_at: string };
-
-function timeAgo(iso: string) {
-  const s = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (s < 3600) return `${Math.max(1, Math.floor(s / 60))}m`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h`;
-  if (s < 604800) return `${Math.floor(s / 86400)}d`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
+type Post = GridPost & { shop_slug: string | null };
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
@@ -57,6 +51,12 @@ export default function CreatorProfilePage() {
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [tagShop, setTagShop] = useState("");
+  const [myShops, setMyShops] = useState<{ shop_slug: string; shop_name: string }[]>([]);
+  const mediaRef = useRef<HTMLInputElement>(null);
+  const supabase = createSupabaseBrowserClient();
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/customer/creators/${profileId}`);
@@ -76,6 +76,27 @@ export default function CreatorProfilePage() {
   }, [profileId]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Own profile: load memberships so posts can be tagged to a business.
+  useEffect(() => {
+    if (!isOwn) return;
+    fetch("/api/customer/memberships")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.memberships) {
+          setMyShops(
+            d.memberships.map((m: any) => ({ shop_slug: m.shop_slug, shop_name: m.shop_name }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, [isOwn]);
+
+  function pickMedia(file: File | null) {
+    setMediaFile(file);
+    if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+    setMediaPreview(file ? URL.createObjectURL(file) : null);
+  }
 
   async function toggleFollow() {
     if (followBusy) return;
@@ -106,26 +127,51 @@ export default function CreatorProfilePage() {
 
   async function submitPost() {
     const body = composer.trim();
-    if (!body || posting) return;
+    if ((!body && !mediaFile) || posting) return;
     setPosting(true);
     try {
+      let mediaUrl: string | null = null;
+      let mediaType: "image" | "video" | null = null;
+
+      if (mediaFile) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const uid = session?.user?.id;
+        if (!uid) throw new Error("Not signed in");
+        if (mediaFile.size > 50 * 1024 * 1024) throw new Error("Media must be under 50 MB");
+        mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
+        const ext = mediaFile.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
+        const path = `${uid}/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from("posts")
+          .upload(path, mediaFile, { upsert: true });
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage.from("posts").getPublicUrl(path);
+        mediaUrl = urlData.publicUrl;
+      }
+
       const res = await fetch("/api/customer/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body }),
+        body: JSON.stringify({
+          body,
+          ...(tagShop ? { shop_slug: tagShop } : {}),
+          ...(mediaUrl ? { media_url: mediaUrl, media_type: mediaType } : {}),
+        }),
       });
       if (res.ok) {
         setComposer("");
+        setTagShop("");
+        pickMedia(null);
         await load();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err?.error ?? "Failed to post");
       }
+    } catch (e: any) {
+      alert(e?.message ?? "Failed to post");
     } finally {
       setPosting(false);
     }
-  }
-
-  async function deletePost(id: string) {
-    setPosts((p) => p.filter((x) => x.id !== id));
-    await fetch(`/api/customer/posts?id=${id}`, { method: "DELETE" });
   }
 
   async function share() {
@@ -256,11 +302,53 @@ export default function CreatorProfilePage() {
             maxLength={1000}
             className="w-full resize-none bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
           />
-          <div className="flex justify-end">
+
+          {mediaPreview && (
+            <div className="relative mt-2 overflow-hidden rounded-xl">
+              {mediaFile?.type.startsWith("video/") ? (
+                <video src={mediaPreview} muted playsInline className="max-h-48 w-full object-cover" />
+              ) : (
+                <img src={mediaPreview} alt="" className="max-h-48 w-full object-cover" />
+              )}
+              <button
+                onClick={() => pickMedia(null)}
+                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70"
+              >
+                <X className="h-3.5 w-3.5 text-white" />
+              </button>
+            </div>
+          )}
+
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              ref={mediaRef}
+              type="file"
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={(e) => pickMedia(e.target.files?.[0] ?? null)}
+            />
+            <button
+              onClick={() => mediaRef.current?.click()}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#252525] text-[#888]"
+            >
+              <ImagePlus className="h-4 w-4" />
+            </button>
+            {myShops.length > 0 && (
+              <select
+                value={tagShop}
+                onChange={(e) => setTagShop(e.target.value)}
+                className="flex-1 min-w-0 rounded-full border border-[#252525] bg-[#0d0d0d] px-3 py-2 text-[11px] font-normal text-[#999] outline-none"
+              >
+                <option value="">Tag a business (shows in Explore)</option>
+                {myShops.map((s) => (
+                  <option key={s.shop_slug} value={s.shop_slug}>{s.shop_name}</option>
+                ))}
+              </select>
+            )}
             <button
               onClick={submitPost}
-              disabled={!composer.trim() || posting}
-              className="flex items-center gap-1.5 rounded-full bg-[#ededed] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
+              disabled={(!composer.trim() && !mediaFile) || posting}
+              className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-[#ededed] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
             >
               <Send className="h-3 w-3" />
               {posting ? "POSTING…" : "POST"}
@@ -269,41 +357,10 @@ export default function CreatorProfilePage() {
         </div>
       )}
 
-      {/* Posts */}
+      {/* Posts — shared grid component (also used on business profiles) */}
       <div className="mt-6 px-5">
         <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#666]">POSTS</p>
-        {posts.length === 0 ? (
-          <div className="rounded-2xl border border-[#1f1f1f] px-5 py-8 text-center">
-            <p className="text-[13px] font-normal text-[#555]">No posts yet</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {posts.map((p) => (
-              <div key={p.id} className="rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5">
-                <p className="text-[14px] font-normal leading-relaxed text-[#d0d0d0]">{p.body}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {p.shop_slug && (
-                      <button
-                        onClick={() => router.push(`/customer/shop/${p.shop_slug}`)}
-                        className="flex items-center gap-1 text-[11px] text-[#666]"
-                      >
-                        <MapPin className="h-3 w-3" />
-                        {p.shop_slug}
-                      </button>
-                    )}
-                    <p className="text-[11px] text-[#444]">{timeAgo(p.created_at)}</p>
-                  </div>
-                  {isOwn && (
-                    <button onClick={() => deletePost(p.id)} className="text-[#444] active:text-[#666]">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <PostGrid posts={posts} />
       </div>
     </div>
   );

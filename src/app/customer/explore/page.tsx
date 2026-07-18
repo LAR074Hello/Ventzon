@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag } from "lucide-react";
+import SocialFeed from "../components/SocialFeed";
 
 type Shop = {
   shop_slug: string;
@@ -305,8 +306,23 @@ export default function ExplorePage() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
+  // Two-feed Home: "explore" = social feed, "rewards" = the original
+  // discovery experience. Last choice persists across sessions.
+  const [homeTab, setHomeTab] = useState<"explore" | "rewards">("rewards");
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem("ventzon_home_tab");
+      if (t === "explore" || t === "rewards") setHomeTab(t);
+    } catch {}
+  }, []);
+
+  function switchTab(t: "explore" | "rewards") {
+    setHomeTab(t);
+    try { localStorage.setItem("ventzon_home_tab", t); } catch {}
+  }
 
   useEffect(() => {
     fetch("/api/customer/explore")
@@ -407,27 +423,50 @@ export default function ExplorePage() {
           Discover rewards<br />near you
         </h1>
 
-        {/* Search */}
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5">
-          <Search className="h-4 w-4 shrink-0 text-[#444]" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search stores, deals…"
-            className="flex-1 bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
-          />
-          {query && (
-            <button onClick={() => setQuery("")} className="text-[#666] active:text-[#999]">
-              <X className="h-4 w-4" />
+        {/* Two-feed tabs */}
+        <div className="mt-4 flex rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] p-1">
+          {([
+            { id: "explore", label: "Explore" },
+            { id: "rewards", label: "Rewards" },
+          ] as const).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => switchTab(t.id)}
+              className={`flex-1 rounded-xl py-2.5 text-[12px] font-medium tracking-[0.06em] transition-all duration-200 ${
+                homeTab === t.id ? "bg-[#ededed] text-black" : "text-[#666]"
+              }`}
+            >
+              {t.label.toUpperCase()}
             </button>
-          )}
+          ))}
         </div>
+
+        {/* Search — rewards tab only */}
+        {homeTab === "rewards" && (
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5">
+            <Search className="h-4 w-4 shrink-0 text-[#444]" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search stores, deals…"
+              className="flex-1 bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="text-[#666] active:text-[#999]">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Explore tab — the social feed */}
+      {homeTab === "explore" && <SocialFeed userLoc={userLoc} />}
+
       {/* Category pills */}
-      {!searchActive && (
+      {homeTab === "rewards" && !searchActive && (
         <div className="flex gap-2 overflow-x-auto px-5 pb-5 scrollbar-none">
           {CATEGORIES.map(({ id, label, icon }) => (
             <Pill key={id} label={label} icon={icon} active={activeCategory === id} onClick={() => setActiveCategory(id)} />
@@ -436,7 +475,7 @@ export default function ExplorePage() {
       )}
 
       {/* Loading skeleton */}
-      {loading && (
+      {homeTab === "rewards" && loading && (
         <div className="px-5 space-y-6">
           <div className="flex gap-3 overflow-hidden">
             {[0, 1, 2].map((i) => (
@@ -460,7 +499,7 @@ export default function ExplorePage() {
       )}
 
       {/* Search results */}
-      {!loading && searchActive && (
+      {homeTab === "rewards" && !loading && searchActive && (
         <div className="flex-1 pb-4">
           {searchResults.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center px-8">
@@ -481,8 +520,8 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Main content */}
-      {!loading && !searchActive && (
+      {/* Main content — the original discovery experience (Rewards tab) */}
+      {homeTab === "rewards" && !loading && !searchActive && (
         <div className="flex-1 pb-8">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center px-8">
