@@ -39,8 +39,10 @@ export async function GET(
       .order("created_at", { ascending: false })
       .limit(30);
 
-    // Is the viewer following this creator? (optional — viewer may be signed out)
+    // Viewer relationship (optional — viewer may be signed out): do they
+    // follow this creator, and does this creator follow them back?
     let viewerFollows = false;
+    let followsViewer = false;
     let isOwn = false;
     try {
       const supabaseAuth = await createSupabaseServerClient();
@@ -49,13 +51,22 @@ export async function GET(
         const viewerEmail = user.email.toLowerCase();
         isOwn = viewerEmail === profile.email;
         if (!isOwn) {
-          const { data: follow } = await admin
-            .from("user_follows")
-            .select("id")
-            .eq("follower_email", viewerEmail)
-            .eq("followee_email", profile.email)
-            .maybeSingle();
+          const [{ data: follow }, { data: reverse }] = await Promise.all([
+            admin
+              .from("user_follows")
+              .select("id")
+              .eq("follower_email", viewerEmail)
+              .eq("followee_email", profile.email)
+              .maybeSingle(),
+            admin
+              .from("user_follows")
+              .select("id")
+              .eq("follower_email", profile.email)
+              .eq("followee_email", viewerEmail)
+              .maybeSingle(),
+          ]);
           viewerFollows = !!follow;
+          followsViewer = !!reverse;
         }
       }
     } catch {}
@@ -67,7 +78,7 @@ export async function GET(
       stats,
       badges,
       posts: posts ?? [],
-      viewer: { follows: viewerFollows, is_own: isOwn },
+      viewer: { follows: viewerFollows, follows_you: followsViewer, is_own: isOwn },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });

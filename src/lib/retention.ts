@@ -1,21 +1,23 @@
 // Value-based notification plumbing for the retention layer.
 //
-// Only three notification types exist, each tied to something genuinely
+// Only four notification types exist, each tied to something genuinely
 // useful to the customer — a followed shop posting a drop, a reward
-// nearing its expiry date, or a new place opening nearby. There is no
-// generic "come back!" type and none should be added.
+// nearing its expiry date, a new place opening nearby, or a new
+// follower. There is no generic "come back!" type and none should be
+// added.
 //
 // Frequency caps (per customer):
 //   drop          — max 1 per day
 //   reward_expiry — max 1 per day
 //   new_nearby    — max 1 per week
+//   new_follower  — max 1 per 6 hours
 //   all types     — max 5 per week combined
 //
 // Dedupe: customer_notification_log is unique on (email, type, ref_id),
 // so claiming the same notification twice is a no-op. Callers claim
 // BEFORE sending, which keeps cron re-runs idempotent.
 
-export type RetentionNotificationType = "drop" | "reward_expiry" | "new_nearby";
+export type RetentionNotificationType = "drop" | "reward_expiry" | "new_nearby" | "new_follower";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -23,6 +25,7 @@ const TYPE_WINDOW_MS: Record<RetentionNotificationType, number> = {
   drop: DAY_MS,
   reward_expiry: DAY_MS,
   new_nearby: 7 * DAY_MS,
+  new_follower: DAY_MS / 4,
 };
 
 const GLOBAL_WINDOW_MS = 7 * DAY_MS;
@@ -32,6 +35,7 @@ const PREF_COLUMN: Record<RetentionNotificationType, string> = {
   drop: "notify_drops",
   reward_expiry: "notify_reward_expiry",
   new_nearby: "notify_new_nearby",
+  new_follower: "notify_new_follower",
 };
 
 /**
@@ -49,7 +53,7 @@ export async function canNotify(
 
   const { data: pref } = await admin
     .from("customer_notification_prefs")
-    .select("notify_drops, notify_reward_expiry, notify_new_nearby")
+    .select("notify_drops, notify_reward_expiry, notify_new_nearby, notify_new_follower")
     .eq("email", e)
     .maybeSingle();
   if (pref && pref[PREF_COLUMN[type]] === false) return false;

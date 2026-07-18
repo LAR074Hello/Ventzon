@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { buildTokenMap, pushOrEmail } from "@/lib/notify";
+import { canNotify, claimNotification } from "@/lib/retention";
+import { getOrCreateProfile } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +63,9 @@ export async function GET() {
 // POST /api/customer/user-follows { profile_id, follow: boolean }
 export async function POST(req: Request) {
   try {
-    const email = await getSessionEmail();
+    const supabaseAuth = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    const email = user?.email?.toLowerCase() ?? null;
     if (!email) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
@@ -82,6 +87,13 @@ export async function POST(req: Request) {
     }
 
     if (follow) {
+      const { data: existing } = await admin
+        .from("user_follows")
+        .select("id")
+        .eq("follower_email", email)
+        .eq("followee_email", target.email)
+        .maybeSingle();
+
       const { error } = await admin
         .from("user_follows")
         .upsert(
@@ -89,6 +101,39 @@ export async function POST(req: Request) {
           { onConflict: "follower_email,followee_email" }
         );
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+      // Brand-new follow → notify the followee (non-fatal). Respects the
+      // notify_new_follower pref and frequency caps; the claim on
+      // (followee, 'new_follower', follower-profile-id) means a
+      // re-follow after an unfollow never re-notifies.
+      if (!existing) {
+        try {
+          const followerProfile = await getOrCreateProfile(admin, email, {
+            display_name: user?.user_metadata?.full_name ?? null,
+            avatar_url: user?.user_metadata?.avatar_url ?? null,
+          });
+          const followerName = followerProfile.display_name ?? "Someone";
+          if (await canNotify(admin, target.email, "new_follower")) {
+            const claimed = await claimNotification(admin, {
+              email: target.email,
+              type: "new_follower",
+              refId: followerProfile.id,
+            });
+            if (claimed) {
+              const tokenMap = await buildTokenMap(admin, [target.email]);
+              await pushOrEmail({
+                email: target.email,
+                tokens: tokenMap[target.email],
+                title: `${followerName} started following you`,
+                body: "See their profile on Ventzon",
+                data: { type: "new_follower", profile_id: followerProfile.id },
+                emailSubject: `${followerName} started following you on Ventzon`,
+                emailText: `${followerName} is now following you on Ventzon.`,
+              });
+            }
+          }
+        } catch {}
+      }
     } else {
       const { error } = await admin
         .from("user_follows")

@@ -21,11 +21,28 @@ export async function GET() {
 
     const { data: log, error } = await admin
       .from("customer_notification_log")
-      .select("id, type, shop_slug, sent_at")
+      .select("id, type, shop_slug, ref_id, sent_at")
       .eq("email", user.email.toLowerCase())
       .order("sent_at", { ascending: false })
       .limit(50);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // new_follower entries carry the follower's profile id in ref_id.
+    const followerIds = [
+      ...new Set(
+        (log ?? []).filter((n) => n.type === "new_follower" && n.ref_id).map((n) => n.ref_id)
+      ),
+    ] as string[];
+    const { data: followerProfiles } = followerIds.length
+      ? await admin
+          .from("customer_profiles")
+          .select("id, display_name, is_creator")
+          .in("id", followerIds)
+      : { data: [] };
+    const followerById: Record<string, { display_name: string | null; is_creator: boolean }> = {};
+    for (const p of followerProfiles ?? []) {
+      followerById[p.id] = { display_name: p.display_name, is_creator: p.is_creator };
+    }
 
     const slugs = [...new Set((log ?? []).map((n) => n.shop_slug).filter(Boolean))] as string[];
     const { data: settings } = slugs.length
@@ -44,12 +61,18 @@ export async function GET() {
       const shopName = shop?.shop_name ?? n.shop_slug ?? "a store";
       let title = "";
       let body = "";
+      let href: string | null = n.shop_slug ? `/customer/shop/${n.shop_slug}` : null;
       if (n.type === "drop") {
         title = `${shopName} posted a drop`;
         body = "Something new from a store you follow";
       } else if (n.type === "reward_expiry") {
         title = "Your reward is waiting";
         body = `${shop?.deal_title ?? "Your reward"} at ${shopName}`;
+      } else if (n.type === "new_follower") {
+        const follower = n.ref_id ? followerById[n.ref_id] : null;
+        title = `${follower?.display_name ?? "Someone"} started following you`;
+        body = follower?.is_creator ? "Tap to see their profile" : "They're following your posts";
+        href = follower?.is_creator && n.ref_id ? `/customer/creator/${n.ref_id}` : null;
       } else {
         title = `New near you: ${shopName}`;
         body = shop?.deal_title ?? "A new store joined Ventzon nearby";
@@ -60,6 +83,7 @@ export async function GET() {
         shop_slug: n.shop_slug,
         title,
         body,
+        href,
         sent_at: n.sent_at,
       };
     });

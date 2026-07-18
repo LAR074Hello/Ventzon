@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Share2, UserPlus, UserCheck } from "lucide-react";
+import { ArrowLeft, Share2 } from "lucide-react";
 import PostGrid, { type GridPost } from "../../components/PostGrid";
+import FollowButton from "../../components/FollowButton";
 import PostComposer from "../../components/PostComposer";
 import { ProfileStats, BadgePills } from "../../components/ProfileStats";
 
@@ -38,7 +39,7 @@ export default function CreatorProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isOwn, setIsOwn] = useState(false);
   const [follows, setFollows] = useState(false);
-  const [followBusy, setFollowBusy] = useState(false);
+  const [followsYou, setFollowsYou] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -56,37 +57,11 @@ export default function CreatorProfilePage() {
     setPosts(data.posts ?? []);
     setIsOwn(Boolean(data.viewer?.is_own));
     setFollows(Boolean(data.viewer?.follows));
+    setFollowsYou(Boolean(data.viewer?.follows_you));
     setLoading(false);
   }, [profileId]);
 
   useEffect(() => { load(); }, [load]);
-
-  async function toggleFollow() {
-    if (followBusy) return;
-    const next = !follows;
-    setFollowBusy(true);
-    setFollows(next);
-    setStats((s) => (s ? { ...s, followers: s.followers + (next ? 1 : -1) } : s));
-    try {
-      const res = await fetch("/api/customer/user-follows", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile_id: profileId, follow: next }),
-      });
-      if (res.status === 401) {
-        router.push(`/customer/auth?redirect=/customer/creator/${profileId}`);
-        return;
-      }
-      if (!res.ok) {
-        setFollows(!next);
-        setStats((s) => (s ? { ...s, followers: s.followers + (next ? -1 : 1) } : s));
-      }
-    } catch {
-      setFollows(!next);
-    } finally {
-      setFollowBusy(false);
-    }
-  }
 
   async function share() {
     try {
@@ -159,26 +134,38 @@ export default function CreatorProfilePage() {
           <p className="mt-3 max-w-xs text-center text-[13px] font-normal leading-relaxed text-[#999]">{profile.bio}</p>
         )}
 
+        {followsYou && !isOwn && (
+          <span className="mt-3 rounded-full border border-[#252525] bg-[#0d0d0d] px-3 py-1 text-[10px] font-medium tracking-[0.08em] text-[#888]">
+            FOLLOWS YOU
+          </span>
+        )}
+
         {!isOwn && (
-          <button
-            onClick={toggleFollow}
-            disabled={followBusy}
-            className={`mt-5 flex items-center gap-2 rounded-full px-6 py-2.5 text-[12px] font-medium tracking-[0.08em] transition-all duration-200 ${
-              follows
-                ? "border border-[#333] bg-[#111] text-[#ededed]"
-                : "bg-[#ededed] text-black active:bg-[#d4d4d4]"
-            }`}
-          >
-            {follows ? <UserCheck className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
-            {follows ? "FOLLOWING" : "FOLLOW"}
-          </button>
+          <div className="mt-4">
+            <FollowButton
+              profileId={profileId}
+              following={follows}
+              onChange={(next) => {
+                setFollows(next);
+                setStats((s) => (s ? { ...s, followers: s.followers + (next ? 1 : -1) } : s));
+              }}
+            />
+          </div>
         )}
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="px-5">
-          <ProfileStats stats={stats} />
+          <ProfileStats
+            stats={stats}
+            onFollowersTap={() =>
+              router.push(`/customer/follows?profile_id=${profileId}&type=followers&title=${encodeURIComponent(name)}`)
+            }
+            onFollowingTap={() =>
+              router.push(`/customer/follows?profile_id=${profileId}&type=following&title=${encodeURIComponent(name)}`)
+            }
+          />
         </div>
       )}
 

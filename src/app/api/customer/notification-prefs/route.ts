@@ -4,7 +4,12 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
-const PREF_KEYS = ["notify_drops", "notify_reward_expiry", "notify_new_nearby"] as const;
+const PREF_KEYS = [
+  "notify_drops",
+  "notify_reward_expiry",
+  "notify_new_nearby",
+  "notify_new_follower",
+] as const;
 
 async function getSessionEmail(): Promise<string | null> {
   const supabaseAuth = await createSupabaseServerClient();
@@ -30,7 +35,7 @@ export async function GET() {
     const supabase = adminClient();
     const { data, error } = await supabase
       .from("customer_notification_prefs")
-      .select("notify_drops, notify_reward_expiry, notify_new_nearby")
+      .select("notify_drops, notify_reward_expiry, notify_new_nearby, notify_new_follower")
       .eq("email", email)
       .maybeSingle();
 
@@ -41,6 +46,7 @@ export async function GET() {
         notify_drops: data?.notify_drops ?? true,
         notify_reward_expiry: data?.notify_reward_expiry ?? true,
         notify_new_nearby: data?.notify_new_nearby ?? true,
+        notify_new_follower: data?.notify_new_follower ?? true,
       },
     });
   } catch (err: any) {

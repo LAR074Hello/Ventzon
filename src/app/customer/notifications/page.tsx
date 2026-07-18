@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Bell, Megaphone, Trophy, MapPin, ChevronRight } from "lucide-react";
+import { Bell, Megaphone, Trophy, MapPin, ChevronRight, UserPlus } from "lucide-react";
 
 type Notification = {
   id: string;
-  type: "drop" | "reward_expiry" | "new_nearby";
+  type: "drop" | "reward_expiry" | "new_nearby" | "new_follower";
   shop_slug: string | null;
   title: string;
   body: string;
+  href: string | null;
   sent_at: string;
 };
 
@@ -18,6 +19,7 @@ const TYPE_ICON = {
   drop: Megaphone,
   reward_expiry: Trophy,
   new_nearby: MapPin,
+  new_follower: UserPlus,
 } as const;
 
 function timeAgo(iso: string) {
@@ -93,7 +95,7 @@ export default function NotificationsPage() {
               return (
                 <button
                   key={n.id}
-                  onClick={() => n.shop_slug && router.push(`/customer/shop/${n.shop_slug}`)}
+                  onClick={() => n.href && router.push(n.href)}
                   className="flex w-full items-center gap-3.5 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5 text-left active:bg-[#0f0f0f]"
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1a1a1a]">
@@ -105,7 +107,7 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
                     <span className="text-[11px] font-normal text-[#444]">{timeAgo(n.sent_at)}</span>
-                    {n.shop_slug && <ChevronRight className="h-3.5 w-3.5 text-[#333]" />}
+                    {n.href && <ChevronRight className="h-3.5 w-3.5 text-[#333]" />}
                   </div>
                 </button>
               );

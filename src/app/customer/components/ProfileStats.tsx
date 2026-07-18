@@ -13,21 +13,35 @@ export type ProfileStatValues = {
 
 export type BadgeValue = { id: string; label: string; description: string; earned: boolean };
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({ value, label, onTap }: { value: number; label: string; onTap?: () => void }) {
+  const Wrapper: any = onTap ? "button" : "div";
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-2 py-3">
+    <Wrapper
+      {...(onTap ? { onClick: onTap } : {})}
+      className={`flex flex-col items-center rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-2 py-3 ${
+        onTap ? "active:bg-[#111] transition-colors" : ""
+      }`}
+    >
       <p className="text-[17px] font-semibold text-[#f5f5f5]">{value}</p>
       <p className="mt-0.5 text-[10px] font-light tracking-[0.08em] text-[#666]">{label.toUpperCase()}</p>
-    </div>
+    </Wrapper>
   );
 }
 
 /** The 6-stat grid shared by the public creator page and the Profile tab. */
-export function ProfileStats({ stats }: { stats: ProfileStatValues }) {
+export function ProfileStats({
+  stats,
+  onFollowersTap,
+  onFollowingTap,
+}: {
+  stats: ProfileStatValues;
+  onFollowersTap?: () => void;
+  onFollowingTap?: () => void;
+}) {
   return (
     <div className="grid grid-cols-3 gap-2">
-      <Stat value={stats.followers} label="Followers" />
-      <Stat value={stats.following} label="Following" />
+      <Stat value={stats.followers} label="Followers" onTap={onFollowersTap} />
+      <Stat value={stats.following} label="Following" onTap={onFollowingTap} />
       <Stat value={stats.posts} label="Posts" />
       <Stat value={stats.businesses_visited} label="Places" />
       <Stat value={stats.total_points} label="Check-ins" />

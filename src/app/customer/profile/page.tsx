@@ -147,9 +147,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Stats — same component as the public creator page */}
-      {stats && (
+      {stats && profile && (
         <div className="px-5">
-          <ProfileStats stats={stats} />
+          <ProfileStats
+            stats={stats}
+            onFollowersTap={() =>
+              router.push(`/customer/follows?profile_id=${profile.id}&type=followers&title=${encodeURIComponent(name)}`)
+            }
+            onFollowingTap={() =>
+              router.push(`/customer/follows?profile_id=${profile.id}&type=following&title=${encodeURIComponent(name)}`)
+            }
+          />
         </div>
       )}
 

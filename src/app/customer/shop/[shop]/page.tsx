@@ -151,6 +151,7 @@ export default function CustomerShopPage() {
   const [followBusy, setFollowBusy] = useState(false);
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
   const [shopPosts, setShopPosts] = useState<GridPost[]>([]);
+  const [followerCount, setFollowerCount] = useState<number | null>(null);
 
   // Capture a referral code from shared links (?ref=<profile id>).
   useEffect(() => {
@@ -187,6 +188,11 @@ export default function CustomerShopPage() {
       fetch(`/api/customer/feed?shop_slug=${shopSlug}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => d?.posts && setShopPosts(d.posts))
+        .catch(() => {});
+
+      fetch(`/api/customer/follow-list?shop_slug=${shopSlug}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => typeof d?.total === "number" && setFollowerCount(d.total))
         .catch(() => {});
 
       if (session?.user?.email) {
@@ -385,6 +391,18 @@ export default function CustomerShopPage() {
         <p className="mt-2 text-[11px] font-normal text-[#555]">
           {following ? "You'll hear about new drops from this store" : "Get notified when they post something new"}
         </p>
+        {followerCount !== null && followerCount > 0 && (
+          <button
+            onClick={() =>
+              router.push(
+                `/customer/follows?shop_slug=${shopSlug}&title=${encodeURIComponent(`${shopName} followers`)}`
+              )
+            }
+            className="mt-1.5 text-[11px] font-medium text-[#777] active:text-[#999]"
+          >
+            {followerCount} follower{followerCount === 1 ? "" : "s"}
+          </button>
+        )}
       </div>
 
       {/* Loyalty card */}

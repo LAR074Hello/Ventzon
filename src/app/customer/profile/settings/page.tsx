@@ -114,6 +114,7 @@ export default function ProfilePage() {
     notify_drops: true,
     notify_reward_expiry: true,
     notify_new_nearby: true,
+    notify_new_follower: true,
   });
   const [creatorProfile, setCreatorProfile] = useState<{
     id: string;
@@ -632,6 +633,13 @@ export default function ProfilePage() {
             label="New places nearby"
             chevron={false}
             rightNode={<Toggle enabled={notifPrefs.notify_new_nearby} onToggle={() => toggleNotifPref("notify_new_nearby")} />}
+          />
+          <div className="border-t border-[#161616]" />
+          <SettingsRow
+            icon={User}
+            label="New followers"
+            chevron={false}
+            rightNode={<Toggle enabled={notifPrefs.notify_new_follower} onToggle={() => toggleNotifPref("notify_new_follower")} />}
           />
         </div>
       </div>
