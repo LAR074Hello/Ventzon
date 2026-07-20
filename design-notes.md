@@ -24,3 +24,17 @@ Keep this updated so later passes don't recycle dead ends.
 ## Removed-one-thing log
 - Explore feed: removed the share arrow from the action row (share lives on
   the post page), then folded like/comment counts into one muted text line.
+- Post grid: removed the gray placeholder treatment for text posts — they
+  are typographic tiles now.
+- Business profile: removed the white/yellow stamp split — stamps are gold
+  or empty, nothing else.
+
+## Flagged: values with no clean token mapping (do not guess)
+- **Error/danger red** (shop page check-in error banner, settings delete
+  row): the approved 6-color palette has no danger color. Left as Tailwind
+  red-*, pending a decision on a semantic `--danger` token.
+- **Map tiles**: CartoDB dark-matter basemap colors are third-party and
+  can't be tokenized; the attribution text color (#333) matches the tile
+  art, not our ramp.
+- **Scrim gradients over photos** (featured cards): rgba black overlays are
+  photo-legibility scrims, not palette colors — kept as rgba.
