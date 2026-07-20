@@ -24,7 +24,7 @@ const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
 
 function SectionLabel({ title }: { title: string }) {
   return (
-    <p className="mb-2 px-5 text-[11px] font-medium tracking-[0.12em] text-[#555]">
+    <p className="mb-2 px-5 text-[11px] font-medium tracking-[0.12em] text-muted">
       {title.toUpperCase()}
     </p>
   );
@@ -53,24 +53,24 @@ function SettingsRow({
   const content = (
     <>
       {Icon && (
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${destructive ? "bg-danger/10" : "bg-[#1a1a1a]"}`}>
-          <Icon className={`h-4 w-4 ${destructive ? "text-danger" : "text-[#888]"}`} strokeWidth={1.5} />
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-ctl ${destructive ? "bg-danger/10" : "bg-surface"}`}>
+          <Icon className={`h-4 w-4 ${destructive ? "text-danger" : "text-muted"}`} strokeWidth={1.5} />
         </div>
       )}
-      <span className={`flex-1 text-[14px] font-normal ${destructive ? "text-danger" : "text-[#d0d0d0]"}`}>
+      <span className={`flex-1 text-[14px] font-normal ${destructive ? "text-danger" : "text-ink"}`}>
         {label}
       </span>
       {rightNode}
-      {value && !rightNode && <span className="shrink-0 max-w-[140px] truncate text-[13px] font-light text-[#555]">{value}</span>}
+      {value && !rightNode && <span className="shrink-0 max-w-[140px] truncate text-[13px] font-light text-muted">{value}</span>}
       {chevron && onClick && !rightNode && (
-        <ChevronRight className="h-4 w-4 shrink-0 text-[#333]" />
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
       )}
     </>
   );
   return (
     <Wrapper
       {...(onClick ? { onClick } : {})}
-      className="flex w-full items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-[#0d0d0d]"
+      className="flex w-full items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-surface"
     >
       {content}
     </Wrapper>
@@ -81,10 +81,10 @@ function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void 
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${enabled ? "bg-[#ededed]" : "bg-[#2a2a2a]"}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${enabled ? "bg-ink" : "bg-line"}`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-black shadow transition-transform duration-200 ${enabled ? "translate-x-5" : "translate-x-0.5"}`}
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-bg shadow transition-transform duration-200 ${enabled ? "translate-x-5" : "translate-x-0.5"}`}
       />
     </button>
   );
@@ -317,7 +317,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
   }
@@ -325,13 +325,13 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0d0d0d]">
-          <User className="h-7 w-7 text-[#444]" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface">
+          <User className="h-7 w-7 text-muted" />
         </div>
-        <p className="mt-5 text-[16px] font-semibold text-[#f5f5f5]">Not signed in</p>
+        <p className="mt-5 text-[16px] font-semibold text-ink">Not signed in</p>
         <button
           onClick={() => router.push("/customer/auth")}
-          className="mt-8 rounded-2xl bg-[#ededed] px-8 py-4 text-[12px] font-medium tracking-[0.1em] text-black transition-all active:bg-[#d0d0d0]"
+          className="mt-8 rounded-card bg-ink px-8 py-4 text-[12px] font-medium tracking-[0.1em] text-black transition-all active:opacity-80"
         >
           SIGN IN
         </button>
@@ -353,11 +353,11 @@ export default function ProfilePage() {
       <div className="flex items-center gap-3 px-5 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
         <button
           onClick={() => router.push("/customer/profile")}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0a0a0a]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"
         >
-          <ChevronRight className="h-4 w-4 rotate-180 text-[#f5f5f5]" />
+          <ChevronRight className="h-4 w-4 rotate-180 text-ink" />
         </button>
-        <h1 className="text-[22px] font-semibold text-[#f5f5f5]">Settings</h1>
+        <h1 className="font-display text-[22px] font-semibold text-ink">Settings</h1>
       </div>
 
       {/* Avatar + name */}
@@ -366,24 +366,24 @@ export default function ProfilePage() {
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploadingAvatar}
-            className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-[#2a2a2a] transition-opacity active:opacity-70"
+            className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-line transition-opacity active:opacity-70"
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#1a1a1a]">
-                <span className="text-xl font-medium text-[#888]">{initials}</span>
+              <div className="flex h-full w-full items-center justify-center bg-surface">
+                <span className="text-xl font-medium text-muted">{initials}</span>
               </div>
             )}
             {uploadingAvatar && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
               </div>
             )}
           </button>
           <button
             onClick={() => fileRef.current?.click()}
-            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-[#333] bg-[#1a1a1a] transition-colors active:bg-[#222]"
+            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface transition-colors active:bg-line"
           >
             <Camera className="h-3.5 w-3.5 text-[#aaa]" />
           </button>
@@ -403,15 +403,15 @@ export default function ProfilePage() {
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
-              className="rounded-xl border border-[#333] bg-[#0d0d0d] px-3 py-1.5 text-[16px] font-medium text-[#f5f5f5] outline-none focus:border-[#555] text-center"
+              className="rounded-ctl border border-line bg-surface px-3 py-1.5 text-[16px] font-medium text-ink outline-none focus:border-[#555] text-center"
               placeholder="Your name"
               maxLength={50}
             />
-            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ededed] disabled:opacity-40">
+            <button onClick={saveName} disabled={savingName} className="flex h-7 w-7 items-center justify-center rounded-full bg-ink disabled:opacity-40">
               <Check className="h-3.5 w-3.5 text-black" />
             </button>
-            <button onClick={() => setEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#333]">
-              <X className="h-3.5 w-3.5 text-[#555]" />
+            <button onClick={() => setEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full border border-line">
+              <X className="h-3.5 w-3.5 text-muted" />
             </button>
           </div>
         ) : (
@@ -419,12 +419,12 @@ export default function ProfilePage() {
             onClick={() => { setNameInput(name === "Customer" ? "" : name); setEditingName(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             className="mt-4 flex items-center gap-1.5 group"
           >
-            <p className="text-[18px] font-semibold text-[#f5f5f5]">{name}</p>
-            <Pencil className="h-3.5 w-3.5 text-[#444] group-active:text-[#666]" />
+            <p className="text-[18px] font-semibold text-ink">{name}</p>
+            <Pencil className="h-3.5 w-3.5 text-muted group-active:text-muted" />
           </button>
         )}
         {!isPrivateRelay && (
-          <p className="mt-1 text-[13px] font-light text-[#555]">{user.email}</p>
+          <p className="mt-1 text-[13px] font-light text-muted">{user.email}</p>
         )}
       </div>
 
@@ -435,9 +435,9 @@ export default function ProfilePage() {
           { label: "STAMPS", value: totalVisits },
           { label: "READY", value: readyCards.length },
         ].map(({ label, value }) => (
-          <div key={label} className="flex flex-col items-center rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] py-4">
-            <p className="text-[22px] font-semibold text-[#f5f5f5]">{value}</p>
-            <p className="mt-1 text-[9px] font-medium tracking-[0.15em] text-[#555]">{label}</p>
+          <div key={label} className="flex flex-col items-center rounded-card border border-line bg-surface py-4">
+            <p className="text-[22px] font-semibold text-ink">{value}</p>
+            <p className="mt-1 text-[9px] font-medium tracking-[0.15em] text-muted">{label}</p>
           </div>
         ))}
       </div>
@@ -445,15 +445,15 @@ export default function ProfilePage() {
       {/* Birthday */}
       <div className="mx-5 mb-8">
         <SectionLabel title="Birthday" />
-        <div className="rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-5">
-          <p className="text-[12px] font-light leading-relaxed text-[#888]">
+        <div className="rounded-card border border-line bg-surface p-5">
+          <p className="text-[12px] font-light leading-relaxed text-muted">
             Add your birthday to get a treat from the shops you visit. Month and day only — no year.
           </p>
           <div className="mt-4 flex items-center gap-3">
             <select
               value={birthMonth}
               onChange={(e) => setBirthMonth(e.target.value === "" ? "" : Number(e.target.value))}
-              className="flex-1 rounded-xl border border-[#1f1f1f] bg-[#111] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+              className="flex-1 rounded-ctl border border-line bg-surface px-4 py-3 text-[14px] font-light text-ink outline-none focus:border-line"
             >
               <option value="">Month</option>
               {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
@@ -463,7 +463,7 @@ export default function ProfilePage() {
             <select
               value={birthDay}
               onChange={(e) => setBirthDay(e.target.value === "" ? "" : Number(e.target.value))}
-              className="w-24 rounded-xl border border-[#1f1f1f] bg-[#111] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+              className="w-24 rounded-ctl border border-line bg-surface px-4 py-3 text-[14px] font-light text-ink outline-none focus:border-line"
             >
               <option value="">Day</option>
               {Array.from({ length: birthMonth === "" ? 31 : [31,29,31,30,31,30,31,31,30,31,30,31][(birthMonth as number) - 1] }, (_, i) => i + 1).map((d) => (
@@ -474,7 +474,7 @@ export default function ProfilePage() {
           <button
             onClick={saveBirthday}
             disabled={savingBirthday || birthMonth === "" || birthDay === ""}
-            className="mt-4 w-full rounded-xl border border-[#2a2a2a] py-3 text-[13px] font-medium text-[#ededed] transition-colors active:bg-[#151515] disabled:opacity-40"
+            className="mt-4 w-full rounded-ctl border border-line py-3 text-[13px] font-medium text-ink transition-colors active:bg-[#151515] disabled:opacity-40"
           >
             {savingBirthday ? "Saving…" : birthdaySaved ? "Saved ✓" : "Save birthday"}
           </button>
@@ -485,16 +485,16 @@ export default function ProfilePage() {
       {readyCards.length > 0 && (
         <div className="mx-5 mb-6">
           <SectionLabel title="Rewards ready" />
-          <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
+          <div className="overflow-hidden rounded-card border border-line">
             {readyCards.map((m, i) => (
               <button
                 key={m.shop_slug}
                 onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
-                className={`flex w-full items-center gap-3 px-5 py-3.5 text-left active:bg-[#0d0d0d] ${i > 0 ? "border-t border-[#161616]" : ""}`}
+                className={`flex w-full items-center gap-3 px-5 py-3.5 text-left active:bg-surface ${i > 0 ? "border-t border-line/60" : ""}`}
               >
-                <Trophy className="h-4 w-4 shrink-0 text-yellow-500" strokeWidth={1.5} />
-                <p className="flex-1 text-[14px] font-normal text-[#d0d0d0]">{m.shop_name}</p>
-                <ChevronRight className="h-4 w-4 text-[#333]" />
+                <Trophy className="h-4 w-4 shrink-0 text-gold" strokeWidth={1.5} />
+                <p className="flex-1 text-[14px] font-normal text-ink">{m.shop_name}</p>
+                <ChevronRight className="h-4 w-4 text-muted" />
               </button>
             ))}
           </div>
@@ -509,10 +509,10 @@ export default function ProfilePage() {
             className="flex w-full items-center justify-between mb-2"
           >
             <SectionLabel title={`My cards (${memberships.length})`} />
-            <ChevronDown className={`h-4 w-4 text-[#444] mr-5 transition-transform duration-200 ${showCards ? "rotate-180" : ""}`} />
+            <ChevronDown className={`h-4 w-4 text-muted mr-5 transition-transform duration-200 ${showCards ? "rotate-180" : ""}`} />
           </button>
           {showCards && (
-            <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
+            <div className="overflow-hidden rounded-card border border-line">
               {memberships.map((m, i) => {
                 const isReady = m.visits >= m.reward_goal;
                 const isPoints = m.reward_mode === "points";
@@ -521,21 +521,21 @@ export default function ProfilePage() {
                   <button
                     key={m.shop_slug}
                     onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
-                    className={`flex w-full items-center gap-4 px-4 py-3.5 text-left active:bg-[#0d0d0d] ${i > 0 ? "border-t border-[#161616]" : ""}`}
+                    className={`flex w-full items-center gap-4 px-4 py-3.5 text-left active:bg-surface ${i > 0 ? "border-t border-line/60" : ""}`}
                   >
                     {m.logo_url ? (
-                      <img src={m.logo_url} alt={m.shop_name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+                      <img src={m.logo_url} alt={m.shop_name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
                     ) : (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#1f1f1f] bg-[#111]">
-                        <span className="text-sm font-medium text-[#555]">{m.shop_name.charAt(0).toUpperCase()}</span>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl border border-line bg-surface">
+                        <span className="text-sm font-medium text-muted">{m.shop_name.charAt(0).toUpperCase()}</span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-medium text-[#d0d0d0] truncate">{m.shop_name}</p>
+                      <p className="text-[14px] font-medium text-ink truncate">{m.shop_name}</p>
                       {isPoints ? (
-                        <div className="mt-2 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-[#1a1a1a]">
+                        <div className="mt-2 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-surface">
                           <div
-                            className={`h-full rounded-full ${isReady ? "bg-yellow-400" : "bg-[#ededed]"}`}
+                            className={`h-full rounded-full ${isReady ? "bg-gold" : "bg-ink"}`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>
@@ -544,7 +544,7 @@ export default function ProfilePage() {
                           {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
                             <div
                               key={idx}
-                              className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-yellow-400" : "bg-[#ededed]" : "bg-[#1a1a1a]"}`}
+                              className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-gold" : "bg-ink" : "bg-surface"}`}
                               style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
                             />
                           ))}
@@ -552,11 +552,11 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {isReady && <span className="text-[10px] font-medium text-yellow-500">READY</span>}
-                      <span className="text-[12px] font-light text-[#555]">
+                      {isReady && <span className="text-[10px] font-medium text-gold">READY</span>}
+                      <span className="text-[12px] font-light text-muted">
                         {m.visits}/{m.reward_goal}{isPoints ? " pts" : ""}
                       </span>
-                      <ChevronRight className="h-3.5 w-3.5 text-[#333]" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted" />
                     </div>
                   </button>
                 );
@@ -569,14 +569,14 @@ export default function ProfilePage() {
       {/* ── ACCOUNT ── */}
       <div className="mb-6">
         <SectionLabel title="Account" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={User}
             label="Display name"
             value={name}
             onClick={() => { setNameInput(name === "Customer" ? "" : name); setEditingName(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Camera}
             label="Profile photo"
@@ -584,7 +584,7 @@ export default function ProfilePage() {
           />
           {!isPrivateRelay && (
             <>
-              <div className="border-t border-[#161616]" />
+              <div className="border-t border-line/60" />
               <SettingsRow
                 icon={Mail}
                 label="Email"
@@ -599,42 +599,42 @@ export default function ProfilePage() {
       {/* ── NOTIFICATIONS ── */}
       <div className="mb-6">
         <SectionLabel title="Notifications" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={Bell}
             label="Push notifications"
             chevron={false}
             rightNode={<Toggle enabled={notifEnabled} onToggle={togglePushNotifications} />}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Mail}
             label="Email notifications"
             chevron={false}
             rightNode={<Toggle enabled={emailNotif} onToggle={toggleEmailNotif} />}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Bell}
             label="Drops from followed stores"
             chevron={false}
             rightNode={<Toggle enabled={notifPrefs.notify_drops} onToggle={() => toggleNotifPref("notify_drops")} />}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Trophy}
             label="Reward expiry reminders"
             chevron={false}
             rightNode={<Toggle enabled={notifPrefs.notify_reward_expiry} onToggle={() => toggleNotifPref("notify_reward_expiry")} />}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Info}
             label="New places nearby"
             chevron={false}
             rightNode={<Toggle enabled={notifPrefs.notify_new_nearby} onToggle={() => toggleNotifPref("notify_new_nearby")} />}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={User}
             label="New followers"
@@ -647,7 +647,7 @@ export default function ProfilePage() {
       {/* ── CREATOR ── */}
       <div className="mb-6">
         <SectionLabel title="Creator" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={Sparkles}
             label="Become a Creator"
@@ -661,13 +661,13 @@ export default function ProfilePage() {
           />
           {creatorProfile?.is_creator && (
             <>
-              <div className="border-t border-[#161616]" />
+              <div className="border-t border-line/60" />
               <SettingsRow
                 icon={User}
                 label="View public profile"
                 onClick={() => router.push(`/customer/creator/${creatorProfile.id}`)}
               />
-              <div className="border-t border-[#161616]" />
+              <div className="border-t border-line/60" />
               <SettingsRow
                 icon={Pencil}
                 label="Bio"
@@ -675,33 +675,33 @@ export default function ProfilePage() {
                 onClick={() => { setBioInput(creatorProfile.bio ?? ""); setEditingBio(true); }}
               />
               {editingBio && (
-                <div className="border-t border-[#161616] px-5 py-4">
+                <div className="border-t border-line/60 px-5 py-4">
                   <textarea
                     value={bioInput}
                     onChange={(e) => setBioInput(e.target.value)}
                     placeholder="Tell people what you love about your local spots…"
                     rows={3}
                     maxLength={500}
-                    className="w-full resize-none rounded-xl border border-[#252525] bg-[#0a0a0a] px-3 py-2.5 text-[13px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
+                    className="w-full resize-none rounded-ctl border border-line bg-surface px-3 py-2.5 text-[13px] font-normal text-ink outline-none placeholder:text-muted"
                   />
                   <div className="mt-2 flex justify-end gap-2">
                     <button
                       onClick={() => setEditingBio(false)}
-                      className="rounded-full border border-[#252525] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-[#888]"
+                      className="rounded-full border border-line px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-muted"
                     >
                       CANCEL
                     </button>
                     <button
                       onClick={saveBio}
                       disabled={savingBio}
-                      className="rounded-full bg-[#ededed] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
+                      className="rounded-full bg-ink px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
                     >
                       {savingBio ? "SAVING…" : "SAVE"}
                     </button>
                   </div>
                 </div>
               )}
-              <div className="border-t border-[#161616]" />
+              <div className="border-t border-line/60" />
               <SettingsRow
                 icon={Eye}
                 label="Show me on leaderboards"
@@ -721,25 +721,25 @@ export default function ProfilePage() {
       {/* ── SUPPORT ── */}
       <div className="mb-6">
         <SectionLabel title="Support" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={HelpCircle}
             label="Help & FAQ"
             onClick={() => window.open("https://www.ventzon.com/help", "_blank")}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={MessageSquare}
             label="Contact support"
             onClick={() => window.open("mailto:support@ventzon.com", "_self")}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Share2}
             label="Share Ventzon"
             onClick={shareApp}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Star}
             label="Rate the app"
@@ -751,13 +751,13 @@ export default function ProfilePage() {
       {/* ── LEGAL ── */}
       <div className="mb-6">
         <SectionLabel title="Legal" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={FileText}
             label="Terms of Service"
             onClick={() => window.open("https://www.ventzon.com/terms", "_blank")}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Shield}
             label="Privacy Policy"
@@ -769,7 +769,7 @@ export default function ProfilePage() {
       {/* ── ABOUT ── */}
       <div className="mb-6">
         <SectionLabel title="About" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={Info}
             label="Version"
@@ -782,13 +782,13 @@ export default function ProfilePage() {
       {/* ── SIGN OUT / DELETE ── */}
       <div className="mb-2">
         <SectionLabel title="Session" />
-        <div className="overflow-hidden rounded-2xl border border-[#1f1f1f] mx-5">
+        <div className="overflow-hidden rounded-card border border-line mx-5">
           <SettingsRow
             icon={LogOut}
             label="Sign out"
             onClick={signOut}
           />
-          <div className="border-t border-[#161616]" />
+          <div className="border-t border-line/60" />
           <SettingsRow
             icon={Trash2}
             label={deletingAccount ? "Deleting account…" : "Delete account"}
