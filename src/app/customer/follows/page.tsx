@@ -75,24 +75,24 @@ function FollowListContent() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0a0a0a]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"
         >
-          <ArrowLeft className="h-4 w-4 text-[#f5f5f5]" />
+          <ArrowLeft className="h-4 w-4 text-ink" />
         </button>
-        <h1 className="text-[18px] font-semibold text-[#f5f5f5] truncate">
+        <h1 className="font-display text-[19px] font-semibold text-ink truncate">
           {title || (shopSlug ? "Followers" : type === "followers" ? "Followers" : "Following")}
         </h1>
       </div>
 
       {/* Followers / Following tabs — creator subjects only */}
       {!shopSlug && (
-        <div className="mx-5 mb-3 flex rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] p-1">
+        <div className="mx-5 mb-3 flex rounded-card border border-line bg-surface p-1">
           {(["followers", "following"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setType(t)}
-              className={`flex-1 rounded-xl py-2 text-[11px] font-medium tracking-[0.08em] transition-all ${
-                type === t ? "bg-[#ededed] text-black" : "text-[#666]"
+              className={`flex-1 rounded-ctl py-2 text-[11px] font-medium tracking-[0.08em] transition-all ${
+                type === t ? "bg-ink text-bg" : "text-muted"
               }`}
             >
               {t.toUpperCase()}
@@ -102,16 +102,16 @@ function FollowListContent() {
       )}
 
       {/* Search */}
-      <div className="mx-5 mb-4 flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3">
-        <Search className="h-4 w-4 shrink-0 text-[#444]" />
+      <div className="mx-5 mb-4 flex items-center gap-3 rounded-card border border-line bg-surface px-4 py-3">
+        <Search className="h-4 w-4 shrink-0 text-muted" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name…"
-          className="flex-1 bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
+          className="flex-1 bg-transparent text-[14px] font-normal text-ink outline-none placeholder:text-muted"
         />
         {query && (
-          <button onClick={() => setQuery("")} className="text-[#666]">
+          <button onClick={() => setQuery("")} className="text-muted">
             <X className="h-4 w-4" />
           </button>
         )}
@@ -122,7 +122,7 @@ function FollowListContent() {
         {loading ? (
           <div className="space-y-3">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-3 rounded-2xl border border-[#1f1f1f] p-3.5">
+              <div key={i} className="flex items-center gap-3 rounded-card border border-line p-3.5">
                 <div className="skeleton h-11 w-11 rounded-full shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="skeleton h-3.5 w-32 rounded" />
@@ -133,20 +133,20 @@ function FollowListContent() {
           </div>
         ) : items.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-[14px] font-medium text-[#888]">
+            <p className="text-[14px] font-medium text-muted">
               {query ? `No results for "${query}"` : "Nobody here yet"}
             </p>
           </div>
         ) : (
           <>
-            <p className="mb-2 text-[11px] font-normal text-[#555]">
+            <p className="mb-2 text-[11px] font-normal text-muted">
               {total} {total === 1 ? "person" : "people"}
             </p>
             <div className="space-y-2.5">
               {items.map((item, i) => (
                 <div
                   key={`${item.profile_id ?? item.display_name}-${i}`}
-                  className="flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-3.5 py-3"
+                  className="flex items-center gap-3 rounded-card border border-line bg-surface px-3.5 py-3"
                 >
                   <button
                     onClick={() => item.profile_id && router.push(`/customer/creator/${item.profile_id}`)}
@@ -156,21 +156,21 @@ function FollowListContent() {
                     {item.avatar_url ? (
                       <img src={item.avatar_url} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
                     ) : (
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1a1a1a]">
-                        <span className="text-[14px] font-medium text-[#888]">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface">
+                        <span className="text-[14px] font-medium text-muted">
                           {item.display_name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-[#ededed] truncate">
+                      <p className="text-[14px] font-medium text-ink truncate">
                         {item.display_name}
                         {item.is_creator && (
-                          <span className="ml-2 text-[9px] font-light tracking-[0.15em] text-[#555]">CREATOR</span>
+                          <span className="ml-2 text-[9px] font-light tracking-[0.15em] text-muted">CREATOR</span>
                         )}
                       </p>
                       {item.bio && (
-                        <p className="mt-0.5 text-[12px] font-normal text-[#666] truncate">{item.bio}</p>
+                        <p className="mt-0.5 text-[12px] font-normal text-muted truncate">{item.bio}</p>
                       )}
                     </div>
                   </button>
@@ -188,7 +188,7 @@ function FollowListContent() {
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="mt-4 w-full rounded-2xl border border-[#1f1f1f] py-3.5 text-[11px] font-medium tracking-[0.15em] text-[#888] disabled:opacity-40"
+                className="mt-4 w-full rounded-card border border-line py-3.5 text-[11px] font-medium tracking-[0.15em] text-muted disabled:opacity-40"
               >
                 {loadingMore ? "LOADING…" : "LOAD MORE"}
               </button>
@@ -205,7 +205,7 @@ export default function FollowListPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-black">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
         </div>
       }
     >
