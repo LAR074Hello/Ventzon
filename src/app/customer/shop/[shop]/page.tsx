@@ -439,8 +439,8 @@ export default function CustomerShopPage() {
       </div>
 
       {err && (
-        <div className="mx-5 mt-4 rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-center">
-          <p className="text-[13px] font-normal text-red-300/80">{err}</p>
+        <div className="mx-5 mt-4 rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3 text-center">
+          <p className="text-[13px] font-normal text-danger">{err}</p>
         </div>
       )}
 

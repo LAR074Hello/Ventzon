@@ -16,6 +16,8 @@
   --muted: #8b877e;     /* faded receipt ink — AA on bg and surface */
   --gold: #ffb52e;      /* marquee gold — the signature; rewards only */
   --gold-ink: #1a1204;  /* text on gold */
+  --danger: #ff6b5e;    /* neon "closed" red — errors only, never decoration
+                           (7.1:1 on bg, 6.6:1 on surface) */
 
   /* motion: one curve, one duration */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
@@ -37,6 +39,7 @@
   --color-muted: var(--muted);
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
+  --color-danger: var(--danger);
 
   /* type utilities: font-display / font-body */
   --font-display: var(--font-display);

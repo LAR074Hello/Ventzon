@@ -53,11 +53,11 @@ function SettingsRow({
   const content = (
     <>
       {Icon && (
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${destructive ? "bg-red-950/30" : "bg-[#1a1a1a]"}`}>
-          <Icon className={`h-4 w-4 ${destructive ? "text-red-500/70" : "text-[#888]"}`} strokeWidth={1.5} />
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${destructive ? "bg-danger/10" : "bg-[#1a1a1a]"}`}>
+          <Icon className={`h-4 w-4 ${destructive ? "text-danger" : "text-[#888]"}`} strokeWidth={1.5} />
         </div>
       )}
-      <span className={`flex-1 text-[14px] font-normal ${destructive ? "text-red-500/80" : "text-[#d0d0d0]"}`}>
+      <span className={`flex-1 text-[14px] font-normal ${destructive ? "text-danger" : "text-[#d0d0d0]"}`}>
         {label}
       </span>
       {rightNode}

@@ -255,7 +255,7 @@ function AuthForm() {
                   className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[22px] font-light tracking-[0.5em] text-[#ededed] outline-none placeholder:text-[#222] focus:border-[#2a2a2a]"
                 />
                 {err && (
-                  <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                  <div className="rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
                     {err}
                   </div>
                 )}
@@ -305,7 +305,7 @@ function AuthForm() {
                   className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
                 />
                 {err && (
-                  <div className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                  <div className="rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
                     {err}
                   </div>
                 )}
@@ -369,7 +369,7 @@ function AuthForm() {
               {/* Errors/info shown regardless of whether the email form is
                   expanded, so social-login failures are still visible. */}
               {err && (
-                <div className="mb-3 rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3.5 text-[13px] font-light text-red-300/80">
+                <div className="mb-3 rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
                   {err}
                 </div>
               )}

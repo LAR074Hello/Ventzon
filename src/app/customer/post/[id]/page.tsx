@@ -183,7 +183,7 @@ export default function PostPage() {
       <div className="flex items-center gap-5 px-5 pt-4">
         <button onClick={toggleLike} className="flex items-center gap-1.5">
           <Heart
-            className={`h-5 w-5 transition-colors ${viewer.liked ? "text-red-500" : "text-[#888]"}`}
+            className={`h-5 w-5 transition-colors ${viewer.liked ? "text-ink" : "text-[#888]"}`}
             fill={viewer.liked ? "currentColor" : "none"}
           />
           <span className="text-[12px] font-medium text-[#888]">{counts.likes}</span>
