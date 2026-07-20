@@ -123,9 +123,9 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-4 px-5 py-3 text-left active:bg-[#0a0a0a] transition-colors duration-150"
+      className="flex w-full items-center gap-4 px-5 py-3 text-left active:bg-surface transition-colors duration-150"
     >
-      <div className="relative h-[60px] w-[60px] shrink-0 rounded-2xl overflow-hidden">
+      <div className="relative h-[60px] w-[60px] shrink-0 rounded-card overflow-hidden">
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
         ) : (
@@ -138,14 +138,14 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[15px] font-medium text-[#f5f5f5] truncate">{shop.shop_name}</p>
+          <p className="text-[15px] font-medium text-ink truncate">{shop.shop_name}</p>
           {tag && (
             <span className="shrink-0 rounded-full bg-surface border border-line px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-muted">
               {tag}
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-[12px] font-normal text-[#666] truncate">{shop.deal_title}</p>
+        <p className="mt-0.5 text-[12px] font-normal text-muted truncate">{shop.deal_title}</p>
         {progress && remaining !== null && remaining > 0 ? (
           <div className="mt-1 flex items-center gap-1.5">
             <div className="flex gap-0.5">
@@ -163,16 +163,16 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
         ) : progress && remaining === 0 ? (
           <p className="mt-1 text-[11px] font-medium text-gold">Reward ready to redeem</p>
         ) : (
-          <p className="mt-0.5 text-[11px] font-normal text-[#444]">
+          <p className="mt-0.5 text-[11px] font-normal text-muted">
             {shop.reward_goal} visits to reward
             {shop.member_count > 0 && (
-              <span className="ml-2 text-[#333]">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
+              <span className="ml-2 text-muted">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
             )}
           </p>
         )}
         {distanceMi != null && (
-          <p className="mt-0.5 text-[11px] font-normal text-[#444]">
-            <MapPin className="mr-1 inline h-2.5 w-2.5 align-[-1px] text-[#444]" />
+          <p className="mt-0.5 text-[11px] font-normal text-muted">
+            <MapPin className="mr-1 inline h-2.5 w-2.5 align-[-1px] text-muted" />
             {fmtMiles(distanceMi)}
           </p>
         )}
@@ -187,7 +187,7 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
     <button
       onClick={onClick}
       className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium tracking-[0.04em] transition-all duration-200 ${
-        active ? "bg-[#ededed] text-black" : "bg-[#0f0f0f] text-[#666] border border-[#1f1f1f]"
+        active ? "bg-ink text-black" : "bg-surface text-muted border border-line"
       }`}
     >
       {Icon && <Icon className="h-3 w-3" />}
@@ -203,7 +203,7 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
   return (
     <button
       onClick={onClick}
-      className="shrink-0 w-52 rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-4 text-left active:bg-[#111] transition-colors duration-150"
+      className="shrink-0 w-52 rounded-card border border-line bg-surface p-4 text-left active:bg-surface transition-colors duration-150"
     >
       {/* Shop identity */}
       <div className="flex items-center gap-2 mb-3">
@@ -218,13 +218,13 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
             </div>
           )}
         </div>
-        <p className="text-[12px] font-medium text-[#888] truncate">{shop.shop_name}</p>
+        <p className="text-[12px] font-medium text-muted truncate">{shop.shop_name}</p>
       </div>
 
       {/* The reward — this is the hero */}
-      <p className="text-[20px] font-semibold text-[#f5f5f5] leading-tight mb-1">{shop.deal_title}</p>
+      <p className="text-[20px] font-semibold text-ink leading-tight mb-1">{shop.deal_title}</p>
       {shop.deal_details && (
-        <p className="text-[12px] font-normal text-[#666] line-clamp-2 mb-3">{shop.deal_details}</p>
+        <p className="text-[12px] font-normal text-muted line-clamp-2 mb-3">{shop.deal_details}</p>
       )}
 
       {/* Stamp requirement — filled with the customer's live progress */}
@@ -253,15 +253,15 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="px-5 mb-4">
-      <h2 className="text-[18px] font-semibold text-[#f5f5f5] tracking-[-0.01em]">{title}</h2>
-      {sub && <p className="mt-0.5 text-[12px] font-normal text-[#666]">{sub}</p>}
+      <h2 className="text-[18px] font-semibold text-ink tracking-[-0.01em]">{title}</h2>
+      {sub && <p className="mt-0.5 text-[12px] font-normal text-muted">{sub}</p>}
     </div>
   );
 }
 
 /* ── Divider ── */
 function Divider() {
-  return <div className="h-px bg-[#111] mx-5 my-6" />;
+  return <div className="h-px bg-surface mx-5 my-6" />;
 }
 
 export default function ExplorePage() {
@@ -456,14 +456,14 @@ export default function ExplorePage() {
           <div className="flex gap-3 overflow-hidden">
             {[0, 1, 2].map((i) => (
               <div key={i} className="shrink-0 w-72">
-                <div className="skeleton h-40 w-full rounded-3xl" />
+                <div className="skeleton h-40 w-full rounded-sheet" />
               </div>
             ))}
           </div>
           <div className="skeleton h-4 w-24 rounded" />
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex gap-4 px-0">
-              <div className="skeleton h-[60px] w-[60px] rounded-2xl shrink-0" />
+              <div className="skeleton h-[60px] w-[60px] rounded-card shrink-0" />
               <div className="flex-1 space-y-2 pt-1">
                 <div className="skeleton h-3.5 w-32 rounded" />
                 <div className="skeleton h-3 w-44 rounded" />
@@ -479,14 +479,14 @@ export default function ExplorePage() {
         <div className="flex-1 pb-4">
           {searchResults.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center px-8">
-              <MapPin className="h-8 w-8 text-[#333]" />
-              <p className="mt-4 text-[15px] font-semibold text-[#f5f5f5]">No results for "{query}"</p>
-              <p className="mt-1 text-[13px] font-normal text-[#666]">Try a different store name or deal</p>
+              <MapPin className="h-8 w-8 text-muted" />
+              <p className="mt-4 text-[15px] font-semibold text-ink">No results for "{query}"</p>
+              <p className="mt-1 text-[13px] font-normal text-muted">Try a different store name or deal</p>
             </div>
           ) : (
             <>
-              <p className="px-5 pb-3 text-[12px] font-normal text-[#666]">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
-              <div className="divide-y divide-[#0f0f0f]">
+              <p className="px-5 pb-3 text-[12px] font-normal text-muted">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
+              <div className="divide-y divide-line/60">
                 {searchResults.map((s) => (
                   <StoreCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} distanceMi={distanceFor(s)} onClick={() => go(s.shop_slug)} />
                 ))}
@@ -501,8 +501,8 @@ export default function ExplorePage() {
         <div className="flex-1 pb-8">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center px-8">
-              <p className="text-[15px] font-semibold text-[#f5f5f5]">No stores in this category yet</p>
-              <button onClick={() => setActiveCategory("all")} className="mt-5 rounded-full border border-[#222] px-6 py-2.5 text-[12px] font-normal tracking-[0.15em] text-[#666]">
+              <p className="text-[15px] font-semibold text-ink">No stores in this category yet</p>
+              <button onClick={() => setActiveCategory("all")} className="mt-5 rounded-full border border-line px-6 py-2.5 text-[12px] font-normal tracking-[0.15em] text-muted">
                 SEE ALL STORES
               </button>
             </div>
@@ -512,7 +512,7 @@ export default function ExplorePage() {
               {almostThere.length > 0 && (
                 <div className="mb-8">
                   <SectionHeader title="Almost there" sub="You're close to these rewards" />
-                  <div className="divide-y divide-[#0f0f0f]">
+                  <div className="divide-y divide-line/60">
                     {almostThere.map((s) => (
                       <StoreCard
                         key={s.shop_slug}
@@ -537,18 +537,18 @@ export default function ExplorePage() {
                         <button
                           key={`${a.profile_id}-${a.created_at}-${i}`}
                           onClick={() => router.push(`/customer/shop/${a.shop_slug}`)}
-                          className="flex shrink-0 items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] px-4 py-3 text-left active:bg-[#111]"
+                          className="flex shrink-0 items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-left active:bg-surface"
                         >
                           {a.avatar_url ? (
                             <img src={a.avatar_url} alt={a.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
                           ) : (
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1a1a1a]">
-                              <span className="text-[13px] font-medium text-[#888]">{a.display_name.charAt(0).toUpperCase()}</span>
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface">
+                              <span className="text-[13px] font-medium text-muted">{a.display_name.charAt(0).toUpperCase()}</span>
                             </div>
                           )}
                           <div>
-                            <p className="text-[13px] font-medium text-[#ededed] whitespace-nowrap">{a.display_name}</p>
-                            <p className="text-[11px] font-normal text-[#666] whitespace-nowrap">
+                            <p className="text-[13px] font-medium text-ink whitespace-nowrap">{a.display_name}</p>
+                            <p className="text-[11px] font-normal text-muted whitespace-nowrap">
                               checked in at {a.shop_name}
                             </p>
                           </div>
@@ -565,7 +565,7 @@ export default function ExplorePage() {
                   {almostThere.length > 0 && <Divider />}
                   <div className="mb-8">
                     <SectionHeader title="Near you" sub="Closest rewards first" />
-                    <div className="divide-y divide-[#0f0f0f]">
+                    <div className="divide-y divide-line/60">
                       {nearYou.map(({ shop: s, dist }) => (
                         <StoreCard
                           key={s.shop_slug}

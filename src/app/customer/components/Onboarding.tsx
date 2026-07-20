@@ -8,19 +8,19 @@ const SLIDES = [
     icon: Compass,
     title: "Discover local rewards",
     sub: "Find participating stores near you and start earning rewards every time you visit.",
-    accent: "#7c3aed",
+    accent: "var(--muted)",
   },
   {
     icon: ScanLine,
     title: "Scan & check in",
     sub: "Tap Scan and point your camera at any Ventzon QR code in-store. It takes two seconds.",
-    accent: "#059669",
+    accent: "var(--muted)",
   },
   {
     icon: Gift,
     title: "Get rewarded",
     sub: "Collect stamps or points with every visit. Hit your goal, show your card at the register, and the reward's yours.",
-    accent: "#d97706",
+    accent: "var(--gold)",
   },
 ];
 
@@ -85,7 +85,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
             <div
               key={i}
               className="h-1 rounded-full transition-all duration-300"
-              style={{ width: i === idx ? 24 : 6, backgroundColor: i === idx ? "#ededed" : "#222" }}
+              style={{ width: i === idx ? 24 : 6, backgroundColor: i === idx ? "var(--ink)" : "var(--line)" }}
             />
           ))}
         </div>

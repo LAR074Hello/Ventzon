@@ -385,7 +385,7 @@ export default function ProfilePage() {
             onClick={() => fileRef.current?.click()}
             className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface transition-colors active:bg-line"
           >
-            <Camera className="h-3.5 w-3.5 text-[#aaa]" />
+            <Camera className="h-3.5 w-3.5 text-muted" />
           </button>
           <input
             ref={fileRef}
@@ -403,7 +403,7 @@ export default function ProfilePage() {
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
-              className="rounded-ctl border border-line bg-surface px-3 py-1.5 text-[16px] font-medium text-ink outline-none focus:border-[#555] text-center"
+              className="rounded-ctl border border-line bg-surface px-3 py-1.5 text-[16px] font-medium text-ink outline-none focus:border-muted text-center"
               placeholder="Your name"
               maxLength={50}
             />
@@ -474,7 +474,7 @@ export default function ProfilePage() {
           <button
             onClick={saveBirthday}
             disabled={savingBirthday || birthMonth === "" || birthDay === ""}
-            className="mt-4 w-full rounded-ctl border border-line py-3 text-[13px] font-medium text-ink transition-colors active:bg-[#151515] disabled:opacity-40"
+            className="mt-4 w-full rounded-ctl border border-line py-3 text-[13px] font-medium text-ink transition-colors active:bg-black/20 disabled:opacity-40"
           >
             {savingBirthday ? "Saving…" : birthdaySaved ? "Saved ✓" : "Save birthday"}
           </button>
@@ -799,7 +799,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-8 text-center">
-        <p className="text-[11px] font-medium tracking-[0.2em] text-[#222]">VENTZON</p>
+        <p className="text-[11px] font-medium tracking-[0.2em] text-line">VENTZON</p>
       </div>
     </div>
   );

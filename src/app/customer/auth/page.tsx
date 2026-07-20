@@ -225,7 +225,7 @@ function AuthForm() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pt-12 pb-8">
         {/* Logo mark */}
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-card border border-[#1a1a1a] bg-surface">
+          <div className="flex h-16 w-16 items-center justify-center rounded-card border border-line bg-surface">
             <span className="text-2xl font-extralight tracking-tight text-ink">V</span>
           </div>
           <p className="mt-4 text-[11px] font-light tracking-[0.5em] text-ink">VENTZON</p>
@@ -252,7 +252,7 @@ function AuthForm() {
                   required
                   autoFocus
                   maxLength={6}
-                  className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-center text-[22px] font-light tracking-[0.5em] text-ink outline-none placeholder:text-[#222] focus:border-line"
+                  className="w-full rounded-card border border-line bg-surface px-4 py-4 text-center text-[22px] font-light tracking-[0.5em] text-ink outline-none placeholder:text-line focus:border-line"
                 />
                 {err && (
                   <div className="rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
@@ -302,7 +302,7 @@ function AuthForm() {
                   placeholder="Email address"
                   required
                   autoComplete="email"
-                  className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
+                  className="w-full rounded-card border border-line bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                 />
                 {err && (
                   <div className="rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
@@ -398,7 +398,7 @@ function AuthForm() {
                       placeholder="Your name"
                       required
                       autoFocus
-                      className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
+                      className="w-full rounded-card border border-line bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                     />
                   )}
                   <input
@@ -409,7 +409,7 @@ function AuthForm() {
                     required
                     autoFocus={mode !== "signup"}
                     autoComplete="email"
-                    className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
+                    className="w-full rounded-card border border-line bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                   />
                   <div className="relative">
                     <input
@@ -420,7 +420,7 @@ function AuthForm() {
                       required
                       autoComplete={mode === "signup" ? "new-password" : "current-password"}
                       minLength={6}
-                      className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 pr-12 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
+                      className="w-full rounded-card border border-line bg-surface px-4 py-4 pr-12 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                     />
                     <button
                       type="button"
@@ -464,11 +464,11 @@ function AuthForm() {
 
       {/* Footer */}
       <div className="px-6 pb-8 text-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}>
-        <p className="text-[11px] font-light text-[#222]">
+        <p className="text-[11px] font-light text-muted/60">
           By continuing you agree to our{" "}
-          <a href="https://www.ventzon.com/terms" className="underline decoration-[#333] underline-offset-2">Terms</a>
+          <a href="https://www.ventzon.com/terms" className="underline decoration-line underline-offset-2">Terms</a>
           {" "}and{" "}
-          <a href="https://www.ventzon.com/privacy" className="underline decoration-[#333] underline-offset-2">Privacy Policy</a>
+          <a href="https://www.ventzon.com/privacy" className="underline decoration-line underline-offset-2">Privacy Policy</a>
         </p>
       </div>
     </div>
