@@ -112,7 +112,7 @@ export default function PostPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
   }
@@ -120,11 +120,11 @@ export default function PostPage() {
   if (notFound || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#666]">NOT FOUND</p>
-        <h1 className="mt-4 text-2xl font-semibold text-[#f5f5f5]">Post not found</h1>
+        <p className="text-[11px] font-light tracking-[0.3em] text-muted">NOT FOUND</p>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Post not found</h1>
         <button
           onClick={() => router.back()}
-          className="mt-8 rounded-full border border-[#333] px-6 py-3 text-[12px] tracking-[0.15em] text-[#f5f5f5]"
+          className="mt-8 rounded-full border border-line px-6 py-3 text-[12px] tracking-[0.15em] text-ink"
         >
           Go back
         </button>
@@ -144,9 +144,9 @@ export default function PostPage() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-black/80"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-black/80"
         >
-          <ArrowLeft className="h-4 w-4 text-[#f5f5f5]" />
+          <ArrowLeft className="h-4 w-4 text-ink" />
         </button>
         {author && (
           <button
@@ -156,13 +156,13 @@ export default function PostPage() {
             {author.avatar_url ? (
               <img src={author.avatar_url} alt={author.display_name} className="h-8 w-8 rounded-full object-cover" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1a1a1a]">
-                <span className="text-[12px] font-medium text-[#888]">{author.display_name.charAt(0).toUpperCase()}</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface">
+                <span className="text-[12px] font-medium text-muted">{author.display_name.charAt(0).toUpperCase()}</span>
               </div>
             )}
             <div className="text-left">
-              <p className="text-[13px] font-medium text-[#ededed]">{author.display_name}</p>
-              <p className="text-[10px] font-normal text-[#555]">{timeAgo(post.created_at)}</p>
+              <p className="text-[13px] font-medium text-ink">{author.display_name}</p>
+              <p className="text-[10px] font-normal text-muted">{timeAgo(post.created_at)}</p>
             </div>
           </button>
         )}
@@ -170,7 +170,7 @@ export default function PostPage() {
 
       {/* Media */}
       {post.media_url && (
-        <div className="w-full bg-[#0a0a0a]">
+        <div className="w-full bg-surface">
           {post.media_type === "video" ? (
             <video src={post.media_url} controls playsInline className="max-h-[60vh] w-full object-contain" />
           ) : (
@@ -183,23 +183,23 @@ export default function PostPage() {
       <div className="flex items-center gap-5 px-5 pt-4">
         <button onClick={toggleLike} className="flex items-center gap-1.5">
           <Heart
-            className={`h-5 w-5 transition-colors ${viewer.liked ? "text-ink" : "text-[#888]"}`}
+            className={`h-5 w-5 transition-colors ${viewer.liked ? "text-ink" : "text-muted"}`}
             fill={viewer.liked ? "currentColor" : "none"}
           />
-          <span className="text-[12px] font-medium text-[#888]">{counts.likes}</span>
+          <span className="text-[12px] font-medium text-muted">{counts.likes}</span>
         </button>
         <div className="flex items-center gap-1.5">
-          <MessageCircle className="h-5 w-5 text-[#888]" />
-          <span className="text-[12px] font-medium text-[#888]">{counts.comments}</span>
+          <MessageCircle className="h-5 w-5 text-muted" />
+          <span className="text-[12px] font-medium text-muted">{counts.comments}</span>
         </div>
         <button onClick={toggleSave} className="flex items-center gap-1.5">
           <Bookmark
-            className={`h-5 w-5 transition-colors ${viewer.saved ? "text-yellow-400" : "text-[#888]"}`}
+            className={`h-5 w-5 transition-colors ${viewer.saved ? "text-ink" : "text-muted"}`}
             fill={viewer.saved ? "currentColor" : "none"}
           />
         </button>
         <button onClick={share} className="ml-auto">
-          <Share2 className="h-5 w-5 text-[#888]" />
+          <Share2 className="h-5 w-5 text-muted" />
         </button>
         {viewer.is_own && (
           <button
@@ -209,32 +209,32 @@ export default function PostPage() {
               router.back();
             }}
           >
-            <Trash2 className="h-5 w-5 text-[#555]" />
+            <Trash2 className="h-5 w-5 text-muted" />
           </button>
         )}
       </div>
 
       {/* Caption */}
       {post.body && (
-        <p className="px-5 pt-3 text-[14px] font-normal leading-relaxed text-[#d0d0d0]">{post.body}</p>
+        <p className="px-5 pt-3 text-[14px] font-normal leading-relaxed text-ink">{post.body}</p>
       )}
 
       {/* Linked business + Visit & Earn */}
       {shop && (
         <button
           onClick={() => router.push(`/customer/shop/${shop.slug}`)}
-          className="mx-5 mt-4 flex items-center gap-3.5 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5 text-left active:bg-[#0f0f0f]"
+          className="mx-5 mt-4 flex items-center gap-3.5 rounded-card border border-line bg-surface px-4 py-3.5 text-left active:bg-surface"
         >
           {shop.logo_url ? (
-            <img src={shop.logo_url} alt={shop.name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+            <img src={shop.logo_url} alt={shop.name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1a1a1a]">
-              <span className="text-[14px] font-medium text-[#888]">{shop.name.charAt(0).toUpperCase()}</span>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface">
+              <span className="text-[14px] font-medium text-muted">{shop.name.charAt(0).toUpperCase()}</span>
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-medium text-[#ededed] truncate">{shop.name}</p>
-            <p className="mt-0.5 text-[12px] font-normal text-[#666] truncate">
+            <p className="text-[14px] font-medium text-ink truncate">{shop.name}</p>
+            <p className="mt-0.5 text-[12px] font-normal text-muted truncate">
               {remaining !== null && remaining > 0
                 ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${shop.deal_title ?? "your reward"}`
                 : remaining === 0
@@ -242,20 +242,20 @@ export default function PostPage() {
                 : shop.deal_title ?? `${shop.reward_goal} visits to reward`}
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-[#ededed] px-3.5 py-1.5 text-[10px] font-bold tracking-[0.08em] text-black">
+          <span className="shrink-0 rounded-full bg-gold px-3.5 py-1.5 text-[10px] font-bold tracking-[0.1em] text-gold-ink">
             VISIT &amp; EARN
           </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-[#333]" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
         </button>
       )}
 
       {/* Comments */}
       <div className="mt-6 px-5">
-        <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-[#666]">
+        <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-muted">
           COMMENTS{counts.comments > 0 ? ` (${counts.comments})` : ""}
         </p>
         {comments.length === 0 ? (
-          <p className="pb-2 text-[13px] font-normal text-[#444]">Be the first to comment</p>
+          <p className="pb-2 text-[13px] font-normal text-muted">Be the first to comment</p>
         ) : (
           <div className="space-y-3.5 pb-2">
             {comments.map((c) => (
@@ -267,8 +267,8 @@ export default function PostPage() {
                   {c.author.avatar_url ? (
                     <img src={c.author.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
                   ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1a1a]">
-                      <span className="text-[10px] font-medium text-[#888]">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-surface">
+                      <span className="text-[10px] font-medium text-muted">
                         {c.author.display_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -276,10 +276,10 @@ export default function PostPage() {
                 </button>
                 <div className="min-w-0">
                   <p className="text-[12px]">
-                    <span className="font-medium text-[#bbb]">{c.author.display_name}</span>
-                    <span className="ml-2 text-[10px] text-[#444]">{timeAgo(c.created_at)}</span>
+                    <span className="font-medium text-muted">{c.author.display_name}</span>
+                    <span className="ml-2 text-[10px] text-muted">{timeAgo(c.created_at)}</span>
                   </p>
-                  <p className="mt-0.5 text-[13px] font-normal leading-relaxed text-[#999]">{c.body}</p>
+                  <p className="mt-0.5 text-[13px] font-normal leading-relaxed text-muted">{c.body}</p>
                 </div>
               </div>
             ))}
@@ -287,19 +287,19 @@ export default function PostPage() {
         )}
 
         {/* Comment input */}
-        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-2.5">
+        <div className="mt-3 flex items-center gap-2 rounded-card border border-line bg-surface px-4 py-2.5">
           <input
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submitComment()}
             placeholder="Add a comment…"
             maxLength={500}
-            className="flex-1 bg-transparent text-[13px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
+            className="flex-1 bg-transparent text-[13px] font-normal text-ink outline-none placeholder:text-muted"
           />
           <button
             onClick={submitComment}
             disabled={!comment.trim() || sending}
-            className="text-[#888] disabled:opacity-30"
+            className="text-muted disabled:opacity-30"
           >
             <Send className="h-4 w-4" />
           </button>
