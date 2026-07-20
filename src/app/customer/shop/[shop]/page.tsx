@@ -58,16 +58,16 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
         className="flex flex-col items-center transition-all duration-500"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)" }}
       >
-        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#22C55E]/30 bg-[#22C55E]/10">
-          <Check className="h-10 w-10 text-emerald-400" strokeWidth={1.5} />
+        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-gold/30 bg-gold/10">
+          <Check className="h-10 w-10 text-gold" strokeWidth={1.5} />
         </div>
-        <h2 className="mt-6 text-[22px] font-semibold tracking-[-0.01em] text-[#f5f5f5]">Checked in!</h2>
-        <p className="mt-2 text-[14px] font-normal text-[#666]">
+        <h2 className="mt-6 font-display text-[24px] font-semibold tracking-[-0.01em] text-ink">Checked in</h2>
+        <p className="mt-2 text-[14px] font-normal text-muted">
           {visits} of {goal} visit{goal !== 1 ? "s" : ""} collected
         </p>
         <div className="mt-6 flex gap-2">
           {Array.from({ length: Math.min(goal, 10) }).map((_, i) => (
-            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "#4ade80" : "#1f1f1f" }} />
+            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--gold)" : "var(--line)" }} />
           ))}
         </div>
       </div>
@@ -94,34 +94,34 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
   return (
     <div className="fixed inset-0 z-[150] flex flex-col bg-black" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
       <div className="flex justify-end px-5 pt-4">
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0a0a0a]">
-          <X className="h-4 w-4 text-[#999]" />
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface">
+          <X className="h-4 w-4 text-muted" />
         </button>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-        <div className="flex h-28 w-28 items-center justify-center rounded-3xl border border-yellow-900/40 bg-yellow-950/20">
-          <Trophy className="h-12 w-12 text-yellow-400" strokeWidth={1} />
+        <div className="flex h-28 w-28 items-center justify-center rounded-sheet border border-gold/40 bg-gold/10">
+          <Trophy className="h-12 w-12 text-gold" strokeWidth={1} />
         </div>
-        <h2 className="mt-8 text-[28px] font-semibold tracking-[-0.02em] text-[#f5f5f5]">Reward earned</h2>
-        <p className="mt-3 text-[15px] font-normal text-[#666]">{shop.deal_title}</p>
-        {shop.deal_details && <p className="mt-1 text-[13px] font-normal text-[#444]">{shop.deal_details}</p>}
-        <div className="mt-10 w-full rounded-2xl border border-yellow-900/30 bg-yellow-950/10 px-6 py-5">
-          <p className="text-[11px] font-light tracking-[0.2em] text-yellow-600">SHOW THIS TO THE CASHIER</p>
-          <p className="mt-2 text-[13px] font-normal text-[#999]">{shop.shop_name}</p>
+        <h2 className="mt-8 font-display text-[28px] font-semibold tracking-[-0.02em] text-ink">Reward earned</h2>
+        <p className="mt-3 text-[15px] font-normal text-muted">{shop.deal_title}</p>
+        {shop.deal_details && <p className="mt-1 text-[13px] font-normal text-muted opacity-80">{shop.deal_details}</p>}
+        <div className="mt-10 w-full rounded-card border border-gold/30 bg-gold/10 px-6 py-5">
+          <p className="text-[10px] font-semibold tracking-[0.14em] text-gold">SHOW THIS TO THE CASHIER</p>
+          <p className="mt-2 text-[13px] font-normal text-ink">{shop.shop_name}</p>
         </div>
       </div>
 
       <div className="px-5 pb-8 space-y-3">
         <button
           onClick={markRedeemed}
-          className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4]"
+          className="w-full rounded-ctl bg-ink py-4 text-[12px] font-semibold tracking-[0.14em] text-bg transition-all active:opacity-80"
         >
           MARK AS REDEEMED
         </button>
         <button
           onClick={share}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] py-4 text-[13px] font-normal tracking-[0.15em] text-[#999]"
+          className="flex w-full items-center justify-center gap-2 rounded-ctl border border-line bg-surface py-4 text-[12px] font-medium tracking-[0.12em] text-muted"
         >
           <Share2 className="h-4 w-4" />
           SHARE WITH FRIENDS
@@ -308,7 +308,7 @@ export default function CustomerShopPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
   }
@@ -316,14 +316,14 @@ export default function CustomerShopPage() {
   if (!settings) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#666]">NOT FOUND</p>
-        <h1 className="mt-4 text-2xl font-semibold text-[#f5f5f5]">Shop not found</h1>
-        <p className="mt-3 text-[14px] font-normal text-[#666]">
+        <p className="text-[10px] font-semibold tracking-[0.14em] text-muted">NOT FOUND</p>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Shop not found</h1>
+        <p className="mt-3 text-[14px] font-normal text-muted">
           This shop doesn&rsquo;t exist or may have been removed.
         </p>
         <button
           onClick={() => router.push("/customer/explore")}
-          className="mt-8 rounded-full border border-[#333] px-6 py-3 text-[12px] font-normal tracking-[0.15em] text-[#f5f5f5] transition-all duration-300 hover:border-[#666]"
+          className="mt-8 rounded-full border border-line px-6 py-3 text-[12px] font-medium tracking-[0.14em] text-ink transition-all duration-300 hover:border-muted"
         >
           Explore shops
         </button>
@@ -345,35 +345,35 @@ export default function CustomerShopPage() {
       {/* Back */}
       <button
         onClick={() => router.back()}
-        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-black/80 backdrop-blur-sm"
+        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur-sm"
         style={{ top: "calc(env(safe-area-inset-top, 20px) + 8px)" }}
       >
-        <ArrowLeft className="h-4 w-4 text-[#f5f5f5]" />
+        <ArrowLeft className="h-4 w-4 text-ink" />
       </button>
 
       {/* Share */}
       <button
         onClick={handleShare}
-        className="fixed right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-black/80 backdrop-blur-sm"
+        className="fixed right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur-sm"
         style={{ top: "calc(env(safe-area-inset-top, 20px) + 8px)" }}
       >
-        <Share2 className="h-4 w-4 text-[#999]" />
+        <Share2 className="h-4 w-4 text-muted" />
       </button>
 
       {/* Hero */}
       <div className="flex flex-col items-center px-6 pb-8" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 64px)" }}>
         {settings?.logo_url ? (
-          <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-2xl border border-[#1f1f1f] object-cover" />
+          <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-card border border-line object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a]">
-            <span className="text-3xl font-light text-[#666]">{shopName.charAt(0).toUpperCase()}</span>
+          <div className="flex h-24 w-24 items-center justify-center rounded-card border border-line bg-surface">
+            <span className="text-3xl font-light text-muted">{shopName.charAt(0).toUpperCase()}</span>
           </div>
         )}
-        <h1 className="mt-5 text-[20px] font-semibold tracking-[-0.01em] text-[#f5f5f5]">{shopName}</h1>
+        <h1 className="mt-5 font-display text-[24px] font-semibold tracking-[-0.01em] text-ink">{shopName}</h1>
         {settings?.deal_title && (
-          <div className="mt-3 rounded-xl border border-[#1f1f1f] px-5 py-3 text-center">
-            <p className="text-[13px] font-normal text-[#999]">{settings.deal_title}</p>
-            {settings.deal_details && <p className="mt-1 text-[12px] font-normal text-[#666]">{settings.deal_details}</p>}
+          <div className="mt-3 rounded-ctl border border-line bg-surface px-5 py-3 text-center">
+            <p className="text-[13px] font-medium text-ink">{settings.deal_title}</p>
+            {settings.deal_details && <p className="mt-1 text-[12px] font-normal text-muted">{settings.deal_details}</p>}
           </div>
         )}
         <button
@@ -381,14 +381,14 @@ export default function CustomerShopPage() {
           disabled={followBusy}
           className={`mt-4 flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] transition-all duration-200 ${
             following
-              ? "border border-[#333] bg-[#111] text-[#ededed]"
-              : "bg-[#ededed] text-black active:bg-[#d4d4d4]"
+              ? "border border-line bg-surface text-ink"
+              : "bg-ink text-bg active:opacity-80"
           }`}
         >
           {following ? <BellRing className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
           {following ? "FOLLOWING" : "FOLLOW"}
         </button>
-        <p className="mt-2 text-[11px] font-normal text-[#555]">
+        <p className="mt-2 text-[11px] font-normal text-muted">
           {following ? "You'll hear about new drops from this store" : "Get notified when they post something new"}
         </p>
         {followerCount !== null && followerCount > 0 && (
@@ -398,7 +398,7 @@ export default function CustomerShopPage() {
                 `/customer/follows?shop_slug=${shopSlug}&title=${encodeURIComponent(`${shopName} followers`)}`
               )
             }
-            className="mt-1.5 text-[11px] font-medium text-[#777] active:text-[#999]"
+            className="mt-1.5 text-[11px] font-medium text-muted underline-offset-2 active:text-ink"
           >
             {followerCount} follower{followerCount === 1 ? "" : "s"}
           </button>
@@ -406,10 +406,10 @@ export default function CustomerShopPage() {
       </div>
 
       {/* Loyalty card */}
-      <div className="mx-5 rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-5">
+      <div className="mx-5 rounded-card border border-line bg-surface p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] font-light tracking-[0.2em] text-[#666]">YOUR PROGRESS</p>
-          <p className="text-[11px] font-normal text-[#888]">{visits}/{goal}</p>
+          <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">YOUR PROGRESS</p>
+          <p className="text-[12px] font-semibold text-ink">{visits}<span className="text-muted">/{goal}</span></p>
         </div>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: goal }).map((_, i) => {
@@ -420,16 +420,16 @@ export default function CustomerShopPage() {
                 key={i}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                   filled
-                    ? isReady ? "bg-yellow-400/90" : "bg-[#ededed]"
-                    : "border-2 border-[#252525] bg-transparent"
+                    ? "bg-gold"
+                    : "border-2 border-line bg-transparent"
                 } ${isNew ? "animate-stamp-pop" : ""}`}
               >
-                {filled && <Check className="h-4 w-4 text-black" />}
+                {filled && <Check className="h-4 w-4 text-gold-ink" />}
               </div>
             );
           })}
         </div>
-        <p className="mt-4 text-[12px] font-normal text-[#888]">
+        <p className="mt-4 text-[12px] font-normal text-muted">
           {isReady
             ? "Tap below to view your reward"
             : checkedInToday
@@ -448,8 +448,8 @@ export default function CustomerShopPage() {
       {shopPosts.length > 0 && (
         <div className="mx-5 mt-5">
           <div className="flex items-center gap-2 mb-3">
-            <Grid3x3 className="h-3.5 w-3.5 text-[#555]" />
-            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">POSTS</p>
+            <Grid3x3 className="h-3.5 w-3.5 text-muted" />
+            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">POSTS</p>
           </div>
           <PostGrid posts={shopPosts} />
         </div>
@@ -459,18 +459,18 @@ export default function CustomerShopPage() {
       {history.length > 0 && (
         <div className="mx-5 mt-5">
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-3.5 w-3.5 text-[#555]" />
-            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">VISIT HISTORY</p>
+            <Clock className="h-3.5 w-3.5 text-muted" />
+            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">VISIT HISTORY</p>
           </div>
-          <div className="rounded-2xl border border-[#1f1f1f] overflow-hidden">
+          <div className="rounded-card border border-line overflow-hidden">
             {history.slice(0, 8).map((entry, i) => (
               <div
                 key={entry.checkin_date}
-                className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-[#111]" : ""}`}
+                className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-line/60" : ""}`}
               >
-                <p className="text-[13px] font-normal text-[#999]">{formatDate(entry.checkin_date)}</p>
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1a1a1a]">
-                  <Check className="h-3 w-3 text-[#555]" />
+                <p className="text-[13px] font-normal text-muted">{formatDate(entry.checkin_date)}</p>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gold/15">
+                  <Check className="h-3 w-3 text-gold" />
                 </div>
               </div>
             ))}
@@ -485,7 +485,7 @@ export default function CustomerShopPage() {
         {isReady && (
           <button
             onClick={async () => { await haptic("medium"); setShowRewardScreen(true); }}
-            className="w-full rounded-2xl border border-yellow-900/40 bg-yellow-950/20 py-4 text-[13px] font-light tracking-[0.2em] text-yellow-300 transition-all active:bg-yellow-950/30"
+            className="w-full rounded-ctl border border-gold/40 bg-gold/10 py-4 text-[12px] font-semibold tracking-[0.14em] text-gold transition-all active:bg-gold/20"
           >
             VIEW MY REWARD
           </button>
@@ -493,7 +493,7 @@ export default function CustomerShopPage() {
         {!user && (
           <button
             onClick={() => router.push(`/customer/auth?redirect=/customer/shop/${shopSlug}`)}
-            className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4]"
+            className="w-full rounded-ctl bg-ink py-4 text-[12px] font-semibold tracking-[0.14em] text-bg transition-all active:opacity-80"
           >
             SIGN IN TO TRACK PROGRESS
           </button>
@@ -502,14 +502,14 @@ export default function CustomerShopPage() {
           <button
             onClick={handleCheckin}
             disabled={checkinLoading}
-            className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-medium tracking-[0.2em] text-black transition-all active:bg-[#d4d4d4] disabled:opacity-40"
+            className="w-full rounded-ctl bg-ink py-4 text-[12px] font-semibold tracking-[0.14em] text-bg transition-all active:opacity-80 disabled:opacity-40"
           >
             {checkinLoading ? "CHECKING IN…" : "CHECK IN HERE"}
           </button>
         )}
         {user && checkedInToday && !isReady && (
-          <div className="w-full rounded-2xl border border-[#1f1f1f] py-4 text-center">
-            <p className="text-[12px] font-normal tracking-[0.15em] text-[#666]">CHECKED IN TODAY</p>
+          <div className="w-full rounded-ctl border border-line py-4 text-center">
+            <p className="text-[11px] font-semibold tracking-[0.12em] text-muted">CHECKED IN TODAY</p>
           </div>
         )}
       </div>
