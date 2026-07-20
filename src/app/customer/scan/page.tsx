@@ -141,7 +141,7 @@ export default function ScanPage() {
 
           {/* Success overlay */}
           {state === "success" && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-500/20">
+            <div className="absolute inset-0 flex items-center justify-center rounded-card bg-emerald-500/20">
               <div className="h-14 w-14 flex items-center justify-center rounded-full bg-emerald-500">
                 <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -178,7 +178,7 @@ export default function ScanPage() {
           </>
         )}
         {state === "success" && (
-          <p className="text-[15px] font-light text-emerald-400">Opening store…</p>
+          <p className="text-[15px] font-light text-gold">Opening store…</p>
         )}
         {state === "permission-denied" && (
           <div>

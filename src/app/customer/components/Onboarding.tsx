@@ -61,20 +61,20 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
       {/* Skip */}
       {!isLast && (
         <div className="flex justify-end px-6 pt-4">
-          <button onClick={onFinish} className="text-[12px] font-light tracking-[0.15em] text-[#444]">SKIP</button>
+          <button onClick={onFinish} className="text-[12px] font-light tracking-[0.15em] text-muted">SKIP</button>
         </div>
       )}
 
       {/* Content */}
       <div key={idx} className="flex flex-1 flex-col items-center justify-center px-8 text-center animate-fade-in-up">
         <div
-          className="flex h-24 w-24 items-center justify-center rounded-3xl mb-10"
+          className="flex h-24 w-24 items-center justify-center rounded-sheet mb-10"
           style={{ backgroundColor: accent + "18", border: `1px solid ${accent}30` }}
         >
           <Icon className="h-10 w-10" style={{ color: accent }} strokeWidth={1} />
         </div>
-        <h2 className="text-[26px] font-extralight tracking-[-0.02em] text-[#ededed] leading-tight">{title}</h2>
-        <p className="mt-4 text-[14px] font-light leading-relaxed text-[#555]">{sub}</p>
+        <h2 className="text-[26px] font-extralight tracking-[-0.02em] text-ink leading-tight">{title}</h2>
+        <p className="mt-4 text-[14px] font-light leading-relaxed text-muted">{sub}</p>
       </div>
 
       {/* Bottom */}
@@ -92,7 +92,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
 
         <button
           onClick={next}
-          className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black active:bg-[#d0d0d0] transition-colors"
+          className="w-full rounded-card bg-ink py-4 text-[13px] font-light tracking-[0.2em] text-black active:opacity-80 transition-colors"
         >
           {isLast ? "GET STARTED" : "CONTINUE"}
         </button>

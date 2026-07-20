@@ -225,11 +225,11 @@ function AuthForm() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pt-12 pb-8">
         {/* Logo mark */}
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a]">
-            <span className="text-2xl font-extralight tracking-tight text-[#ededed]">V</span>
+          <div className="flex h-16 w-16 items-center justify-center rounded-card border border-[#1a1a1a] bg-surface">
+            <span className="text-2xl font-extralight tracking-tight text-ink">V</span>
           </div>
-          <p className="mt-4 text-[11px] font-light tracking-[0.5em] text-[#ededed]">VENTZON</p>
-          <p className="mt-2 text-[13px] font-light text-[#444]">Your rewards, one tap away</p>
+          <p className="mt-4 text-[11px] font-light tracking-[0.5em] text-ink">VENTZON</p>
+          <p className="mt-2 text-[13px] font-light text-muted">Your rewards, one tap away</p>
         </div>
 
         <div className="w-full max-w-sm">
@@ -237,9 +237,9 @@ function AuthForm() {
           {/* ── VERIFY CODE MODE (in-app, after signup) ── */}
           {awaitingCode ? (
             <>
-              <p className="mb-6 text-center text-[13px] font-light leading-relaxed text-[#555]">
+              <p className="mb-6 text-center text-[13px] font-light leading-relaxed text-muted">
                 Enter the 6-digit code we emailed to{" "}
-                <span className="text-[#888]">{email.trim()}</span>
+                <span className="text-muted">{email.trim()}</span>
               </p>
               <form onSubmit={handleVerifyOtp} className="space-y-3">
                 <input
@@ -252,7 +252,7 @@ function AuthForm() {
                   required
                   autoFocus
                   maxLength={6}
-                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[22px] font-light tracking-[0.5em] text-[#ededed] outline-none placeholder:text-[#222] focus:border-[#2a2a2a]"
+                  className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-center text-[22px] font-light tracking-[0.5em] text-ink outline-none placeholder:text-[#222] focus:border-line"
                 />
                 {err && (
                   <div className="rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
@@ -260,14 +260,14 @@ function AuthForm() {
                   </div>
                 )}
                 {info && (
-                  <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                  <div className="rounded-card border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
                     {info}
                   </div>
                 )}
                 <button
                   type="submit"
                   disabled={loading || otp.length < 6}
-                  className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                  className="w-full rounded-card bg-ink py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:opacity-80 disabled:opacity-40"
                 >
                   {loading ? "…" : "VERIFY & CONTINUE"}
                 </button>
@@ -275,23 +275,23 @@ function AuthForm() {
               <button
                 onClick={resendCode}
                 disabled={loading}
-                className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888] disabled:opacity-40"
+                className="mt-4 w-full text-center text-[12px] font-light text-muted transition-colors active:text-muted disabled:opacity-40"
               >
                 Didn&apos;t get it? Resend code
               </button>
-              <p className="mt-3 text-center text-[11px] font-light leading-relaxed text-[#333]">
+              <p className="mt-3 text-center text-[11px] font-light leading-relaxed text-muted">
                 Or tap the link in that email to confirm.
               </p>
               <button
                 onClick={() => { setAwaitingCode(false); setOtp(""); setErr(null); setInfo(null); }}
-                className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
+                className="mt-4 w-full text-center text-[12px] font-light text-muted transition-colors active:text-muted"
               >
                 Back
               </button>
             </>
           ) : mode === "forgot" ? (
             <>
-              <p className="mb-6 text-center text-[13px] font-light text-[#555]">
+              <p className="mb-6 text-center text-[13px] font-light text-muted">
                 Enter your email and we&apos;ll send a reset link
               </p>
               <form onSubmit={handleForgotPassword} className="space-y-3">
@@ -302,7 +302,7 @@ function AuthForm() {
                   placeholder="Email address"
                   required
                   autoComplete="email"
-                  className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                  className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                 />
                 {err && (
                   <div className="rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3.5 text-[13px] font-normal text-danger">
@@ -310,28 +310,28 @@ function AuthForm() {
                   </div>
                 )}
                 {info && (
-                  <div className="rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                  <div className="rounded-card border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
                     {info}
                   </div>
                 )}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                  className="w-full rounded-card bg-ink py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:opacity-80 disabled:opacity-40"
                 >
                   {loading ? "…" : "SEND RESET LINK"}
                 </button>
               </form>
               <button
                 onClick={() => { setMode("signin"); setErr(null); setInfo(null); }}
-                className="mt-5 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
+                className="mt-5 w-full text-center text-[12px] font-light text-muted transition-colors active:text-muted"
               >
                 Back to sign in
               </button>
             </>
           ) : (
             <>
-              <p className="mb-6 text-center text-[13px] font-light text-[#555]">
+              <p className="mb-6 text-center text-[13px] font-light text-muted">
                 {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
               </p>
 
@@ -341,7 +341,7 @@ function AuthForm() {
                   <button
                     onClick={handleApple}
                     disabled={loading}
-                    className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#ededed] py-4 text-[14px] font-light text-black transition-colors duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                    className="flex w-full items-center justify-center gap-3 rounded-card bg-ink py-4 text-[14px] font-light text-black transition-colors duration-200 active:opacity-80 disabled:opacity-40"
                   >
                     <AppleIcon />
                     Continue with Apple
@@ -354,16 +354,16 @@ function AuthForm() {
               <button
                 onClick={handleGoogle}
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] py-4 text-[14px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111] disabled:opacity-40"
+                className="flex w-full items-center justify-center gap-3 rounded-card border border-line bg-surface py-4 text-[14px] font-light text-ink transition-colors duration-200 active:bg-surface disabled:opacity-40"
               >
                 <GoogleIcon />
                 Continue with Google
               </button>
 
               <div className="my-5 flex items-center gap-4">
-                <div className="h-px flex-1 bg-[#1a1a1a]" />
-                <span className="text-[11px] font-light tracking-[0.2em] text-[#333]">OR</span>
-                <div className="h-px flex-1 bg-[#1a1a1a]" />
+                <div className="h-px flex-1 bg-surface" />
+                <span className="text-[11px] font-light tracking-[0.2em] text-muted">OR</span>
+                <div className="h-px flex-1 bg-surface" />
               </div>
 
               {/* Errors/info shown regardless of whether the email form is
@@ -374,7 +374,7 @@ function AuthForm() {
                 </div>
               )}
               {info && (
-                <div className="mb-3 rounded-2xl border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
+                <div className="mb-3 rounded-card border border-emerald-900/30 bg-emerald-950/20 px-4 py-3.5 text-[13px] font-light text-emerald-300/80">
                   {info}
                 </div>
               )}
@@ -384,7 +384,7 @@ function AuthForm() {
               {!emailExpanded ? (
                 <button
                   onClick={() => setEmailExpanded(true)}
-                  className="w-full rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] py-4 text-[14px] font-light text-[#ededed] transition-colors duration-200 active:bg-[#111]"
+                  className="w-full rounded-card border border-line bg-surface py-4 text-[14px] font-light text-ink transition-colors duration-200 active:bg-surface"
                 >
                   Continue with email
                 </button>
@@ -398,7 +398,7 @@ function AuthForm() {
                       placeholder="Your name"
                       required
                       autoFocus
-                      className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                      className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                     />
                   )}
                   <input
@@ -409,7 +409,7 @@ function AuthForm() {
                     required
                     autoFocus={mode !== "signup"}
                     autoComplete="email"
-                    className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                    className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                   />
                   <div className="relative">
                     <input
@@ -420,12 +420,12 @@ function AuthForm() {
                       required
                       autoComplete={mode === "signup" ? "new-password" : "current-password"}
                       minLength={6}
-                      className="w-full rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 pr-12 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#2a2a2a]"
+                      className="w-full rounded-card border border-[#1a1a1a] bg-surface px-4 py-4 pr-12 text-[14px] font-light text-ink outline-none placeholder:text-muted focus:border-line"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-light tracking-[0.1em] text-[#444] active:text-[#888]"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-light tracking-[0.1em] text-muted active:text-muted"
                     >
                       {showPassword ? "HIDE" : "SHOW"}
                     </button>
@@ -434,7 +434,7 @@ function AuthForm() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:bg-[#d0d0d0] disabled:opacity-40"
+                    className="w-full rounded-card bg-ink py-4 text-[13px] font-light tracking-[0.2em] text-black transition-all duration-200 active:opacity-80 disabled:opacity-40"
                   >
                     {loading ? "…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
                   </button>
@@ -443,7 +443,7 @@ function AuthForm() {
                     <button
                       type="button"
                       onClick={() => { setMode("forgot"); setErr(null); setInfo(null); }}
-                      className="w-full text-center text-[12px] font-light text-[#333] transition-colors active:text-[#555]"
+                      className="w-full text-center text-[12px] font-light text-muted transition-colors active:text-muted"
                     >
                       Forgot password?
                     </button>
@@ -453,7 +453,7 @@ function AuthForm() {
 
               <button
                 onClick={() => { const next = mode === "signin" ? "signup" : "signin"; setMode(next); if (next === "signup") setEmailExpanded(true); setErr(null); setInfo(null); }}
-                className="mt-4 w-full text-center text-[12px] font-light text-[#444] transition-colors active:text-[#888]"
+                className="mt-4 w-full text-center text-[12px] font-light text-muted transition-colors active:text-muted"
               >
                 {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
               </button>
@@ -498,7 +498,7 @@ export default function AuthPage() {
   return (
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     }>
       <AuthForm />
