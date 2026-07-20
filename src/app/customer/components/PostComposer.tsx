@@ -88,18 +88,18 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
   }
 
   return (
-    <div className="rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] p-3">
+    <div className="rounded-card border border-line bg-surface p-3">
       <textarea
         value={composer}
         onChange={(e) => setComposer(e.target.value)}
         placeholder="Share a find, a favorite spot, a tip…"
         rows={2}
         maxLength={1000}
-        className="w-full resize-none bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
+        className="w-full resize-none bg-transparent text-[14px] font-normal text-ink outline-none placeholder:text-muted"
       />
 
       {mediaPreview && (
-        <div className="relative mt-2 overflow-hidden rounded-xl">
+        <div className="relative mt-2 overflow-hidden rounded-ctl">
           {mediaFile?.type.startsWith("video/") ? (
             <video src={mediaPreview} muted playsInline className="max-h-48 w-full object-cover" />
           ) : (
@@ -124,7 +124,7 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
         />
         <button
           onClick={() => mediaRef.current?.click()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#252525] text-[#888]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted"
         >
           <ImagePlus className="h-4 w-4" />
         </button>
@@ -132,7 +132,7 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
           <select
             value={tagShop}
             onChange={(e) => setTagShop(e.target.value)}
-            className="flex-1 min-w-0 rounded-full border border-[#252525] bg-[#0d0d0d] px-3 py-2 text-[11px] font-normal text-[#999] outline-none"
+            className="flex-1 min-w-0 rounded-full border border-line bg-surface px-3 py-2 text-[11px] font-normal text-muted outline-none"
           >
             <option value="">Tag a business (shows in Explore)</option>
             {myShops.map((s) => (
@@ -143,7 +143,7 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
         <button
           onClick={submitPost}
           disabled={(!composer.trim() && !mediaFile) || posting}
-          className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-[#ededed] px-4 py-2 text-[11px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
+          className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[11px] font-semibold tracking-[0.1em] text-bg disabled:opacity-40"
         >
           <Send className="h-3 w-3" />
           {posting ? "POSTING…" : "POST"}

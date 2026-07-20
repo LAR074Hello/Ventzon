@@ -99,7 +99,7 @@ export default function ProfilePage() {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
   }
@@ -118,31 +118,31 @@ export default function ProfilePage() {
         className="flex items-center justify-between px-5 pb-1"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 12px)" }}
       >
-        <h1 className="text-[20px] font-semibold text-[#f5f5f5]">{name}</h1>
+        <h1 className="font-display text-[20px] font-semibold text-ink">{name}</h1>
         <button
           onClick={() => router.push("/customer/profile/settings")}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-[#0a0a0a]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"
           aria-label="Settings"
         >
-          <Settings className="h-4 w-4 text-[#999]" />
+          <Settings className="h-4 w-4 text-muted" />
         </button>
       </div>
 
       {/* Header */}
       <div className="flex flex-col items-center px-6 pt-4 pb-5">
         {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="h-24 w-24 rounded-full border-2 border-[#2a2a2a] object-cover" />
+          <img src={avatarUrl} alt={name} className="h-24 w-24 rounded-full border-2 border-line object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#2a2a2a] bg-[#1a1a1a]">
-            <span className="text-2xl font-medium text-[#888]">{name.charAt(0).toUpperCase()}</span>
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface">
+            <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
-        <h2 className="mt-4 text-[20px] font-semibold text-[#f5f5f5]">{name}</h2>
+        <h2 className="mt-4 font-display text-[22px] font-semibold text-ink">{name}</h2>
         {profile?.is_creator && (
-          <p className="mt-1 text-[11px] font-light tracking-[0.2em] text-[#666]">CREATOR</p>
+          <p className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-muted">CREATOR</p>
         )}
         {profile?.bio && (
-          <p className="mt-3 max-w-xs text-center text-[13px] font-normal leading-relaxed text-[#999]">{profile.bio}</p>
+          <p className="mt-3 max-w-xs text-center text-[13px] font-normal leading-relaxed text-muted">{profile.bio}</p>
         )}
       </div>
 
@@ -170,14 +170,14 @@ export default function ProfilePage() {
       <div className="mt-5 flex gap-2 px-5">
         <button
           onClick={() => router.push("/customer/profile/settings")}
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#252525] bg-[#0d0d0d] py-3 text-[12px] font-medium tracking-[0.08em] text-[#d0d0d0] active:bg-[#111]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface"
         >
           <Pencil className="h-3.5 w-3.5" />
           EDIT PROFILE
         </button>
         <button
           onClick={shareProfile}
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#252525] bg-[#0d0d0d] py-3 text-[12px] font-medium tracking-[0.08em] text-[#d0d0d0] active:bg-[#111]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface"
         >
           <Share2 className="h-3.5 w-3.5" />
           SHARE PROFILE
@@ -187,17 +187,17 @@ export default function ProfilePage() {
       {/* Posts */}
       <div className="mt-7 px-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">POSTS</p>
+          <p className="text-[11px] font-light tracking-[0.15em] text-muted">POSTS</p>
           {profile?.is_creator && (
             <button
               onClick={() => setShowComposer((v) => !v)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ededed]"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-ink"
               aria-label="New post"
             >
               {showComposer ? (
-                <X className="h-4 w-4 text-black" />
+                <X className="h-4 w-4 text-bg" />
               ) : (
-                <Plus className="h-4 w-4 text-black" strokeWidth={2.5} />
+                <Plus className="h-4 w-4 text-bg" strokeWidth={2.5} />
               )}
             </button>
           )}
@@ -217,25 +217,25 @@ export default function ProfilePage() {
         {posts.length > 0 ? (
           <PostGrid posts={posts} />
         ) : profile?.is_creator ? (
-          <div className="rounded-2xl border border-[#1f1f1f] px-5 py-10 text-center">
-            <p className="text-[14px] font-medium text-[#888]">No posts yet</p>
-            <p className="mt-1.5 text-[12px] font-normal text-[#555]">
+          <div className="rounded-card border border-line px-5 py-10 text-center">
+            <p className="text-[14px] font-medium text-muted">No posts yet</p>
+            <p className="mt-1.5 text-[12px] font-normal text-muted">
               Tap + to share your first find
             </p>
           </div>
         ) : (
-          <div className="flex flex-col items-center rounded-2xl border border-[#1f1f1f] px-6 py-10 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d]">
-              <Sparkles className="h-6 w-6 text-[#444]" />
+          <div className="flex flex-col items-center rounded-card border border-line px-6 py-10 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-card border border-line bg-surface">
+              <Sparkles className="h-6 w-6 text-muted" />
             </div>
-            <p className="mt-4 text-[15px] font-semibold text-[#f5f5f5]">Share your local finds</p>
-            <p className="mt-1.5 text-[12px] font-normal leading-relaxed text-[#666]">
+            <p className="mt-4 font-display text-[17px] font-semibold text-ink">Share your local finds</p>
+            <p className="mt-1.5 text-[12px] font-normal leading-relaxed text-muted">
               Become a creator to post photos and tips from<br />the places you love — open to everyone
             </p>
             <button
               onClick={becomeCreator}
               disabled={becomingCreator}
-              className="mt-6 rounded-full bg-[#ededed] px-7 py-3 text-[12px] font-medium tracking-[0.1em] text-black disabled:opacity-40"
+              className="mt-6 rounded-full bg-ink px-7 py-3 text-[12px] font-semibold tracking-[0.1em] text-bg disabled:opacity-40"
             >
               {becomingCreator ? "SETTING UP…" : "BECOME A CREATOR"}
             </button>
