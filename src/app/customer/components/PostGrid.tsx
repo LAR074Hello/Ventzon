@@ -22,19 +22,19 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
 
   if (posts.length === 0) {
     return (
-      <div className="rounded-2xl border border-[#1f1f1f] px-5 py-8 text-center">
-        <p className="text-[13px] font-normal text-[#555]">No posts yet</p>
+      <div className="rounded-card border border-line px-5 py-8 text-center">
+        <p className="text-[13px] font-normal text-muted">No posts yet</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-3 gap-0.5 overflow-hidden rounded-2xl">
+    <div className="grid grid-cols-3 gap-[2px] overflow-hidden rounded-card">
       {posts.map((p) => (
         <button
           key={p.id}
           onClick={() => router.push(`/customer/post/${p.id}`)}
-          className="relative aspect-square overflow-hidden bg-[#0d0d0d] text-left active:opacity-80"
+          className="relative aspect-square overflow-hidden rounded-tile bg-surface text-left transition-opacity duration-[var(--dur)] active:opacity-80"
         >
           {p.media_url ? (
             p.media_type === "video" ? (
@@ -61,9 +61,9 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
               />
             )
           ) : (
-            <div className="flex h-full w-full flex-col justify-between p-2.5">
-              <AlignLeft className="h-3 w-3 text-[#333]" />
-              <p className="text-[10px] font-normal leading-snug text-[#888] line-clamp-4">
+            <div className="flex h-full w-full flex-col justify-between border border-line p-2.5">
+              <AlignLeft className="h-3 w-3 text-muted opacity-60" />
+              <p className="text-[10px] font-normal leading-snug text-muted line-clamp-4">
                 {p.body}
               </p>
             </div>
