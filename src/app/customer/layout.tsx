@@ -38,25 +38,25 @@ const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
 
 function AppStoreBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="flex items-center gap-3 border-b border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black ring-1 ring-[#2a2a2a]">
-        <span className="text-[11px] font-light tracking-[0.15em] text-[#f5f5f5]">V</span>
+    <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-black ring-1 ring-line">
+        <span className="text-[11px] font-light tracking-[0.15em] text-ink">V</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-[#f5f5f5]">Ventzon</p>
-        <p className="text-[11px] font-light text-[#666]">Get the app for the best experience</p>
+        <p className="text-[13px] font-medium text-ink">Ventzon</p>
+        <p className="text-[11px] font-light text-muted">Get the app for the best experience</p>
       </div>
       <a
         href={APP_STORE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded-full bg-[#ededed] px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] text-black transition-colors duration-200 hover:bg-[#d4d4d4]"
+        className="shrink-0 rounded-full bg-ink px-4 py-1.5 text-[11px] font-medium tracking-[0.1em] text-bg transition-colors duration-200 hover:opacity-80"
       >
         GET
       </a>
       <button
         onClick={onDismiss}
-        className="shrink-0 text-[#666] transition-colors duration-200 hover:text-[#999]"
+        className="shrink-0 text-muted transition-colors duration-200 hover:text-ink"
         aria-label="Dismiss"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -122,7 +122,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
       {!hideNav && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#1f1f1f] bg-black/90 backdrop-blur-md"
+          className="fixed bottom-0 left-0 right-0 z-50 border-t border-line bg-bg/90 backdrop-blur-md"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <div className="flex items-center px-2 py-2">
@@ -138,16 +138,16 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                 >
                   <div className="relative">
                     <Icon
-                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}
+                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-ink" : "text-muted"}`}
                       strokeWidth={active ? 1.5 : 1}
                     />
                     {showBadge && (
-                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500">
-                        <span className="text-[9px] font-medium text-black">{readyCount}</span>
+                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold">
+                        <span className="text-[9px] font-bold text-gold-ink">{readyCount}</span>
                       </div>
                     )}
                   </div>
-                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}>
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-ink" : "text-muted"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>
@@ -159,8 +159,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               onClick={() => router.push("/customer/scan")}
               className="flex flex-1 flex-col items-center gap-1 py-1"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#ededed] shadow-lg">
-                <ScanLine className="h-6 w-6 text-black" strokeWidth={2} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-ink shadow-lg">
+                <ScanLine className="h-6 w-6 text-bg" strokeWidth={2} />
               </div>
             </button>
 
@@ -176,16 +176,16 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                 >
                   <div className="relative">
                     <Icon
-                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}
+                      className={`h-5 w-5 transition-colors duration-200 ${active ? "text-ink" : "text-muted"}`}
                       strokeWidth={active ? 1.5 : 1}
                     />
                     {showBadge && (
-                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500">
-                        <span className="text-[9px] font-medium text-black">{readyCount}</span>
+                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold">
+                        <span className="text-[9px] font-bold text-gold-ink">{readyCount}</span>
                       </div>
                     )}
                   </div>
-                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-[#ededed]" : "text-[#555]"}`}>
+                  <span className={`text-[10px] font-light tracking-[0.15em] transition-colors duration-200 ${active ? "text-ink" : "text-muted"}`}>
                     {label.toUpperCase()}
                   </span>
                 </button>

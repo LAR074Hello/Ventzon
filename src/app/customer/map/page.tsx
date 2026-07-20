@@ -186,18 +186,18 @@ export default function MapPage() {
         style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)", paddingBottom: "12px" }}
       >
         <div className="flex items-center gap-3 w-full">
-          <div className="flex-1 rounded-2xl border border-[#2a2a2a] bg-black/80 backdrop-blur-md px-4 py-3">
-            <p className="text-[11px] font-light tracking-[0.15em] text-[#555]">NEARBY</p>
-            <p className="text-[15px] font-semibold text-[#f5f5f5] mt-0.5">
+          <div className="flex-1 rounded-card border border-line bg-black/80 backdrop-blur-md px-4 py-3">
+            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">NEARBY</p>
+            <p className="text-[15px] font-semibold text-ink mt-0.5">
               {loading ? "Loading stores…" : shops.length === 0 ? "Explore nearby stores" : `${shops.length} store${shops.length === 1 ? "" : "s"} nearby`}
             </p>
           </div>
           <button
             onClick={locateMe}
             disabled={locating}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#2a2a2a] bg-black/80 backdrop-blur-md transition-colors active:bg-[#1a1a1a]"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-line bg-black/80 backdrop-blur-md transition-colors active:bg-surface"
           >
-            <Locate className={`h-5 w-5 ${locating ? "text-[#ededed] animate-pulse" : "text-[#888]"}`} />
+            <Locate className={`h-5 w-5 ${locating ? "text-ink animate-pulse" : "text-muted"}`} />
           </button>
         </div>
       </div>
@@ -210,17 +210,17 @@ export default function MapPage() {
       {selected && (
         <div className="absolute bottom-0 left-0 right-0 z-[1001] animate-in slide-in-from-bottom-4 duration-200">
           <div
-            className="mx-3 mb-3 overflow-hidden rounded-3xl border border-[#2a2a2a] bg-[#0a0a0a]"
+            className="mx-3 mb-3 overflow-hidden rounded-sheet border border-line bg-surface"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             {/* Dismiss */}
             <div className="flex items-center justify-between px-5 pt-4 pb-2">
               <div className="flex items-center gap-3">
                 {selected.logo_url ? (
-                  <img src={selected.logo_url} alt={selected.shop_name} className="h-10 w-10 rounded-xl object-cover" />
+                  <img src={selected.logo_url} alt={selected.shop_name} className="h-10 w-10 rounded-ctl object-cover" />
                 ) : (
                   <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl"
                     style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
                   >
                     <span className="text-[16px] font-semibold" style={{ color: "var(--muted)" }}>
@@ -230,7 +230,7 @@ export default function MapPage() {
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[15px] font-semibold text-[#f5f5f5] truncate">{selected.shop_name}</p>
+                    <p className="text-[15px] font-semibold text-ink truncate">{selected.shop_name}</p>
                     <span
                       className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium tracking-[0.08em]"
                       style={{
@@ -243,34 +243,34 @@ export default function MapPage() {
                     </span>
                   </div>
                   {selected.address && (
-                    <p className="text-[12px] text-[#555] truncate mt-0.5">{selected.address}</p>
+                    <p className="text-[12px] text-muted truncate mt-0.5">{selected.address}</p>
                   )}
                 </div>
               </div>
               <button
                 onClick={() => setSelected(null)}
-                className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1a1a1a]"
+                className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface"
               >
-                <X className="h-4 w-4 text-[#666]" />
+                <X className="h-4 w-4 text-muted" />
               </button>
             </div>
 
             {/* Deal */}
             {selected.deal_title && (
-              <div className="mx-5 mb-3 rounded-2xl border border-[#1f1f1f] bg-[#111] px-4 py-3">
-                <p className="text-[11px] font-medium tracking-[0.1em] text-[#555]">REWARD</p>
-                <p className="mt-1 text-[15px] font-semibold text-[#f0f0f0]">{selected.deal_title}</p>
+              <div className="mx-5 mb-3 rounded-card border border-line bg-surface px-4 py-3">
+                <p className="text-[11px] font-medium tracking-[0.1em] text-muted">REWARD</p>
+                <p className="mt-1 text-[15px] font-semibold text-ink">{selected.deal_title}</p>
                 {selected.deal_details && (
-                  <p className="mt-0.5 text-[12px] text-[#666]">{selected.deal_details}</p>
+                  <p className="mt-0.5 text-[12px] text-muted">{selected.deal_details}</p>
                 )}
                 {(() => {
                   const p = progressMap[selected.slug];
                   if (!p) {
-                    return <p className="mt-2 text-[11px] text-[#444]">After {selected.reward_goal} visits</p>;
+                    return <p className="mt-2 text-[11px] text-muted">After {selected.reward_goal} visits</p>;
                   }
                   const remaining = Math.max(p.goal - p.visits, 0);
                   if (remaining === 0) {
-                    return <p className="mt-2 text-[11px] font-medium text-yellow-500">Your reward is ready to redeem</p>;
+                    return <p className="mt-2 text-[11px] font-medium text-gold">Your reward is ready to redeem</p>;
                   }
                   return (
                     <div className="mt-2 flex items-center gap-1.5">
@@ -296,10 +296,10 @@ export default function MapPage() {
             <div className="px-5 pb-4">
               <button
                 onClick={() => router.push(`/customer/shop/${selected.slug}`)}
-                className="flex w-full items-center justify-between rounded-2xl bg-[#ededed] px-5 py-3.5 transition-colors active:bg-[#d4d4d4]"
+                className="flex w-full items-center justify-between rounded-card bg-ink px-5 py-3.5 transition-colors active:opacity-80"
               >
-                <span className="text-[13px] font-semibold tracking-[0.05em] text-black">View loyalty card</span>
-                <ChevronRight className="h-4 w-4 text-black" />
+                <span className="text-[12px] font-semibold tracking-[0.08em] text-bg">View loyalty card</span>
+                <ChevronRight className="h-4 w-4 text-bg" />
               </button>
             </div>
           </div>
