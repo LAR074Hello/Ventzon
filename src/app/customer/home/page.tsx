@@ -47,17 +47,17 @@ const REVIEW_KEY = "ventzon_review_requested";
 
 function CardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
-      <div className="bg-[#0d0d0d] px-5 pt-5 pb-4">
+    <div className="overflow-hidden rounded-card border border-line">
+      <div className="bg-surface px-5 pt-5 pb-4">
         <div className="flex items-center gap-3">
-          <div className="skeleton h-11 w-11 shrink-0 rounded-xl" />
+          <div className="skeleton h-11 w-11 shrink-0 rounded-ctl" />
           <div className="flex-1 space-y-2">
             <div className="skeleton h-3.5 w-28 rounded" />
             <div className="skeleton h-3 w-36 rounded" />
           </div>
         </div>
       </div>
-      <div className="bg-[#080808] px-5 pb-5 pt-4">
+      <div className="bg-bg px-5 pb-5 pt-4">
         <div className="flex gap-2 mb-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="skeleton h-10 w-10 rounded-full" />
@@ -182,31 +182,31 @@ export default function HomePage() {
       {/* Pull indicator */}
       {pullProgress > 0 && (
         <div className="flex justify-center py-2" style={{ opacity: pullProgress }}>
-          <div className="h-4 w-4 rounded-full border border-[#333] border-t-[#ededed]"
+          <div className="h-4 w-4 rounded-full border border-line border-t-ink"
             style={{ transform: `rotate(${pullProgress * 360}deg)` }} />
         </div>
       )}
 
       {/* Header */}
       <div className="px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
-        <p className="text-[13px] font-normal text-[#666]">
+        <p className="text-[13px] font-normal text-muted">
           {firstName ? `Welcome back, ${firstName}` : "Your loyalty cards"}
         </p>
-        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] text-[#f5f5f5]">Rewards</h1>
+        <h1 className="mt-0.5 font-display text-[28px] font-semibold tracking-[-0.02em] text-ink">Rewards</h1>
       </div>
 
       {/* Refresh indicator */}
       {refreshing && (
         <div className="flex justify-center pb-3">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-ink" />
         </div>
       )}
 
       {/* Offline banner */}
       {offline && (
-        <div className="mx-5 mb-4 flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3">
-          <WifiOff className="h-4 w-4 shrink-0 text-[#555]" />
-          <p className="text-[13px] font-normal text-[#666]">No connection — showing cached cards</p>
+        <div className="mx-5 mb-4 flex items-center gap-3 rounded-card border border-line bg-surface px-4 py-3">
+          <WifiOff className="h-4 w-4 shrink-0 text-muted" />
+          <p className="text-[13px] font-normal text-muted">No connection — showing cached cards</p>
         </div>
       )}
 
@@ -217,16 +217,16 @@ export default function HomePage() {
             <button
               key={m.shop_slug}
               onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
-              className="w-full flex items-center gap-4 rounded-2xl border border-yellow-800/40 bg-yellow-950/20 px-4 py-4 text-left active:bg-yellow-950/30 transition-colors"
+              className="w-full flex items-center gap-4 rounded-card border border-gold/40 bg-gold/10 px-4 py-4 text-left active:bg-gold/15 transition-colors"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400">
-                <Trophy className="h-5 w-5 text-black" strokeWidth={2} />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold">
+                <Trophy className="h-5 w-5 text-gold-ink" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-yellow-300">Reward ready!</p>
-                <p className="text-[12px] font-normal text-yellow-600/80 truncate">{m.shop_name} · {m.deal_title}</p>
+                <p className="text-[13px] font-semibold text-ink">Reward ready</p>
+                <p className="text-[12px] font-normal text-muted truncate">{m.shop_name} · {m.deal_title}</p>
               </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-yellow-700" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
             </button>
           ))}
         </div>
@@ -234,16 +234,16 @@ export default function HomePage() {
 
       {/* Local Passport — visit new spots this month, unlock the stamp */}
       {!loading && passport && (
-        <div className="mx-5 mb-5 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-5 py-4">
+        <div className="mx-5 mb-5 rounded-card border border-line bg-surface px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Stamp className="h-3.5 w-3.5 text-[#666]" />
-              <p className="text-[11px] font-light tracking-[0.18em] text-[#666]">
+              <Stamp className="h-3.5 w-3.5 text-muted" />
+              <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">
                 LOCAL PASSPORT · {passport.period_label.toUpperCase()}
               </p>
             </div>
             {passport.unlocked && (
-              <span className="rounded-full bg-emerald-950/40 border border-emerald-900/40 px-2.5 py-0.5 text-[10px] font-medium text-emerald-400">
+              <span className="rounded-full bg-gold/15 border border-gold/40 px-2.5 py-0.5 text-[10px] font-semibold text-gold">
                 EXPLORER UNLOCKED
               </span>
             )}
@@ -254,18 +254,18 @@ export default function HomePage() {
                 key={i}
                 className={`flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300 ${
                   i < passport.visited_new
-                    ? "bg-[#ededed]"
-                    : "border-2 border-dashed border-[#2a2a2a]"
+                    ? "bg-gold"
+                    : "border-2 border-dashed border-line"
                 }`}
               >
-                {i < passport.visited_new && <Check className="h-4 w-4 text-black" strokeWidth={2.5} />}
+                {i < passport.visited_new && <Check className="h-4 w-4 text-gold-ink" strokeWidth={2.5} />}
               </div>
             ))}
-            <p className="ml-auto text-[13px] font-semibold text-[#555]">
-              {passport.visited_new}<span className="text-[#2a2a2a]">/{passport.goal}</span>
+            <p className="ml-auto text-[13px] font-semibold text-muted">
+              {passport.visited_new}<span className="text-line">/{passport.goal}</span>
             </p>
           </div>
-          <p className="mt-3 text-[12px] font-normal text-[#666]">
+          <p className="mt-3 text-[12px] font-normal text-muted">
             {passport.unlocked
               ? `You explored ${passport.total_new} new spot${passport.total_new === 1 ? "" : "s"} in ${passport.period_label} — Explorer stamp earned`
               : `Visit ${passport.goal - passport.visited_new} more new spot${passport.goal - passport.visited_new === 1 ? "" : "s"} in ${passport.period_label} to earn the Explorer stamp`}
@@ -298,7 +298,7 @@ export default function HomePage() {
             ))}
             <button
               onClick={handleRefresh}
-              className="w-full py-3 text-[11px] font-medium tracking-[0.15em] text-[#333] transition-colors active:text-[#555]"
+              className="w-full py-3 text-[11px] font-medium tracking-[0.15em] text-muted transition-colors active:text-muted"
             >
               REFRESH
             </button>
@@ -310,13 +310,13 @@ export default function HomePage() {
       {!loading && badges.some((b) => b.earned) && (
         <div className="px-5 pb-2">
           <div className="mb-3 flex items-center gap-2">
-            <Award className="h-3.5 w-3.5 text-[#555]" />
-            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">YOUR BADGES</p>
+            <Award className="h-3.5 w-3.5 text-muted" />
+            <p className="text-[11px] font-light tracking-[0.15em] text-muted">YOUR BADGES</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {badges.filter((b) => b.earned).map((b) => (
-              <div key={b.id} className="rounded-full border border-[#2a2a2a] bg-[#0d0d0d] px-3.5 py-1.5">
-                <p className="text-[11px] font-medium text-[#d0d0d0]">{b.label}</p>
+              <div key={b.id} className="rounded-full border border-line bg-surface px-3.5 py-1.5">
+                <p className="text-[11px] font-medium text-ink">{b.label}</p>
               </div>
             ))}
           </div>
@@ -327,33 +327,33 @@ export default function HomePage() {
       {!loading && leaders.length > 0 && (
         <div className="px-5 pb-8 pt-4">
           <div className="mb-3 flex items-center gap-2">
-            <Medal className="h-3.5 w-3.5 text-[#555]" />
-            <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">
+            <Medal className="h-3.5 w-3.5 text-muted" />
+            <p className="text-[11px] font-light tracking-[0.15em] text-muted">
               TOP EXPLORERS{leaderPeriod ? ` · ${leaderPeriod.toUpperCase()}` : ""}
             </p>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
+          <div className="overflow-hidden rounded-card border border-line">
             {leaders.map((l, i) => (
               <button
                 key={l.profile_id}
                 onClick={() => router.push(`/customer/creator/${l.profile_id}`)}
-                className={`flex w-full items-center gap-3.5 px-4 py-3 text-left active:bg-[#0d0d0d] ${i > 0 ? "border-t border-[#161616]" : ""}`}
+                className={`flex w-full items-center gap-3.5 px-4 py-3 text-left active:bg-surface ${i > 0 ? "border-t border-line/60" : ""}`}
               >
-                <span className="w-5 text-center text-[13px] font-semibold text-[#555]">{i + 1}</span>
+                <span className="w-5 text-center text-[13px] font-semibold text-muted">{i + 1}</span>
                 {l.avatar_url ? (
                   <img src={l.avatar_url} alt={l.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
                 ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1a1a1a]">
-                    <span className="text-[13px] font-medium text-[#888]">{l.display_name.charAt(0).toUpperCase()}</span>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface">
+                    <span className="text-[13px] font-medium text-muted">{l.display_name.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-medium text-[#d0d0d0] truncate">{l.display_name}</p>
-                  <p className="text-[11px] font-normal text-[#555]">
+                  <p className="text-[14px] font-medium text-ink truncate">{l.display_name}</p>
+                  <p className="text-[11px] font-normal text-muted">
                     {l.places} place{l.places === 1 ? "" : "s"} · {l.checkins} check-in{l.checkins === 1 ? "" : "s"}
                   </p>
                 </div>
-                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#333]" />
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted" />
               </button>
             ))}
           </div>
@@ -374,7 +374,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="w-full overflow-hidden rounded-2xl text-left transition-transform duration-150 active:scale-[0.99]"
+      className="w-full overflow-hidden rounded-card text-left transition-transform duration-150 active:scale-[0.99]"
       style={{
         border: isReady
           ? "1px solid rgba(255,181,46,0.4)"
@@ -392,10 +392,10 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
       >
         <div className="flex items-center gap-3 min-w-0">
           {logo_url ? (
-            <img src={logo_url} alt={shop_name} className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+            <img src={logo_url} alt={shop_name} className="h-11 w-11 shrink-0 rounded-ctl object-cover" />
           ) : (
             <div
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ctl"
               style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
             >
               <span className="text-[18px] font-semibold" style={{ color: "var(--muted)" }}>
@@ -404,16 +404,16 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold text-[#f5f5f5] truncate">{shop_name}</p>
+            <p className="text-[15px] font-semibold text-ink truncate">{shop_name}</p>
             {deal_title && (
-              <p className="mt-0.5 text-[12px] font-normal text-[#888] truncate">{deal_title}</p>
+              <p className="mt-0.5 text-[12px] font-normal text-muted truncate">{deal_title}</p>
             )}
           </div>
         </div>
 
         {/* Status badge */}
         {isReady ? (
-          <span className="ml-3 shrink-0 rounded-full bg-yellow-400 px-3 py-1 text-[10px] font-bold tracking-wide text-black">
+          <span className="ml-3 shrink-0 rounded-full bg-gold px-3 py-1 text-[10px] font-bold tracking-wide text-gold-ink">
             REDEEM
           </span>
         ) : checkedInToday ? (
@@ -427,29 +427,27 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
       </div>
 
       {/* Stamps section */}
-      <div className="bg-[#080808] px-5 pb-5 pt-4">
+      <div className="bg-bg px-5 pb-5 pt-4">
         <div className="flex items-center gap-1.5 flex-wrap">
           {Array.from({ length: reward_goal }).map((_, i) => (
             <div
               key={i}
               className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                 i < progress
-                  ? isReady
-                    ? "bg-yellow-400"
-                    : "bg-[#ededed]"
-                  : "border-2 border-[#252525] bg-transparent"
+                  ? "bg-gold"
+                  : "border-2 border-line bg-transparent"
               }`}
             >
-              {i < progress && <Check className="h-4 w-4 text-black" strokeWidth={2.5} />}
+              {i < progress && <Check className="h-4 w-4 text-gold-ink" strokeWidth={2.5} />}
             </div>
           ))}
           {/* Progress counter */}
-          <span className="ml-auto text-[13px] font-semibold text-[#444]">
-            {progress}<span className="text-[#2a2a2a]">/{reward_goal}</span>
+          <span className="ml-auto text-[13px] font-semibold text-muted">
+            {progress}<span className="text-line">/{reward_goal}</span>
           </span>
         </div>
 
-        <p className="mt-3 text-[12px] font-normal text-[#555]">
+        <p className="mt-3 text-[12px] font-normal text-muted">
           {isReady
             ? "Show this screen at the register to redeem"
             : `${remaining} more visit${remaining === 1 ? "" : "s"} to earn your reward`}
@@ -462,22 +460,22 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
 function EmptyState({ onScan, onExplore }: { onScan: () => void; onExplore: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[#1f1f1f] bg-[#0d0d0d]">
-        <Compass className="h-9 w-9 text-[#333]" />
+      <div className="flex h-20 w-20 items-center justify-center rounded-sheet border border-line bg-surface">
+        <Compass className="h-9 w-9 text-muted" />
       </div>
-      <p className="mt-6 text-[20px] font-semibold text-[#f5f5f5]">No loyalty cards yet</p>
-      <p className="mt-2 text-[13px] font-normal leading-relaxed text-[#666]">
+      <p className="mt-6 text-[20px] font-semibold text-ink">No loyalty cards yet</p>
+      <p className="mt-2 text-[13px] font-normal leading-relaxed text-muted">
         Scan a QR code at any participating store<br />to start collecting stamps
       </p>
       <button
         onClick={onScan}
-        className="mt-8 w-full rounded-2xl bg-[#ededed] py-4 text-[13px] font-semibold tracking-[0.08em] text-black transition-all duration-200 active:bg-[#d4d4d4]"
+        className="mt-8 w-full rounded-card bg-ink py-4 text-[13px] font-semibold tracking-[0.08em] text-bg transition-all duration-200 active:opacity-80"
       >
         SCAN A QR CODE
       </button>
       <button
         onClick={onExplore}
-        className="mt-3 w-full rounded-2xl border border-[#1f1f1f] py-4 text-[13px] font-medium tracking-[0.08em] text-[#666] transition-all duration-200 active:bg-[#0a0a0a]"
+        className="mt-3 w-full rounded-card border border-line py-4 text-[13px] font-medium tracking-[0.08em] text-muted transition-all duration-200 active:bg-surface"
       >
         BROWSE STORES
       </button>
