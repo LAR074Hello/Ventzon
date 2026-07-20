@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, ChevronRight, Compass, Sparkles } from "lucide-react";
+import { Heart, Compass, Sparkles } from "lucide-react";
 import FollowButton from "./FollowButton";
 
 type FeedPost = {
@@ -63,8 +63,8 @@ function ShopFollowButton({ shopSlug }: { shopSlug: string }) {
       disabled={busy}
       className={`rounded-full px-3.5 py-1.5 text-[10px] font-medium tracking-[0.08em] transition-all ${
         following
-          ? "border border-[#333] bg-[#111] text-[#ededed]"
-          : "bg-[#ededed] text-black active:bg-[#d4d4d4]"
+          ? "border border-line bg-surface text-ink"
+          : "bg-ink text-bg active:opacity-80"
       }`}
     >
       {following ? "FOLLOWING" : "FOLLOW"}
@@ -90,14 +90,14 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
   return (
     <div className="mb-6">
       <div className="mb-3 flex items-center gap-2 px-5">
-        <Sparkles className="h-3.5 w-3.5 text-[#555]" />
-        <p className="text-[11px] font-light tracking-[0.15em] text-[#666]">SUGGESTED FOR YOU</p>
+        <Sparkles className="h-3.5 w-3.5 text-muted" />
+        <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">SUGGESTED FOR YOU</p>
       </div>
       <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
         {suggestions.map((s) => (
           <div
             key={`${s.kind}-${s.profile_id ?? s.shop_slug}`}
-            className="flex w-40 shrink-0 flex-col items-center rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-3 py-4"
+            className="flex w-40 shrink-0 flex-col items-center rounded-card border border-line bg-surface px-3 py-4"
           >
             <button
               onClick={() =>
@@ -111,23 +111,23 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
                 <img
                   src={s.avatar_url}
                   alt=""
-                  className={`h-14 w-14 object-cover ${s.kind === "creator" ? "rounded-full" : "rounded-2xl"}`}
+                  className={`h-14 w-14 object-cover ${s.kind === "creator" ? "rounded-full" : "rounded-ctl"}`}
                 />
               ) : (
                 <div
-                  className={`flex h-14 w-14 items-center justify-center bg-[#1a1a1a] ${
-                    s.kind === "creator" ? "rounded-full" : "rounded-2xl"
+                  className={`flex h-14 w-14 items-center justify-center bg-bg border border-line ${
+                    s.kind === "creator" ? "rounded-full" : "rounded-ctl"
                   }`}
                 >
-                  <span className="text-[18px] font-medium text-[#888]">
+                  <span className="text-[18px] font-medium text-muted">
                     {s.display_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <p className="mt-2.5 w-full truncate text-center text-[13px] font-medium text-[#ededed]">
+              <p className="mt-2.5 w-full truncate text-center text-[13px] font-semibold text-ink">
                 {s.display_name}
               </p>
-              <p className="mt-0.5 w-full truncate text-center text-[11px] font-normal text-[#666]">
+              <p className="mt-0.5 w-full truncate text-center text-[11px] font-normal text-muted">
                 {s.kind === "shop" && s.distance_mi != null
                   ? `${s.distance_mi < 10 ? s.distance_mi.toFixed(1) : Math.round(s.distance_mi)} mi · ${s.sub}`
                   : s.sub}
@@ -199,7 +199,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
     return (
       <div className="space-y-5 px-5">
         {[0, 1].map((i) => (
-          <div key={i} className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
+          <div key={i} className="overflow-hidden rounded-card border border-line">
             <div className="flex items-center gap-3 p-4">
               <div className="skeleton h-9 w-9 rounded-full" />
               <div className="space-y-2">
@@ -219,11 +219,11 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
       <div>
         <SuggestionRow userLoc={userLoc} />
         <div className="flex flex-col items-center px-8 py-10 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-[#1f1f1f] bg-[#0d0d0d]">
-            <Compass className="h-7 w-7 text-[#333]" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface">
+            <Compass className="h-7 w-7 text-muted" />
           </div>
-          <p className="mt-5 text-[16px] font-semibold text-[#f5f5f5]">Nothing here yet</p>
-          <p className="mt-2 text-[13px] font-normal leading-relaxed text-[#666]">
+          <p className="mt-5 font-display text-[18px] font-semibold text-ink">Nothing here yet</p>
+          <p className="mt-2 text-[13px] font-normal leading-relaxed text-muted">
             Posts from creators at local businesses will show up here.<br />
             Follow creators you like to shape your feed.
           </p>
@@ -233,7 +233,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
   }
 
   return (
-    <div className="space-y-5 px-5 pb-4">
+    <div className="space-y-7 px-5 pb-4">
       {/* A sparse feed gets suggestions to follow — the new-user fix. */}
       {posts.length < 3 && (
         <div className="-mx-5">
@@ -244,101 +244,95 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
         const remaining = p.viewer.progress
           ? Math.max(p.viewer.progress.goal - p.viewer.progress.visits, 0)
           : null;
+        const goal = p.viewer.progress?.goal ?? p.shop.reward_goal;
+        const visits = p.viewer.progress?.visits ?? 0;
         return (
-          <div key={p.id} className="overflow-hidden rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a]">
-            {/* Author */}
+          <div key={p.id}>
+            {/* Byline */}
             <button
               onClick={() => router.push(`/customer/creator/${p.author.profile_id}`)}
-              className="flex w-full items-center gap-3 px-4 pt-4 pb-3 text-left"
+              className="mb-2.5 flex w-full items-center gap-2.5 text-left"
             >
               {p.author.avatar_url ? (
-                <img src={p.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+                <img src={p.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
               ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1a1a1a]">
-                  <span className="text-[13px] font-medium text-[#888]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface border border-line">
+                  <span className="text-[12px] font-medium text-muted">
                     {p.author.display_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium text-[#ededed] truncate">
+                <p className="text-[15px] font-semibold text-ink truncate leading-tight">
                   {p.author.display_name}
-                  {p.author.followed && (
-                    <span className="ml-2 text-[10px] font-normal text-[#555]">FOLLOWING</span>
-                  )}
                 </p>
-                <p className="text-[11px] font-normal text-[#555]">
-                  at {p.shop.name} · {timeAgo(p.created_at)}
+                <p className="text-[12px] font-normal text-muted truncate">
+                  at <span className="text-ink">{p.shop.name}</span> · {timeAgo(p.created_at)}
                 </p>
               </div>
             </button>
 
-            {/* Media */}
-            {p.media_url && (
-              <button onClick={() => router.push(`/customer/post/${p.id}`)} className="block w-full">
-                {p.media_type === "video" ? (
-                  <video src={p.media_url} muted playsInline preload="metadata" className="max-h-[70vh] w-full object-cover" />
-                ) : (
-                  <img src={p.media_url} alt="" loading="lazy" className="max-h-[70vh] w-full object-cover" />
-                )}
-              </button>
-            )}
-
-            {/* Actions + caption */}
-            <div className="px-4 pt-3">
-              <div className="flex items-center gap-4">
-                <button onClick={() => toggleLike(p)} className="flex items-center gap-1.5">
-                  <Heart
-                    className={`h-5 w-5 ${p.viewer.liked ? "text-red-500" : "text-[#888]"}`}
-                    fill={p.viewer.liked ? "currentColor" : "none"}
-                  />
-                  <span className="text-[12px] font-medium text-[#888]">{p.counts.likes}</span>
-                </button>
-                <button
-                  onClick={() => router.push(`/customer/post/${p.id}`)}
-                  className="flex items-center gap-1.5"
-                >
-                  <MessageCircle className="h-5 w-5 text-[#888]" />
-                  <span className="text-[12px] font-medium text-[#888]">{p.counts.comments}</span>
-                </button>
-              </div>
-              {p.body && (
-                <button
-                  onClick={() => router.push(`/customer/post/${p.id}`)}
-                  className="mt-2 block w-full text-left text-[13px] font-normal leading-relaxed text-[#bbb] line-clamp-2"
-                >
-                  {p.body}
+            {/* One envelope: media + Visit & Earn footer share the card */}
+            <div className="overflow-hidden rounded-card bg-surface border border-line">
+              {p.media_url && (
+                <button onClick={() => router.push(`/customer/post/${p.id}`)} className="block w-full">
+                  {p.media_type === "video" ? (
+                    <video src={p.media_url} muted playsInline preload="metadata" className="aspect-[4/5] w-full object-cover" />
+                  ) : (
+                    <img src={p.media_url} alt="" loading="lazy" className="aspect-[4/5] w-full object-cover" />
+                  )}
                 </button>
               )}
+              <button
+                onClick={() => router.push(`/customer/shop/${p.shop.slug}`)}
+                className="flex w-full items-center gap-3 px-3.5 py-3 text-left active:bg-black/20"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] font-bold text-ink truncate">{p.shop.name}</p>
+                  <div className="mt-1 flex items-center gap-1">
+                    {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-gold" : "bg-line"}`}
+                      />
+                    ))}
+                    <span className="ml-1.5 text-[10px] font-semibold tracking-[0.08em] uppercase text-muted truncate">
+                      {remaining === 0
+                        ? "Reward ready"
+                        : remaining !== null
+                        ? `${remaining} to go`
+                        : p.shop.deal_title ?? `${p.shop.reward_goal} visits to reward`}
+                    </span>
+                  </div>
+                </div>
+                <span className="shrink-0 rounded-full bg-gold px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-gold-ink">
+                  VISIT
+                </span>
+              </button>
             </div>
 
-            {/* Visit & Earn — the one-tap path from browsing to a real visit */}
-            <button
-              onClick={() => router.push(`/customer/shop/${p.shop.slug}`)}
-              className="mx-4 mb-4 mt-3 flex w-[calc(100%-2rem)] items-center gap-3 rounded-xl border border-[#1f1f1f] bg-[#0d0d0d] px-3 py-2.5 text-left active:bg-[#111]"
-            >
-              {p.shop.logo_url ? (
-                <img src={p.shop.logo_url} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />
-              ) : (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1a1a1a]">
-                  <span className="text-[12px] font-medium text-[#888]">{p.shop.name.charAt(0).toUpperCase()}</span>
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-medium text-[#d0d0d0] truncate">{p.shop.name}</p>
-                <p className="text-[11px] font-normal text-[#666] truncate">
-                  {remaining !== null && remaining > 0
-                    ? `${remaining} more visit${remaining === 1 ? "" : "s"} to your reward`
-                    : remaining === 0
-                    ? "Reward ready to redeem"
-                    : p.shop.deal_title ?? `${p.shop.reward_goal} visits to reward`}
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-[#ededed] px-3 py-1 text-[9px] font-bold tracking-[0.08em] text-black">
-                VISIT &amp; EARN
-              </span>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#333]" />
-            </button>
+            {/* Caption + quiet action line */}
+            {p.body && (
+              <button
+                onClick={() => router.push(`/customer/post/${p.id}`)}
+                className="mt-2.5 block w-full text-left text-[15px] font-normal leading-relaxed text-ink line-clamp-2"
+              >
+                {p.body}
+              </button>
+            )}
+            <div className="mt-1.5 flex items-center gap-1.5 text-[12px] font-medium text-muted">
+              <button onClick={() => toggleLike(p)} className="flex items-center gap-1.5 py-1">
+                <Heart
+                  className={`h-4 w-4 ${p.viewer.liked ? "text-ink" : "text-muted"}`}
+                  fill={p.viewer.liked ? "currentColor" : "none"}
+                />
+                <span>{p.counts.likes} {p.counts.likes === 1 ? "like" : "likes"}</span>
+              </button>
+              <span>·</span>
+              <button onClick={() => router.push(`/customer/post/${p.id}`)} className="py-1">
+                {p.counts.comments} {p.counts.comments === 1 ? "comment" : "comments"}
+              </button>
+            </div>
           </div>
         );
       })}

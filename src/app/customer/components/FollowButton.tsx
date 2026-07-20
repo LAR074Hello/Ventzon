@@ -64,8 +64,8 @@ export default function FollowButton({
       disabled={busy}
       className={`flex shrink-0 items-center rounded-full font-medium tracking-[0.08em] transition-all duration-200 ${base} ${
         isFollowing
-          ? "border border-[#333] bg-[#111] text-[#ededed]"
-          : "bg-[#ededed] text-black active:bg-[#d4d4d4]"
+          ? "border border-line bg-surface text-ink"
+          : "bg-ink text-bg active:opacity-80"
       }`}
     >
       {isFollowing ? (

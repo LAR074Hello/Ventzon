@@ -388,51 +388,55 @@ export default function ExplorePage() {
   return (
     <div className="flex min-h-full flex-col bg-black">
 
-      {/* Header */}
-      <div className="px-5 pt-2 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
-        <p className="text-[13px] font-normal text-[#666]">{greeting()}</p>
-        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] text-[#f5f5f5] leading-tight">
-          Discover rewards<br />near you
+      {/* Header — editorial: micro kicker + display title, underline tabs */}
+      <div className="px-5 pt-2 pb-0" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
+        <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted">{greeting()}</p>
+        <h1 className="mt-1 font-display text-[28px] font-semibold tracking-[-0.02em] text-ink leading-tight">
+          What&rsquo;s good near you
         </h1>
-
-        {/* Two-feed tabs */}
-        <div className="mt-4 flex rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] p-1">
-          {([
-            { id: "explore", label: "Explore" },
-            { id: "rewards", label: "Rewards" },
-          ] as const).map((t) => (
-            <button
-              key={t.id}
-              onClick={() => switchTab(t.id)}
-              className={`flex-1 rounded-xl py-2.5 text-[12px] font-medium tracking-[0.06em] transition-all duration-200 ${
-                homeTab === t.id ? "bg-[#ededed] text-black" : "text-[#666]"
-              }`}
-            >
-              {t.label.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        {/* Search — rewards tab only */}
-        {homeTab === "rewards" && (
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] px-4 py-3.5">
-            <Search className="h-4 w-4 shrink-0 text-[#444]" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search stores, deals…"
-              className="flex-1 bg-transparent text-[14px] font-normal text-[#f5f5f5] outline-none placeholder:text-[#444]"
-            />
-            {query && (
-              <button onClick={() => setQuery("")} className="text-[#666] active:text-[#999]">
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Two-feed tabs */}
+      <div className="mx-5 mt-4 flex gap-6 border-b border-line">
+        {([
+          { id: "explore", label: "Explore" },
+          { id: "rewards", label: "Rewards" },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            onClick={() => switchTab(t.id)}
+            className={`relative pb-3 pt-1 text-[12px] font-medium tracking-[0.08em] transition-colors duration-200 ${
+              homeTab === t.id ? "text-ink" : "text-muted"
+            }`}
+          >
+            {t.label.toUpperCase()}
+            {homeTab === t.id && (
+              <span className="absolute inset-x-0 -bottom-px h-0.5 bg-ink" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Search — rewards tab only */}
+      {homeTab === "rewards" && (
+        <div className="mx-5 mt-4 mb-1 flex items-center gap-3 rounded-ctl border border-line bg-surface px-4 py-3">
+          <Search className="h-4 w-4 shrink-0 text-muted" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search stores, deals…"
+            className="flex-1 bg-transparent text-[14px] font-normal text-ink outline-none placeholder:text-muted"
+          />
+          {query && (
+            <button onClick={() => setQuery("")} className="text-muted active:text-ink">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
+      <div className="pt-4" />
 
       {/* Explore tab — the social feed */}
       {homeTab === "explore" && <SocialFeed userLoc={userLoc} />}
