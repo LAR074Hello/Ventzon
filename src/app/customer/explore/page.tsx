@@ -44,29 +44,6 @@ const CATEGORIES = [
   { id: "deals", label: "Deals", icon: Tag },
 ];
 
-const ACCENT_COLORS = [
-  "#7c3aed", "#059669", "#dc2626", "#d97706",
-  "#2563eb", "#db2777", "#0891b2", "#ca8a04",
-];
-
-const CARD_GRADIENTS = [
-  ["#1a0a2e", "#16213e"], ["#0d1f0d", "#0a2e1a"],
-  ["#2e0d0d", "#1a0a0a"], ["#1a1200", "#2e1f00"],
-  ["#0d0d2e", "#0a1a2e"], ["#2e0d1a", "#1a0020"],
-  ["#002e2e", "#001a1a"], ["#1e1000", "#2e2000"],
-];
-
-function hashName(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return Math.abs(h);
-}
-function getGradient(name: string): [string, string] {
-  return CARD_GRADIENTS[hashName(name) % CARD_GRADIENTS.length] as [string, string];
-}
-function getAccent(name: string): string {
-  return ACCENT_COLORS[hashName(name) % ACCENT_COLORS.length];
-}
 function inferCategory(shop: Shop): string {
   const text = `${shop.shop_name} ${shop.deal_title} ${shop.deal_details ?? ""}`.toLowerCase();
   if (/coffee|café|cafe|latte|espresso|brew|tea/.test(text)) return "coffee";
@@ -95,21 +72,18 @@ function greeting() {
 
 /* ── Large featured card (horizontal scroll) ── */
 function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void; progress?: Progress }) {
-  const [g0, g1] = getGradient(shop.shop_name);
-  const accent = getAccent(shop.shop_name);
   const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
     <button
       onClick={onClick}
-      className="shrink-0 w-72 rounded-3xl overflow-hidden text-left active:scale-[0.97] transition-transform duration-150"
-      style={{ background: `linear-gradient(145deg, ${g0}, ${g1})` }}
+      className="shrink-0 w-72 rounded-card overflow-hidden text-left bg-surface active:scale-[0.97] transition-transform duration-150"
     >
       <div className="relative h-40 w-full overflow-hidden">
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${g0}, ${g1})` }}>
-            <span className="text-7xl font-extralight opacity-20" style={{ color: accent }}>
+          <div className="h-full w-full flex items-center justify-center bg-surface">
+            <span className="text-7xl font-extralight text-muted opacity-40">
               {shop.shop_name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -120,18 +94,18 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
           <p className="mt-0.5 text-[12px] text-white/60 truncate">{shop.deal_title}</p>
         </div>
         {progress && remaining === 0 ? (
-          <div className="absolute top-3 right-3 rounded-full bg-yellow-400 px-2.5 py-1">
-            <span className="text-[10px] font-bold tracking-[0.08em] text-black">READY</span>
+          <div className="absolute top-3 right-3 rounded-full bg-gold px-2.5 py-1">
+            <span className="text-[10px] font-bold tracking-[0.08em] text-gold-ink">READY</span>
           </div>
         ) : progress && remaining !== null ? (
-          <div className="absolute top-3 right-3 rounded-full px-2.5 py-1" style={{ backgroundColor: accent + "30", border: `1px solid ${accent}50` }}>
-            <span className="text-[10px] font-medium tracking-[0.08em]" style={{ color: accent }}>
+          <div className="absolute top-3 right-3 rounded-full bg-gold/20 border border-gold/40 px-2.5 py-1">
+            <span className="text-[10px] font-semibold tracking-[0.08em] text-gold">
               {remaining} TO GO
             </span>
           </div>
         ) : (
-          <div className="absolute top-3 right-3 rounded-full px-2.5 py-1" style={{ backgroundColor: accent + "30", border: `1px solid ${accent}50` }}>
-            <span className="text-[10px] font-light tracking-[0.08em]" style={{ color: accent }}>
+          <div className="absolute top-3 right-3 rounded-full bg-black/50 px-2.5 py-1">
+            <span className="text-[10px] font-medium tracking-[0.08em] text-ink/80">
               {shop.reward_goal}× REWARD
             </span>
           </div>
@@ -145,8 +119,6 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
 function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
   shop: Shop; onClick: () => void; tag?: string; progress?: Progress; distanceMi?: number | null;
 }) {
-  const [g0, g1] = getGradient(shop.shop_name);
-  const accent = getAccent(shop.shop_name);
   const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
     <button
@@ -157,8 +129,8 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${g0}, ${g1})` }}>
-            <span className="text-2xl font-extralight" style={{ color: accent, opacity: 0.8 }}>
+          <div className="h-full w-full flex items-center justify-center bg-surface border border-line">
+            <span className="text-2xl font-extralight text-muted">
               {shop.shop_name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -168,7 +140,7 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
         <div className="flex items-center gap-2">
           <p className="text-[15px] font-medium text-[#f5f5f5] truncate">{shop.shop_name}</p>
           {tag && (
-            <span className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-light tracking-[0.1em]" style={{ backgroundColor: accent + "20", color: accent }}>
+            <span className="shrink-0 rounded-full bg-surface border border-line px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-muted">
               {tag}
             </span>
           )}
@@ -180,17 +152,16 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
               {Array.from({ length: Math.min(progress.goal, 8) }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: i < progress.visits ? accent : "#2a2a2a" }}
+                  className={`h-1.5 w-1.5 rounded-full ${i < progress.visits ? "bg-gold" : "bg-line"}`}
                 />
               ))}
             </div>
-            <p className="text-[11px] font-normal" style={{ color: accent }}>
+            <p className="text-[11px] font-normal text-gold">
               {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
             </p>
           </div>
         ) : progress && remaining === 0 ? (
-          <p className="mt-1 text-[11px] font-medium text-yellow-500">Reward ready to redeem</p>
+          <p className="mt-1 text-[11px] font-medium text-gold">Reward ready to redeem</p>
         ) : (
           <p className="mt-0.5 text-[11px] font-normal text-[#444]">
             {shop.reward_goal} visits to reward
@@ -227,8 +198,6 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
 
 /* ── Deal card — leads with the reward text ── */
 function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void; progress?: Progress }) {
-  const [g0, g1] = getGradient(shop.shop_name);
-  const accent = getAccent(shop.shop_name);
   const filledDots = progress ? Math.min(progress.visits, Math.min(shop.reward_goal, 8)) : 0;
   const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
@@ -242,8 +211,8 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
           {shop.logo_url ? (
             <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
           ) : (
-            <div className="h-full w-full flex items-center justify-center" style={{ background: `linear-gradient(145deg, ${g0}, ${g1})` }}>
-              <span className="text-[11px] font-medium" style={{ color: accent }}>
+            <div className="h-full w-full flex items-center justify-center bg-surface border border-line">
+              <span className="text-[11px] font-medium text-muted">
                 {shop.shop_name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -264,12 +233,11 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
           {Array.from({ length: Math.min(shop.reward_goal, 8) }).map((_, i) => (
             <div
               key={i}
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: i < filledDots ? accent : "#2a2a2a" }}
+              className={`h-1.5 w-1.5 rounded-full ${i < filledDots ? "bg-gold" : "bg-line"}`}
             />
           ))}
         </div>
-        <p className="text-[11px] font-normal" style={{ color: progress && remaining !== null && remaining > 0 ? accent : "#555" }}>
+        <p className={`text-[11px] font-normal ${progress && remaining !== null && remaining > 0 ? "text-gold" : "text-muted"}`}>
           {progress && remaining === 0
             ? "ready to redeem"
             : progress && remaining !== null

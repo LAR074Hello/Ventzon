@@ -1,12 +1,20 @@
 import SiteHeader from "@/components/SiteHeader";
 import type { Metadata } from "next";
-import { Inter_Tight, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Public_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
+// Design tokens: Bricolage Grotesque is the display face (titles only),
+// Public Sans carries body/UI. See globals.css for the token system.
+const displayFont = Bricolage_Grotesque({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500"],
+  weight: ["500", "600", "700"],
+});
+
+const bodyFont = Public_Sans({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -67,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${interTight.variable} ${geistMono.variable} antialiased`}
+        className={`${displayFont.variable} ${bodyFont.variable} ${geistMono.variable} antialiased`}
       >
         <SiteHeader />
         {children}

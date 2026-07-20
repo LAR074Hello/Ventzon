@@ -5,13 +5,48 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* ── Ventzon design tokens ─────────────────────────────────────
+     Direction: a storefront at night — dark glass, receipt paper,
+     one lit marquee sign. Gold is for rewards ONLY. */
+  --bg: #0b0b0c;        /* shutter black */
+  --surface: #141416;   /* lit storefront glass */
+  --line: #232326;      /* hairlines, borders */
+  --ink: #f4f2ec;       /* receipt paper */
+  --muted: #8b877e;     /* faded receipt ink — AA on bg and surface */
+  --gold: #ffb52e;      /* marquee gold — the signature; rewards only */
+  --gold-ink: #1a1204;  /* text on gold */
+
+  /* motion: one curve, one duration */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur: 240ms;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter-tight);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
+
+  /* color utilities: bg-bg, bg-surface, border-line, text-ink,
+     text-muted, bg-gold, text-gold, text-gold-ink */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+
+  /* type utilities: font-display / font-body */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  /* radius utilities: rounded-tile/ctl/card/sheet — varied on purpose */
+  --radius-tile: 6px;   /* media tiles in grids */
+  --radius-ctl: 12px;   /* inputs, chips, small controls */
+  --radius-card: 18px;  /* cards */
+  --radius-sheet: 28px; /* sheets and heroes */
 }
 
 .dark {
@@ -19,15 +54,22 @@
   --foreground: #ededed;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
 /* ===== Base ===== */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter-tight), "Inter Tight", "Helvetica Neue",
-    Helvetica, Arial, sans-serif;
-  font-weight: 300;
-  letter-spacing: 0.01em;
+  font-family: var(--font-body), "Public Sans", "Helvetica Neue", Helvetica,
+    Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

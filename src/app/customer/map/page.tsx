@@ -17,19 +17,6 @@ type ShopPin = {
   longitude: number;
 };
 
-const ACCENT_COLORS = [
-  "#7c3aed", "#0891b2", "#059669", "#d97706",
-  "#dc2626", "#db2777", "#2563eb", "#ca8a04",
-];
-function hashName(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return Math.abs(h);
-}
-function getAccent(name: string) {
-  return ACCENT_COLORS[hashName(name) % ACCENT_COLORS.length];
-}
-
 // Same lightweight inference the explore feed uses — no category column exists yet.
 function inferCategory(name: string, deal: string | null, details: string | null): string {
   const text = `${name} ${deal ?? ""} ${details ?? ""}`.toLowerCase();
@@ -129,26 +116,25 @@ export default function MapPage() {
       markersRef.current = [];
 
       shops.forEach((shop) => {
-        const accent = getAccent(shop.shop_name);
         const initial = shop.shop_name.charAt(0).toUpperCase();
         const p = progressMap[shop.slug];
         const rewardReady = p && p.visits >= p.goal;
-        const ring = rewardReady ? "#facc15" : accent;
+        const ring = rewardReady ? "var(--gold)" : "var(--line)";
 
         const face = shop.logo_url
           ? `<img src="${shop.logo_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
-          : `<span style="font-size:14px;font-weight:600;color:${accent};font-family:sans-serif;">${initial}</span>`;
+          : `<span style="font-size:14px;font-weight:600;color:var(--muted);font-family:sans-serif;">${initial}</span>`;
 
         const iconHtml = `
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
             <div style="
               width:38px; height:38px; border-radius:50%;
-              background:${accent}22; border:2px solid ${ring};
+              background:var(--surface); border:2px solid ${ring};
               display:flex; align-items:center; justify-content:center;
               overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.6);
             ">${face}</div>
             ${rewardReady ? `<div style="
-              background:#facc15;color:#000;border-radius:999px;
+              background:var(--gold);color:var(--gold-ink);border-radius:999px;
               font-size:8px;font-weight:700;letter-spacing:0.05em;
               padding:1px 6px;font-family:sans-serif;white-space:nowrap;
             ">REWARD</div>` : ""}
@@ -235,9 +221,9 @@ export default function MapPage() {
                 ) : (
                   <div
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                    style={{ background: `${getAccent(selected.shop_name)}20`, border: `1px solid ${getAccent(selected.shop_name)}35` }}
+                    style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
                   >
-                    <span className="text-[16px] font-semibold" style={{ color: getAccent(selected.shop_name) }}>
+                    <span className="text-[16px] font-semibold" style={{ color: "var(--muted)" }}>
                       {selected.shop_name.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -248,8 +234,9 @@ export default function MapPage() {
                     <span
                       className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium tracking-[0.08em]"
                       style={{
-                        backgroundColor: getAccent(selected.shop_name) + "20",
-                        color: getAccent(selected.shop_name),
+                        backgroundColor: "var(--surface)",
+                        color: "var(--muted)",
+                        border: "1px solid var(--line)",
                       }}
                     >
                       {inferCategory(selected.shop_name, selected.deal_title, selected.deal_details).toUpperCase()}
@@ -282,7 +269,6 @@ export default function MapPage() {
                     return <p className="mt-2 text-[11px] text-[#444]">After {selected.reward_goal} visits</p>;
                   }
                   const remaining = Math.max(p.goal - p.visits, 0);
-                  const accent = getAccent(selected.shop_name);
                   if (remaining === 0) {
                     return <p className="mt-2 text-[11px] font-medium text-yellow-500">Your reward is ready to redeem</p>;
                   }
@@ -293,11 +279,11 @@ export default function MapPage() {
                           <div
                             key={i}
                             className="h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: i < p.visits ? accent : "#2a2a2a" }}
+                            style={{ backgroundColor: i < p.visits ? "var(--gold)" : "var(--line)" }}
                           />
                         ))}
                       </div>
-                      <p className="text-[11px]" style={{ color: accent }}>
+                      <p className="text-[11px]" style={{ color: "var(--gold)" }}>
                         {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
                       </p>
                     </div>

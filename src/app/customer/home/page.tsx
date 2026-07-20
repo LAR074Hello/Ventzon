@@ -45,20 +45,6 @@ async function requestReview() {
 
 const REVIEW_KEY = "ventzon_review_requested";
 
-// Per-shop accent colors — deterministic from shop name
-const ACCENT_COLORS = [
-  "#7c3aed", "#0891b2", "#059669", "#d97706",
-  "#dc2626", "#db2777", "#2563eb", "#ca8a04",
-];
-function hashName(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return Math.abs(h);
-}
-function getAccent(name: string) {
-  return ACCENT_COLORS[hashName(name) % ACCENT_COLORS.length];
-}
-
 function CardSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-[#1f1f1f]">
@@ -383,7 +369,6 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
   const { shop_name, deal_title, reward_goal, visits, logo_url } = membership;
   const isReady = visits >= reward_goal;
   const progress = Math.min(visits, reward_goal);
-  const accent = getAccent(shop_name);
   const remaining = reward_goal - progress;
 
   return (
@@ -392,8 +377,8 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
       className="w-full overflow-hidden rounded-2xl text-left transition-transform duration-150 active:scale-[0.99]"
       style={{
         border: isReady
-          ? "1px solid rgba(161,108,24,0.35)"
-          : `1px solid ${accent}22`,
+          ? "1px solid rgba(255,181,46,0.4)"
+          : "1px solid var(--line)",
       }}
     >
       {/* Card header — unique per shop */}
@@ -401,8 +386,8 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
         className="flex items-center justify-between px-5 pt-5 pb-4"
         style={{
           background: isReady
-            ? "linear-gradient(135deg, rgba(161,108,24,0.12), rgba(161,108,24,0.04))"
-            : `linear-gradient(135deg, ${accent}18, ${accent}06, transparent)`,
+            ? "linear-gradient(135deg, rgba(255,181,46,0.12), rgba(255,181,46,0.04))"
+            : "var(--surface)",
         }}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -411,9 +396,9 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
           ) : (
             <div
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-              style={{ background: `${accent}20`, border: `1px solid ${accent}35` }}
+              style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
             >
-              <span className="text-[18px] font-semibold" style={{ color: accent }}>
+              <span className="text-[18px] font-semibold" style={{ color: "var(--muted)" }}>
                 {shop_name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -434,7 +419,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
         ) : checkedInToday ? (
           <span
             className="ml-3 shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-            style={{ background: `${accent}18`, color: accent }}
+            style={{ background: "var(--surface)", color: "var(--ink)" }}
           >
             ✓ TODAY
           </span>
