@@ -1,23 +1,31 @@
 // Value-based notification plumbing for the retention layer.
 //
-// Only four notification types exist, each tied to something genuinely
+// Only these notification types exist, each tied to something genuinely
 // useful to the customer — a followed shop posting a drop, a reward
-// nearing its expiry date, a new place opening nearby, or a new
-// follower. There is no generic "come back!" type and none should be
-// added.
+// nearing its expiry date, a new place opening nearby, a new follower,
+// or someone engaging with your own post. There is no generic
+// "come back!" type and none should be added.
 //
 // Frequency caps (per customer):
 //   drop          — max 1 per day
 //   reward_expiry — max 1 per day
 //   new_nearby    — max 1 per week
 //   new_follower  — max 1 per 6 hours
+//   post_like     — max 1 per 6 hours
+//   post_comment  — max 1 per hour (conversation is time-sensitive)
 //   all types     — max 5 per week combined
 //
 // Dedupe: customer_notification_log is unique on (email, type, ref_id),
 // so claiming the same notification twice is a no-op. Callers claim
 // BEFORE sending, which keeps cron re-runs idempotent.
 
-export type RetentionNotificationType = "drop" | "reward_expiry" | "new_nearby" | "new_follower";
+export type RetentionNotificationType =
+  | "drop"
+  | "reward_expiry"
+  | "new_nearby"
+  | "new_follower"
+  | "post_like"
+  | "post_comment";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -26,6 +34,8 @@ const TYPE_WINDOW_MS: Record<RetentionNotificationType, number> = {
   reward_expiry: DAY_MS,
   new_nearby: 7 * DAY_MS,
   new_follower: DAY_MS / 4,
+  post_like: DAY_MS / 4,
+  post_comment: DAY_MS / 24,
 };
 
 const GLOBAL_WINDOW_MS = 7 * DAY_MS;
@@ -36,6 +46,8 @@ const PREF_COLUMN: Record<RetentionNotificationType, string> = {
   reward_expiry: "notify_reward_expiry",
   new_nearby: "notify_new_nearby",
   new_follower: "notify_new_follower",
+  post_like: "notify_post_engagement",
+  post_comment: "notify_post_engagement",
 };
 
 /**
@@ -53,7 +65,7 @@ export async function canNotify(
 
   const { data: pref } = await admin
     .from("customer_notification_prefs")
-    .select("notify_drops, notify_reward_expiry, notify_new_nearby, notify_new_follower")
+    .select("notify_drops, notify_reward_expiry, notify_new_nearby, notify_new_follower, notify_post_engagement")
     .eq("email", e)
     .maybeSingle();
   if (pref && pref[PREF_COLUMN[type]] === false) return false;

@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Bell, Megaphone, Trophy, MapPin, ChevronRight, UserPlus } from "lucide-react";
+import { Bell, Megaphone, Trophy, MapPin, ChevronRight, UserPlus, Heart, MessageCircle } from "lucide-react";
 
 type Notification = {
   id: string;
-  type: "drop" | "reward_expiry" | "new_nearby" | "new_follower";
+  type: "drop" | "reward_expiry" | "new_nearby" | "new_follower" | "post_like" | "post_comment";
   shop_slug: string | null;
   title: string;
   body: string;
@@ -20,6 +20,8 @@ const TYPE_ICON = {
   reward_expiry: Trophy,
   new_nearby: MapPin,
   new_follower: UserPlus,
+  post_like: Heart,
+  post_comment: MessageCircle,
 } as const;
 
 function timeAgo(iso: string) {

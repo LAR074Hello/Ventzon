@@ -9,6 +9,7 @@ const PREF_KEYS = [
   "notify_reward_expiry",
   "notify_new_nearby",
   "notify_new_follower",
+  "notify_post_engagement",
 ] as const;
 
 async function getSessionEmail(): Promise<string | null> {
@@ -35,7 +36,7 @@ export async function GET() {
     const supabase = adminClient();
     const { data, error } = await supabase
       .from("customer_notification_prefs")
-      .select("notify_drops, notify_reward_expiry, notify_new_nearby, notify_new_follower")
+      .select("notify_drops, notify_reward_expiry, notify_new_nearby, notify_new_follower, notify_post_engagement")
       .eq("email", email)
       .maybeSingle();
 
@@ -47,6 +48,7 @@ export async function GET() {
         notify_reward_expiry: data?.notify_reward_expiry ?? true,
         notify_new_nearby: data?.notify_new_nearby ?? true,
         notify_new_follower: data?.notify_new_follower ?? true,
+        notify_post_engagement: data?.notify_post_engagement ?? true,
       },
     });
   } catch (err: any) {

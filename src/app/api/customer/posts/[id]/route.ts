@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getBlockedSet, getOrCreateProfile } from "@/lib/social";
+import { buildTokenMap, pushOrEmail } from "@/lib/notify";
+import { canNotify, claimNotification } from "@/lib/retention";
 
 export const dynamic = "force-dynamic";
 
@@ -203,16 +205,55 @@ export async function POST(
 
     const { data: post } = await admin
       .from("posts")
-      .select("id")
+      .select("id, author_email")
       .eq("id", id)
       .maybeSingle();
     if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+
+    /**
+     * Tell the post's author someone engaged. Never self-notifies, never
+     * fires across a block, respects notify_post_engagement and the
+     * frequency caps, and the unique claim on (author, type, ref_id)
+     * means re-liking the same post can't re-notify.
+     */
+    async function notifyAuthor(kind: "post_like" | "post_comment", refId: string, preview?: string) {
+      try {
+        const authorEmail = post!.author_email as string;
+        if (authorEmail === viewerEmail) return;
+        const blocked = await getBlockedSet(admin, authorEmail);
+        if (blocked.has(viewerEmail!)) return;
+        if (!(await canNotify(admin, authorEmail, kind))) return;
+        const claimed = await claimNotification(admin, {
+          email: authorEmail,
+          type: kind,
+          refId,
+        });
+        if (!claimed) return;
+
+        const actor = await getOrCreateProfile(admin, viewerEmail!);
+        const name = actor.display_name ?? "Someone";
+        const title =
+          kind === "post_like" ? `${name} liked your post` : `${name} commented on your post`;
+        const body = kind === "post_comment" && preview ? preview.slice(0, 120) : "See it on Ventzon";
+        const tokenMap = await buildTokenMap(admin, [authorEmail]);
+        await pushOrEmail({
+          email: authorEmail,
+          tokens: tokenMap[authorEmail],
+          title,
+          body,
+          data: { type: kind, post_id: id },
+          emailSubject: title,
+          emailText: body,
+        });
+      } catch {}
+    }
 
     if (action === "like") {
       const { error } = await admin
         .from("post_likes")
         .upsert({ post_id: id, email: viewerEmail }, { onConflict: "post_id,email" });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      await notifyAuthor("post_like", `${id}:${viewerEmail}`);
     } else if (action === "unlike") {
       await admin.from("post_likes").delete().eq("post_id", id).eq("email", viewerEmail);
     } else if (action === "save") {
@@ -227,10 +268,13 @@ export async function POST(
       if (!text) return NextResponse.json({ error: "Comment body required" }, { status: 400 });
       // Every commenter gets a profile row so block/report can target them.
       try { await getOrCreateProfile(admin, viewerEmail); } catch {}
-      const { error } = await admin
+      const { data: inserted, error } = await admin
         .from("post_comments")
-        .insert({ post_id: id, email: viewerEmail, body: text });
+        .insert({ post_id: id, email: viewerEmail, body: text })
+        .select("id")
+        .single();
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      await notifyAuthor("post_comment", `${id}:${inserted?.id ?? Date.now()}`, text);
     } else {
       return NextResponse.json({ error: "Unknown action" }, { status: 400 });
     }

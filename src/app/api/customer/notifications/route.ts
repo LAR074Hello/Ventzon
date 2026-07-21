@@ -68,6 +68,11 @@ export async function GET() {
       } else if (n.type === "reward_expiry") {
         title = "Your reward is waiting";
         body = `${shop?.deal_title ?? "Your reward"} at ${shopName}`;
+      } else if (n.type === "post_like" || n.type === "post_comment") {
+        const postId = n.ref_id?.split(":")[0] ?? null;
+        title = n.type === "post_like" ? "Someone liked your post" : "New comment on your post";
+        body = n.type === "post_like" ? "Tap to see it" : "Tap to read and reply";
+        href = postId ? `/customer/post/${postId}` : null;
       } else if (n.type === "new_follower") {
         const follower = n.ref_id ? followerById[n.ref_id] : null;
         title = `${follower?.display_name ?? "Someone"} started following you`;

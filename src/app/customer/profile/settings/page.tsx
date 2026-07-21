@@ -164,6 +164,7 @@ export default function ProfilePage() {
     notify_reward_expiry: true,
     notify_new_nearby: true,
     notify_new_follower: true,
+    notify_post_engagement: true,
   });
   const [creatorProfile, setCreatorProfile] = useState<{
     id: string;
@@ -707,6 +708,13 @@ export default function ProfilePage() {
             label="New followers"
             chevron={false}
             rightNode={<Toggle enabled={notifPrefs.notify_new_follower} onToggle={() => toggleNotifPref("notify_new_follower")} />}
+          />
+          <div className="border-t border-line/60" />
+          <SettingsRow
+            icon={MessageSquare}
+            label="Likes and comments"
+            chevron={false}
+            rightNode={<Toggle enabled={notifPrefs.notify_post_engagement} onToggle={() => toggleNotifPref("notify_post_engagement")} />}
           />
         </div>
       </div>
