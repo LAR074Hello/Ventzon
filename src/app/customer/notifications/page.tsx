@@ -13,6 +13,7 @@ type Notification = {
   body: string;
   href: string | null;
   sent_at: string;
+  read?: boolean;
 };
 
 const TYPE_ICON = {
@@ -46,7 +47,15 @@ export default function NotificationsPage() {
       }
       fetch("/api/customer/notifications")
         .then((r) => (r.ok ? r.json() : { notifications: [] }))
-        .then((d) => setNotifications(d.notifications ?? []))
+        .then((d) => {
+          setNotifications(d.notifications ?? []);
+          // Opening this tab is what clears the badge.
+          if ((d.unread ?? 0) > 0) {
+            fetch("/api/customer/notifications", { method: "POST" })
+              .then(() => window.dispatchEvent(new Event("ventzon:alerts-read")))
+              .catch(() => {});
+          }
+        })
         .catch(() => {})
         .finally(() => setLoading(false));
     });
@@ -98,7 +107,9 @@ export default function NotificationsPage() {
                 <button
                   key={n.id}
                   onClick={() => n.href && router.push(n.href)}
-                  className="flex w-full items-center gap-3.5 rounded-card border border-line bg-surface px-4 py-3.5 text-left active:bg-surface"
+                  className={`flex w-full items-center gap-3.5 rounded-card border px-4 py-3.5 text-left active:bg-black/10 ${
+                    n.read ? "border-line bg-surface" : "border-accent/40 bg-accent/5"
+                  }`}
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ctl bg-surface">
                     <Icon className="h-4 w-4 text-muted" strokeWidth={1.5} />

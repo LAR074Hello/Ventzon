@@ -21,7 +21,7 @@ export async function GET() {
 
     const { data: log, error } = await admin
       .from("customer_notification_log")
-      .select("id, type, shop_slug, ref_id, sent_at")
+      .select("id, type, shop_slug, ref_id, sent_at, read_at")
       .eq("email", user.email.toLowerCase())
       .order("sent_at", { ascending: false })
       .limit(50);
@@ -90,10 +90,41 @@ export async function GET() {
         body,
         href,
         sent_at: n.sent_at,
+        read: n.read_at != null,
       };
     });
 
-    return NextResponse.json({ notifications });
+    return NextResponse.json({
+      notifications,
+      unread: (log ?? []).filter((n) => n.read_at == null).length,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+  }
+}
+
+// POST /api/customer/notifications — mark everything read (called when
+// the Alerts tab is opened, which is what clears the nav badge).
+export async function POST() {
+  try {
+    const supabaseAuth = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user?.email) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const admin = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { error } = await admin
+      .from("customer_notification_log")
+      .update({ read_at: new Date().toISOString() })
+      .eq("email", user.email.toLowerCase())
+      .is("read_at", null);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
   }

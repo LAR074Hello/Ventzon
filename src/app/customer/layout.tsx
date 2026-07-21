@@ -73,6 +73,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const { show: showOnboarding, finish: finishOnboarding } = useOnboarding();
   const supabase = createSupabaseBrowserClient();
   const [readyCount, setReadyCount] = useState(0);
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
@@ -99,8 +100,19 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
           const memberships = d.memberships ?? [];
           setReadyCount(memberships.filter((m: any) => m.visits >= m.reward_goal).length);
         }).catch(() => {});
+        fetch("/api/customer/notifications")
+          .then(r => (r.ok ? r.json() : null))
+          .then(d => setUnreadAlerts(d?.unread ?? 0))
+          .catch(() => {});
       }
     });
+  }, []);
+
+  // The Alerts page fires this once it marks everything read.
+  useEffect(() => {
+    const clear = () => setUnreadAlerts(0);
+    window.addEventListener("ventzon:alerts-read", clear);
+    return () => window.removeEventListener("ventzon:alerts-read", clear);
   }, []);
 
   const isAuthPage = pathname === "/customer/auth";
@@ -168,6 +180,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             {tabs.slice(2).map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname?.startsWith(href + "/");
               const showBadge = href === "/customer/home" && readyCount > 0;
+              const alertCount = href === "/customer/notifications" ? unreadAlerts : 0;
               return (
                 <button
                   key={href}
@@ -182,6 +195,13 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                     {showBadge && (
                       <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
                         <span className="text-[9px] font-bold text-accent-ink">{readyCount}</span>
+                      </div>
+                    )}
+                    {alertCount > 0 && (
+                      <div className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1">
+                        <span className="text-[9px] font-bold text-accent-ink">
+                          {alertCount > 9 ? "9+" : alertCount}
+                        </span>
                       </div>
                     )}
                   </div>
