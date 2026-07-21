@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, ArrowLeft, Share2, Trophy, X, Clock, Bell, BellRing, Grid3x3 } from "lucide-react";
 import PostGrid, { type GridPost } from "../../components/PostGrid";
+import PostComposer from "../../components/PostComposer";
 
 type ShopSettings = {
   shop_slug: string;
@@ -143,6 +144,7 @@ export default function CustomerShopPage() {
   const [loading, setLoading] = useState(true);
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [showCheckinOverlay, setShowCheckinOverlay] = useState(false);
+  const [showShareVisit, setShowShareVisit] = useState(false);
   const [showRewardScreen, setShowRewardScreen] = useState(false);
   const [newStampIndex, setNewStampIndex] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -336,7 +338,16 @@ export default function CustomerShopPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       {showCheckinOverlay && (
-        <CheckinOverlay visits={visits} goal={goal} onDismiss={() => setShowCheckinOverlay(false)} />
+        <CheckinOverlay
+          visits={visits}
+          goal={goal}
+          onDismiss={() => {
+            setShowCheckinOverlay(false);
+            // The check-in is the one un-fakeable moment in the app —
+            // offer to turn it into a post while the user is still here.
+            setShowShareVisit(true);
+          }}
+        />
       )}
       {showRewardScreen && settings && (
         <RewardScreen shop={settings} onClose={() => setShowRewardScreen(false)} onRedeemed={handleRedeemed} />
@@ -404,6 +415,42 @@ export default function CustomerShopPage() {
           </button>
         )}
       </div>
+
+      {/* Share your visit — offered right after a check-in */}
+      {showShareVisit && user && (
+        <div className="mx-5 mb-4 rounded-card border border-accent/30 bg-accent/5 p-4">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <p className="font-display text-[16px] font-semibold text-ink">
+                Share this visit?
+              </p>
+              <p className="mt-1 text-[12px] font-normal leading-relaxed text-muted">
+                Posts from a real check-in show a verified-visit mark.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowShareVisit(false)}
+              className="shrink-0 p-1 text-muted active:text-ink"
+              aria-label="Not now"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <PostComposer
+            defaultShopSlug={shopSlug}
+            lockShop
+            placeholder={`What was ${shopName} like today?`}
+            onPosted={async () => {
+              setShowShareVisit(false);
+              const res = await fetch(`/api/customer/feed?shop_slug=${shopSlug}`);
+              if (res.ok) {
+                const d = await res.json();
+                setShopPosts(d.posts ?? []);
+              }
+            }}
+          />
+        </div>
+      )}
 
       {/* Loyalty card */}
       <div className="mx-5 rounded-card border border-line bg-surface p-5">

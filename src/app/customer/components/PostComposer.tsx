@@ -10,12 +10,24 @@ import { stripImageMetadata } from "@/lib/strip-exif";
  * and the Profile tab. Uploads media to the `posts` bucket and tags a
  * business so the post can appear in the Explore feed.
  */
-export default function PostComposer({ onPosted }: { onPosted: () => void | Promise<void> }) {
+export default function PostComposer({
+  onPosted,
+  defaultShopSlug,
+  lockShop = false,
+  placeholder = "Share a find, a favorite spot, a tip…",
+}: {
+  onPosted: () => void | Promise<void>;
+  /** Pre-tag a business (used by the post-check-in prompt). */
+  defaultShopSlug?: string;
+  /** Hide the business picker when the shop is implied by context. */
+  lockShop?: boolean;
+  placeholder?: string;
+}) {
   const [composer, setComposer] = useState("");
   const [posting, setPosting] = useState(false);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [tagShop, setTagShop] = useState("");
+  const [tagShop, setTagShop] = useState(defaultShopSlug ?? "");
   const [myShops, setMyShops] = useState<{ shop_slug: string; shop_name: string }[]>([]);
   const mediaRef = useRef<HTMLInputElement>(null);
   const supabase = createSupabaseBrowserClient();
@@ -77,7 +89,7 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
       });
       if (res.ok) {
         setComposer("");
-        setTagShop("");
+        setTagShop(defaultShopSlug ?? "");
         pickMedia(null);
         await onPosted();
       } else {
@@ -96,7 +108,7 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
       <textarea
         value={composer}
         onChange={(e) => setComposer(e.target.value)}
-        placeholder="Share a find, a favorite spot, a tip…"
+        placeholder={placeholder}
         rows={2}
         maxLength={1000}
         className="w-full resize-none bg-transparent text-[14px] font-normal text-ink outline-none placeholder:text-muted"
@@ -132,7 +144,7 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
         >
           <ImagePlus className="h-4 w-4" />
         </button>
-        {myShops.length > 0 && (
+        {!lockShop && myShops.length > 0 && (
           <select
             value={tagShop}
             onChange={(e) => setTagShop(e.target.value)}
