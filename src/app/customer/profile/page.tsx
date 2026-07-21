@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Share2, Pencil, Plus, Sparkles, X } from "lucide-react";
+import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import PostGrid, { type GridPost } from "../components/PostGrid";
 import PostComposer from "../components/PostComposer";
@@ -27,6 +27,12 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<GridPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [showComposer, setShowComposer] = useState(false);
+  const [tab, setTab] = useState<"posts" | "saved">("posts");
+  const [savedPosts, setSavedPosts] = useState<GridPost[]>([]);
+  const [savedShops, setSavedShops] = useState<
+    { shop_slug: string; shop_name: string; deal_title: string | null; logo_url: string | null;
+      visits: number; goal: number; remaining: number; visited: boolean }[]
+  >([]);
   const [becomingCreator, setBecomingCreator] = useState(false);
 
   const loadPosts = useCallback(async () => {
@@ -57,6 +63,14 @@ export default function ProfilePage() {
         }
       } catch {}
       await loadPosts();
+      try {
+        const sres = await fetch("/api/customer/saves");
+        if (sres.ok) {
+          const sd = await sres.json();
+          setSavedPosts(sd.posts ?? []);
+          setSavedShops(sd.shops ?? []);
+        }
+      } catch {}
       setLoading(false);
     });
   }, []);
@@ -185,11 +199,27 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Posts */}
+      {/* Posts / Saved */}
       <div className="mt-7 px-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[11px] font-light tracking-[0.15em] text-muted">POSTS</p>
-          {profile?.is_creator && (
+          <div className="flex gap-5">
+            {([
+              { id: "posts", label: "POSTS" },
+              { id: "saved", label: "SAVED" },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`relative pb-1 text-[11px] font-semibold tracking-[0.12em] transition-colors ${
+                  tab === t.id ? "text-ink" : "text-muted"
+                }`}
+              >
+                {t.label}
+                {tab === t.id && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-ink" />}
+              </button>
+            ))}
+          </div>
+          {tab === "posts" && profile?.is_creator && (
             <button
               onClick={() => setShowComposer((v) => !v)}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-ink"
@@ -204,7 +234,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {showComposer && profile?.is_creator && (
+        {tab === "posts" && showComposer && profile?.is_creator && (
           <div className="mb-4">
             <PostComposer
               onPosted={async () => {
@@ -215,7 +245,62 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {posts.length > 0 ? (
+        {tab === "saved" ? (
+          savedPosts.length === 0 ? (
+            <div className="flex flex-col items-center rounded-card border border-line px-6 py-10 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-ctl border border-line bg-surface">
+                <Bookmark className="h-6 w-6 text-muted" />
+              </div>
+              <p className="mt-4 font-display text-[17px] font-semibold text-ink">Nothing saved yet</p>
+              <p className="mt-1.5 text-[12px] font-normal leading-relaxed text-muted">
+                Tap the bookmark on a post to keep it here —<br />it becomes your want-to-go list
+              </p>
+            </div>
+          ) : (
+            <>
+              {savedShops.length > 0 && (
+                <div className="mb-4">
+                  <p className="mb-2 text-[10px] font-semibold tracking-[0.12em] text-muted">
+                    PLACES YOU SAVED
+                  </p>
+                  <div className="overflow-hidden rounded-card border border-line">
+                    {savedShops.map((sh, i) => (
+                      <button
+                        key={sh.shop_slug}
+                        onClick={() => router.push(`/customer/shop/${sh.shop_slug}`)}
+                        className={`flex w-full items-center gap-3 bg-surface px-4 py-3 text-left active:bg-black/10 ${
+                          i > 0 ? "border-t border-line/60" : ""
+                        }`}
+                      >
+                        {sh.logo_url ? (
+                          <img src={sh.logo_url} alt="" className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
+                        ) : (
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl border border-line">
+                            <span className="text-[14px] font-medium text-muted">
+                              {sh.shop_name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[14px] font-medium text-ink truncate">{sh.shop_name}</p>
+                          <p className="mt-0.5 text-[11px] font-normal text-muted truncate">
+                            {!sh.visited
+                              ? "Haven't been yet"
+                              : sh.remaining === 0
+                              ? "Reward ready to redeem"
+                              : `${sh.remaining} more visit${sh.remaining === 1 ? "" : "s"} to your reward`}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <PostGrid posts={savedPosts} />
+            </>
+          )
+        ) : posts.length > 0 ? (
           <PostGrid posts={posts} />
         ) : profile?.is_creator ? (
           <div className="rounded-card border border-line px-5 py-10 text-center">
