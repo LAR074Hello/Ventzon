@@ -33,10 +33,13 @@ export function ProfileStats({
   stats,
   onFollowersTap,
   onFollowingTap,
+  showReferrals = false,
 }: {
   stats: ProfileStatValues;
   onFollowersTap?: () => void;
   onFollowingTap?: () => void;
+  /** Referrals are private: shown on your own profile, never in public. */
+  showReferrals?: boolean;
 }) {
   return (
     <div className="grid grid-cols-3 gap-2">
@@ -45,7 +48,7 @@ export function ProfileStats({
       <Stat value={stats.posts} label="Posts" />
       <Stat value={stats.businesses_visited} label="Places" />
       <Stat value={stats.total_points} label="Check-ins" />
-      <Stat value={stats.referrals} label="Referrals" />
+      {showReferrals && <Stat value={stats.referrals} label="Referrals" />}
     </div>
   );
 }

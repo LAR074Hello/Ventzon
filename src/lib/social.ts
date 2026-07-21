@@ -132,14 +132,13 @@ export function computeBadges(stats: {
   rewards_earned: number;
   referrals: number;
 }): Badge[] {
+  // Four tiers, all reachable in weeks rather than years. Unreachable
+  // badges (100 check-ins) advertise how far you are from earning
+  // anything, which is the opposite of the point.
   return [
     { id: "first-steps", label: "First Steps", description: "First check-in", earned: stats.checkins >= 1 },
-    { id: "regular", label: "Regular", description: "25 check-ins", earned: stats.checkins >= 25 },
-    { id: "local-legend", label: "Local Legend", description: "100 check-ins", earned: stats.checkins >= 100 },
-    { id: "explorer", label: "Explorer", description: "5 businesses visited", earned: stats.businesses_visited >= 5 },
-    { id: "pathfinder", label: "Pathfinder", description: "15 businesses visited", earned: stats.businesses_visited >= 15 },
     { id: "first-reward", label: "First Reward", description: "Earned a reward", earned: stats.rewards_earned >= 1 },
-    { id: "connector", label: "Connector", description: "Referred a friend", earned: stats.referrals >= 1 },
-    { id: "ambassador", label: "Ambassador", description: "5 referrals", earned: stats.referrals >= 5 },
+    { id: "explorer", label: "Explorer", description: "5 businesses visited", earned: stats.businesses_visited >= 5 },
+    { id: "regular", label: "Regular", description: "25 check-ins", earned: stats.checkins >= 25 },
   ];
 }

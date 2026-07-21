@@ -151,6 +151,7 @@ export default function ProfilePage() {
         <div className="px-5">
           <ProfileStats
             stats={stats}
+            showReferrals
             onFollowersTap={() =>
               router.push(`/customer/follows?profile_id=${profile.id}&type=followers&title=${encodeURIComponent(name)}`)
             }

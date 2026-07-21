@@ -62,8 +62,11 @@ export async function GET() {
       .sort((a, b) => b.places - a.places || b.checkins - a.checkins)
       .slice(0, 10);
 
+    // An empty or near-empty leaderboard signals a dead app. Below the
+    // density threshold it simply doesn't exist yet.
+    const MIN_LEADERS = 5;
     return NextResponse.json({
-      leaders,
+      leaders: leaders.length >= MIN_LEADERS ? leaders : [],
       period_label: now.toLocaleDateString("en-US", { month: "long" }),
     });
   } catch (err: any) {
