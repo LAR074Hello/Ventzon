@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff,
+  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff, BadgeCheck,
 } from "lucide-react";
 import SafetyMenu from "../../components/SafetyMenu";
 
 type PostData = {
+  verified_visit?: boolean;
   post: { id: string; body: string; media_url: string | null; media_type: string | null; created_at: string; hidden?: boolean };
   author: { profile_id: string; display_name: string; avatar_url: string | null } | null;
   shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number } | null;
@@ -133,7 +134,7 @@ export default function PostPage() {
     );
   }
 
-  const { post, author, shop, counts, viewer, comments } = data;
+  const { post, author, shop, counts, viewer, comments, verified_visit } = data;
   const remaining = viewer.progress ? Math.max(viewer.progress.goal - viewer.progress.visits, 0) : null;
 
   return (
@@ -163,7 +164,15 @@ export default function PostPage() {
             )}
             <div className="text-left">
               <p className="text-[13px] font-medium text-ink">{author.display_name}</p>
-              <p className="text-[10px] font-normal text-muted">{timeAgo(post.created_at)}</p>
+              <p className="flex items-center gap-1.5 text-[10px] font-normal text-muted">
+                {timeAgo(post.created_at)}
+                {verified_visit && (
+                  <span className="inline-flex items-center gap-1 text-accent">
+                    <BadgeCheck className="h-3 w-3" />
+                    <span className="font-semibold tracking-[0.06em]">VERIFIED VISIT</span>
+                  </span>
+                )}
+              </p>
             </div>
           </button>
         )}

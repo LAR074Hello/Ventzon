@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Compass, Sparkles } from "lucide-react";
+import { Heart, Compass, Sparkles, BadgeCheck } from "lucide-react";
 import FollowButton from "./FollowButton";
 
 type FeedPost = {
@@ -14,6 +14,7 @@ type FeedPost = {
   author: { profile_id: string; display_name: string; avatar_url: string | null; followed: boolean };
   shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number };
   counts: { likes: number; comments: number };
+  verified_visit?: boolean;
   viewer: { liked: boolean; progress: { visits: number; goal: number } | null };
 };
 
@@ -302,8 +303,19 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                 <p className="text-[15px] font-semibold text-ink truncate leading-tight">
                   {p.author.display_name}
                 </p>
-                <p className="text-[12px] font-normal text-muted truncate">
-                  at <span className="text-ink">{p.shop.name}</span> · {timeAgo(p.created_at)}
+                <p className="flex items-center gap-1.5 text-[12px] font-normal text-muted truncate">
+                  <span className="truncate">
+                    at <span className="text-ink">{p.shop.name}</span> · {timeAgo(p.created_at)}
+                  </span>
+                  {p.verified_visit && (
+                    <span
+                      className="inline-flex shrink-0 items-center gap-1 text-accent"
+                      title="This person checked in here"
+                    >
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      <span className="text-[10px] font-semibold tracking-[0.06em]">VERIFIED VISIT</span>
+                    </span>
+                  )}
                 </p>
               </div>
             </button>

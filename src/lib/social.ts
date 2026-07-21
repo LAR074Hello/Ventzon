@@ -142,3 +142,48 @@ export function computeBadges(stats: {
     { id: "regular", label: "Regular", description: "25 check-ins", earned: stats.checkins >= 25 },
   ];
 }
+
+/**
+ * Which (author_email, shop_slug) pairs represent a REAL visit?
+ *
+ * A post is a "verified visit" when its author has at least one
+ * check-in at the business it's tagged to. This is the one trust
+ * signal no other platform can copy — it comes from the QR moat, not
+ * from self-reporting — so it is computed from `checkins`, never
+ * stored on the post where it could drift or be forged.
+ *
+ * Returns a Set of "email|shop_slug" keys.
+ */
+export async function getVerifiedVisitSet(
+  admin: any,
+  pairs: { author_email: string; shop_slug: string | null }[]
+): Promise<Set<string>> {
+  const verified = new Set<string>();
+  const emails = [...new Set(pairs.map((p) => p.author_email))];
+  const slugs = [...new Set(pairs.map((p) => p.shop_slug).filter(Boolean))] as string[];
+  if (emails.length === 0 || slugs.length === 0) return verified;
+
+  // customers rows tie an email to a shop; checkins tie a customer row
+  // to actual visits. Both are needed — a membership without a check-in
+  // is not a visit.
+  const { data: memberships } = await admin
+    .from("customers")
+    .select("id, email, shop_slug")
+    .in("email", emails)
+    .in("shop_slug", slugs);
+  if (!memberships?.length) return verified;
+
+  const { data: visits } = await admin
+    .from("checkins")
+    .select("customer_id")
+    .in(
+      "customer_id",
+      memberships.map((m: any) => m.id)
+    );
+  const visited = new Set((visits ?? []).map((v: any) => v.customer_id));
+
+  for (const m of memberships as any[]) {
+    if (visited.has(m.id)) verified.add(`${m.email}|${m.shop_slug}`);
+  }
+  return verified;
+}

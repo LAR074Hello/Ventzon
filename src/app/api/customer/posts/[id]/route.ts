@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { getBlockedSet, getOrCreateProfile } from "@/lib/social";
+import { getBlockedSet, getOrCreateProfile, getVerifiedVisitSet } from "@/lib/social";
 import { buildTokenMap, pushOrEmail } from "@/lib/notify";
 import { canNotify, claimNotification } from "@/lib/retention";
 
@@ -136,7 +136,12 @@ export async function GET(
       }
     }
 
+    const verified = await getVerifiedVisitSet(admin, [
+      { author_email: post.author_email, shop_slug: post.shop_slug },
+    ]);
+
     return NextResponse.json({
+      verified_visit: verified.has(`${post.author_email}|${post.shop_slug}`),
       post: {
         id: post.id,
         body: post.body,

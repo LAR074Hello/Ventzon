@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { haversineMiles } from "@/lib/geo";
-import { getBlockedSet } from "@/lib/social";
+import { getBlockedSet, getVerifiedVisitSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -134,6 +134,12 @@ export async function GET(req: Request) {
       }
     }
 
+    // Verified visits: the author actually checked in at the tagged shop.
+    const verified = await getVerifiedVisitSet(
+      admin,
+      posts.map((p) => ({ author_email: p.author_email, shop_slug: p.shop_slug }))
+    );
+
     const now = Date.now();
     const enriched = posts.map((p) => {
       const author = authorByEmail[p.author_email];
@@ -172,6 +178,7 @@ export async function GET(req: Request) {
           likes: likeCounts[p.id] ?? 0,
           comments: commentCounts[p.id] ?? 0,
         },
+        verified_visit: verified.has(`${p.author_email}|${p.shop_slug}`),
         viewer: {
           liked: viewerLiked.has(p.id),
           progress: progressMap[p.shop_slug!] ?? null,
