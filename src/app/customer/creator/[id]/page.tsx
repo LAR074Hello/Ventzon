@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Share2 } from "lucide-react";
 import PostGrid, { type GridPost } from "../../components/PostGrid";
 import FollowButton from "../../components/FollowButton";
+import SafetyMenu from "../../components/SafetyMenu";
 import PostComposer from "../../components/PostComposer";
 import { ProfileStats, BadgePills } from "../../components/ProfileStats";
 
@@ -111,12 +112,23 @@ export default function CreatorProfilePage() {
         >
           <ArrowLeft className="h-4 w-4 text-ink" />
         </button>
-        <button
-          onClick={share}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
-        >
-          <Share2 className="h-4 w-4 text-muted" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={share}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
+          >
+            <Share2 className="h-4 w-4 text-muted" />
+          </button>
+          {!isOwn && (
+            <SafetyMenu
+              targetType="profile"
+              targetId={profileId}
+              blockProfileId={profileId}
+              targetName={name}
+              onDone={(a) => a === "blocked" && router.back()}
+            />
+          )}
+        </div>
       </div>
 
       {/* Header */}

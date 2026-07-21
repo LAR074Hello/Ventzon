@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { haversineMiles } from "@/lib/geo";
+import { getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -50,8 +51,9 @@ export async function GET(req: Request) {
       .eq("is_creator", true)
       .limit(200);
 
+    const blocked = await getBlockedSet(admin, viewerEmail);
     const candidates = (creators ?? []).filter(
-      (c) => c.email !== viewerEmail && !followedCreators.has(c.email)
+      (c) => c.email !== viewerEmail && !followedCreators.has(c.email) && !blocked.has(c.email)
     );
 
     const since = new Date(Date.now() - 30 * DAY_MS).toISOString();

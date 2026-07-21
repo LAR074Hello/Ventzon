@@ -3,18 +3,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2,
+  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff,
 } from "lucide-react";
+import SafetyMenu from "../../components/SafetyMenu";
 
 type PostData = {
-  post: { id: string; body: string; media_url: string | null; media_type: string | null; created_at: string };
+  post: { id: string; body: string; media_url: string | null; media_type: string | null; created_at: string; hidden?: boolean };
   author: { profile_id: string; display_name: string; avatar_url: string | null } | null;
   shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number } | null;
   counts: { likes: number; saves: number; comments: number };
   viewer: { liked: boolean; saved: boolean; is_own: boolean; progress: { visits: number; goal: number } | null };
   comments: {
     id: string; body: string; created_at: string; is_own: boolean;
-    author: { profile_id: string | null; display_name: string; avatar_url: string | null };
+    author: { profile_id: string | null; linkable?: boolean; display_name: string; avatar_url: string | null };
   }[];
 };
 
@@ -201,6 +202,16 @@ export default function PostPage() {
         <button onClick={share} className="ml-auto">
           <Share2 className="h-5 w-5 text-muted" />
         </button>
+        {!viewer.is_own && author && (
+          <SafetyMenu
+            targetType="post"
+            targetId={postId}
+            blockProfileId={author.profile_id}
+            targetName={author.display_name}
+            compact
+            onDone={() => router.back()}
+          />
+        )}
         {viewer.is_own && (
           <button
             onClick={async () => {
@@ -213,6 +224,16 @@ export default function PostPage() {
           </button>
         )}
       </div>
+
+      {/* Hidden-pending-review notice (author only) */}
+      {post.hidden && viewer.is_own && (
+        <div className="mx-5 mt-4 flex items-center gap-3 rounded-ctl border border-line bg-surface px-4 py-3">
+          <EyeOff className="h-4 w-4 shrink-0 text-muted" />
+          <p className="text-[12px] font-normal text-muted">
+            This post was reported and is hidden while we review it.
+          </p>
+        </div>
+      )}
 
       {/* Caption */}
       {post.body && (
@@ -261,7 +282,7 @@ export default function PostPage() {
             {comments.map((c) => (
               <div key={c.id} className="flex gap-3">
                 <button
-                  onClick={() => c.author.profile_id && router.push(`/customer/creator/${c.author.profile_id}`)}
+                  onClick={() => c.author.linkable && c.author.profile_id && router.push(`/customer/creator/${c.author.profile_id}`)}
                   className="shrink-0"
                 >
                   {c.author.avatar_url ? (
@@ -274,13 +295,23 @@ export default function PostPage() {
                     </div>
                   )}
                 </button>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-[12px]">
                     <span className="font-medium text-muted">{c.author.display_name}</span>
                     <span className="ml-2 text-[10px] text-muted">{timeAgo(c.created_at)}</span>
                   </p>
                   <p className="mt-0.5 text-[13px] font-normal leading-relaxed text-muted">{c.body}</p>
                 </div>
+                {!c.is_own && (
+                  <SafetyMenu
+                    targetType="comment"
+                    targetId={c.id}
+                    blockProfileId={c.author.profile_id}
+                    targetName={c.author.display_name}
+                    compact
+                    onDone={() => load()}
+                  />
+                )}
               </div>
             ))}
           </div>

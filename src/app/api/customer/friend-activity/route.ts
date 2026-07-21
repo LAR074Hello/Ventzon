@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,10 @@ export async function GET() {
       .from("user_follows")
       .select("followee_email")
       .eq("follower_email", email);
-    const followeeEmails = (follows ?? []).map((f) => f.followee_email);
+    const blocked = await getBlockedSet(admin, email);
+    const followeeEmails = (follows ?? [])
+      .map((f) => f.followee_email)
+      .filter((e) => !blocked.has(e));
     if (followeeEmails.length === 0) return NextResponse.json({ activity: [] });
 
     const { data: profiles } = await admin

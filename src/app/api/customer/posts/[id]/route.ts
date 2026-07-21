@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getBlockedSet, getOrCreateProfile } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ export async function GET(
 
     const { data: post } = await admin
       .from("posts")
-      .select("id, author_email, shop_slug, body, media_url, media_type, post_kind, created_at")
+      .select("id, author_email, shop_slug, body, media_url, media_type, post_kind, hidden, created_at")
       .eq("id", id)
       .maybeSingle();
     if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -48,6 +49,15 @@ export async function GET(
     const isOwn = !!viewerEmail && viewerEmail === post.author_email;
     // Non-creator authors are not public — only they can see their post.
     if ((!author || !author.is_creator) && !isOwn) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+    // Reported content is hidden pending review — only the author sees it.
+    if (post.hidden && !isOwn) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+    // Blocks are mutual invisibility.
+    const blocked = await getBlockedSet(admin, viewerEmail);
+    if (!isOwn && blocked.has(post.author_email)) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
@@ -81,12 +91,14 @@ export async function GET(
         .from("post_comments")
         .select("id, email, body, created_at")
         .eq("post_id", id)
+        .eq("hidden", false)
         .order("created_at", { ascending: true })
         .limit(100),
     ]);
 
     // Resolve commenter names via profiles; never expose raw emails.
-    const commenterEmails = [...new Set((comments ?? []).map((c) => c.email))];
+    const visibleComments = (comments ?? []).filter((c) => !blocked.has(c.email));
+    const commenterEmails = [...new Set(visibleComments.map((c) => c.email))];
     const { data: commenterProfiles } = commenterEmails.length
       ? await admin
           .from("customer_profiles")
@@ -129,6 +141,7 @@ export async function GET(
         media_url: post.media_url,
         media_type: post.media_type,
         created_at: post.created_at,
+        hidden: post.hidden,
       },
       author: author
         ? {
@@ -149,14 +162,17 @@ export async function GET(
         is_own: isOwn,
         progress: viewerProgress,
       },
-      comments: (comments ?? []).map((c) => {
+      comments: visibleComments.map((c) => {
         const profile = commenterByEmail[c.email];
         return {
           id: c.id,
           body: c.body,
           created_at: c.created_at,
           author: {
-            profile_id: profile?.is_creator ? profile.id : null,
+            // profile_id is exposed for every commenter so block/report can
+            // target them; only creators are LINKABLE (see linkable flag).
+            profile_id: profile?.id ?? null,
+            linkable: profile?.is_creator ?? false,
             display_name: profile?.display_name ?? "Member",
             avatar_url: profile?.avatar_url ?? null,
           },
@@ -209,6 +225,8 @@ export async function POST(
     } else if (action === "comment") {
       const text = String(payload?.body ?? "").trim().slice(0, 500);
       if (!text) return NextResponse.json({ error: "Comment body required" }, { status: 400 });
+      // Every commenter gets a profile row so block/report can target them.
+      try { await getOrCreateProfile(admin, viewerEmail); } catch {}
       const { error } = await admin
         .from("post_comments")
         .insert({ post_id: id, email: viewerEmail, body: text });

@@ -51,6 +51,24 @@ export async function getOrCreateProfile(
   return created;
 }
 
+/**
+ * Emails invisible to this viewer: people they blocked plus people who
+ * blocked them. Feeds, comments, lists, and follow actions all filter
+ * through this one set so blocking behaves the same everywhere.
+ */
+export async function getBlockedSet(admin: any, email: string | null): Promise<Set<string>> {
+  const set = new Set<string>();
+  if (!email) return set;
+  const e = email.toLowerCase().trim();
+  const [{ data: mine }, { data: theirs }] = await Promise.all([
+    admin.from("user_blocks").select("blocked_email").eq("blocker_email", e),
+    admin.from("user_blocks").select("blocker_email").eq("blocked_email", e),
+  ]);
+  for (const r of mine ?? []) set.add(r.blocked_email);
+  for (const r of theirs ?? []) set.add(r.blocker_email);
+  return set;
+}
+
 async function countRows(admin: any, table: string, col: string, value: string) {
   const { count } = await admin
     .from(table)

@@ -6,7 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import {
   LogOut, User, ChevronRight, Trophy, Share2, Bell,
   Trash2, Pencil, Check, X, Camera, Mail, HelpCircle, FileText,
-  Shield, Star, MessageSquare, Info, ChevronDown, Sparkles, Eye,
+  Shield, Star, MessageSquare, Info, ChevronDown, Sparkles, Eye, Ban,
 } from "lucide-react";
 
 type Membership = {
@@ -110,6 +110,36 @@ export default function ProfilePage() {
   const [birthDay, setBirthDay] = useState<number | "">("");
   const [savingBirthday, setSavingBirthday] = useState(false);
   const [birthdaySaved, setBirthdaySaved] = useState(false);
+  const [blocked, setBlocked] = useState<
+    { profile_id: string | null; display_name: string; avatar_url: string | null }[]
+  >([]);
+  const [showBlocked, setShowBlocked] = useState(false);
+
+  async function loadBlocked() {
+    try {
+      const res = await fetch("/api/customer/blocks");
+      if (res.ok) {
+        const d = await res.json();
+        setBlocked(d.blocks ?? []);
+      }
+    } catch {}
+  }
+
+  useEffect(() => { loadBlocked(); }, []);
+
+  async function unblock(profileId: string) {
+    setBlocked((b) => b.filter((x) => x.profile_id !== profileId));
+    try {
+      await fetch("/api/customer/blocks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile_id: profileId, block: false }),
+      });
+    } catch {
+      loadBlocked();
+    }
+  }
+
   const [theme, setThemeState] = useState<"system" | "light" | "dark">("system");
 
   useEffect(() => {
@@ -752,6 +782,59 @@ export default function ProfilePage() {
               />
             </>
           )}
+        </div>
+      </div>
+
+      {/* ── SUPPORT ── */}
+      <div className="mb-6">
+        <SectionLabel title="Safety" />
+        <div className="overflow-hidden rounded-card border border-line mx-5">
+          <SettingsRow
+            icon={Ban}
+            label="Blocked accounts"
+            value={String(blocked.length)}
+            onClick={() => setShowBlocked((v) => !v)}
+          />
+          {showBlocked && (
+            <div className="border-t border-line/60 px-5 py-4">
+              {blocked.length === 0 ? (
+                <p className="text-[13px] font-normal text-muted">
+                  You haven&rsquo;t blocked anyone.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {blocked.map((b) => (
+                    <div key={b.profile_id ?? b.display_name} className="flex items-center gap-3">
+                      {b.avatar_url ? (
+                        <img src={b.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bg border border-line">
+                          <span className="text-[12px] font-medium text-muted">
+                            {b.display_name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <p className="flex-1 truncate text-[14px] font-normal text-ink">{b.display_name}</p>
+                      {b.profile_id && (
+                        <button
+                          onClick={() => unblock(b.profile_id!)}
+                          className="rounded-full border border-line px-3.5 py-1.5 text-[10px] font-semibold tracking-[0.08em] text-muted active:text-ink"
+                        >
+                          UNBLOCK
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="border-t border-line/60" />
+          <SettingsRow
+            icon={FileText}
+            label="Content policy"
+            onClick={() => window.open("https://www.ventzon.com/content-policy", "_blank")}
+          />
         </div>
       </div>
 

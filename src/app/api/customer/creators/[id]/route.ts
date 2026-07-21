@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { creatorStats, computeBadges } from "@/lib/social";
+import { creatorStats, computeBadges, getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +36,7 @@ export async function GET(
       .from("posts")
       .select("id, body, shop_slug, media_url, media_type, created_at")
       .eq("author_email", profile.email)
+      .eq("hidden", false)
       .order("created_at", { ascending: false })
       .limit(30);
 
@@ -50,6 +51,12 @@ export async function GET(
       if (user?.email) {
         const viewerEmail = user.email.toLowerCase();
         isOwn = viewerEmail === profile.email;
+        if (!isOwn) {
+          const blocked = await getBlockedSet(admin, viewerEmail);
+          if (blocked.has(profile.email)) {
+            return NextResponse.json({ error: "Creator not found" }, { status: 404 });
+          }
+        }
         if (!isOwn) {
           const [{ data: follow }, { data: reverse }] = await Promise.all([
             admin

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { haversineMiles } from "@/lib/geo";
+import { getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export async function GET(req: Request) {
       .from("posts")
       .select("id, author_email, shop_slug, body, media_url, media_type, created_at")
       .eq("post_kind", "business")
+      .eq("hidden", false)
       .not("shop_slug", "is", null)
       .order("created_at", { ascending: false })
       .limit(60);
@@ -53,7 +55,8 @@ export async function GET(req: Request) {
 
     const { data: rawPosts, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const postRows = rawPosts ?? [];
+    const blocked = await getBlockedSet(admin, viewerEmail);
+    const postRows = (rawPosts ?? []).filter((p) => !blocked.has(p.author_email));
     if (postRows.length === 0) return NextResponse.json({ posts: [] });
 
     // Authors must be public creators — a profile that turned the creator

@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { buildTokenMap, pushOrEmail } from "@/lib/notify";
 import { canNotify, claimNotification } from "@/lib/retention";
-import { getOrCreateProfile } from "@/lib/social";
+import { getOrCreateProfile, getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +84,10 @@ export async function POST(req: Request) {
     }
     if (target.email === email) {
       return NextResponse.json({ error: "You can't follow yourself" }, { status: 400 });
+    }
+    const blocked = await getBlockedSet(admin, email);
+    if (blocked.has(target.email)) {
+      return NextResponse.json({ error: "You can't follow this account" }, { status: 403 });
     }
 
     if (follow) {
