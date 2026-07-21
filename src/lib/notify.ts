@@ -77,7 +77,14 @@ export async function pushOrEmail(opts: {
   try {
     await sendEmail(opts.email, opts.emailSubject, opts.emailText, undefined, opts.emailHtml);
     return "email";
-  } catch {
+  } catch (err: any) {
+    // "none" means the customer was NOT reached. Never let that pass
+    // silently — sendEmail already logged the Resend error; this line
+    // records which notification was lost and to whom.
+    console.error(
+      `[notify] UNREACHED email=${opts.email} title=${JSON.stringify(opts.title)} ` +
+        `push_tokens=${opts.tokens?.length ?? 0} reason=${JSON.stringify(err?.message ?? "unknown")}`
+    );
     return "none";
   }
 }

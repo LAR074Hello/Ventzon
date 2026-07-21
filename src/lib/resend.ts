@@ -1,5 +1,13 @@
 import { Resend } from "resend";
 
+/**
+ * Sender address. Until a domain is verified in Resend this is the shared
+ * sandbox sender, which can ONLY deliver to the Resend account owner —
+ * every other recipient gets a 403. Swap to a verified ventzon.com
+ * address once DNS is confirmed.
+ */
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "Ventzon Rewards <onboarding@resend.dev>";
+
 let _resend: Resend | null = null;
 function getResend() {
   if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
@@ -51,12 +59,31 @@ export async function sendEmail(
   </div>
 </div>`;
 
-  return getResend().emails.send({
-    from: "Ventzon Rewards <onboarding@resend.dev>",
+  // NOTE: the Resend SDK does NOT throw on API errors — it resolves with
+  // { data, error }. Returning that object directly meant every caller's
+  // try/catch was dead code and failures (e.g. the 403 you get when
+  // sending from the unverified sandbox domain to a non-owner address)
+  // looked identical to success. Inspect the payload and throw.
+  const result = await getResend().emails.send({
+    from: EMAIL_FROM,
     to,
     subject,
     html: htmlOverride ?? defaultHtml,
   });
+
+  if (result?.error) {
+    const err = result.error as { name?: string; message?: string; statusCode?: number };
+    // Structured single-line log so it is greppable in Vercel logs.
+    console.error(
+      `[email] SEND FAILED to=${to} subject=${JSON.stringify(subject)} ` +
+        `name=${err.name ?? "unknown"} status=${err.statusCode ?? "?"} msg=${JSON.stringify(err.message ?? "")}`
+    );
+    const e = new Error(`Resend send failed: ${err.name ?? "error"} — ${err.message ?? "no message"}`);
+    (e as any).resendError = err;
+    throw e;
+  }
+
+  return result;
 }
 
 /** Build a rich HTML "almost there" email (1 stamp away) */

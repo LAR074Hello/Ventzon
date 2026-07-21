@@ -47,16 +47,26 @@ export async function POST(req: Request) {
       await admin.from("post_comments").update({ hidden: true }).eq("id", targetId);
     }
 
-    // Route to the admin inbox (non-fatal).
+    // Route to the admin inbox. Non-fatal for the reporter — the report
+    // is already saved and the content already hidden — but a failure to
+    // reach the moderator must be loud, not swallowed.
+    let adminNotified = true;
     try {
       await sendEmail(
         ADMIN_EMAIL,
         `[Ventzon report] ${targetType} · ${reason}`,
         `A ${targetType} was reported.\n\nType: ${targetType}\nID: ${targetId}\nReason: ${reason}\n\nThe content is hidden pending review. Review in Supabase (reports table, status=open).`
       );
-    } catch {}
+    } catch (err: any) {
+      adminNotified = false;
+      console.error(
+        `[report] ADMIN EMAIL FAILED — report is saved but nobody was alerted. ` +
+          `target=${targetType}:${targetId} reason=${reason} ` +
+          `err=${JSON.stringify(err?.message ?? "unknown")}`
+      );
+    }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, admin_notified: adminNotified });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
   }
