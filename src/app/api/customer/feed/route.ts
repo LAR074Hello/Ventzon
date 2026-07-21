@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 // of which exists yet. Do not flip this without both.
 const COMMUNITY_FEED_ENABLED = false;
 
-// GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…]
+// GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…][&offset=…&limit=…]
 //
 // The single source for post feeds — the Explore social feed, and (via
 // ?shop_slug=) the post grid on a business profile. Only business-tied
@@ -26,6 +26,11 @@ export async function GET(req: Request) {
     const lat = parseFloat(url.searchParams.get("lat") ?? "");
     const lng = parseFloat(url.searchParams.get("lng") ?? "");
     const hasLoc = Number.isFinite(lat) && Number.isFinite(lng);
+    const limit = Math.min(30, Math.max(5, parseInt(url.searchParams.get("limit") ?? "12", 10) || 12));
+    const offset = Math.max(0, parseInt(url.searchParams.get("offset") ?? "0", 10) || 0);
+    // Over-fetch so post-query filtering (blocks, non-creator authors)
+    // can't leave a short page that looks like the end of the feed.
+    const fetchWindow = offset + limit * 3;
 
     const admin = createClient(
       process.env.SUPABASE_URL!,
@@ -47,7 +52,7 @@ export async function GET(req: Request) {
       .eq("hidden", false)
       .not("shop_slug", "is", null)
       .order("created_at", { ascending: false })
-      .limit(60);
+      .limit(Math.min(fetchWindow + limit, 300));
     if (shopFilter) query = query.eq("shop_slug", shopFilter);
     if (COMMUNITY_FEED_ENABLED) {
       // Intentionally unreachable — see the constant above.
@@ -177,9 +182,14 @@ export async function GET(req: Request) {
 
     // Shop grids keep pure recency; the social feed uses the blend.
     if (!shopFilter) enriched.sort((a, b) => b._score - a._score);
-    const result = enriched.map(({ _score, ...rest }) => rest);
+    const page = enriched.slice(offset, offset + limit);
+    const result = page.map(({ _score, ...rest }) => rest);
 
-    return NextResponse.json({ posts: result });
+    return NextResponse.json({
+      posts: result,
+      has_more: enriched.length > offset + limit,
+      next_offset: offset + result.length,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
   }

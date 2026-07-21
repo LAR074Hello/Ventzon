@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, Compass, Sparkles } from "lucide-react";
 import FollowButton from "./FollowButton";
@@ -164,15 +164,51 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
   const router = useRouter();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const offsetRef = useRef(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const fetchPage = useCallback(
+    async (offset: number, replace: boolean) => {
+      const qs = new URLSearchParams();
+      if (userLoc) {
+        qs.set("lat", String(userLoc.lat));
+        qs.set("lng", String(userLoc.lng));
+      }
+      qs.set("offset", String(offset));
+      const res = await fetch(`/api/customer/feed?${qs.toString()}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      setPosts((prev) => (replace ? d.posts ?? [] : [...prev, ...(d.posts ?? [])]));
+      setHasMore(Boolean(d.has_more));
+      offsetRef.current = d.next_offset ?? offset;
+    },
+    [userLoc]
+  );
 
   useEffect(() => {
-    const params = userLoc ? `?lat=${userLoc.lat}&lng=${userLoc.lng}` : "";
-    fetch(`/api/customer/feed${params}`)
-      .then((r) => (r.ok ? r.json() : { posts: [] }))
-      .then((d) => setPosts(d.posts ?? []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [userLoc]);
+    setLoading(true);
+    offsetRef.current = 0;
+    fetchPage(0, true).finally(() => setLoading(false));
+  }, [fetchPage]);
+
+  // Infinite scroll: load the next page as the sentinel nears the viewport.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore || loading) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !loadingMore) {
+          setLoadingMore(true);
+          fetchPage(offsetRef.current, false).finally(() => setLoadingMore(false));
+        }
+      },
+      { rootMargin: "600px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, loading, loadingMore, fetchPage]);
 
   async function toggleLike(post: FeedPost) {
     const next = !post.viewer.liked;
@@ -336,6 +372,19 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
           </div>
         );
       })}
+
+      {/* Infinite-scroll sentinel */}
+      <div ref={sentinelRef} className="h-1" />
+      {loadingMore && (
+        <div className="flex justify-center py-4">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-ink" />
+        </div>
+      )}
+      {!hasMore && posts.length > 6 && (
+        <p className="py-6 text-center text-[12px] font-normal text-muted">
+          You&rsquo;re all caught up
+        </p>
+      )}
     </div>
   );
 }
