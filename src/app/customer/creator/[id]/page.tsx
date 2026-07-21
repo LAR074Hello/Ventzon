@@ -75,7 +75,7 @@ export default function CreatorProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
@@ -83,7 +83,7 @@ export default function CreatorProfilePage() {
 
   if (notFound || !profile) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
         <p className="text-[11px] font-light tracking-[0.3em] text-muted">NOT FOUND</p>
         <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Creator not found</h1>
         <button
@@ -99,7 +99,7 @@ export default function CreatorProfilePage() {
   const name = profile.display_name ?? "Creator";
 
   return (
-    <div className="flex min-h-screen flex-col bg-black pb-10">
+    <div className="flex min-h-screen flex-col bg-bg pb-10">
       {/* Top bar */}
       <div
         className="flex items-center justify-between px-4"
@@ -107,13 +107,13 @@ export default function CreatorProfilePage() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-black/80"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
         >
           <ArrowLeft className="h-4 w-4 text-ink" />
         </button>
         <button
           onClick={share}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-black/80"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
         >
           <Share2 className="h-4 w-4 text-muted" />
         </button>

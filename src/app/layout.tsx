@@ -73,10 +73,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    /* suppressHydrationWarning: the theme script adds .vz-light to <html>
+       before hydration by design. */
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${displayFont.variable} ${bodyFont.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Theme before paint: ventzon_theme = light | dark | system.
+            Default (system) follows prefers-color-scheme; the class
+            drives the token values in globals.css. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("ventzon_theme");var l=t==="light"||(t!=="dark"&&matchMedia("(prefers-color-scheme: light)").matches);if(l)document.documentElement.classList.add("vz-light")}catch(e){}`,
+          }}
+        />
         <SiteHeader />
         {children}
       </body>

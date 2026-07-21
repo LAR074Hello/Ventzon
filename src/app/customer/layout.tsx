@@ -39,7 +39,7 @@ const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
 function AppStoreBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
     <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-black ring-1 ring-line">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-bg ring-1 ring-line">
         <span className="text-[11px] font-light tracking-[0.15em] text-ink">V</span>
       </div>
       <div className="flex-1 min-w-0">
@@ -113,7 +113,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="customer-app flex flex-col bg-black" style={{ minHeight: "100dvh" }}>
+    <div className="customer-app flex flex-col bg-bg" style={{ minHeight: "100dvh" }}>
       {showBanner && <AppStoreBanner onDismiss={dismissBanner} />}
       {showOnboarding && <Onboarding onFinish={finishOnboarding} />}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: hideNav ? 0 : "80px" }}>
@@ -142,8 +142,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                       strokeWidth={active ? 1.5 : 1}
                     />
                     {showBadge && (
-                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold">
-                        <span className="text-[9px] font-bold text-gold-ink">{readyCount}</span>
+                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
+                        <span className="text-[9px] font-bold text-accent-ink">{readyCount}</span>
                       </div>
                     )}
                   </div>
@@ -180,8 +180,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                       strokeWidth={active ? 1.5 : 1}
                     />
                     {showBadge && (
-                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold">
-                        <span className="text-[9px] font-bold text-gold-ink">{readyCount}</span>
+                      <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent">
+                        <span className="text-[9px] font-bold text-accent-ink">{readyCount}</span>
                       </div>
                     )}
                   </div>

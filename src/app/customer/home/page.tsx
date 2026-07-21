@@ -174,7 +174,7 @@ export default function HomePage() {
   return (
     <div
       ref={scrollRef}
-      className="flex min-h-full flex-col bg-black"
+      className="flex min-h-full flex-col bg-bg"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -217,10 +217,10 @@ export default function HomePage() {
             <button
               key={m.shop_slug}
               onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
-              className="w-full flex items-center gap-4 rounded-card border border-gold/40 bg-gold/10 px-4 py-4 text-left active:bg-gold/15 transition-colors"
+              className="w-full flex items-center gap-4 rounded-card border border-accent/40 bg-accent/10 px-4 py-4 text-left active:bg-accent/15 transition-colors"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold">
-                <Trophy className="h-5 w-5 text-gold-ink" strokeWidth={2} />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent">
+                <Trophy className="h-5 w-5 text-accent-ink" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold text-ink">Reward ready</p>
@@ -243,7 +243,7 @@ export default function HomePage() {
               </p>
             </div>
             {passport.unlocked && (
-              <span className="rounded-full bg-gold/15 border border-gold/40 px-2.5 py-0.5 text-[10px] font-semibold text-gold">
+              <span className="rounded-full bg-accent/15 border border-accent/40 px-2.5 py-0.5 text-[10px] font-semibold text-accent">
                 EXPLORER UNLOCKED
               </span>
             )}
@@ -254,11 +254,11 @@ export default function HomePage() {
                 key={i}
                 className={`flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300 ${
                   i < passport.visited_new
-                    ? "bg-gold"
+                    ? "bg-accent"
                     : "border-2 border-dashed border-line"
                 }`}
               >
-                {i < passport.visited_new && <Check className="h-4 w-4 text-gold-ink" strokeWidth={2.5} />}
+                {i < passport.visited_new && <Check className="h-4 w-4 text-accent-ink" strokeWidth={2.5} />}
               </div>
             ))}
             <p className="ml-auto text-[13px] font-semibold text-muted">
@@ -413,7 +413,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
 
         {/* Status badge */}
         {isReady ? (
-          <span className="ml-3 shrink-0 rounded-full bg-gold px-3 py-1 text-[10px] font-bold tracking-wide text-gold-ink">
+          <span className="ml-3 shrink-0 rounded-full bg-accent px-3 py-1 text-[10px] font-bold tracking-wide text-accent-ink">
             REDEEM
           </span>
         ) : checkedInToday ? (
@@ -434,11 +434,11 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
               key={i}
               className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                 i < progress
-                  ? "bg-gold"
+                  ? "bg-accent"
                   : "border-2 border-line bg-transparent"
               }`}
             >
-              {i < progress && <Check className="h-4 w-4 text-gold-ink" strokeWidth={2.5} />}
+              {i < progress && <Check className="h-4 w-4 text-accent-ink" strokeWidth={2.5} />}
             </div>
           ))}
           {/* Progress counter */}

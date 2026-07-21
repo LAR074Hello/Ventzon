@@ -1,6 +1,5 @@
 import path from "path";
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -31,21 +30,24 @@ const nextConfig: NextConfig = {
 };
 
 // withSentryConfig runs the Sentry build plugin, which reaches out to Sentry's
-// servers at startup. In sandboxed/offline dev that call never returns and hangs
-// `next dev` before it can even print its banner. Only wrap for production builds
-// (Vercel/CI), where the network is available and source maps actually matter.
-const config =
-  process.env.NODE_ENV === "production"
-    ? withSentryConfig(nextConfig, {
-        org: "ventzon",
-        project: "ventzon-web",
-        // Only upload source maps in CI (Vercel builds), not local dev
-        silent: true,
-        // Disable source map upload until SENTRY_AUTH_TOKEN is configured
-        sourcemaps: {
-          disable: !process.env.SENTRY_AUTH_TOKEN,
-        },
-      })
-    : nextConfig;
+// servers. Even IMPORTING @sentry/nextjs can hang when its startup probes
+// stall, which kills `next dev` before the banner. So the import itself is
+// lazy: dev never touches Sentry; production builds (Vercel/CI) load it.
+const config = async (): Promise<NextConfig> => {
+  if (process.env.NODE_ENV === "production") {
+    const { withSentryConfig } = await import("@sentry/nextjs");
+    return withSentryConfig(nextConfig, {
+      org: "ventzon",
+      project: "ventzon-web",
+      // Only upload source maps in CI (Vercel builds), not local dev
+      silent: true,
+      // Disable source map upload until SENTRY_AUTH_TOKEN is configured
+      sourcemaps: {
+        disable: !process.env.SENTRY_AUTH_TOKEN,
+      },
+    });
+  }
+  return nextConfig;
+};
 
 export default config;

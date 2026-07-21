@@ -8,20 +8,46 @@
 
   /* ── Ventzon design tokens ─────────────────────────────────────
      Direction: a storefront at night — dark glass, receipt paper,
-     one lit marquee sign. Gold is for rewards ONLY. */
-  --bg: #0b0b0c;        /* shutter black */
-  --surface: #141416;   /* lit storefront glass */
-  --line: #232326;      /* hairlines, borders */
-  --ink: #f4f2ec;       /* receipt paper */
-  --muted: #8b877e;     /* faded receipt ink — AA on bg and surface */
-  --gold: #ffb52e;      /* marquee gold — the signature; rewards only */
-  --gold-ink: #1a1204;  /* text on gold */
-  --danger: #ff6b5e;    /* neon "closed" red — errors only, never decoration
-                           (7.1:1 on bg, 6.6:1 on surface) */
+     one lit sign. The accent (baby-blue neon) means reward state
+     and NOTHING else. Light theme = the same storefront in
+     daylight; values under html.vz-light below. */
+  --bg: #0b0b0c;         /* shutter black */
+  --surface: #141416;    /* lit storefront glass */
+  --line: #232326;       /* hairlines, borders */
+  --ink: #f4f2ec;        /* receipt paper */
+  --muted: #8b877e;      /* faded receipt ink — 5.5/5.1:1 */
+  --accent: #89cff0;     /* baby-blue neon tube — 11.5:1 bg, 10.7 surface */
+  --accent-ink: #0a1b26; /* text on accent */
+  --danger: #ff6b5e;     /* neon "closed" red — errors only (7.1/6.6:1) */
+
+  /* elevation: dark leans on hairlines, not shadows */
+  --card-shadow: none;
 
   /* motion: one curve, one duration */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --dur: 240ms;
+  color-scheme: dark;
+}
+
+/* ── Light theme: the same storefront in daylight ──────────────── */
+html.vz-light {
+  --bg: #f7f7f4;         /* daylight paper */
+  --surface: #ffffff;    /* glass by day */
+  --line: #eceae4;       /* hairlines go near-silent... */
+  --ink: #191813;        /* painted-signage black */
+  --muted: #6b675e;      /* pencil gray — 5.25/5.64:1 */
+  --accent: #2c6c94;     /* the same tube unlit: powder-blue enamel — 5.3/5.7:1 */
+  --accent-ink: #eff7fc; /* text on accent */
+  --danger: #c43d2f;     /* painted "closed" red — 4.8/4.95:1 */
+  /* ...because elevation flips: soft shadow carries the card */
+  --card-shadow: 0 1px 2px rgba(25, 24, 19, 0.05), 0 6px 20px rgba(25, 24, 19, 0.07);
+  color-scheme: light;
+}
+
+/* Elevation flip, centralized: surface blocks get the themed shadow
+   without any per-component changes. */
+html.vz-light [class*="bg-surface"] {
+  box-shadow: var(--card-shadow);
 }
 
 @theme inline {
@@ -37,8 +63,8 @@
   --color-line: var(--line);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-gold: var(--gold);
-  --color-gold-ink: var(--gold-ink);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
   --color-danger: var(--danger);
 
   /* type utilities: font-display / font-body */

@@ -98,7 +98,7 @@ export default function ProfilePage() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
@@ -112,7 +112,7 @@ export default function ProfilePage() {
   const avatarUrl = profile?.avatar_url ?? user.user_metadata?.avatar_url ?? null;
 
   return (
-    <div className="flex min-h-full flex-col bg-black pb-10">
+    <div className="flex min-h-full flex-col bg-bg pb-10">
       {/* Top bar — gear opens the full settings screen */}
       <div
         className="flex items-center justify-between px-5 pb-1"

@@ -67,7 +67,7 @@ function FollowListContent() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-black pb-8">
+    <div className="flex min-h-full flex-col bg-bg pb-8">
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-3"
@@ -204,7 +204,7 @@ export default function FollowListPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="flex min-h-screen items-center justify-center bg-bg">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
         </div>
       }

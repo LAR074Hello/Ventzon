@@ -53,13 +53,13 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
   }, [onDismiss]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black">
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-bg">
       <div
         className="flex flex-col items-center transition-all duration-500"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)" }}
       >
-        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-gold/30 bg-gold/10">
-          <Check className="h-10 w-10 text-gold" strokeWidth={1.5} />
+        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-accent/30 bg-accent/10">
+          <Check className="h-10 w-10 text-accent" strokeWidth={1.5} />
         </div>
         <h2 className="mt-6 font-display text-[24px] font-semibold tracking-[-0.01em] text-ink">Checked in</h2>
         <p className="mt-2 text-[14px] font-normal text-muted">
@@ -67,7 +67,7 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
         </p>
         <div className="mt-6 flex gap-2">
           {Array.from({ length: Math.min(goal, 10) }).map((_, i) => (
-            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--gold)" : "var(--line)" }} />
+            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--accent)" : "var(--line)" }} />
           ))}
         </div>
       </div>
@@ -92,7 +92,7 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
   }
 
   return (
-    <div className="fixed inset-0 z-[150] flex flex-col bg-black" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
+    <div className="fixed inset-0 z-[150] flex flex-col bg-bg" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
       <div className="flex justify-end px-5 pt-4">
         <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface">
           <X className="h-4 w-4 text-muted" />
@@ -100,14 +100,14 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-        <div className="flex h-28 w-28 items-center justify-center rounded-sheet border border-gold/40 bg-gold/10">
-          <Trophy className="h-12 w-12 text-gold" strokeWidth={1} />
+        <div className="flex h-28 w-28 items-center justify-center rounded-sheet border border-accent/40 bg-accent/10">
+          <Trophy className="h-12 w-12 text-accent" strokeWidth={1} />
         </div>
         <h2 className="mt-8 font-display text-[28px] font-semibold tracking-[-0.02em] text-ink">Reward earned</h2>
         <p className="mt-3 text-[15px] font-normal text-muted">{shop.deal_title}</p>
         {shop.deal_details && <p className="mt-1 text-[13px] font-normal text-muted opacity-80">{shop.deal_details}</p>}
-        <div className="mt-10 w-full rounded-card border border-gold/30 bg-gold/10 px-6 py-5">
-          <p className="text-[10px] font-semibold tracking-[0.14em] text-gold">SHOW THIS TO THE CASHIER</p>
+        <div className="mt-10 w-full rounded-card border border-accent/30 bg-accent/10 px-6 py-5">
+          <p className="text-[10px] font-semibold tracking-[0.14em] text-accent">SHOW THIS TO THE CASHIER</p>
           <p className="mt-2 text-[13px] font-normal text-ink">{shop.shop_name}</p>
         </div>
       </div>
@@ -307,7 +307,7 @@ export default function CustomerShopPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
@@ -315,7 +315,7 @@ export default function CustomerShopPage() {
 
   if (!settings) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
         <p className="text-[10px] font-semibold tracking-[0.14em] text-muted">NOT FOUND</p>
         <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Shop not found</h1>
         <p className="mt-3 text-[14px] font-normal text-muted">
@@ -334,7 +334,7 @@ export default function CustomerShopPage() {
   const shopName = settings?.shop_name ?? shopSlug;
 
   return (
-    <div className="flex min-h-screen flex-col bg-black">
+    <div className="flex min-h-screen flex-col bg-bg">
       {showCheckinOverlay && (
         <CheckinOverlay visits={visits} goal={goal} onDismiss={() => setShowCheckinOverlay(false)} />
       )}
@@ -420,11 +420,11 @@ export default function CustomerShopPage() {
                 key={i}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                   filled
-                    ? "bg-gold"
+                    ? "bg-accent"
                     : "border-2 border-line bg-transparent"
                 } ${isNew ? "animate-stamp-pop" : ""}`}
               >
-                {filled && <Check className="h-4 w-4 text-gold-ink" />}
+                {filled && <Check className="h-4 w-4 text-accent-ink" />}
               </div>
             );
           })}
@@ -469,8 +469,8 @@ export default function CustomerShopPage() {
                 className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-line/60" : ""}`}
               >
                 <p className="text-[13px] font-normal text-muted">{formatDate(entry.checkin_date)}</p>
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gold/15">
-                  <Check className="h-3 w-3 text-gold" />
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/15">
+                  <Check className="h-3 w-3 text-accent" />
                 </div>
               </div>
             ))}
@@ -485,7 +485,7 @@ export default function CustomerShopPage() {
         {isReady && (
           <button
             onClick={async () => { await haptic("medium"); setShowRewardScreen(true); }}
-            className="w-full rounded-ctl border border-gold/40 bg-gold/10 py-4 text-[12px] font-semibold tracking-[0.14em] text-gold transition-all active:bg-gold/20"
+            className="w-full rounded-ctl border border-accent/40 bg-accent/10 py-4 text-[12px] font-semibold tracking-[0.14em] text-accent transition-all active:bg-accent/20"
           >
             VIEW MY REWARD
           </button>

@@ -178,7 +178,7 @@ export default function ScanPage() {
           </>
         )}
         {state === "success" && (
-          <p className="text-[15px] font-light text-gold">Opening store…</p>
+          <p className="text-[15px] font-light text-accent">Opening store…</p>
         )}
         {state === "permission-denied" && (
           <div>

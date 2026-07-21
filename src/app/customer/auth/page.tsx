@@ -220,7 +220,7 @@ function AuthForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+    <div className="flex min-h-screen flex-col bg-bg" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       {/* Top branding area */}
       <div className="flex flex-1 flex-col items-center justify-center px-6 pt-12 pb-8">
         {/* Logo mark */}
@@ -497,7 +497,7 @@ function GoogleIcon() {
 export default function AuthPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     }>

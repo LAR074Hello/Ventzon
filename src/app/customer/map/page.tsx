@@ -80,15 +80,17 @@ export default function MapPage() {
         attributionControl: false,
       });
 
-      // Dark tile layer (CartoDB Dark Matter)
+      // Basemap follows the theme at init (light_all / dark_all).
+      // A live theme toggle swaps tiles on next visit to this tab.
+      const lightTheme = document.documentElement.classList.contains("vz-light");
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        `https://{s}.basemaps.cartocdn.com/${lightTheme ? "light_all" : "dark_all"}/{z}/{x}/{y}{r}.png`,
         { subdomains: "abcd", maxZoom: 19 }
       ).addTo(map);
 
       // Attribution small bottom-right
       L.control.attribution({ position: "bottomright", prefix: false })
-        .addAttribution('<span style="color:#333">&copy; OpenStreetMap &copy; CARTO</span>')
+        .addAttribution('<span style="color:#888">&copy; OpenStreetMap &copy; CARTO</span>')
         .addTo(map);
 
       mapInstance.current = map;
@@ -119,7 +121,7 @@ export default function MapPage() {
         const initial = shop.shop_name.charAt(0).toUpperCase();
         const p = progressMap[shop.slug];
         const rewardReady = p && p.visits >= p.goal;
-        const ring = rewardReady ? "var(--gold)" : "var(--line)";
+        const ring = rewardReady ? "var(--accent)" : "var(--line)";
 
         const face = shop.logo_url
           ? `<img src="${shop.logo_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
@@ -134,7 +136,7 @@ export default function MapPage() {
               overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.6);
             ">${face}</div>
             ${rewardReady ? `<div style="
-              background:var(--gold);color:var(--gold-ink);border-radius:999px;
+              background:var(--accent);color:var(--accent-ink);border-radius:999px;
               font-size:8px;font-weight:700;letter-spacing:0.05em;
               padding:1px 6px;font-family:sans-serif;white-space:nowrap;
             ">REWARD</div>` : ""}
@@ -186,7 +188,7 @@ export default function MapPage() {
         style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)", paddingBottom: "12px" }}
       >
         <div className="flex items-center gap-3 w-full">
-          <div className="flex-1 rounded-card border border-line bg-black/80 backdrop-blur-md px-4 py-3">
+          <div className="flex-1 rounded-card border border-line bg-bg/80 backdrop-blur-md px-4 py-3">
             <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">NEARBY</p>
             <p className="text-[15px] font-semibold text-ink mt-0.5">
               {loading ? "Loading stores…" : shops.length === 0 ? "Explore nearby stores" : `${shops.length} store${shops.length === 1 ? "" : "s"} nearby`}
@@ -195,7 +197,7 @@ export default function MapPage() {
           <button
             onClick={locateMe}
             disabled={locating}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-line bg-black/80 backdrop-blur-md transition-colors active:bg-surface"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-line bg-bg/80 backdrop-blur-md transition-colors active:bg-surface"
           >
             <Locate className={`h-5 w-5 ${locating ? "text-ink animate-pulse" : "text-muted"}`} />
           </button>
@@ -270,7 +272,7 @@ export default function MapPage() {
                   }
                   const remaining = Math.max(p.goal - p.visits, 0);
                   if (remaining === 0) {
-                    return <p className="mt-2 text-[11px] font-medium text-gold">Your reward is ready to redeem</p>;
+                    return <p className="mt-2 text-[11px] font-medium text-accent">Your reward is ready to redeem</p>;
                   }
                   return (
                     <div className="mt-2 flex items-center gap-1.5">
@@ -279,11 +281,11 @@ export default function MapPage() {
                           <div
                             key={i}
                             className="h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: i < p.visits ? "var(--gold)" : "var(--line)" }}
+                            style={{ backgroundColor: i < p.visits ? "var(--accent)" : "var(--line)" }}
                           />
                         ))}
                       </div>
-                      <p className="text-[11px]" style={{ color: "var(--gold)" }}>
+                      <p className="text-[11px]" style={{ color: "var(--accent)" }}>
                         {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
                       </p>
                     </div>

@@ -111,7 +111,7 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
@@ -119,7 +119,7 @@ export default function PostPage() {
 
   if (notFound || !data) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-8 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
         <p className="text-[11px] font-light tracking-[0.3em] text-muted">NOT FOUND</p>
         <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Post not found</h1>
         <button
@@ -136,7 +136,7 @@ export default function PostPage() {
   const remaining = viewer.progress ? Math.max(viewer.progress.goal - viewer.progress.visits, 0) : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-black pb-8">
+    <div className="flex min-h-screen flex-col bg-bg pb-8">
       {/* Top bar */}
       <div
         className="flex items-center gap-3 px-4 pb-3"
@@ -144,7 +144,7 @@ export default function PostPage() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-black/80"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
         >
           <ArrowLeft className="h-4 w-4 text-ink" />
         </button>
@@ -242,7 +242,7 @@ export default function PostPage() {
                 : shop.deal_title ?? `${shop.reward_goal} visits to reward`}
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-gold px-3.5 py-1.5 text-[10px] font-bold tracking-[0.1em] text-gold-ink">
+          <span className="shrink-0 rounded-full bg-accent px-3.5 py-1.5 text-[10px] font-bold tracking-[0.1em] text-accent-ink">
             VISIT &amp; EARN
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted" />

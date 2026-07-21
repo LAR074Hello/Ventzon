@@ -51,7 +51,7 @@ export default function NotificationsPage() {
   }, []);
 
   return (
-    <div className="flex min-h-full flex-col bg-black">
+    <div className="flex min-h-full flex-col bg-bg">
       <div className="px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-ink">Notifications</h1>
         <p className="mt-1 text-[12px] font-normal text-muted">

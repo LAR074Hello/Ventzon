@@ -293,7 +293,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                     {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
                       <span
                         key={i}
-                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-gold" : "bg-line"}`}
+                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-accent" : "bg-line"}`}
                       />
                     ))}
                     <span className="ml-1.5 text-[10px] font-semibold tracking-[0.08em] uppercase text-muted truncate">
@@ -305,7 +305,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                     </span>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-full bg-gold px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-gold-ink">
+                <span className="shrink-0 rounded-full bg-accent px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-accent-ink">
                   VISIT
                 </span>
               </button>

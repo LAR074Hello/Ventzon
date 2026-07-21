@@ -94,12 +94,12 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
           <p className="mt-0.5 text-[12px] text-white/60 truncate">{shop.deal_title}</p>
         </div>
         {progress && remaining === 0 ? (
-          <div className="absolute top-3 right-3 rounded-full bg-gold px-2.5 py-1">
-            <span className="text-[10px] font-bold tracking-[0.08em] text-gold-ink">READY</span>
+          <div className="absolute top-3 right-3 rounded-full bg-accent px-2.5 py-1">
+            <span className="text-[10px] font-bold tracking-[0.08em] text-accent-ink">READY</span>
           </div>
         ) : progress && remaining !== null ? (
-          <div className="absolute top-3 right-3 rounded-full bg-gold/20 border border-gold/40 px-2.5 py-1">
-            <span className="text-[10px] font-semibold tracking-[0.08em] text-gold">
+          <div className="absolute top-3 right-3 rounded-full bg-accent/20 border border-accent/40 px-2.5 py-1">
+            <span className="text-[10px] font-semibold tracking-[0.08em] text-accent">
               {remaining} TO GO
             </span>
           </div>
@@ -152,16 +152,16 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
               {Array.from({ length: Math.min(progress.goal, 8) }).map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 w-1.5 rounded-full ${i < progress.visits ? "bg-gold" : "bg-line"}`}
+                  className={`h-1.5 w-1.5 rounded-full ${i < progress.visits ? "bg-accent" : "bg-line"}`}
                 />
               ))}
             </div>
-            <p className="text-[11px] font-normal text-gold">
+            <p className="text-[11px] font-normal text-accent">
               {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
             </p>
           </div>
         ) : progress && remaining === 0 ? (
-          <p className="mt-1 text-[11px] font-medium text-gold">Reward ready to redeem</p>
+          <p className="mt-1 text-[11px] font-medium text-accent">Reward ready to redeem</p>
         ) : (
           <p className="mt-0.5 text-[11px] font-normal text-muted">
             {shop.reward_goal} visits to reward
@@ -233,11 +233,11 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
           {Array.from({ length: Math.min(shop.reward_goal, 8) }).map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 w-1.5 rounded-full ${i < filledDots ? "bg-gold" : "bg-line"}`}
+              className={`h-1.5 w-1.5 rounded-full ${i < filledDots ? "bg-accent" : "bg-line"}`}
             />
           ))}
         </div>
-        <p className={`text-[11px] font-normal ${progress && remaining !== null && remaining > 0 ? "text-gold" : "text-muted"}`}>
+        <p className={`text-[11px] font-normal ${progress && remaining !== null && remaining > 0 ? "text-accent" : "text-muted"}`}>
           {progress && remaining === 0
             ? "ready to redeem"
             : progress && remaining !== null
@@ -386,7 +386,7 @@ export default function ExplorePage() {
     : [];
 
   return (
-    <div className="flex min-h-full flex-col bg-black">
+    <div className="flex min-h-full flex-col bg-bg">
 
       {/* Header — editorial: micro kicker + display title, underline tabs */}
       <div className="px-5 pt-2 pb-0" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>

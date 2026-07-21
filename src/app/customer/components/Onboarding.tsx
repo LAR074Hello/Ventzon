@@ -20,7 +20,7 @@ const SLIDES = [
     icon: Gift,
     title: "Get rewarded",
     sub: "Collect stamps or points with every visit. Hit your goal, show your card at the register, and the reward's yours.",
-    accent: "var(--gold)",
+    accent: "var(--accent)",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col bg-black"
+      className="fixed inset-0 z-[100] flex flex-col bg-bg"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       {/* Skip */}
