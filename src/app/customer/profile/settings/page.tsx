@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { stripImageMetadata } from "@/lib/strip-exif";
 import {
   LogOut, User, ChevronRight, Trophy, Share2, Bell,
   Trash2, Pencil, Check, X, Camera, Mail, HelpCircle, FileText,
@@ -259,9 +260,11 @@ export default function ProfilePage() {
     if (file.size > 5 * 1024 * 1024) { alert("Image must be under 5 MB."); return; }
     setUploadingAvatar(true);
     try {
-      const ext = file.name.split(".").pop() ?? "jpg";
+      // Strip EXIF/GPS before the photo leaves the device.
+      const clean = await stripImageMetadata(file);
+      const ext = clean.name.split(".").pop() ?? "jpg";
       const path = `${user.id}/avatar.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, clean, { upsert: true });
       if (uploadErr) throw uploadErr;
       const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
       const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;

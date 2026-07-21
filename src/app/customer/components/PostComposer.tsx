@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, ImagePlus, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { stripImageMetadata } from "@/lib/strip-exif";
 
 /**
  * Shared post composer — used on the public creator page (own profile)
@@ -52,11 +53,14 @@ export default function PostComposer({ onPosted }: { onPosted: () => void | Prom
         if (!uid) throw new Error("Not signed in");
         if (mediaFile.size > 50 * 1024 * 1024) throw new Error("Media must be under 50 MB");
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
-        const ext = mediaFile.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
+        // Strip EXIF/GPS from photos before they leave the device. Videos
+        // can't be rewritten client-side — they upload as-is (flagged).
+        const uploadFile = mediaType === "image" ? await stripImageMetadata(mediaFile) : mediaFile;
+        const ext = uploadFile.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
         const path = `${uid}/${Date.now()}.${ext}`;
         const { error: uploadErr } = await supabase.storage
           .from("posts")
-          .upload(path, mediaFile, { upsert: true });
+          .upload(path, uploadFile, { upsert: true });
         if (uploadErr) throw uploadErr;
         const { data: urlData } = supabase.storage.from("posts").getPublicUrl(path);
         mediaUrl = urlData.publicUrl;
