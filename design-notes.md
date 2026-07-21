@@ -3,6 +3,13 @@
 Keep this updated so later passes don't recycle dead ends.
 
 ## Rejected
+- **Marquee gold as the signature hue** — approved initially, then pulled by
+  the owner: the stamp-ledger SHAPE is the signature, not the hue. Brass
+  light-mode derivation (#936509) died with it.
+- **Accent alternatives considered and passed over**: neon magenta (danger-
+  adjacent), awning green (generic success-state risk), diner cyan (cold),
+  violet neon (AI/SaaS default family). Chosen: baby blue — #89CFF0 dark
+  neon tube / #2C6C94 powder enamel by day.
 - **Light/cream base palette** — app is live and dark throughout; flipping the
   base would be a redesign, not a design pass. Dark stays; warmed slightly.
 - **Per-shop hashed accent colors** (current app behavior) — 8 random hues make
@@ -38,3 +45,11 @@ Keep this updated so later passes don't recycle dead ends.
   art, not our ramp.
 - **Scrim gradients over photos** (featured cards): rgba black overlays are
   photo-legibility scrims, not palette colors — kept as rgba.
+
+## Light theme flags
+- Photo scrims stay dark in both themes (legibility overlays, not palette).
+- Scan screen is theme-exempt: camera viewfinder chrome stays dark.
+- Map basemap picks light_all/dark_all at init; a live theme toggle reaches
+  the map on next visit to the tab.
+- Elevation flips in light via one centralized shadow rule on bg-surface
+  blocks — do not add per-component shadows.
