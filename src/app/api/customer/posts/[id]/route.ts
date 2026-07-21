@@ -240,3 +240,45 @@ export async function POST(
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
   }
 }
+
+// DELETE /api/customer/posts/[id]?comment_id=… — remove a comment.
+// Allowed for the comment's author, or the author of the post it's on.
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const viewerEmail = await getViewerEmail();
+    if (!viewerEmail) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const commentId = new URL(req.url).searchParams.get("comment_id");
+    if (!commentId) {
+      return NextResponse.json({ error: "Missing comment_id" }, { status: 400 });
+    }
+
+    const admin = adminClient();
+    const [{ data: comment }, { data: post }] = await Promise.all([
+      admin.from("post_comments").select("id, email, post_id").eq("id", commentId).maybeSingle(),
+      admin.from("posts").select("id, author_email").eq("id", id).maybeSingle(),
+    ]);
+    if (!comment || !post || comment.post_id !== post.id) {
+      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    }
+
+    const isCommentAuthor = comment.email === viewerEmail;
+    const isPostAuthor = post.author_email === viewerEmail;
+    if (!isCommentAuthor && !isPostAuthor) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
+
+    const { error } = await admin.from("post_comments").delete().eq("id", commentId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+  }
+}

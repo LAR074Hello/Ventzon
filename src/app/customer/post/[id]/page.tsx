@@ -302,6 +302,19 @@ export default function PostPage() {
                   </p>
                   <p className="mt-0.5 text-[13px] font-normal leading-relaxed text-muted">{c.body}</p>
                 </div>
+                {(c.is_own || viewer.is_own) && (
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm("Delete this comment?")) return;
+                      await fetch(`/api/customer/posts/${postId}?comment_id=${c.id}`, { method: "DELETE" });
+                      await load();
+                    }}
+                    className="shrink-0 p-1 text-muted active:text-danger"
+                    aria-label="Delete comment"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
                 {!c.is_own && (
                   <SafetyMenu
                     targetType="comment"
