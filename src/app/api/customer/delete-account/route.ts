@@ -68,12 +68,54 @@ export async function DELETE() {
       await revokeAppleToken(appleRefreshToken);
     }
 
-    // Delete all customer records linked to this user's email
+    // Full erasure: every table and storage object keyed to this person.
+    // Best-effort per step — a single failure shouldn't strand the rest.
     if (user.email) {
-      await supabase
-        .from("customers")
-        .delete()
-        .eq("email", user.email.toLowerCase());
+      const email = user.email.toLowerCase();
+
+      // Their posts (post_likes/saves/comments on them cascade via FK)
+      // — collect ids first so grids/likes referencing them go too.
+      try {
+        await supabase.from("posts").delete().eq("author_email", email);
+      } catch {}
+
+      // Their activity on other people's content
+      const cleanups: Array<[string, string, string]> = [
+        ["post_likes", "email", email],
+        ["post_saves", "email", email],
+        ["post_comments", "email", email],
+        ["user_follows", "follower_email", email],
+        ["user_follows", "followee_email", email],
+        ["customer_follows", "email", email],
+        ["referrals", "referrer_email", email],
+        ["referrals", "referred_email", email],
+        ["customer_notification_log", "email", email],
+        ["customer_notification_prefs", "email", email],
+        ["customer_profiles", "email", email],
+        ["customers", "email", email],
+      ];
+      for (const [table, col, val] of cleanups) {
+        try {
+          await supabase.from(table).delete().eq(col, val);
+        } catch {}
+      }
+    }
+
+    // Device tokens are keyed by auth user id
+    try {
+      await supabase.from("device_tokens").delete().eq("user_id", user.id);
+    } catch {}
+
+    // Uploaded media: posts and avatars live under <uid>/ in each bucket
+    for (const bucket of ["posts", "avatars"]) {
+      try {
+        const { data: objects } = await supabase.storage.from(bucket).list(user.id);
+        if (objects?.length) {
+          await supabase.storage
+            .from(bucket)
+            .remove(objects.map((o) => `${user.id}/${o.name}`));
+        }
+      } catch {}
     }
 
     // Delete the auth user (cascades all auth data)
