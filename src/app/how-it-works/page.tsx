@@ -195,15 +195,11 @@ export default function HowItWorksPage() {
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step1.jpg */}
-                <div
-                  className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
-                  role="img"
-                  aria-label="Placeholder — real photography to come"
-                >
-                  <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
-                    IMAGE COMING
-                  </p>
-                </div>
+                <img
+                  src="/site-images/mykonos.jpg"
+                  alt="Seaside restaurant terrace with a view over the water"
+                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+                />
               </div>
             </ScrollReveal>
             <ScrollReveal>
@@ -231,15 +227,11 @@ export default function HowItWorksPage() {
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step2.jpg */}
-                <div
-                  className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
-                  role="img"
-                  aria-label="Placeholder — real photography to come"
-                >
-                  <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
-                    IMAGE COMING
-                  </p>
-                </div>
+                <img
+                  src="/site-images/japanese-room.jpg"
+                  alt="Minimalist wood-panelled restaurant dining counter"
+                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+                />
               </div>
             </ScrollReveal>
             <ScrollReveal>
@@ -267,15 +259,11 @@ export default function HowItWorksPage() {
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step3.jpg */}
-                <div
-                  className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
-                  role="img"
-                  aria-label="Placeholder — real photography to come"
-                >
-                  <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
-                    IMAGE COMING
-                  </p>
-                </div>
+                <img
+                  src="/site-images/gold-bar.jpg"
+                  alt="Gold-leaf restaurant bar with a ceremonial gong"
+                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+                />
               </div>
             </ScrollReveal>
             <ScrollReveal>

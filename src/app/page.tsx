@@ -192,15 +192,11 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
-                  <div
-                    className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
-                    role="img"
-                    aria-label="Placeholder — real photography to come"
-                  >
-                    <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
-                      IMAGE COMING
-                    </p>
-                  </div>
+                  <img
+                    src="/site-images/mykonos.jpg"
+                    alt="Seaside restaurant terrace with a view over the water"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
+                  />
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2}>
@@ -223,15 +219,11 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal className="order-1 lg:order-2">
                 <div className="overflow-hidden rounded-lg">
-                  <div
-                    className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
-                    role="img"
-                    aria-label="Placeholder — real photography to come"
-                  >
-                    <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
-                      IMAGE COMING
-                    </p>
-                  </div>
+                  <img
+                    src="/site-images/japanese-room.jpg"
+                    alt="Minimalist wood-panelled restaurant dining counter"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
+                  />
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2} className="order-2 lg:order-1">
@@ -253,15 +245,11 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
-                  <div
-                    className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
-                    role="img"
-                    aria-label="Placeholder — real photography to come"
-                  >
-                    <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
-                      IMAGE COMING
-                    </p>
-                  </div>
+                  <img
+                    src="/site-images/seaside-toast.jpg"
+                    alt="Friends raising a toast at a seaside restaurant at sunset"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
+                  />
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2}>
