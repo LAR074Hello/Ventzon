@@ -12,7 +12,7 @@ const jsonLd = {
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "iOS, Web",
       "url": "https://www.ventzon.com",
-      "description": "Digital loyalty rewards program for local businesses. Replace paper punch cards with QR code check-ins, real-time analytics, and push notifications.",
+      "description": "Local discovery for independent businesses. People find nearby shops in the Ventzon feed and map, and a QR check-in confirms the visit — so posts about your shop come from customers who actually walked in.",
       "offers": {
         "@type": "Offer",
         "price": "25.00",
@@ -23,11 +23,6 @@ const jsonLd = {
           "priceCurrency": "USD",
           "unitText": "MONTH"
         }
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "42"
       }
     },
     {
@@ -54,10 +49,10 @@ const jsonLd = {
         },
         {
           "@type": "Question",
-          "name": "Do customers need to download an app?",
+          "name": "Do customers need the app?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Customers can check in by scanning a QR code and entering their phone number or email — no app download required. The Ventzon app is available for customers who want push notifications and to track their rewards."
+            "text": "Checking in is always frictionless — scan the QR code and enter a phone number or email. The app is where discovery happens: customers browse nearby shops, see rewards they are close to earning, and post about places they have actually visited."
           }
         },
         {
@@ -65,7 +60,7 @@ const jsonLd = {
           "name": "What kind of businesses use Ventzon?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Restaurants, coffee shops, cafes, salons, barbershops, retail stores, and any local business that wants to reward repeat customers."
+            "text": "Independent restaurants, coffee shops, cafes, salons, barbershops, and retail stores. Ventzon is launching neighborhood by neighborhood, so early shops are founding businesses in their area."
           }
         },
         {
@@ -73,7 +68,7 @@ const jsonLd = {
           "name": "How do I set up Ventzon for my business?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sign up at ventzon.com, create your shop, choose a stamp card or a points program, set your reward goal, and print your QR code. The whole process takes about 5 minutes."
+            "text": "Sign up at ventzon.com, create your shop, choose a stamp card or a points program, set your reward goal, and print your QR code. Your shop then appears on the Ventzon map and in local discovery. The whole process takes about 5 minutes."
           }
         },
         {
@@ -187,7 +182,7 @@ export default function Home() {
               HOW IT WORKS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              A loyalty program on the surface.<br className="hidden sm:block" />A data engine underneath.
+              Get discovered nearby.<br className="hidden sm:block" />Know who actually showed up.
             </h2>
           </ScrollReveal>
 
@@ -197,11 +192,15 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
-                  <img
-                    src="/site-images/mykonos.jpg"
-                    alt="Seaside restaurant terrace with a view over the water"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
-                  />
+                  <div
+                    className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
+                    role="img"
+                    aria-label="Placeholder — real photography to come"
+                  >
+                    <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
+                      IMAGE COMING
+                    </p>
+                  </div>
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2}>
@@ -224,11 +223,15 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal className="order-1 lg:order-2">
                 <div className="overflow-hidden rounded-lg">
-                  <img
-                    src="/site-images/japanese-room.jpg"
-                    alt="Minimalist wood-panelled restaurant dining counter"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
-                  />
+                  <div
+                    className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
+                    role="img"
+                    aria-label="Placeholder — real photography to come"
+                  >
+                    <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
+                      IMAGE COMING
+                    </p>
+                  </div>
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2} className="order-2 lg:order-1">
@@ -250,11 +253,15 @@ export default function Home() {
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
               <ScrollReveal>
                 <div className="overflow-hidden rounded-lg">
-                  <img
-                    src="/site-images/seaside-toast.jpg"
-                    alt="Friends raising a toast at a seaside restaurant at sunset"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
-                  />
+                  <div
+                    className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
+                    role="img"
+                    aria-label="Placeholder — real photography to come"
+                  >
+                    <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
+                      IMAGE COMING
+                    </p>
+                  </div>
                 </div>
               </ScrollReveal>
               <ScrollReveal delay={2}>
@@ -290,7 +297,7 @@ export default function Home() {
               What your customers see.
             </h2>
             <p className="mt-5 text-[15px] font-light text-[#666]">
-              A simple check-in page that works on any phone. Phone or email &mdash; no app, no account.
+              A simple check-in page that works on any phone. Scanning takes seconds &mdash; phone or email is all it needs.
             </p>
           </ScrollReveal>
 
@@ -634,45 +641,39 @@ export default function Home() {
               VOICES
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Trusted by local businesses
+              Be one of the first shops in your neighborhood
             </h2>
+            <p className="mx-auto mt-6 max-w-xl text-base font-light leading-[1.8] text-[#888]">
+              Ventzon is launching neighborhood by neighborhood. Early shops
+              shape how discovery works in their area — and their reward is
+              the first thing locals see when they open the map.
+            </p>
           </ScrollReveal>
 
-          <div className="mt-16 grid gap-16 md:grid-cols-3 md:gap-12">
+          <div className="mt-16 grid gap-12 md:grid-cols-3">
             {[
               {
-                quote:
-                  "We went from paper punch cards to 200+ signups in our first month. Customers actually come back more often now.",
-                name: "Maria Rodriguez",
-                biz: "The Daily Grind",
+                title: "Claim your shop",
+                body: "Set one reward and print your QR code. Your shop goes on the Ventzon map the same day.",
               },
               {
-                quote:
-                  "The setup took me four minutes. I printed the QR, stuck it by the register, and had my first check-in within the hour.",
-                name: "James Thompson",
-                biz: "Fresh Cuts Barbershop",
+                title: "Locals discover you",
+                body: "People nearby browse shops and rewards they can walk to — you are in that list from day one.",
               },
               {
-                quote:
-                  "My regulars love the rewards. They scan, they earn, they come back. It practically runs itself.",
-                name: "Sarah Kim",
-                biz: "Sunrise Bakery",
+                title: "The scan proves it",
+                body: "A check-in confirms the visit, so you know who came in and how often. No guessing.",
               },
             ].map((t, i) => (
-              <ScrollReveal key={t.name} delay={i === 0 ? 1 : i === 1 ? 2 : 3}>
-                <blockquote>
-                  <p className="text-[15px] font-light leading-[1.9] text-[#999]">
-                    &ldquo;{t.quote}&rdquo;
+              <ScrollReveal key={t.title} delay={i === 0 ? 1 : i === 1 ? 2 : 3}>
+                <div>
+                  <div className="text-[13px] font-normal tracking-[0.05em] text-[#ededed]">
+                    {t.title}
+                  </div>
+                  <p className="mt-4 text-[15px] font-light leading-[1.9] text-[#999]">
+                    {t.body}
                   </p>
-                  <footer className="mt-8">
-                    <div className="text-[13px] font-normal tracking-[0.05em] text-[#ededed]">
-                      {t.name}
-                    </div>
-                    <div className="mt-1 text-[12px] font-light tracking-[0.1em] text-[#555]">
-                      {t.biz}
-                    </div>
-                  </footer>
-                </blockquote>
+                </div>
               </ScrollReveal>
             ))}
           </div>

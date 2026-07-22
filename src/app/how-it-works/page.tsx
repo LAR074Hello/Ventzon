@@ -20,7 +20,7 @@ const customerSteps = [
   {
     number: "02",
     title: "Enter your phone or email",
-    body: "Your phone number or email ties visits to that shop. No account creation, no passwords — just your contact.",
+    body: "Your phone number or email ties the visit to that shop. Checking in stays frictionless — no passwords at the counter.",
   },
   {
     number: "03",
@@ -82,7 +82,7 @@ const benefits = [
 
 const goodToKnow = [
   "A customer is linked to a shop by phone number or email \u2014 the same contact can join multiple shops.",
-  "No account creation needed \u2014 customers just use their phone or email to check in.",
+  "Checking in takes seconds \u2014 a phone number or email is all it needs at the counter.",
   "One check-in per day per shop prevents spam and keeps it fair.",
 ];
 
@@ -195,11 +195,15 @@ export default function HowItWorksPage() {
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step1.jpg */}
-                <img
-                  src="/site-images/mykonos.jpg"
-                  alt="Seaside restaurant terrace with a view over the water"
-                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
-                />
+                <div
+                  className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
+                  role="img"
+                  aria-label="Placeholder — real photography to come"
+                >
+                  <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
+                    IMAGE COMING
+                  </p>
+                </div>
               </div>
             </ScrollReveal>
             <ScrollReveal>
@@ -227,11 +231,15 @@ export default function HowItWorksPage() {
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step2.jpg */}
-                <img
-                  src="/site-images/japanese-room.jpg"
-                  alt="Minimalist wood-panelled restaurant dining counter"
-                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
-                />
+                <div
+                  className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
+                  role="img"
+                  aria-label="Placeholder — real photography to come"
+                >
+                  <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
+                    IMAGE COMING
+                  </p>
+                </div>
               </div>
             </ScrollReveal>
             <ScrollReveal>
@@ -259,11 +267,15 @@ export default function HowItWorksPage() {
             <ScrollReveal>
               <div className="overflow-hidden rounded-2xl">
                 {/* SWAP IMAGE: replace src with your own photo URL or drop file into /public/howitworks/step3.jpg */}
-                <img
-                  src="/site-images/gold-bar.jpg"
-                  alt="Gold-leaf restaurant bar with a ceremonial gong"
-                  className="aspect-[21/9] w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
-                />
+                <div
+                  className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-[#2a2a2a] bg-[#0d0d0d]"
+                  role="img"
+                  aria-label="Placeholder — real photography to come"
+                >
+                  <p className="text-[10px] font-light tracking-[0.25em] text-[#444]">
+                    IMAGE COMING
+                  </p>
+                </div>
               </div>
             </ScrollReveal>
             <ScrollReveal>
@@ -313,7 +325,7 @@ export default function HowItWorksPage() {
                   ZERO FRICTION
                 </p>
                 <h3 className="mt-4 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
-                  No apps to download
+                  Seconds at the counter
                 </h3>
                 <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#666]">
                   Customers use their phone camera to scan the QR code.
@@ -354,7 +366,7 @@ export default function HowItWorksPage() {
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
               Fast check-ins and a clear redeem text to show at the register.
-              No apps, no hassle.
+              Fast at the register.
             </p>
           </ScrollReveal>
 
@@ -394,7 +406,7 @@ export default function HowItWorksPage() {
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
               A clean, fast page that works on any phone.
-              No app to download, no account to create.
+              Scanning takes seconds at the counter.
             </p>
           </ScrollReveal>
 
