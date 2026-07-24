@@ -85,7 +85,7 @@ export default function NotificationsPage() {
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center py-20 text-center px-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface">
+            <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface-raised">
               <Bell className="h-7 w-7 text-muted" />
             </div>
             <p className="mt-5 font-display text-[18px] font-semibold text-ink">Nothing yet</p>
@@ -108,10 +108,10 @@ export default function NotificationsPage() {
                   key={n.id}
                   onClick={() => n.href && router.push(n.href)}
                   className={`flex w-full items-center gap-3.5 rounded-card border px-4 py-3.5 text-left active:bg-black/10 ${
-                    n.read ? "border-line bg-surface" : "border-accent/40 bg-accent/5"
+                    n.read ? "border-line bg-surface-raised" : "border-accent/40 bg-accent/5"
                   }`}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ctl bg-surface">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ctl bg-surface-raised">
                     <Icon className="h-4 w-4 text-muted" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">

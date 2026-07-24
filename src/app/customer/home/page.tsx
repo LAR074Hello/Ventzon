@@ -48,7 +48,7 @@ const REVIEW_KEY = "ventzon_review_requested";
 function CardSkeleton() {
   return (
     <div className="overflow-hidden rounded-card border border-line">
-      <div className="bg-surface px-5 pt-5 pb-4">
+      <div className="bg-surface-raised px-5 pt-5 pb-4">
         <div className="flex items-center gap-3">
           <div className="skeleton h-11 w-11 shrink-0 rounded-ctl" />
           <div className="flex-1 space-y-2">
@@ -204,7 +204,7 @@ export default function HomePage() {
 
       {/* Offline banner */}
       {offline && (
-        <div className="mx-5 mb-4 flex items-center gap-3 rounded-card border border-line bg-surface px-4 py-3">
+        <div className="mx-5 mb-4 flex items-center gap-3 rounded-card border border-line bg-surface-raised px-4 py-3">
           <WifiOff className="h-4 w-4 shrink-0 text-muted" />
           <p className="text-[13px] font-normal text-muted">No connection — showing cached cards</p>
         </div>
@@ -234,7 +234,7 @@ export default function HomePage() {
 
       {/* Local Passport — visit new spots this month, unlock the stamp */}
       {!loading && passport && (
-        <div className="mx-5 mb-5 rounded-card border border-line bg-surface px-5 py-4">
+        <div className="mx-5 mb-5 rounded-card border border-line bg-surface-raised px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Stamp className="h-3.5 w-3.5 text-muted" />
@@ -315,7 +315,7 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {badges.filter((b) => b.earned).map((b) => (
-              <div key={b.id} className="rounded-full border border-line bg-surface px-3.5 py-1.5">
+              <div key={b.id} className="rounded-full border border-line bg-surface-raised px-3.5 py-1.5">
                 <p className="text-[11px] font-medium text-ink">{b.label}</p>
               </div>
             ))}
@@ -337,13 +337,13 @@ export default function HomePage() {
               <button
                 key={l.profile_id}
                 onClick={() => router.push(`/customer/creator/${l.profile_id}`)}
-                className={`flex w-full items-center gap-3.5 px-4 py-3 text-left active:bg-surface ${i > 0 ? "border-t border-line/60" : ""}`}
+                className={`flex w-full items-center gap-3.5 px-4 py-3 text-left active:bg-surface-raised ${i > 0 ? "border-t border-line/60" : ""}`}
               >
                 <span className="w-5 text-center text-[13px] font-semibold text-muted">{i + 1}</span>
                 {l.avatar_url ? (
                   <img src={l.avatar_url} alt={l.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
                 ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-raised">
                     <span className="text-[13px] font-medium text-muted">{l.display_name.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
@@ -378,7 +378,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
       style={{
         border: isReady
           ? "1px solid rgba(255,181,46,0.4)"
-          : "1px solid var(--line)",
+          : "1px solid var(--border-subtle)",
       }}
     >
       {/* Card header — unique per shop */}
@@ -387,7 +387,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
         style={{
           background: isReady
             ? "linear-gradient(135deg, rgba(255,181,46,0.12), rgba(255,181,46,0.04))"
-            : "var(--surface)",
+            : "var(--surface-raised)",
         }}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -396,9 +396,9 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
           ) : (
             <div
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ctl"
-              style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
+              style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
             >
-              <span className="text-[18px] font-semibold" style={{ color: "var(--muted)" }}>
+              <span className="text-[18px] font-semibold" style={{ color: "var(--text-muted)" }}>
                 {shop_name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -419,7 +419,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
         ) : checkedInToday ? (
           <span
             className="ml-3 shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-            style={{ background: "var(--surface)", color: "var(--ink)" }}
+            style={{ background: "var(--surface-raised)", color: "var(--text-primary)" }}
           >
             ✓ TODAY
           </span>
@@ -460,7 +460,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
 function EmptyState({ onScan, onExplore }: { onScan: () => void; onExplore: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-sheet border border-line bg-surface">
+      <div className="flex h-20 w-20 items-center justify-center rounded-sheet border border-line bg-surface-raised">
         <Compass className="h-9 w-9 text-muted" />
       </div>
       <p className="mt-6 text-[20px] font-semibold text-ink">No loyalty cards yet</p>
@@ -475,7 +475,7 @@ function EmptyState({ onScan, onExplore }: { onScan: () => void; onExplore: () =
       </button>
       <button
         onClick={onExplore}
-        className="mt-3 w-full rounded-card border border-line py-4 text-[13px] font-medium tracking-[0.08em] text-muted transition-all duration-200 active:bg-surface"
+        className="mt-3 w-full rounded-card border border-line py-4 text-[13px] font-medium tracking-[0.08em] text-muted transition-all duration-200 active:bg-surface-raised"
       >
         BROWSE STORES
       </button>

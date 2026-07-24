@@ -18,8 +18,8 @@ function Stat({ value, label, onTap }: { value: number; label: string; onTap?: (
   return (
     <Wrapper
       {...(onTap ? { onClick: onTap } : {})}
-      className={`flex flex-col items-center rounded-card border border-line bg-surface px-2 py-3 ${
-        onTap ? "active:bg-surface transition-colors" : ""
+      className={`flex flex-col items-center rounded-card border border-line bg-surface-raised px-2 py-3 ${
+        onTap ? "active:bg-surface-raised transition-colors" : ""
       }`}
     >
       <p className="text-[17px] font-semibold text-ink">{value}</p>
@@ -65,7 +65,7 @@ export function BadgePills({ badges }: { badges: BadgeValue[] }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {earned.map((b) => (
-          <div key={b.id} className="rounded-full border border-line bg-surface px-3.5 py-1.5">
+          <div key={b.id} className="rounded-full border border-line bg-surface-raised px-3.5 py-1.5">
             <p className="text-[11px] font-medium text-ink">{b.label}</p>
           </div>
         ))}

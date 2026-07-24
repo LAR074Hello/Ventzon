@@ -34,7 +34,7 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
         <button
           key={p.id}
           onClick={() => router.push(`/customer/post/${p.id}`)}
-          className="relative aspect-square overflow-hidden rounded-tile bg-surface text-left transition-opacity duration-[var(--dur)] active:opacity-80"
+          className="relative aspect-square overflow-hidden rounded-tile bg-surface-raised text-left transition-opacity duration-[var(--dur)] active:opacity-80"
         >
           {p.media_url ? (
             p.media_type === "video" ? (

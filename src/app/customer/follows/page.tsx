@@ -75,7 +75,7 @@ function FollowListContent() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised"
         >
           <ArrowLeft className="h-4 w-4 text-ink" />
         </button>
@@ -86,7 +86,7 @@ function FollowListContent() {
 
       {/* Followers / Following tabs — creator subjects only */}
       {!shopSlug && (
-        <div className="mx-5 mb-3 flex rounded-card border border-line bg-surface p-1">
+        <div className="mx-5 mb-3 flex rounded-card border border-line bg-surface-raised p-1">
           {(["followers", "following"] as const).map((t) => (
             <button
               key={t}
@@ -102,7 +102,7 @@ function FollowListContent() {
       )}
 
       {/* Search */}
-      <div className="mx-5 mb-4 flex items-center gap-3 rounded-card border border-line bg-surface px-4 py-3">
+      <div className="mx-5 mb-4 flex items-center gap-3 rounded-card border border-line bg-surface-raised px-4 py-3">
         <Search className="h-4 w-4 shrink-0 text-muted" />
         <input
           value={query}
@@ -146,7 +146,7 @@ function FollowListContent() {
               {items.map((item, i) => (
                 <div
                   key={`${item.profile_id ?? item.display_name}-${i}`}
-                  className="flex items-center gap-3 rounded-card border border-line bg-surface px-3.5 py-3"
+                  className="flex items-center gap-3 rounded-card border border-line bg-surface-raised px-3.5 py-3"
                 >
                   <button
                     onClick={() => item.profile_id && router.push(`/customer/creator/${item.profile_id}`)}
@@ -156,7 +156,7 @@ function FollowListContent() {
                     {item.avatar_url ? (
                       <img src={item.avatar_url} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
                     ) : (
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-raised">
                         <span className="text-[14px] font-medium text-muted">
                           {item.display_name.charAt(0).toUpperCase()}
                         </span>

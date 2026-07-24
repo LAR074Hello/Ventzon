@@ -1,25 +1,36 @@
 import SiteHeader from "@/components/SiteHeader";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Public_Sans, Geist_Mono } from "next/font/google";
+import { Archivo, Public_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 
-// Design tokens: Bricolage Grotesque is the display face (titles only),
-// Public Sans carries body/UI. See globals.css for the token system.
-const displayFont = Bricolage_Grotesque({
-  variable: "--font-display",
+// Three type roles. next/font self-hosts these at build time — the
+// files are served from our own origin with font-display: swap and
+// preloaded, so there is no runtime CDN dependency.
+// See globals.css for the token system that consumes them.
+
+// Display — headlines, place names, section titles. Variable, with the
+// width axis exposed so display type can condense without a second file.
+const displayFont = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  axes: ["wdth"],
+  display: "swap",
 });
 
+// Body / UI — the workhorse. Variable weight, no axes needed.
 const bodyFont = Public_Sans({
-  variable: "--font-body",
+  variable: "--font-public-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Data / utility — timestamps, visit counts, distances, check-in
+// receipts. The product's "receipt" voice. DM Mono ships static only.
+const monoFont = DM_Mono({
+  variable: "--font-dm-mono",
   subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -73,18 +84,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    /* suppressHydrationWarning: the theme script adds .vz-light to <html>
-       before hydration by design. */
-    <html lang="en" className="dark" suppressHydrationWarning>
+    /* suppressHydrationWarning: the script below sets data-theme on
+       <html> before hydration by design, so the server and client
+       markup differ on that attribute. Required, not optional — without
+       it App Router logs a hydration error on every page. */
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <body
-        className={`${displayFont.variable} ${bodyFont.variable} ${geistMono.variable} antialiased`}
+        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} antialiased`}
       >
-        {/* Theme before paint: ventzon_theme = light | dark | system.
-            Default (system) follows prefers-color-scheme; the class
-            drives the token values in globals.css. */}
+        {/* Theme before paint. First child of <body> so it runs before
+            anything renders — no flash of the wrong theme.
+            ventzon_theme stores the PREFERENCE (light | dark | system);
+            data-theme holds the RESOLVED value. Light is the default
+            for new accounts, so an absent key means light, not system.
+            Re-reads storage on each apply so the media listener stays
+            correct after the user changes the preference at runtime. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem("ventzon_theme");var l=t==="light"||(t!=="dark"&&matchMedia("(prefers-color-scheme: light)").matches);if(l)document.documentElement.classList.add("vz-light")}catch(e){}`,
+            __html: `(function(){try{var m=matchMedia("(prefers-color-scheme: dark)");function a(){var p=localStorage.getItem("ventzon_theme")||"light";var r=p==="system"?(m.matches?"dark":"light"):(p==="dark"?"dark":"light");document.documentElement.setAttribute("data-theme",r)}a();m.addEventListener("change",a)}catch(e){}})()`,
           }}
         />
         <SiteHeader />

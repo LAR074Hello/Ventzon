@@ -16,11 +16,14 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Hide the marketing header on app surfaces (customer, rep, merchant).
+  // Hide the marketing header on app surfaces (customer, rep, merchant)
+  // and on the /dev reference surfaces, which must render the token
+  // system unobstructed by marketing chrome.
   const hidden =
     pathname?.startsWith("/customer") ||
     pathname?.startsWith("/rep") ||
-    pathname?.startsWith("/merchant");
+    pathname?.startsWith("/merchant") ||
+    pathname?.startsWith("/dev");
 
   // Close menu on route change
   useEffect(() => {

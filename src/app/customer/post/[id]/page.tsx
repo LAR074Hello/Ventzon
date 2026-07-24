@@ -158,7 +158,7 @@ export default function PostPage() {
             {author.avatar_url ? (
               <img src={author.avatar_url} alt={author.display_name} className="h-8 w-8 rounded-full object-cover" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised">
                 <span className="text-[12px] font-medium text-muted">{author.display_name.charAt(0).toUpperCase()}</span>
               </div>
             )}
@@ -180,7 +180,7 @@ export default function PostPage() {
 
       {/* Media */}
       {post.media_url && (
-        <div className="w-full bg-surface">
+        <div className="w-full bg-surface-raised">
           {post.media_type === "video" ? (
             <video src={post.media_url} controls playsInline className="max-h-[60vh] w-full object-contain" />
           ) : (
@@ -236,7 +236,7 @@ export default function PostPage() {
 
       {/* Hidden-pending-review notice (author only) */}
       {post.hidden && viewer.is_own && (
-        <div className="mx-5 mt-4 flex items-center gap-3 rounded-ctl border border-line bg-surface px-4 py-3">
+        <div className="mx-5 mt-4 flex items-center gap-3 rounded-ctl border border-line bg-surface-raised px-4 py-3">
           <EyeOff className="h-4 w-4 shrink-0 text-muted" />
           <p className="text-[12px] font-normal text-muted">
             This post was reported and is hidden while we review it.
@@ -253,12 +253,12 @@ export default function PostPage() {
       {shop && (
         <button
           onClick={() => router.push(`/customer/shop/${shop.slug}`)}
-          className="mx-5 mt-4 flex items-center gap-3.5 rounded-card border border-line bg-surface px-4 py-3.5 text-left active:bg-surface"
+          className="mx-5 mt-4 flex items-center gap-3.5 rounded-card border border-line bg-surface-raised px-4 py-3.5 text-left active:bg-surface-raised"
         >
           {shop.logo_url ? (
             <img src={shop.logo_url} alt={shop.name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface-raised">
               <span className="text-[14px] font-medium text-muted">{shop.name.charAt(0).toUpperCase()}</span>
             </div>
           )}
@@ -297,7 +297,7 @@ export default function PostPage() {
                   {c.author.avatar_url ? (
                     <img src={c.author.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
                   ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-surface">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised">
                       <span className="text-[10px] font-medium text-muted">
                         {c.author.display_name.charAt(0).toUpperCase()}
                       </span>
@@ -340,7 +340,7 @@ export default function PostPage() {
         )}
 
         {/* Comment input */}
-        <div className="mt-3 flex items-center gap-2 rounded-card border border-line bg-surface px-4 py-2.5">
+        <div className="mt-3 flex items-center gap-2 rounded-card border border-line bg-surface-raised px-4 py-2.5">
           <input
             value={comment}
             onChange={(e) => setComment(e.target.value)}

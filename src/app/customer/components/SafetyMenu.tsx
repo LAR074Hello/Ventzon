@@ -89,7 +89,7 @@ export default function SafetyMenu({
     <>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        className={compact ? "p-1 text-muted active:text-ink" : "flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"}
+        className={compact ? "p-1 text-muted active:text-ink" : "flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised"}
         aria-label="More options"
       >
         <MoreHorizontal className={compact ? "h-4 w-4" : "h-4 w-4 text-muted"} />
@@ -101,7 +101,7 @@ export default function SafetyMenu({
           onClick={close}
         >
           <div
-            className="w-full max-w-md rounded-t-sheet border-t border-line bg-surface px-5 pb-10 pt-4"
+            className="w-full max-w-md rounded-t-sheet border-t border-line bg-surface-raised px-5 pb-10 pt-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">

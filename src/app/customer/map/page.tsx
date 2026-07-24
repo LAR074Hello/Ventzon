@@ -82,7 +82,8 @@ export default function MapPage() {
 
       // Basemap follows the theme at init (light_all / dark_all).
       // A live theme toggle swaps tiles on next visit to this tab.
-      const lightTheme = document.documentElement.classList.contains("vz-light");
+      const lightTheme =
+        document.documentElement.getAttribute("data-theme") !== "dark";
       L.tileLayer(
         `https://{s}.basemaps.cartocdn.com/${lightTheme ? "light_all" : "dark_all"}/{z}/{x}/{y}{r}.png`,
         { subdomains: "abcd", maxZoom: 19 }
@@ -121,22 +122,22 @@ export default function MapPage() {
         const initial = shop.shop_name.charAt(0).toUpperCase();
         const p = progressMap[shop.slug];
         const rewardReady = p && p.visits >= p.goal;
-        const ring = rewardReady ? "var(--accent)" : "var(--line)";
+        const ring = rewardReady ? "var(--accent)" : "var(--border-subtle)";
 
         const face = shop.logo_url
           ? `<img src="${shop.logo_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
-          : `<span style="font-size:14px;font-weight:600;color:var(--muted);font-family:sans-serif;">${initial}</span>`;
+          : `<span style="font-size:14px;font-weight:600;color:var(--text-muted);font-family:sans-serif;">${initial}</span>`;
 
         const iconHtml = `
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
             <div style="
               width:38px; height:38px; border-radius:50%;
-              background:var(--surface); border:2px solid ${ring};
+              background:var(--surface-raised); border:2px solid ${ring};
               display:flex; align-items:center; justify-content:center;
               overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.6);
             ">${face}</div>
             ${rewardReady ? `<div style="
-              background:var(--accent);color:var(--accent-ink);border-radius:999px;
+              background:var(--accent);color:var(--on-accent);border-radius:999px;
               font-size:8px;font-weight:700;letter-spacing:0.05em;
               padding:1px 6px;font-family:sans-serif;white-space:nowrap;
             ">REWARD</div>` : ""}
@@ -197,7 +198,7 @@ export default function MapPage() {
           <button
             onClick={locateMe}
             disabled={locating}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-line bg-bg/80 backdrop-blur-md transition-colors active:bg-surface"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-line bg-bg/80 backdrop-blur-md transition-colors active:bg-surface-raised"
           >
             <Locate className={`h-5 w-5 ${locating ? "text-ink animate-pulse" : "text-muted"}`} />
           </button>
@@ -212,7 +213,7 @@ export default function MapPage() {
       {selected && (
         <div className="absolute bottom-0 left-0 right-0 z-[1001] animate-in slide-in-from-bottom-4 duration-200">
           <div
-            className="mx-3 mb-3 overflow-hidden rounded-sheet border border-line bg-surface"
+            className="mx-3 mb-3 overflow-hidden rounded-sheet border border-line bg-surface-raised"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             {/* Dismiss */}
@@ -223,9 +224,9 @@ export default function MapPage() {
                 ) : (
                   <div
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl"
-                    style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
+                    style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
                   >
-                    <span className="text-[16px] font-semibold" style={{ color: "var(--muted)" }}>
+                    <span className="text-[16px] font-semibold" style={{ color: "var(--text-muted)" }}>
                       {selected.shop_name.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -236,9 +237,9 @@ export default function MapPage() {
                     <span
                       className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium tracking-[0.08em]"
                       style={{
-                        backgroundColor: "var(--surface)",
-                        color: "var(--muted)",
-                        border: "1px solid var(--line)",
+                        backgroundColor: "var(--surface-raised)",
+                        color: "var(--text-muted)",
+                        border: "1px solid var(--border-subtle)",
                       }}
                     >
                       {inferCategory(selected.shop_name, selected.deal_title, selected.deal_details).toUpperCase()}
@@ -251,7 +252,7 @@ export default function MapPage() {
               </div>
               <button
                 onClick={() => setSelected(null)}
-                className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface"
+                className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-raised"
               >
                 <X className="h-4 w-4 text-muted" />
               </button>
@@ -259,7 +260,7 @@ export default function MapPage() {
 
             {/* Deal */}
             {selected.deal_title && (
-              <div className="mx-5 mb-3 rounded-card border border-line bg-surface px-4 py-3">
+              <div className="mx-5 mb-3 rounded-card border border-line bg-surface-raised px-4 py-3">
                 <p className="text-[11px] font-medium tracking-[0.1em] text-muted">REWARD</p>
                 <p className="mt-1 text-[15px] font-semibold text-ink">{selected.deal_title}</p>
                 {selected.deal_details && (
@@ -281,7 +282,7 @@ export default function MapPage() {
                           <div
                             key={i}
                             className="h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: i < p.visits ? "var(--accent)" : "var(--line)" }}
+                            style={{ backgroundColor: i < p.visits ? "var(--accent)" : "var(--border-subtle)" }}
                           />
                         ))}
                       </div>

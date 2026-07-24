@@ -1,183 +1,361 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* ═══════════════════════════════════════════════════════════════════
+   VENTZON TOKEN SYSTEM — Slice 1.1
+   Light-primary, dual theme, two tiers.
 
+   TIER 1 — primitives: raw values. Referenced ONLY by the theme
+            definitions below. Never in component files.
+   TIER 2 — semantic roles: what components consume, always through
+            a Tailwind utility (bg-surface, text-muted, border-subtle).
+
+   Rules enforced by this file:
+     · No `dark:` variants anywhere. The utility is theme-aware.
+     · Elevation inverts: shadow in light, surface-lightness in dark.
+     · Three separated semantic lanes — accent (green), danger (red),
+       stamp (indigo). A verified visit must never read as an error.
+   All pairs verified to WCAG AA in both themes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── TIER 1: primitives ─────────────────────────────────────────────
+   Reference-only. If you are typing one of these names into a .tsx
+   file, you want a semantic role instead. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* paper — light surfaces */
+  --paper-0: #ffffff;
+  --paper-50: #f6f7f4; /* cool paper — page background */
+  --paper-100: #edefea;
+  --paper-200: #e0e3dc;
 
-  /* ── Ventzon design tokens ─────────────────────────────────────
-     Direction: a storefront at night — dark glass, receipt paper,
-     one lit sign. The accent (baby-blue neon) means reward state
-     and NOTHING else. Light theme = the same storefront in
-     daylight; values under html.vz-light below. */
-  --bg: #0b0b0c;         /* shutter black */
-  --surface: #141416;    /* lit storefront glass */
-  --line: #232326;       /* hairlines, borders */
-  --ink: #f4f2ec;        /* receipt paper */
-  --muted: #8b877e;      /* faded receipt ink — 5.5/5.1:1 */
-  --accent: #89cff0;     /* baby-blue neon tube — 11.5:1 bg, 10.7 surface */
-  --accent-ink: #0a1b26; /* text on accent */
-  --danger: #ff6b5e;     /* neon "closed" red — errors only (7.1/6.6:1) */
+  /* ink — light text + structure */
+  --ink-900: #16181c;
+  --ink-700: #3a3f45;
+  --ink-500: #5f656c; /* muted text — darkened for AA on paper-50 */
+  --ink-400: #7c838a; /* interactive borders — 3:1 on paper-50 */
+  --ink-300: #a8aeb4; /* decorative/disabled only, never body text */
 
-  /* elevation: dark leans on hairlines, not shadows */
-  --card-shadow: none;
+  /* night — dark surfaces. Near-black with a green undertone. */
+  --night-900: #0a0c0b;
+  --night-800: #101211; /* dark page background */
+  --night-700: #191c1a;
+  --night-600: #1e2220;
+  --night-500: #262a27;
+  --night-400: #666e68; /* interactive borders — 3:1 on night-800 */
+
+  /* fog — dark text */
+  --fog-100: #edefea;
+  --fog-300: #b4bab5;
+  --fog-500: #8b928c; /* muted text — AA on night-800 */
+
+  /* green — accent. Civic/awning green. */
+  --green-700: #12513f;
+  --green-600: #1a6b53;
+  --green-100: #dcebe4;
+  --green-950: #06120e;
+  --green-900: #1b2e28;
+  --green-400: #3fa88a; /* dark-theme accent — lightened for contrast */
+  --green-300: #56be9f;
+
+  /* red — danger ONLY. Errors, destructive actions. */
+  --red-600: #c63122; /* darkened from D83A2E for AA on paper-50 */
+  --red-400: #ff6b5c;
+  --red-950: #2a0a06;
+
+  /* indigo — the visit stamp lane. Postmark ink, nothing else. */
+  --indigo-700: #33368f;
+  --indigo-400: #7c7fe8;
 
   /* motion: one curve, one duration */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --dur: 240ms;
-  color-scheme: dark;
 }
 
-/* ── Light theme: the same storefront in daylight ──────────────── */
-html.vz-light {
-  --bg: #f7f7f4;         /* daylight paper */
-  --surface: #ffffff;    /* glass by day */
-  --line: #eceae4;       /* hairlines go near-silent... */
-  --ink: #191813;        /* painted-signage black */
-  --muted: #6b675e;      /* pencil gray — 5.25/5.64:1 */
-  --accent: #2c6c94;     /* the same tube unlit: powder-blue enamel — 5.3/5.7:1 */
-  --accent-ink: #eff7fc; /* text on accent */
-  --danger: #c43d2f;     /* painted "closed" red — 4.8/4.95:1 */
-  /* ...because elevation flips: soft shadow carries the card */
-  --card-shadow: 0 1px 2px rgba(25, 24, 19, 0.05), 0 6px 20px rgba(25, 24, 19, 0.07);
+/* ── TIER 2: semantic roles ─────────────────────────────────────────
+   `:root` carries light so there is a sane value before the theme
+   script runs. [data-theme="dark"] follows and wins at equal
+   specificity, which also lets /dev/tokens nest both themes. */
+:root,
+[data-theme="light"] {
   color-scheme: light;
+
+  --surface: var(--paper-50);
+  --surface-raised: var(--paper-0);
+  --surface-sunken: var(--paper-100);
+  --surface-overlay: var(--paper-0);
+
+  --text-primary: var(--ink-900);
+  --text-secondary: var(--ink-700);
+  --text-muted: var(--ink-500);
+  --text-inverse: var(--paper-50);
+
+  --border-subtle: var(--paper-200);
+  --border-strong: var(--ink-400);
+  --border-media: transparent; /* light needs no hairline on media */
+
+  --accent: var(--green-700);
+  --accent-hover: var(--green-600);
+  --accent-muted: var(--green-100);
+  --on-accent: var(--paper-0);
+
+  --danger: var(--red-600);
+  --on-danger: var(--paper-0);
+
+  --stamp: var(--indigo-700);
+
+  /* Light: depth = hairline + shadow, carried in one box-shadow. */
+  --elevation-1: 0 0 0 1px rgb(22 24 28 / 0.06), 0 1px 2px rgb(22 24 28 / 0.05),
+    0 6px 20px rgb(22 24 28 / 0.07);
+  --elevation-2: 0 0 0 1px rgb(22 24 28 / 0.07), 0 2px 6px rgb(22 24 28 / 0.06),
+    0 18px 48px rgb(22 24 28 / 0.12);
+
+  --focus-ring: var(--green-600);
 }
 
-/* Elevation flip, centralized: surface blocks get the themed shadow
-   without any per-component changes. */
-html.vz-light [class*="bg-surface"] {
-  box-shadow: var(--card-shadow);
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface: var(--night-800);
+  --surface-raised: var(--night-700);
+  --surface-sunken: var(--night-900);
+  --surface-overlay: var(--night-600);
+
+  --text-primary: var(--fog-100);
+  --text-secondary: var(--fog-300);
+  --text-muted: var(--fog-500);
+  --text-inverse: var(--night-800);
+
+  --border-subtle: var(--night-500);
+  --border-strong: var(--night-400);
+  --border-media: rgb(255 255 255 / 0.1); /* keeps photos off the bg */
+
+  --accent: var(--green-400);
+  --accent-hover: var(--green-300);
+  --accent-muted: var(--green-900);
+  --on-accent: var(--green-950);
+
+  --danger: var(--red-400);
+  --on-danger: var(--red-950);
+
+  --stamp: var(--indigo-400);
+
+  /* Dark: shadows are invisible. Depth comes from the raised surface
+     above; the box-shadow degrades to a hairline only. */
+  --elevation-1: 0 0 0 1px rgb(255 255 255 / 0.06);
+  --elevation-2: 0 0 0 1px rgb(255 255 255 / 0.09);
+
+  --focus-ring: var(--green-300);
 }
 
+/* ── Tailwind wiring ────────────────────────────────────────────────
+   `inline` so each utility emits `var(--role)` directly and therefore
+   re-resolves on theme change. This is what makes "no dark: variants"
+   real rather than aspirational. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
-  --font-mono: var(--font-geist-mono);
-
-  /* color utilities: bg-bg, bg-surface, border-line, text-ink,
-     text-muted, bg-gold, text-gold, text-gold-ink */
-  --color-bg: var(--bg);
+  /* surfaces → bg-surface, bg-surface-raised, … */
   --color-surface: var(--surface);
-  --color-line: var(--line);
-  --color-ink: var(--ink);
-  --color-muted: var(--muted);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+
+  /* text → text-primary, text-secondary, text-muted, text-inverse */
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-inverse: var(--text-inverse);
+
+  /* borders → border-subtle, border-strong, border-media */
+  --color-subtle: var(--border-subtle);
+  --color-strong: var(--border-strong);
+  --color-media: var(--border-media);
+
+  /* accent / danger / stamp */
   --color-accent: var(--accent);
-  --color-accent-ink: var(--accent-ink);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+  --color-on-accent: var(--on-accent);
   --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
+  --color-stamp: var(--stamp);
+  --color-focus: var(--focus-ring);
 
-  /* type utilities: font-display / font-body */
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
+  /* DEPRECATED legacy aliases ────────────────────────────────────
+     The customer app (21 files) still uses these names. They now
+     resolve to the new roles, so those screens re-skin without being
+     touched. Do NOT use in new code — removed in the migration
+     slice, where bg-bg → bg-surface, text-ink → text-primary,
+     border-line → border-subtle, text-accent-ink → text-on-accent. */
+  --color-bg: var(--surface);
+  --color-ink: var(--text-primary);
+  --color-line: var(--border-subtle);
+  --color-accent-ink: var(--on-accent);
 
-  /* radius utilities: rounded-tile/ctl/card/sheet — varied on purpose */
-  --radius-tile: 6px;   /* media tiles in grids */
-  --radius-ctl: 12px;   /* inputs, chips, small controls */
-  --radius-card: 18px;  /* cards */
+  /* ── Type scale ────────────────────────────────────────────────
+     One scale. Body is 16px — the old app was set at 11–13px, which
+     is 3–5px below consumer standard. Sizes below `sm` are for
+     metadata and legal text only, never for content.
+     Tracking is baked in: display sizes tighten, UI sizes sit at 0. */
+  --text-2xs: 0.6875rem; /* 11px — legal, dense tabular metadata */
+  --text-2xs--line-height: 1rem;
+  --text-2xs--letter-spacing: 0em;
+
+  --text-xs: 0.75rem; /* 12px — timestamps, captions, mono data */
+  --text-xs--line-height: 1.125rem;
+  --text-xs--letter-spacing: 0em;
+
+  --text-sm: 0.875rem; /* 14px — secondary UI, labels */
+  --text-sm--line-height: 1.3125rem;
+  --text-sm--letter-spacing: 0em;
+
+  --text-base: 1rem; /* 16px — BODY DEFAULT */
+  --text-base--line-height: 1.5rem;
+  --text-base--letter-spacing: 0em;
+
+  --text-md: 1.0625rem; /* 17px — primary row text, emphasised body */
+  --text-md--line-height: 1.625rem;
+  --text-md--letter-spacing: 0em;
+
+  --text-lg: 1.25rem; /* 20px */
+  --text-lg--line-height: 1.75rem;
+  --text-lg--letter-spacing: -0.005em;
+
+  --text-xl: 1.5rem; /* 24px */
+  --text-xl--line-height: 2rem;
+  --text-xl--letter-spacing: -0.01em;
+
+  --text-2xl: 1.875rem; /* 30px */
+  --text-2xl--line-height: 2.25rem;
+  --text-2xl--letter-spacing: -0.015em;
+
+  --text-3xl: 2.375rem; /* 38px */
+  --text-3xl--line-height: 2.75rem;
+  --text-3xl--letter-spacing: -0.02em;
+
+  --text-4xl: 3rem; /* 48px */
+  --text-4xl--line-height: 3.25rem;
+  --text-4xl--letter-spacing: -0.025em;
+
+  --text-5xl: 3.75rem; /* 60px */
+  --text-5xl--line-height: 3.9rem;
+  --text-5xl--letter-spacing: -0.03em;
+
+  /* ── Tracking policy ───────────────────────────────────────────
+     Three values, and only three. The old 0.15em/0.2em/0.3em/0.5em
+     micro-caps belong to the dark-neon identity and fight light
+     editorial type — they are retired.
+       tracking-tight  display headlines (Archivo)
+       tracking-normal everything else — body is NEVER letterspaced
+       tracking-caps   the one sanctioned uppercase eyebrow */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0em;
+  --tracking-caps: 0.06em;
+
+  /* ── Spacing ───────────────────────────────────────────────────
+     One 4px scale; every p-/m-/gap- utility derives from it. The
+     codebase already uses it consistently — declared here so it is
+     a token rather than a default. */
+  --spacing: 0.25rem;
+
+  /* ── Radii ─────────────────────────────────────────────────────
+     Varied on purpose: tiles read as media, sheets read as surfaces. */
+  --radius-tile: 6px; /* media tiles in grids */
+  --radius-ctl: 12px; /* inputs, chips, small controls */
+  --radius-card: 18px; /* cards */
   --radius-sheet: 28px; /* sheets and heroes */
+
+  /* ── Type families ─────────────────────────────────────────────
+     Archivo (display, width axis available), Public Sans (body/UI),
+     DM Mono (data/receipt voice). Self-hosted via next/font. */
+  --font-display: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  --font-body: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), "DM Mono", ui-monospace, monospace;
+  --font-sans: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
 }
 
-.dark {
-  --background: #000000;
-  --foreground: #ededed;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 1ms !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-/* ===== Base ===== */
+/* ═══ Base ═══════════════════════════════════════════════════════ */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), "Public Sans", "Helvetica Neue", Helvetica,
-    Arial, sans-serif;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5rem;
   font-weight: 400;
   letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== Luxury animations ===== */
+/* Visible keyboard focus everywhere, without touching mouse users. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ═══ Elevation ══════════════════════════════════════════════════
+   One class, no conditionals. In light the box-shadow carries the
+   hairline plus depth; in dark it degrades to a hairline and the
+   raised surface does the lifting. */
+.elevation-1 {
+  background-color: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+}
+.elevation-2 {
+  background-color: var(--surface-overlay);
+  box-shadow: var(--elevation-2);
+}
+
+/* ═══ Media ══════════════════════════════════════════════════════
+   Inset hairline so photos don't bleed into the dark background.
+   Transparent in light, so one class is correct in both themes.
+   Inset rather than a border, so it never shifts layout. */
+.media-frame {
+  box-shadow: inset 0 0 0 1px var(--border-media);
+}
+
+/* ═══ Motion ═════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
 }
 
-.animate-fade-in {
-  animation: fade-in 1.2s ease-out both;
-}
-.animate-fade-in-up {
-  animation: fade-in-up 1s ease-out both;
-}
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
+.animate-fade-in { animation: fade-in 1.2s ease-out both; }
+.animate-fade-in-up { animation: fade-in-up 1s ease-out both; }
+.animate-float { animation: float 6s ease-in-out infinite; }
 
-.anim-delay-100 {
-  animation-delay: 100ms;
-}
-.anim-delay-200 {
-  animation-delay: 200ms;
-}
-.anim-delay-300 {
-  animation-delay: 300ms;
-}
-.anim-delay-400 {
-  animation-delay: 400ms;
-}
-.anim-delay-500 {
-  animation-delay: 500ms;
-}
-.anim-delay-600 {
-  animation-delay: 600ms;
-}
-.anim-delay-700 {
-  animation-delay: 700ms;
-}
-.anim-delay-800 {
-  animation-delay: 800ms;
-}
-.anim-delay-1000 {
-  animation-delay: 1000ms;
-}
-.anim-delay-1200 {
-  animation-delay: 1200ms;
-}
+.anim-delay-100 { animation-delay: 100ms; }
+.anim-delay-200 { animation-delay: 200ms; }
+.anim-delay-300 { animation-delay: 300ms; }
+.anim-delay-400 { animation-delay: 400ms; }
+.anim-delay-500 { animation-delay: 500ms; }
+.anim-delay-600 { animation-delay: 600ms; }
+.anim-delay-700 { animation-delay: 700ms; }
+.anim-delay-800 { animation-delay: 800ms; }
+.anim-delay-1000 { animation-delay: 1000ms; }
+.anim-delay-1200 { animation-delay: 1200ms; }
 
-/* ===== Scroll-triggered fade-in (Intersection Observer) ===== */
-
+/* Scroll-triggered fade-in (Intersection Observer, ScrollReveal.tsx) */
 .scroll-fade-in {
   opacity: 0;
   transform: translateY(32px);
@@ -185,21 +363,51 @@ body {
     opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
     transform 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.scroll-fade-in.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.scroll-fade-in.is-visible { opacity: 1; transform: translateY(0); }
+.scroll-fade-in.delay-1 { transition-delay: 200ms; }
+.scroll-fade-in.delay-2 { transition-delay: 400ms; }
+.scroll-fade-in.delay-3 { transition-delay: 600ms; }
+
+/* Stamp pop — loyalty punch landing (reward vocabulary, not Postmark) */
+@keyframes stamp-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  80% { transform: scale(0.92); }
+  100% { transform: scale(1); opacity: 1; }
 }
-.scroll-fade-in.delay-1 {
-  transition-delay: 200ms;
-}
-.scroll-fade-in.delay-2 {
-  transition-delay: 400ms;
-}
-.scroll-fade-in.delay-3 {
-  transition-delay: 600ms;
+.animate-stamp-pop {
+  animation: stamp-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* ===== Skeleton shimmer ===== */
+/* Postmark impression — the verified-visit mark landing on media */
+@keyframes postmark-press {
+  0% { transform: rotate(-14deg) scale(1.5); opacity: 0; }
+  55% { transform: rotate(-7deg) scale(0.94); opacity: 1; }
+  100% { transform: rotate(-8deg) scale(1); opacity: 1; }
+}
+.animate-postmark-press {
+  animation: postmark-press 0.42s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+.animate-shake { animation: shake 0.45s ease-in-out; }
+
+@keyframes scan {
+  0% { top: 0; opacity: 1; }
+  90% { top: calc(100% - 2px); opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
+.animate-scan { animation: scan 2s ease-in-out infinite; position: absolute; }
+
+/* ═══ Skeleton ═══════════════════════════════════════════════════ */
 
 @keyframes shimmer {
   0% { background-position: -400px 0; }
@@ -207,55 +415,18 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunken) 25%,
+    var(--surface-raised) 50%,
+    var(--surface-sunken) 75%
+  );
   background-size: 800px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 8px;
+  border-radius: var(--radius-ctl);
 }
 
-/* ===== Stamp pop animation ===== */
-
-@keyframes stamp-pop {
-  0%   { transform: scale(0.4); opacity: 0; }
-  60%  { transform: scale(1.2); opacity: 1; }
-  80%  { transform: scale(0.92); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.animate-stamp-pop {
-  animation: stamp-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-/* ===== PIN shake animation ===== */
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  15%       { transform: translateX(-8px); }
-  30%       { transform: translateX(8px); }
-  45%       { transform: translateX(-6px); }
-  60%       { transform: translateX(6px); }
-  75%       { transform: translateX(-3px); }
-  90%       { transform: translateX(3px); }
-}
-
-.animate-shake {
-  animation: shake 0.45s ease-in-out;
-}
-
-/* ===== QR scan line animation ===== */
-
-@keyframes scan {
-  0% { top: 0; opacity: 1; }
-  90% { top: calc(100% - 2px); opacity: 1; }
-  100% { top: calc(100% - 2px); opacity: 0; }
-}
-
-.animate-scan {
-  animation: scan 2s ease-in-out infinite;
-  position: absolute;
-}
-
-/* ===== Customer app: native iOS feel ===== */
+/* ═══ Customer app: native iOS feel ══════════════════════════════ */
 
 .customer-app {
   overscroll-behavior: none;
@@ -269,7 +440,6 @@ body {
   user-select: none;
 }
 
-/* Re-enable text input selection */
 .customer-app input,
 .customer-app textarea {
   -webkit-user-select: text;
@@ -283,7 +453,6 @@ body {
   font-size: max(16px, 1em);
 }
 
-/* Hide scrollbars on horizontal scroll areas */
 .customer-app .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -292,7 +461,7 @@ body {
   display: none;
 }
 
-/* ===== Utility: thin horizontal rule ===== */
+/* ═══ Utility: thin horizontal rule ══════════════════════════════ */
 
 .luxury-divider {
   border: none;
@@ -300,7 +469,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.08) 50%,
+    var(--border-subtle) 50%,
     transparent
   );
 }

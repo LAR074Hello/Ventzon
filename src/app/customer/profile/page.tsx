@@ -135,7 +135,7 @@ export default function ProfilePage() {
         <h1 className="font-display text-[20px] font-semibold text-ink">{name}</h1>
         <button
           onClick={() => router.push("/customer/profile/settings")}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised"
           aria-label="Settings"
         >
           <Settings className="h-4 w-4 text-muted" />
@@ -147,7 +147,7 @@ export default function ProfilePage() {
         {avatarUrl ? (
           <img src={avatarUrl} alt={name} className="h-24 w-24 rounded-full border-2 border-line object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface-raised">
             <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
@@ -185,14 +185,14 @@ export default function ProfilePage() {
       <div className="mt-5 flex gap-2 px-5">
         <button
           onClick={() => router.push("/customer/profile/settings")}
-          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface"
+          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface-raised py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface-raised"
         >
           <Pencil className="h-3.5 w-3.5" />
           EDIT PROFILE
         </button>
         <button
           onClick={shareProfile}
-          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface"
+          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface-raised py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface-raised"
         >
           <Share2 className="h-3.5 w-3.5" />
           SHARE PROFILE
@@ -248,7 +248,7 @@ export default function ProfilePage() {
         {tab === "saved" ? (
           savedPosts.length === 0 ? (
             <div className="flex flex-col items-center rounded-card border border-line px-6 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-ctl border border-line bg-surface">
+              <div className="flex h-14 w-14 items-center justify-center rounded-ctl border border-line bg-surface-raised">
                 <Bookmark className="h-6 w-6 text-muted" />
               </div>
               <p className="mt-4 font-display text-[17px] font-semibold text-ink">Nothing saved yet</p>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                       <button
                         key={sh.shop_slug}
                         onClick={() => router.push(`/customer/shop/${sh.shop_slug}`)}
-                        className={`flex w-full items-center gap-3 bg-surface px-4 py-3 text-left active:bg-black/10 ${
+                        className={`flex w-full items-center gap-3 bg-surface-raised px-4 py-3 text-left active:bg-black/10 ${
                           i > 0 ? "border-t border-line/60" : ""
                         }`}
                       >
@@ -311,7 +311,7 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="flex flex-col items-center rounded-card border border-line px-6 py-10 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-card border border-line bg-surface">
+            <div className="flex h-14 w-14 items-center justify-center rounded-card border border-line bg-surface-raised">
               <Sparkles className="h-6 w-6 text-muted" />
             </div>
             <p className="mt-4 font-display text-[17px] font-semibold text-ink">Share your local finds</p>

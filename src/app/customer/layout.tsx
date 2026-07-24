@@ -38,7 +38,7 @@ const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
 
 function AppStoreBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
+    <div className="flex items-center gap-3 border-b border-line bg-surface-raised px-4 py-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-bg ring-1 ring-line">
         <span className="text-[11px] font-light tracking-[0.15em] text-ink">V</span>
       </div>

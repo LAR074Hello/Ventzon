@@ -136,7 +136,7 @@ export default function CreatorProfilePage() {
         {profile.avatar_url ? (
           <img src={profile.avatar_url} alt={name} className="h-24 w-24 rounded-full border-2 border-line object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface-raised">
             <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
@@ -147,7 +147,7 @@ export default function CreatorProfilePage() {
         )}
 
         {followsYou && !isOwn && (
-          <span className="mt-3 rounded-full border border-line bg-surface px-3 py-1 text-[10px] font-medium tracking-[0.08em] text-muted">
+          <span className="mt-3 rounded-full border border-line bg-surface-raised px-3 py-1 text-[10px] font-medium tracking-[0.08em] text-muted">
             FOLLOWS YOU
           </span>
         )}

@@ -68,7 +68,7 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
         </p>
         <div className="mt-6 flex gap-2">
           {Array.from({ length: Math.min(goal, 10) }).map((_, i) => (
-            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--accent)" : "var(--line)" }} />
+            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--accent)" : "var(--border-subtle)" }} />
           ))}
         </div>
       </div>
@@ -95,7 +95,7 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
   return (
     <div className="fixed inset-0 z-[150] flex flex-col bg-bg" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
       <div className="flex justify-end px-5 pt-4">
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface">
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised">
           <X className="h-4 w-4 text-muted" />
         </button>
       </div>
@@ -122,7 +122,7 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
         </button>
         <button
           onClick={share}
-          className="flex w-full items-center justify-center gap-2 rounded-ctl border border-line bg-surface py-4 text-[12px] font-medium tracking-[0.12em] text-muted"
+          className="flex w-full items-center justify-center gap-2 rounded-ctl border border-line bg-surface-raised py-4 text-[12px] font-medium tracking-[0.12em] text-muted"
         >
           <Share2 className="h-4 w-4" />
           SHARE WITH FRIENDS
@@ -376,13 +376,13 @@ export default function CustomerShopPage() {
         {settings?.logo_url ? (
           <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-card border border-line object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-card border border-line bg-surface">
+          <div className="flex h-24 w-24 items-center justify-center rounded-card border border-line bg-surface-raised">
             <span className="text-3xl font-light text-muted">{shopName.charAt(0).toUpperCase()}</span>
           </div>
         )}
         <h1 className="mt-5 font-display text-[24px] font-semibold tracking-[-0.01em] text-ink">{shopName}</h1>
         {settings?.deal_title && (
-          <div className="mt-3 rounded-ctl border border-line bg-surface px-5 py-3 text-center">
+          <div className="mt-3 rounded-ctl border border-line bg-surface-raised px-5 py-3 text-center">
             <p className="text-[13px] font-medium text-ink">{settings.deal_title}</p>
             {settings.deal_details && <p className="mt-1 text-[12px] font-normal text-muted">{settings.deal_details}</p>}
           </div>
@@ -392,7 +392,7 @@ export default function CustomerShopPage() {
           disabled={followBusy}
           className={`mt-4 flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] transition-all duration-200 ${
             following
-              ? "border border-line bg-surface text-ink"
+              ? "border border-line bg-surface-raised text-ink"
               : "bg-ink text-bg active:opacity-80"
           }`}
         >
@@ -453,7 +453,7 @@ export default function CustomerShopPage() {
       )}
 
       {/* Loyalty card */}
-      <div className="mx-5 rounded-card border border-line bg-surface p-5">
+      <div className="mx-5 rounded-card border border-line bg-surface-raised p-5">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">YOUR PROGRESS</p>
           <p className="text-[12px] font-semibold text-ink">{visits}<span className="text-muted">/{goal}</span></p>

@@ -76,13 +76,13 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
   return (
     <button
       onClick={onClick}
-      className="shrink-0 w-72 rounded-card overflow-hidden text-left bg-surface active:scale-[0.97] transition-transform duration-150"
+      className="shrink-0 w-72 rounded-card overflow-hidden text-left bg-surface-raised active:scale-[0.97] transition-transform duration-150"
     >
       <div className="relative h-40 w-full overflow-hidden">
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center bg-surface">
+          <div className="h-full w-full flex items-center justify-center bg-surface-raised">
             <span className="text-7xl font-extralight text-muted opacity-40">
               {shop.shop_name.charAt(0).toUpperCase()}
             </span>
@@ -123,13 +123,13 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-4 px-5 py-3 text-left active:bg-surface transition-colors duration-150"
+      className="flex w-full items-center gap-4 px-5 py-3 text-left active:bg-surface-raised transition-colors duration-150"
     >
       <div className="relative h-[60px] w-[60px] shrink-0 rounded-card overflow-hidden">
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center bg-surface border border-line">
+          <div className="h-full w-full flex items-center justify-center bg-surface-raised border border-line">
             <span className="text-2xl font-extralight text-muted">
               {shop.shop_name.charAt(0).toUpperCase()}
             </span>
@@ -140,7 +140,7 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
         <div className="flex items-center gap-2">
           <p className="text-[15px] font-medium text-ink truncate">{shop.shop_name}</p>
           {tag && (
-            <span className="shrink-0 rounded-full bg-surface border border-line px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-muted">
+            <span className="shrink-0 rounded-full bg-surface-raised border border-line px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-muted">
               {tag}
             </span>
           )}
@@ -187,7 +187,7 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
     <button
       onClick={onClick}
       className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium tracking-[0.04em] transition-all duration-200 ${
-        active ? "bg-ink text-black" : "bg-surface text-muted border border-line"
+        active ? "bg-ink text-black" : "bg-surface-raised text-muted border border-line"
       }`}
     >
       {Icon && <Icon className="h-3 w-3" />}
@@ -203,7 +203,7 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
   return (
     <button
       onClick={onClick}
-      className="shrink-0 w-52 rounded-card border border-line bg-surface p-4 text-left active:bg-surface transition-colors duration-150"
+      className="shrink-0 w-52 rounded-card border border-line bg-surface-raised p-4 text-left active:bg-surface-raised transition-colors duration-150"
     >
       {/* Shop identity */}
       <div className="flex items-center gap-2 mb-3">
@@ -211,7 +211,7 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
           {shop.logo_url ? (
             <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-surface border border-line">
+            <div className="h-full w-full flex items-center justify-center bg-surface-raised border border-line">
               <span className="text-[11px] font-medium text-muted">
                 {shop.shop_name.charAt(0).toUpperCase()}
               </span>
@@ -261,7 +261,7 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
 
 /* ── Divider ── */
 function Divider() {
-  return <div className="h-px bg-surface mx-5 my-6" />;
+  return <div className="h-px bg-surface-raised mx-5 my-6" />;
 }
 
 export default function ExplorePage() {
@@ -419,7 +419,7 @@ export default function ExplorePage() {
 
       {/* Search — rewards tab only */}
       {homeTab === "rewards" && (
-        <div className="mx-5 mt-4 mb-1 flex items-center gap-3 rounded-ctl border border-line bg-surface px-4 py-3">
+        <div className="mx-5 mt-4 mb-1 flex items-center gap-3 rounded-ctl border border-line bg-surface-raised px-4 py-3">
           <Search className="h-4 w-4 shrink-0 text-muted" />
           <input
             ref={inputRef}
@@ -537,12 +537,12 @@ export default function ExplorePage() {
                         <button
                           key={`${a.profile_id}-${a.created_at}-${i}`}
                           onClick={() => router.push(`/customer/shop/${a.shop_slug}`)}
-                          className="flex shrink-0 items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-left active:bg-surface"
+                          className="flex shrink-0 items-center gap-3 rounded-card border border-line bg-surface-raised px-4 py-3 text-left active:bg-surface-raised"
                         >
                           {a.avatar_url ? (
                             <img src={a.avatar_url} alt={a.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
                           ) : (
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-raised">
                               <span className="text-[13px] font-medium text-muted">{a.display_name.charAt(0).toUpperCase()}</span>
                             </div>
                           )}

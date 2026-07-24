@@ -54,7 +54,7 @@ function SettingsRow({
   const content = (
     <>
       {Icon && (
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-ctl ${destructive ? "bg-danger/10" : "bg-surface"}`}>
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-ctl ${destructive ? "bg-danger/10" : "bg-surface-raised"}`}>
           <Icon className={`h-4 w-4 ${destructive ? "text-danger" : "text-muted"}`} strokeWidth={1.5} />
         </div>
       )}
@@ -71,7 +71,7 @@ function SettingsRow({
   return (
     <Wrapper
       {...(onClick ? { onClick } : {})}
-      className="flex w-full items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-surface"
+      className="flex w-full items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-surface-raised"
     >
       {content}
     </Wrapper>
@@ -141,22 +141,30 @@ export default function ProfilePage() {
     }
   }
 
-  const [theme, setThemeState] = useState<"system" | "light" | "dark">("system");
+  // ventzon_theme stores the PREFERENCE; <html data-theme> holds the
+  // RESOLVED value. Light is the default for new accounts, so an absent
+  // key means light — "system" is stored explicitly when chosen.
+  // Kept in sync with the pre-paint script in src/app/layout.tsx.
+  const [theme, setThemeState] = useState<"system" | "light" | "dark">("light");
 
   useEffect(() => {
     try {
       const t = localStorage.getItem("ventzon_theme");
-      if (t === "light" || t === "dark") setThemeState(t);
+      if (t === "light" || t === "dark" || t === "system") setThemeState(t);
     } catch {}
   }, []);
 
   function setTheme(t: "system" | "light" | "dark") {
     setThemeState(t);
     try {
-      if (t === "system") localStorage.removeItem("ventzon_theme");
-      else localStorage.setItem("ventzon_theme", t);
-      const light = t === "light" || (t === "system" && window.matchMedia("(prefers-color-scheme: light)").matches);
-      document.documentElement.classList.toggle("vz-light", light);
+      localStorage.setItem("ventzon_theme", t);
+      const resolved =
+        t === "system"
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : t;
+      document.documentElement.setAttribute("data-theme", resolved);
     } catch {}
   }
 
@@ -378,7 +386,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-6 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface-raised">
           <User className="h-7 w-7 text-muted" />
         </div>
         <p className="mt-5 text-[16px] font-semibold text-ink">Not signed in</p>
@@ -406,7 +414,7 @@ export default function ProfilePage() {
       <div className="flex items-center gap-3 px-5 pb-2" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
         <button
           onClick={() => router.push("/customer/profile")}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised"
         >
           <ChevronRight className="h-4 w-4 rotate-180 text-ink" />
         </button>
@@ -424,7 +432,7 @@ export default function ProfilePage() {
             {avatarUrl ? (
               <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-surface">
+              <div className="flex h-full w-full items-center justify-center bg-surface-raised">
                 <span className="text-xl font-medium text-muted">{initials}</span>
               </div>
             )}
@@ -436,7 +444,7 @@ export default function ProfilePage() {
           </button>
           <button
             onClick={() => fileRef.current?.click()}
-            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface transition-colors active:bg-line"
+            className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-raised transition-colors active:bg-line"
           >
             <Camera className="h-3.5 w-3.5 text-muted" />
           </button>
@@ -456,7 +464,7 @@ export default function ProfilePage() {
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
-              className="rounded-ctl border border-line bg-surface px-3 py-1.5 text-[16px] font-medium text-ink outline-none focus:border-muted text-center"
+              className="rounded-ctl border border-line bg-surface-raised px-3 py-1.5 text-[16px] font-medium text-ink outline-none focus:border-muted text-center"
               placeholder="Your name"
               maxLength={50}
             />
@@ -488,7 +496,7 @@ export default function ProfilePage() {
           { label: "STAMPS", value: totalVisits },
           { label: "READY", value: readyCards.length },
         ].map(({ label, value }) => (
-          <div key={label} className="flex flex-col items-center rounded-card border border-line bg-surface py-4">
+          <div key={label} className="flex flex-col items-center rounded-card border border-line bg-surface-raised py-4">
             <p className="text-[22px] font-semibold text-ink">{value}</p>
             <p className="mt-1 text-[9px] font-medium tracking-[0.15em] text-muted">{label}</p>
           </div>
@@ -498,7 +506,7 @@ export default function ProfilePage() {
       {/* Birthday */}
       <div className="mx-5 mb-8">
         <SectionLabel title="Birthday" />
-        <div className="rounded-card border border-line bg-surface p-5">
+        <div className="rounded-card border border-line bg-surface-raised p-5">
           <p className="text-[12px] font-light leading-relaxed text-muted">
             Add your birthday to get a treat from the shops you visit. Month and day only — no year.
           </p>
@@ -506,7 +514,7 @@ export default function ProfilePage() {
             <select
               value={birthMonth}
               onChange={(e) => setBirthMonth(e.target.value === "" ? "" : Number(e.target.value))}
-              className="flex-1 rounded-ctl border border-line bg-surface px-4 py-3 text-[14px] font-light text-ink outline-none focus:border-line"
+              className="flex-1 rounded-ctl border border-line bg-surface-raised px-4 py-3 text-[14px] font-light text-ink outline-none focus:border-line"
             >
               <option value="">Month</option>
               {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
@@ -516,7 +524,7 @@ export default function ProfilePage() {
             <select
               value={birthDay}
               onChange={(e) => setBirthDay(e.target.value === "" ? "" : Number(e.target.value))}
-              className="w-24 rounded-ctl border border-line bg-surface px-4 py-3 text-[14px] font-light text-ink outline-none focus:border-line"
+              className="w-24 rounded-ctl border border-line bg-surface-raised px-4 py-3 text-[14px] font-light text-ink outline-none focus:border-line"
             >
               <option value="">Day</option>
               {Array.from({ length: birthMonth === "" ? 31 : [31,29,31,30,31,30,31,31,30,31,30,31][(birthMonth as number) - 1] }, (_, i) => i + 1).map((d) => (
@@ -543,7 +551,7 @@ export default function ProfilePage() {
               <button
                 key={m.shop_slug}
                 onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
-                className={`flex w-full items-center gap-3 px-5 py-3.5 text-left active:bg-surface ${i > 0 ? "border-t border-line/60" : ""}`}
+                className={`flex w-full items-center gap-3 px-5 py-3.5 text-left active:bg-surface-raised ${i > 0 ? "border-t border-line/60" : ""}`}
               >
                 <Trophy className="h-4 w-4 shrink-0 text-accent" strokeWidth={1.5} />
                 <p className="flex-1 text-[14px] font-normal text-ink">{m.shop_name}</p>
@@ -574,19 +582,19 @@ export default function ProfilePage() {
                   <button
                     key={m.shop_slug}
                     onClick={() => router.push(`/customer/shop/${m.shop_slug}`)}
-                    className={`flex w-full items-center gap-4 px-4 py-3.5 text-left active:bg-surface ${i > 0 ? "border-t border-line/60" : ""}`}
+                    className={`flex w-full items-center gap-4 px-4 py-3.5 text-left active:bg-surface-raised ${i > 0 ? "border-t border-line/60" : ""}`}
                   >
                     {m.logo_url ? (
                       <img src={m.logo_url} alt={m.shop_name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
                     ) : (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl border border-line bg-surface">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl border border-line bg-surface-raised">
                         <span className="text-sm font-medium text-muted">{m.shop_name.charAt(0).toUpperCase()}</span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium text-ink truncate">{m.shop_name}</p>
                       {isPoints ? (
-                        <div className="mt-2 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-surface">
+                        <div className="mt-2 h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-surface-raised">
                           <div
                             className={`h-full rounded-full ${isReady ? "bg-accent" : "bg-ink"}`}
                             style={{ width: `${pct}%` }}
@@ -597,7 +605,7 @@ export default function ProfilePage() {
                           {Array.from({ length: Math.min(m.reward_goal, 10) }).map((_, idx) => (
                             <div
                               key={idx}
-                              className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-accent" : "bg-ink" : "bg-surface"}`}
+                              className={`h-1.5 rounded-full ${idx < m.visits ? isReady ? "bg-accent" : "bg-ink" : "bg-surface-raised"}`}
                               style={{ width: `${Math.min(100 / Math.min(m.reward_goal, 10), 24)}px` }}
                             />
                           ))}
@@ -652,7 +660,7 @@ export default function ProfilePage() {
       {/* ── APPEARANCE ── */}
       <div className="mb-6">
         <SectionLabel title="Appearance" />
-        <div className="mx-5 flex rounded-card border border-line bg-surface p-1">
+        <div className="mx-5 flex rounded-card border border-line bg-surface-raised p-1">
           {(["system", "light", "dark"] as const).map((t) => (
             <button
               key={t}
@@ -760,7 +768,7 @@ export default function ProfilePage() {
                     placeholder="Tell people what you love about your local spots…"
                     rows={3}
                     maxLength={500}
-                    className="w-full resize-none rounded-ctl border border-line bg-surface px-3 py-2.5 text-[13px] font-normal text-ink outline-none placeholder:text-muted"
+                    className="w-full resize-none rounded-ctl border border-line bg-surface-raised px-3 py-2.5 text-[13px] font-normal text-ink outline-none placeholder:text-muted"
                   />
                   <div className="mt-2 flex justify-end gap-2">
                     <button

@@ -64,7 +64,7 @@ function ShopFollowButton({ shopSlug }: { shopSlug: string }) {
       disabled={busy}
       className={`rounded-full px-3.5 py-1.5 text-[10px] font-medium tracking-[0.08em] transition-all ${
         following
-          ? "border border-line bg-surface text-ink"
+          ? "border border-line bg-surface-raised text-ink"
           : "bg-ink text-bg active:opacity-80"
       }`}
     >
@@ -98,7 +98,7 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
         {suggestions.map((s) => (
           <div
             key={`${s.kind}-${s.profile_id ?? s.shop_slug}`}
-            className="flex w-40 shrink-0 flex-col items-center rounded-card border border-line bg-surface px-3 py-4"
+            className="flex w-40 shrink-0 flex-col items-center rounded-card border border-line bg-surface-raised px-3 py-4"
           >
             <button
               onClick={() =>
@@ -256,7 +256,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
       <div>
         <SuggestionRow userLoc={userLoc} />
         <div className="flex flex-col items-center px-8 py-10 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface">
+          <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface-raised">
             <Compass className="h-7 w-7 text-muted" />
           </div>
           <p className="mt-5 font-display text-[18px] font-semibold text-ink">Nothing here yet</p>
@@ -293,7 +293,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
               {p.author.avatar_url ? (
                 <img src={p.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface border border-line">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised border border-line">
                   <span className="text-[12px] font-medium text-muted">
                     {p.author.display_name.charAt(0).toUpperCase()}
                   </span>
@@ -321,7 +321,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
             </button>
 
             {/* One envelope: media + Visit & Earn footer share the card */}
-            <div className="overflow-hidden rounded-card bg-surface border border-line">
+            <div className="overflow-hidden rounded-card bg-surface-raised border border-line">
               {p.media_url && (
                 <button onClick={() => router.push(`/customer/post/${p.id}`)} className="block w-full">
                   {p.media_type === "video" ? (
