@@ -12,6 +12,15 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Stale agent worktrees are full repo copies living inside the repo —
+    // linting them double-reports every finding against old snapshots.
+    ".claude/**",
+    // Native shells and build output, not project source.
+    "ios/**",
+    "android/**",
+    "*.xcarchive/**",
+    "VentzonExport*/**",
+    "scripts/**",
   ]),
 ]);
 
