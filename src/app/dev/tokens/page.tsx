@@ -55,13 +55,84 @@ const TYPE_SCALE: { name: string; px: number; lh: number; track: string; use: st
   { name: "text-xs", px: 12, lh: 18, track: "0", use: "timestamps, captions, mono data" },
   { name: "text-sm", px: 14, lh: 21, track: "0", use: "secondary UI, labels" },
   { name: "text-base", px: 16, lh: 24, track: "0", use: "BODY DEFAULT" },
-  { name: "text-md", px: 17, lh: 26, track: "0", use: "primary row text" },
   { name: "text-lg", px: 20, lh: 28, track: "-0.005em", use: "card titles" },
   { name: "text-xl", px: 24, lh: 32, track: "-0.01em", use: "section titles" },
   { name: "text-2xl", px: 30, lh: 36, track: "-0.015em", use: "place names" },
   { name: "text-3xl", px: 38, lh: 44, track: "-0.02em", use: "page titles" },
   { name: "text-4xl", px: 48, lh: 52, track: "-0.025em", use: "hero" },
   { name: "text-5xl", px: 60, lh: 62, track: "-0.03em", use: "hero, display only" },
+];
+
+/* The Slice 1.8 migration contract. Keyed on (tracked?, colour, weight),
+   NOT on size — a co-occurrence pass over all 283 customer instances showed
+   everything <=13px is letterspaced and everything >=14px is not, so 11/12/13px
+   are three different roles rather than three tiers of one hierarchy. */
+const ROLE_RECIPES: {
+  role: string;
+  today: string;
+  cls: string;
+  sample: string;
+}[] = [
+  {
+    role: "Section eyebrow",
+    today: "text-[10px] tracking-[0.12em] font-semibold text-muted",
+    cls: "text-xs font-semibold uppercase tracking-caps text-muted",
+    sample: "Near you",
+  },
+  {
+    role: "Tab / nav label",
+    today: "text-[10px] tracking-[0.15em] + .toUpperCase()",
+    cls: "text-2xs font-medium uppercase tracking-caps text-muted",
+    sample: "Profile",
+  },
+  {
+    role: "Badge / count chip",
+    today: "text-[9px] font-semibold",
+    cls: "text-2xs font-semibold text-on-accent",
+    sample: "3",
+  },
+  {
+    role: "Metadata",
+    today: "text-[11px]/[12px] font-light text-muted",
+    cls: "text-xs text-muted",
+    sample: "3h ago · 0.4 mi",
+  },
+  {
+    role: "Supporting copy",
+    today: "text-[12px]/[13px] font-normal text-muted",
+    cls: "text-sm text-secondary",
+    sample: "Open until 6pm on Sundays.",
+  },
+  {
+    role: "Body prose",
+    today: "text-[13px]/[14px] text-ink",
+    cls: "text-base text-primary",
+    sample: "Corner table, oat flat white, the good pastries before ten.",
+  },
+  {
+    role: "Primary row text",
+    today: "text-[14px] font-medium text-ink",
+    cls: "text-base font-medium text-primary",
+    sample: "Ferry Building Marketplace",
+  },
+  {
+    role: "Card title",
+    today: "text-[15px]–[18px] font-semibold",
+    cls: "font-display text-lg font-semibold tracking-tight text-primary",
+    sample: "Cafe Mercado",
+  },
+  {
+    role: "Screen title",
+    today: "text-[20px]–[24px] font-semibold",
+    cls: "font-display text-xl font-semibold tracking-tight text-primary",
+    sample: "Mission District",
+  },
+  {
+    role: "Receipt line",
+    today: "(did not exist)",
+    cls: "font-mono text-xs text-muted",
+    sample: "VISIT 7 / 10 · 24 JUL",
+  },
 ];
 
 /* A stand-in for photography. Deliberately edged in tones close to the
@@ -101,6 +172,32 @@ function Swatch({ role, theme }: { role: string; theme: Theme }) {
         <p className="text-2xs text-muted">{r.desc}</p>
       </div>
       <p className="shrink-0 font-mono text-2xs text-muted">{value}</p>
+    </div>
+  );
+}
+
+/* The mono decision, made judgeable. Same card, twice: once with mono as
+   the metadata voice (rejected — reads as a terminal), once with mono
+   reserved for the receipt line (adopted). */
+function MonoCard({ variant }: { variant: "metadata" | "receipt" }) {
+  const metaCls =
+    variant === "metadata" ? "font-mono text-xs text-muted" : "text-xs text-muted";
+  return (
+    <div className="elevation-1 rounded-card p-5">
+      <p className="font-display text-lg font-semibold tracking-tight text-primary">
+        Cafe Mercado
+      </p>
+      <p className="mt-1 text-sm text-secondary">Coffee · Mission District</p>
+      <p className="mt-3 text-base text-primary">
+        Corner table, oat flat white, the good pastries before ten.
+      </p>
+      <p className={`mt-3 ${metaCls}`}>3h ago · 0.4 mi · 12 comments</p>
+      <div
+        className="mt-4 pt-3"
+        style={{ borderTop: "1px solid var(--border-subtle)" }}
+      >
+        <p className="font-mono text-xs text-muted">VISIT 7 / 10 · 24 JUL</p>
+      </div>
     </div>
   );
 }
@@ -207,7 +304,7 @@ export default function TokensPage() {
           <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-primary">
             Token system
           </h1>
-          <p className="mt-4 text-md text-secondary">
+          <p className="mt-4 text-base text-secondary">
             Two tiers. Primitives are raw values referenced only by the theme
             definitions; components consume semantic roles through Tailwind
             utilities, which is why no <code className="font-mono text-sm">dark:</code>{" "}
@@ -332,10 +429,149 @@ export default function TokensPage() {
             <div key={f.name} className="elevation-1 rounded-card p-5">
               <p className="font-mono text-2xs uppercase tracking-caps text-muted">{f.role}</p>
               <p className="mt-2 font-display text-lg font-semibold tracking-tight text-primary">{f.name}</p>
-              <p className={`mt-4 ${f.cls} text-md text-primary`}>{f.specimen}</p>
+              <p className={`mt-4 ${f.cls} text-base text-primary`}>{f.specimen}</p>
               <p className="mt-4 text-sm text-secondary">{f.note}</p>
             </div>
           ))}
+        </div>
+
+        {/* ── Type roles (Slice 1.8, Phase A) ── */}
+        <h2
+          id="roles"
+          className="mb-2 scroll-mt-8 font-display text-2xl font-semibold tracking-tight text-primary"
+        >
+          Type roles
+        </h2>
+        <p className="mb-5 max-w-2xl text-base text-secondary">
+          The migration contract for the customer app&rsquo;s 283 hardcoded
+          sizes. Keyed on{" "}
+          <span className="font-medium text-primary">
+            (tracked?, colour, weight)
+          </span>
+          , not on size: everything at or below 13px today is letterspaced and
+          everything at or above 14px is not, so 11/12/13px are three different
+          roles rather than three tiers of one hierarchy. Mapping by size would
+          flatten them precisely because it discards the signal that separates
+          them.
+        </p>
+        <div
+          className="mb-8 overflow-x-auto rounded-card bg-surface-raised p-2"
+          style={{ boxShadow: "0 0 0 1px var(--border-subtle)" }}
+        >
+          <table className="w-full min-w-[52rem]">
+            <thead>
+              <tr>
+                {["Role", "Today", "Recipe", "Specimen"].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left font-mono text-2xs font-normal uppercase tracking-caps text-muted"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ROLE_RECIPES.map((r) => (
+                <tr
+                  key={r.role}
+                  style={{ boxShadow: "inset 0 1px 0 var(--border-subtle)" }}
+                >
+                  <td className="px-4 py-4 align-middle text-sm font-medium text-primary">
+                    {r.role}
+                  </td>
+                  <td className="px-4 py-4 align-middle font-mono text-2xs text-muted">
+                    {r.today}
+                  </td>
+                  <td className="px-4 py-4 align-middle font-mono text-2xs text-accent">
+                    {r.cls}
+                  </td>
+                  <td className="px-4 py-4 align-middle">
+                    <span className={r.cls}>{r.sample}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* text-muted splits in two */}
+        <div className="mb-8 grid gap-4 md:grid-cols-2">
+          <div className="elevation-1 rounded-card p-6">
+            <p className="mb-3 font-mono text-2xs uppercase tracking-caps text-danger">
+              Today — one muted tier
+            </p>
+            <p className="text-sm text-muted">
+              A supporting sentence about the place.
+            </p>
+            <p className="mt-1 text-sm text-muted">3h ago · 0.4 mi</p>
+            <p className="mt-3 text-sm text-secondary">
+              Prose and metadata render identically. This is the real source of
+              flatness — not the sizes.
+            </p>
+          </div>
+          <div className="elevation-1 rounded-card p-6">
+            <p className="mb-3 font-mono text-2xs uppercase tracking-caps text-accent">
+              After — secondary vs muted
+            </p>
+            <p className="text-sm text-secondary">
+              A supporting sentence about the place.
+            </p>
+            <p className="mt-1 text-xs text-muted">3h ago · 0.4 mi</p>
+            <p className="mt-3 text-sm text-secondary">
+              Prose keeps weight and colour; metadata recedes. Adds a tier that
+              does not currently exist.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Mono discipline: the A/B ── */}
+        <h3
+          id="mono"
+          className="mb-2 scroll-mt-8 font-display text-xl font-semibold tracking-tight text-primary"
+        >
+          Mono discipline
+        </h3>
+        <p className="mb-5 max-w-2xl text-base text-secondary">
+          Same card, twice. Mono should mean{" "}
+          <span className="font-medium text-primary">
+            &ldquo;this is a receipt&rdquo;
+          </span>
+          , not &ldquo;this is small&rdquo;. At ~70 instances it stops being an
+          accent and becomes the app&rsquo;s texture — which reads as a
+          terminal, the exact tell we are escaping.
+        </p>
+        <div className="mb-16 grid gap-6 md:grid-cols-2">
+          <div>
+            <div className="mb-3 flex items-baseline gap-2">
+              <span className="font-mono text-2xs uppercase tracking-caps text-danger">
+                Rejected
+              </span>
+              <span className="text-sm text-secondary">
+                mono as metadata — ~70 instances
+              </span>
+            </div>
+            <MonoCard variant="metadata" />
+            <p className="mt-3 text-sm text-muted">
+              Two mono lines stacked. The card stops reading as editorial and
+              starts reading as log output.
+            </p>
+          </div>
+          <div>
+            <div className="mb-3 flex items-baseline gap-2">
+              <span className="font-mono text-2xs uppercase tracking-caps text-accent">
+                Adopted
+              </span>
+              <span className="text-sm text-secondary">
+                mono as receipt — 15–20 instances
+              </span>
+            </div>
+            <MonoCard variant="receipt" />
+            <p className="mt-3 text-sm text-muted">
+              One mono line, below a rule, carrying the only thing that is
+              literally a record. It earns the voice.
+            </p>
+          </div>
         </div>
 
         {/* ── Tracking policy ── */}
@@ -357,7 +593,7 @@ export default function TokensPage() {
               </div>
               <div>
                 <p className="font-mono text-2xs text-muted">tracking-normal · 0</p>
-                <p className="mt-1 text-md tracking-normal text-primary">Body and UI. Never letterspaced.</p>
+                <p className="mt-1 text-base tracking-normal text-primary">Body and UI. Never letterspaced.</p>
               </div>
               <div>
                 <p className="font-mono text-2xs text-muted">tracking-caps · 0.06em</p>

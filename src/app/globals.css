@@ -206,13 +206,16 @@
   --text-sm--line-height: 1.3125rem;
   --text-sm--letter-spacing: 0em;
 
-  --text-base: 1rem; /* 16px — BODY DEFAULT */
+  --text-base: 1rem; /* 16px — BODY DEFAULT, and primary row text */
   --text-base--line-height: 1.5rem;
   --text-base--letter-spacing: 0em;
 
-  --text-md: 1.0625rem; /* 17px — primary row text, emphasised body */
-  --text-md--line-height: 1.625rem;
-  --text-md--letter-spacing: 0em;
+  /* No step between base and lg on purpose. A 17px `text-md` sat one
+     step above base with no memorable name — nobody recalls whether
+     `md` outranks `base`. 16→17px is a 6% delta, below the threshold
+     where size does reliable hierarchy work, so a row's primary line
+     out-ranks body with WEIGHT (`text-base font-medium`) instead.
+     If a real case survives Phase C, it returns as `text-row`. */
 
   --text-lg: 1.25rem; /* 20px */
   --text-lg--line-height: 1.75rem;
@@ -274,6 +277,17 @@
 /* ═══ Base ═══════════════════════════════════════════════════════ */
 
 body {
+  /* `@theme inline` substitutes values into the generated utilities but never
+     emits the custom property itself, so `var(--font-body)` / `var(--font-mono)`
+     resolve to nothing outside a utility class. The next/font variables are
+     applied to <body>, so the semantic font names are declared here — where
+     they can actually see them — and inherit to everything below, including
+     SVG (which is how Postmark gets its receipt voice). Without this, body
+     text silently falls back to the system sans stack. */
+  --font-display: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  --font-body: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), "DM Mono", ui-monospace, monospace;
+
   background: var(--surface);
   color: var(--text-primary);
   font-family: var(--font-body);
