@@ -89,7 +89,16 @@ export default function SafetyMenu({
     <>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        className={compact ? "p-1 text-muted active:text-ink" : "flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised"}
+        /* Compact uses negative margin + padding to widen the hit area
+           without shifting the comment row it sits in. */
+        className={
+          compact
+            ? "-m-1.5 p-2.5 text-muted active:text-primary"
+            : "flex h-11 w-11 items-center justify-center rounded-full bg-surface-raised"
+        }
+        style={
+          compact ? undefined : { boxShadow: "inset 0 0 0 1px var(--border-subtle)" }
+        }
         aria-label="More options"
       >
         <MoreHorizontal className={compact ? "h-4 w-4" : "h-4 w-4 text-muted"} />
@@ -101,14 +110,20 @@ export default function SafetyMenu({
           onClick={close}
         >
           <div
-            className="w-full max-w-md rounded-t-sheet border-t border-line bg-surface-raised px-5 pb-10 pt-4"
+            className="elevation-2 w-full max-w-md rounded-t-sheet px-5 pb-10 pt-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">
-                {mode === "report" ? "WHY ARE YOU REPORTING THIS?" : (targetName ?? targetType).toUpperCase()}
+              <p className="text-xs font-semibold uppercase tracking-caps text-muted">
+                {mode === "report"
+                  ? "Why are you reporting this?"
+                  : (targetName ?? targetType)}
               </p>
-              <button onClick={close} className="p-1 text-muted" aria-label="Close">
+              <button
+                onClick={close}
+                className="-mr-2.5 p-2.5 text-muted"
+                aria-label="Close"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -117,7 +132,8 @@ export default function SafetyMenu({
               <div className="space-y-2">
                 <button
                   onClick={() => setMode("report")}
-                  className="flex w-full items-center gap-3 rounded-ctl border border-line px-4 py-3.5 text-left text-[14px] font-medium text-ink active:bg-black/10"
+                  className="flex w-full items-center gap-3 rounded-ctl px-4 py-3.5 text-left text-base font-medium text-primary active:bg-surface-sunken"
+                  style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
                 >
                   <Flag className="h-4 w-4 text-muted" />
                   Report {targetType}
@@ -126,7 +142,8 @@ export default function SafetyMenu({
                   <button
                     onClick={block}
                     disabled={busy}
-                    className="flex w-full items-center gap-3 rounded-ctl border border-danger/30 px-4 py-3.5 text-left text-[14px] font-medium text-danger active:bg-danger/10 disabled:opacity-50"
+                    className="flex w-full items-center gap-3 rounded-ctl px-4 py-3.5 text-left text-base font-medium text-danger active:bg-danger/10 disabled:opacity-50"
+                    style={{ boxShadow: "inset 0 0 0 1px color-mix(in oklab, var(--danger) 30%, transparent)" }}
                   >
                     <Ban className="h-4 w-4" />
                     Block {targetName ?? "this account"}
@@ -142,7 +159,8 @@ export default function SafetyMenu({
                     key={r.id}
                     onClick={() => report(r.id)}
                     disabled={busy}
-                    className="w-full rounded-ctl border border-line px-4 py-3.5 text-left text-[14px] font-medium text-ink active:bg-black/10 disabled:opacity-50"
+                    className="w-full rounded-ctl px-4 py-3.5 text-left text-base font-medium text-primary active:bg-surface-sunken disabled:opacity-50"
+                    style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
                   >
                     {r.label}
                   </button>
@@ -152,26 +170,22 @@ export default function SafetyMenu({
 
             {mode === "done-report" && (
               <div className="py-4 text-center">
-                <p className="text-[15px] font-semibold text-ink">Thanks — report received</p>
-                <p className="mt-2 text-[13px] font-normal leading-relaxed text-muted">
+                <p className="font-display text-lg font-semibold tracking-tight text-primary">Thanks — report received</p>
+                <p className="mt-2 text-base leading-relaxed text-secondary">
                   This content is hidden while we review it, usually within 24 hours.
                 </p>
-                <button onClick={close} className="mt-5 rounded-full bg-ink px-6 py-2.5 text-[12px] font-semibold tracking-[0.1em] text-bg">
-                  DONE
-                </button>
+                <button onClick={close} className="mt-5 rounded-full bg-primary px-6 py-3 text-sm font-medium text-inverse">Done</button>
               </div>
             )}
 
             {mode === "done-block" && (
               <div className="py-4 text-center">
-                <p className="text-[15px] font-semibold text-ink">Blocked</p>
-                <p className="mt-2 text-[13px] font-normal leading-relaxed text-muted">
+                <p className="font-display text-lg font-semibold tracking-tight text-primary">Blocked</p>
+                <p className="mt-2 text-base leading-relaxed text-secondary">
                   You won&rsquo;t see each other&rsquo;s posts, comments, or profiles.
                   Unblock any time in Settings.
                 </p>
-                <button onClick={close} className="mt-5 rounded-full bg-ink px-6 py-2.5 text-[12px] font-semibold tracking-[0.1em] text-bg">
-                  DONE
-                </button>
+                <button onClick={close} className="mt-5 rounded-full bg-primary px-6 py-3 text-sm font-medium text-inverse">Done</button>
               </div>
             )}
           </div>

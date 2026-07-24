@@ -22,8 +22,11 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
 
   if (posts.length === 0) {
     return (
-      <div className="rounded-card border border-line px-5 py-8 text-center">
-        <p className="text-[13px] font-normal text-muted">No posts yet</p>
+      <div
+        className="rounded-card px-5 py-10 text-center"
+        style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
+      >
+        <p className="text-base text-secondary">No posts yet</p>
       </div>
     );
   }
@@ -61,9 +64,14 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
               />
             )
           ) : (
-            <div className="flex h-full w-full flex-col justify-between border border-line p-2.5">
-              <AlignLeft className="h-3 w-3 text-muted opacity-60" />
-              <p className="text-[10px] font-normal leading-snug text-muted line-clamp-4">
+            /* Typographic tile. text-2xs is the scale floor and earns it
+               here: a third-of-viewport square has ~104px of usable width. */
+            <div
+              className="flex h-full w-full flex-col justify-between p-2.5"
+              style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
+            >
+              <AlignLeft className="h-3.5 w-3.5 text-muted opacity-60" />
+              <p className="line-clamp-4 text-2xs leading-snug text-secondary">
                 {p.body}
               </p>
             </div>

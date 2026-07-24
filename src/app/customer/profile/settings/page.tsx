@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { stripImageMetadata } from "@/lib/strip-exif";
@@ -22,6 +22,37 @@ type Membership = {
 
 const APP_VERSION = "1.0.0";
 const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
+
+/* ── Theme preference, as an external store ──────────────────────────
+   localStorage is external state. Reading it with useState + useEffect
+   triggers a second render on every mount; useSyncExternalStore reads it
+   during render with an SSR-safe server snapshot. `storage` covers other
+   tabs; the local Set covers this one, which `storage` does not fire for. */
+type ThemePreference = "system" | "light" | "dark";
+const THEME_KEY = "ventzon_theme";
+const themeListeners = new Set<() => void>();
+
+function subscribeTheme(onChange: () => void) {
+  themeListeners.add(onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    themeListeners.delete(onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function getStoredTheme(): ThemePreference {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return t === "dark" || t === "system" ? t : "light";
+  } catch {
+    return "light";
+  }
+}
+
+function emitThemeChange() {
+  themeListeners.forEach((fn) => fn());
+}
 
 function SectionLabel({ title }: { title: string }) {
   return (
@@ -145,19 +176,20 @@ export default function ProfilePage() {
   // RESOLVED value. Light is the default for new accounts, so an absent
   // key means light — "system" is stored explicitly when chosen.
   // Kept in sync with the pre-paint script in src/app/layout.tsx.
-  const [theme, setThemeState] = useState<"system" | "light" | "dark">("light");
+  //
+  // Read through useSyncExternalStore rather than useState + useEffect:
+  // localStorage is external state, and syncing it in via setState on mount
+  // is exactly the cascading-render pattern react-hooks warns about. This
+  // also keeps the control honest if the value changes in another tab.
+  const theme = useSyncExternalStore(
+    subscribeTheme,
+    getStoredTheme,
+    () => "light" as ThemePreference
+  );
 
-  useEffect(() => {
+  function setTheme(t: ThemePreference) {
     try {
-      const t = localStorage.getItem("ventzon_theme");
-      if (t === "light" || t === "dark" || t === "system") setThemeState(t);
-    } catch {}
-  }, []);
-
-  function setTheme(t: "system" | "light" | "dark") {
-    setThemeState(t);
-    try {
-      localStorage.setItem("ventzon_theme", t);
+      localStorage.setItem(THEME_KEY, t);
       const resolved =
         t === "system"
           ? window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -166,6 +198,7 @@ export default function ProfilePage() {
           : t;
       document.documentElement.setAttribute("data-theme", resolved);
     } catch {}
+    emitThemeChange();
   }
 
   const [notifPrefs, setNotifPrefs] = useState({

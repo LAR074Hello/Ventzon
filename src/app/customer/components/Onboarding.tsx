@@ -61,7 +61,12 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
       {/* Skip */}
       {!isLast && (
         <div className="flex justify-end px-6 pt-4">
-          <button onClick={onFinish} className="text-[12px] font-light tracking-[0.15em] text-muted">SKIP</button>
+          <button
+            onClick={onFinish}
+            className="-mr-2 px-2 py-2 text-sm font-medium text-muted"
+          >
+            Skip
+          </button>
         </div>
       )}
 
@@ -73,8 +78,10 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
         >
           <Icon className="h-10 w-10" style={{ color: accent }} strokeWidth={1} />
         </div>
-        <h2 className="text-[26px] font-extralight tracking-[-0.02em] text-ink leading-tight">{title}</h2>
-        <p className="mt-4 text-[14px] font-light leading-relaxed text-muted">{sub}</p>
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-primary">
+          {title}
+        </h2>
+        <p className="mt-4 text-base leading-relaxed text-secondary">{sub}</p>
       </div>
 
       {/* Bottom */}
@@ -90,11 +97,14 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
           ))}
         </div>
 
+        {/* text-black was black-on-near-black once the base theme went light —
+            the label was effectively invisible. text-inverse tracks the fill
+            in both themes. */}
         <button
           onClick={next}
-          className="w-full rounded-card bg-ink py-4 text-[13px] font-light tracking-[0.2em] text-black active:opacity-80 transition-colors"
+          className="w-full rounded-card bg-primary py-4 text-base font-medium text-inverse transition-colors active:opacity-80"
         >
-          {isLast ? "GET STARTED" : "CONTINUE"}
+          {isLast ? "Get started" : "Continue"}
         </button>
       </div>
     </div>

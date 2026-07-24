@@ -128,6 +128,21 @@ Phase C it returns as `text-row`, not `text-md`.
 - **Mono as the metadata voice** — see "Mono discipline" above.
 - **A 17px `text-md` step** — see above.
 
+## Watch during Phase C review (do not act yet)
+
+- **Does green read as a success state rather than as Ventzon?** The original
+  notes passed over awning green for "generic success-state risk", and the
+  three-lane separation does not fully retire that critique: green accent
+  beside red danger is *exactly* the confirm/cancel pairing. Instagram uses
+  blue, Airbnb coral, Pinterest red, specifically to avoid it. Judge in situ
+  on **primary buttons** and **follow / subscribe states** — the places where
+  a green fill is most likely to read as "done" rather than as brand. If it
+  does, the accent shifts; it is one token.
+- **Card padding vs 16px body.** Body copy inside a `p-5` card at 375px now
+  yields ~30 characters per line (measured, was ~40 at 13px). Text-heavy
+  cards may want `p-4` on mobile. A layout consequence of the type migration,
+  not a scale problem.
+
 ## Removed-one-thing log
 - Explore feed: removed the share arrow from the action row (share lives on
   the post page), then folded like/comment counts into one muted text line.

@@ -66,9 +66,17 @@ function hunkRanges(diffArgs, into = new Map()) {
 
 const base = baseRef();
 const ranges = new Map();
-if (base !== "HEAD") hunkRanges([`${base}...HEAD`], ranges);
-hunkRanges([], ranges); // unstaged
-hunkRanges(["--cached"], ranges); // staged
+
+// ONE diff, in one coordinate system: base commit -> working tree.
+// `git diff <commit>` compares against the working tree (not the index), so
+// this covers committed, staged and unstaged changes at once, and every line
+// number it reports indexes the file as it exists on disk right now.
+//
+// Do NOT union this with `base...HEAD` and `--cached`: those number their
+// new side against HEAD and the index respectively. Insert 30 lines near the
+// top of a file and HEAD-relative line 74 no longer points at the same code,
+// so stale ranges start flagging untouched lines as if you had written them.
+hunkRanges([base === "HEAD" ? "HEAD" : base], ranges);
 
 // Untracked files are entirely new — every line counts.
 for (const f of git(["ls-files", "--others", "--exclude-standard"]).split("\n")) {

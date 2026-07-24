@@ -54,26 +54,35 @@ export default function FollowButton({
     }
   }
 
+  // Sentence case, tracking zero. Letterspaced uppercase on a button was the
+  // loudest holdover from the dark-neon identity.
+  // The filled state stays ink rather than accent on purpose: a green fill
+  // here would read as "done / success" rather than as Ventzon.
+  // Compact sits at ~34px tall, under the 44px touch floor — raising it
+  // further changes list row height, which is a Phase C layout call.
   const base = compact
-    ? "px-3.5 py-1.5 text-[10px] gap-1"
-    : "px-6 py-2.5 text-[12px] gap-2";
+    ? "px-3.5 py-2 text-xs gap-1.5"
+    : "px-6 py-3 text-sm gap-2";
 
   return (
     <button
       onClick={toggle}
       disabled={busy}
-      className={`flex shrink-0 items-center rounded-full font-medium tracking-[0.08em] transition-all duration-200 ${base} ${
+      className={`flex shrink-0 items-center rounded-full font-medium transition-all duration-200 ${base} ${
         isFollowing
-          ? "border border-line bg-surface-raised text-ink"
-          : "bg-ink text-bg active:opacity-80"
+          ? "bg-surface-raised text-primary"
+          : "bg-primary text-inverse active:opacity-80"
       }`}
+      style={
+        isFollowing ? { boxShadow: "inset 0 0 0 1px var(--border-subtle)" } : undefined
+      }
     >
       {isFollowing ? (
-        <UserCheck className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+        <UserCheck className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
       ) : (
-        <UserPlus className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
+        <UserPlus className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
       )}
-      {isFollowing ? "FOLLOWING" : "FOLLOW"}
+      {isFollowing ? "Following" : "Follow"}
     </button>
   );
 }

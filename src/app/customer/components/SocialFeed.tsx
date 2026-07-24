@@ -62,13 +62,13 @@ function ShopFollowButton({ shopSlug }: { shopSlug: string }) {
     <button
       onClick={toggle}
       disabled={busy}
-      className={`rounded-full px-3.5 py-1.5 text-[10px] font-medium tracking-[0.08em] transition-all ${
+      className={`rounded-full px-3.5 py-2 text-xs font-medium transition-all ${
         following
-          ? "border border-line bg-surface-raised text-ink"
-          : "bg-ink text-bg active:opacity-80"
+          ? "bg-surface-raised text-primary"
+          : "bg-primary text-inverse active:opacity-80"
       }`}
     >
-      {following ? "FOLLOWING" : "FOLLOW"}
+      {following ? "Following" : "Follow"}
     </button>
   );
 }
@@ -92,13 +92,13 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
     <div className="mb-6">
       <div className="mb-3 flex items-center gap-2 px-5">
         <Sparkles className="h-3.5 w-3.5 text-muted" />
-        <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">SUGGESTED FOR YOU</p>
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted">Suggested for you</p>
       </div>
       <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
         {suggestions.map((s) => (
           <div
             key={`${s.kind}-${s.profile_id ?? s.shop_slug}`}
-            className="flex w-40 shrink-0 flex-col items-center rounded-card border border-line bg-surface-raised px-3 py-4"
+            className="elevation-1 flex w-40 shrink-0 flex-col items-center rounded-card px-3 py-4"
           >
             <button
               onClick={() =>
@@ -116,19 +116,19 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
                 />
               ) : (
                 <div
-                  className={`flex h-14 w-14 items-center justify-center bg-bg border border-line ${
+                  className={`flex h-14 w-14 items-center justify-center bg-surface-sunken ${
                     s.kind === "creator" ? "rounded-full" : "rounded-ctl"
                   }`}
                 >
-                  <span className="text-[18px] font-medium text-muted">
+                  <span className="text-lg font-medium text-muted">
                     {s.display_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <p className="mt-2.5 w-full truncate text-center text-[13px] font-semibold text-ink">
+              <p className="mt-2.5 w-full truncate text-center text-sm font-semibold text-primary">
                 {s.display_name}
               </p>
-              <p className="mt-0.5 w-full truncate text-center text-[11px] font-normal text-muted">
+              <p className="mt-0.5 w-full truncate text-center text-xs text-muted">
                 {s.kind === "shop" && s.distance_mi != null
                   ? `${s.distance_mi < 10 ? s.distance_mi.toFixed(1) : Math.round(s.distance_mi)} mi · ${s.sub}`
                   : s.sub}
@@ -236,7 +236,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
     return (
       <div className="space-y-5 px-5">
         {[0, 1].map((i) => (
-          <div key={i} className="overflow-hidden rounded-card border border-line">
+          <div key={i} className="elevation-1 overflow-hidden rounded-card">
             <div className="flex items-center gap-3 p-4">
               <div className="skeleton h-9 w-9 rounded-full" />
               <div className="space-y-2">
@@ -256,11 +256,11 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
       <div>
         <SuggestionRow userLoc={userLoc} />
         <div className="flex flex-col items-center px-8 py-10 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface-raised">
+          <div className="elevation-1 flex h-16 w-16 items-center justify-center rounded-sheet">
             <Compass className="h-7 w-7 text-muted" />
           </div>
-          <p className="mt-5 font-display text-[18px] font-semibold text-ink">Nothing here yet</p>
-          <p className="mt-2 text-[13px] font-normal leading-relaxed text-muted">
+          <p className="mt-5 font-display text-lg font-semibold tracking-tight text-primary">Nothing here yet</p>
+          <p className="mt-2 text-base leading-relaxed text-secondary">
             Posts from creators at local businesses will show up here.<br />
             Follow creators you like to shape your feed.
           </p>
@@ -293,19 +293,19 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
               {p.author.avatar_url ? (
                 <img src={p.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised border border-line">
-                  <span className="text-[12px] font-medium text-muted">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-sunken">
+                  <span className="text-sm font-medium text-muted">
                     {p.author.display_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-semibold text-ink truncate leading-tight">
+                <p className="truncate text-base font-semibold text-primary">
                   {p.author.display_name}
                 </p>
-                <p className="flex items-center gap-1.5 text-[12px] font-normal text-muted truncate">
+                <p className="flex items-center gap-1.5 truncate text-xs text-muted">
                   <span className="truncate">
-                    at <span className="text-ink">{p.shop.name}</span> · {timeAgo(p.created_at)}
+                    at <span className="text-primary">{p.shop.name}</span> · {timeAgo(p.created_at)}
                   </span>
                   {p.verified_visit && (
                     <span
@@ -313,7 +313,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                       title="This person checked in here"
                     >
                       <BadgeCheck className="h-3.5 w-3.5" />
-                      <span className="text-[10px] font-semibold tracking-[0.06em]">VERIFIED VISIT</span>
+                      <span className="text-2xs font-semibold uppercase tracking-caps">Verified visit</span>
                     </span>
                   )}
                 </p>
@@ -321,7 +321,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
             </button>
 
             {/* One envelope: media + Visit & Earn footer share the card */}
-            <div className="overflow-hidden rounded-card bg-surface-raised border border-line">
+            <div className="elevation-1 overflow-hidden rounded-card">
               {p.media_url && (
                 <button onClick={() => router.push(`/customer/post/${p.id}`)} className="block w-full">
                   {p.media_type === "video" ? (
@@ -333,18 +333,18 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
               )}
               <button
                 onClick={() => router.push(`/customer/shop/${p.shop.slug}`)}
-                className="flex w-full items-center gap-3 px-3.5 py-3 text-left active:bg-black/20"
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-sunken"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-bold text-ink truncate">{p.shop.name}</p>
+                  <p className="truncate text-base font-semibold text-primary">{p.shop.name}</p>
                   <div className="mt-1 flex items-center gap-1">
                     {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
                       <span
                         key={i}
-                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-accent" : "bg-line"}`}
+                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-accent" : "bg-subtle"}`}
                       />
                     ))}
-                    <span className="ml-1.5 text-[10px] font-semibold tracking-[0.08em] uppercase text-muted truncate">
+                    <span className="ml-1.5 truncate text-2xs font-semibold uppercase tracking-caps text-muted">
                       {remaining === 0
                         ? "Reward ready"
                         : remaining !== null
@@ -353,8 +353,8 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                     </span>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-full bg-accent px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-accent-ink">
-                  VISIT
+                <span className="shrink-0 rounded-full bg-accent px-4 py-2.5 text-xs font-semibold text-on-accent">
+                  Visit
                 </span>
               </button>
             </div>
@@ -363,15 +363,15 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
             {p.body && (
               <button
                 onClick={() => router.push(`/customer/post/${p.id}`)}
-                className="mt-2.5 block w-full text-left text-[15px] font-normal leading-relaxed text-ink line-clamp-2"
+                className="mt-3 line-clamp-2 block w-full text-left text-base leading-relaxed text-primary"
               >
                 {p.body}
               </button>
             )}
-            <div className="mt-1.5 flex items-center gap-1.5 text-[12px] font-medium text-muted">
+            <div className="mt-2 flex items-center gap-1.5 text-sm font-medium text-muted">
               <button onClick={() => toggleLike(p)} className="flex items-center gap-1.5 py-1">
                 <Heart
-                  className={`h-4 w-4 ${p.viewer.liked ? "text-ink" : "text-muted"}`}
+                  className={`h-4 w-4 ${p.viewer.liked ? "text-primary" : "text-muted"}`}
                   fill={p.viewer.liked ? "currentColor" : "none"}
                 />
                 <span>{p.counts.likes} {p.counts.likes === 1 ? "like" : "likes"}</span>
@@ -389,11 +389,11 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
       <div ref={sentinelRef} className="h-1" />
       {loadingMore && (
         <div className="flex justify-center py-4">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-ink" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-subtle border-t-primary" />
         </div>
       )}
       {!hasMore && posts.length > 6 && (
-        <p className="py-6 text-center text-[12px] font-normal text-muted">
+        <p className="py-6 text-center text-sm text-muted">
           You&rsquo;re all caught up
         </p>
       )}

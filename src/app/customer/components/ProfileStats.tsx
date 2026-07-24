@@ -18,12 +18,18 @@ function Stat({ value, label, onTap }: { value: number; label: string; onTap?: (
   return (
     <Wrapper
       {...(onTap ? { onClick: onTap } : {})}
-      className={`flex flex-col items-center rounded-card border border-line bg-surface-raised px-2 py-3 ${
-        onTap ? "active:bg-surface-raised transition-colors" : ""
+      className={`flex flex-col items-center rounded-card bg-surface-raised px-2 py-3.5 ${
+        onTap ? "active:bg-surface-sunken transition-colors" : ""
       }`}
+      style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
     >
-      <p className="text-[17px] font-semibold text-ink">{value}</p>
-      <p className="mt-0.5 text-[10px] font-light tracking-[0.08em] text-muted">{label.toUpperCase()}</p>
+      {/* Public Sans, not mono. A profile stat grid is a summary, not a
+          record — and mixing mono for check-ins with sans for followers
+          inside one identical grid would read as arbitrary. */}
+      <p className="text-xl font-semibold text-primary">{value}</p>
+      <p className="mt-0.5 text-2xs font-medium uppercase tracking-caps text-muted">
+        {label.toUpperCase()}
+      </p>
     </Wrapper>
   );
 }
@@ -60,13 +66,19 @@ export function BadgePills({ badges }: { badges: BadgeValue[] }) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-2">
-        <Award className="h-3.5 w-3.5 text-muted" />
-        <p className="text-[11px] font-light tracking-[0.15em] text-muted">BADGES</p>
+        <Award className="h-4 w-4 text-muted" />
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted">
+          Badges
+        </p>
       </div>
       <div className="flex flex-wrap gap-2">
         {earned.map((b) => (
-          <div key={b.id} className="rounded-full border border-line bg-surface-raised px-3.5 py-1.5">
-            <p className="text-[11px] font-medium text-ink">{b.label}</p>
+          <div
+            key={b.id}
+            className="rounded-full bg-surface-raised px-3.5 py-2"
+            style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
+          >
+            <p className="text-sm font-medium text-primary">{b.label}</p>
           </div>
         ))}
       </div>
