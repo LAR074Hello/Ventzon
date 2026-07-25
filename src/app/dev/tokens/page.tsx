@@ -183,7 +183,7 @@ function MonoCard({ variant }: { variant: "metadata" | "receipt" }) {
   const metaCls =
     variant === "metadata" ? "font-mono text-xs text-muted" : "text-xs text-muted";
   return (
-    <div className="elevation-1 rounded-card p-5">
+    <div className="elevation-1 rounded-card p-4 sm:p-5">
       <p className="font-display text-lg font-semibold tracking-tight text-primary">
         Cafe Mercado
       </p>
@@ -338,7 +338,7 @@ export default function TokensPage() {
           {(["light", "dark"] as Theme[]).map((t) => (
             <div key={t} data-theme={t} className="rounded-card bg-surface p-8">
               <div className="flex flex-col gap-5">
-                <div className="elevation-1 rounded-card p-5">
+                <div className="elevation-1 rounded-card p-4 sm:p-5">
                   <p className="font-mono text-xs text-muted">.elevation-1</p>
                   <p className="mt-1 text-base text-primary">Card</p>
                 </div>
@@ -426,7 +426,7 @@ export default function TokensPage() {
             { cls: "font-body", name: "Public Sans", role: "Body / UI", note: "The workhorse. Everything that is read rather than scanned.", specimen: "A corner cafe that has been here since 1974." },
             { cls: "font-mono", name: "DM Mono", role: "Data / utility", note: "Timestamps, visit counts, distances, check-in receipts. The receipt voice.", specimen: "0.3 MI · 128 VISITS · 24 JUL" },
           ].map((f) => (
-            <div key={f.name} className="elevation-1 rounded-card p-5">
+            <div key={f.name} className="elevation-1 rounded-card p-4 sm:p-5">
               <p className="font-mono text-2xs uppercase tracking-caps text-muted">{f.role}</p>
               <p className="mt-2 font-display text-lg font-semibold tracking-tight text-primary">{f.name}</p>
               <p className={`mt-4 ${f.cls} text-base text-primary`}>{f.specimen}</p>

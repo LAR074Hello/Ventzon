@@ -138,10 +138,33 @@ Phase C it returns as `text-row`, not `text-md`.
   on **primary buttons** and **follow / subscribe states** — the places where
   a green fill is most likely to read as "done" rather than as brand. If it
   does, the accent shifts; it is one token.
-- **Card padding vs 16px body.** Body copy inside a `p-5` card at 375px now
-  yields ~30 characters per line (measured, was ~40 at 13px). Text-heavy
-  cards may want `p-4` on mobile. A layout consequence of the type migration,
-  not a scale problem.
+## Card padding rule (decided, Slice 1.8)
+
+**`p-4` on mobile, `sm:p-5` from 640px up**, for any card containing prose.
+
+Measured at 375px with a 464-character sample in Public Sans 16/24:
+
+| context | content width | chars/line |
+|---|---|---|
+| card `p-5` inside page `mx-5` | 295px | 36 |
+| card `p-4` inside page `mx-5` | 303px | **39** |
+| card `p-4` inside page `mx-4` | 311px | 39 |
+| full-bleed card `p-4` | 343px | 42 |
+| page level, no card | 335px | 42 |
+
+Readable band is 35–45. **Correction to an earlier note in this file: the
+"~30 chars/line" figure was wrong.** It was measured on `/dev/tokens`, which
+uses `px-6` page padding inside a `max-w-6xl` wrapper — heavier chrome than
+the app. Under real app conditions the current `p-5` gives 36, which is inside
+the band at the low end, not below it. `p-4` moves it to 39, comfortably
+mid-band, for a one-token change. Full-bleed would reach 42 but costs
+structure and is not needed.
+
+**The deeper rule: prose is never double-padded.** A page gutter plus a card
+inset is 40px of chrome before the first character. Long-form copy — post
+captions, place descriptions — sits at page level rather than nested in a
+padded card. SocialFeed already does this correctly: its caption is a sibling
+of the media envelope, not a child of it.
 
 ## Removed-one-thing log
 - Explore feed: removed the share arrow from the action row (share lives on

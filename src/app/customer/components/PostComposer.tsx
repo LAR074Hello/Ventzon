@@ -104,7 +104,7 @@ export default function PostComposer({
   }
 
   return (
-    <div className="elevation-1 rounded-card p-4">
+    <div className="elevation-1 rounded-card p-4 sm:p-5">
       <textarea
         value={composer}
         onChange={(e) => setComposer(e.target.value)}
