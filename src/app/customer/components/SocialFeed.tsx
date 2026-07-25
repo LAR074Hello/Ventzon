@@ -341,7 +341,12 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                     {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
                       <span
                         key={i}
-                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-accent" : "bg-subtle"}`}
+                        /* Ink, not accent: green is brand only and never
+                           reports state. A filled ink dot reads as a tally on
+                           a card; a filled green dot reads as "done". The
+                           Visit pill beside this keeps the green, because it
+                           is the thing you press. */
+                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-primary" : "bg-subtle"}`}
                       />
                     ))}
                     <span className="ml-1.5 truncate text-2xs font-semibold uppercase tracking-caps text-muted">

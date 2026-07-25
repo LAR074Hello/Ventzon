@@ -128,16 +128,35 @@ Phase C it returns as `text-row`, not `text-md`.
 - **Mono as the metadata voice** — see "Mono discipline" above.
 - **A 17px `text-md` step** — see above.
 
-## Watch during Phase C review (do not act yet)
+## Green is brand only — never a status (decided 2026-07-25)
 
-- **Does green read as a success state rather than as Ventzon?** The original
-  notes passed over awning green for "generic success-state risk", and the
-  three-lane separation does not fully retire that critique: green accent
-  beside red danger is *exactly* the confirm/cancel pairing. Instagram uses
-  blue, Airbnb coral, Pinterest red, specifically to avoid it. Judge in situ
-  on **primary buttons** and **follow / subscribe states** — the places where
-  a green fill is most likely to read as "done" rather than as brand. If it
-  does, the accent shifts; it is one token.
+> **Green is brand. It is never a success, completion, or confirmation state.**
+
+The collision arrived earlier than expected and was visible in the component
+gallery: a green `Visit` pill sitting inches from green reward dots reading
+`REWARD READY`. Green was doing brand-action and completion-state
+simultaneously, inside one 200px span — exactly the "generic success-state
+risk" the original notes predicted when they passed over awning green.
+
+The fix is not to abandon civic green. Spotify, Starbucks and Whole Foods all
+hold green as identity; they manage it by never letting green mean *done*.
+So:
+
+- **Green keeps**: primary calls to action, brand marks, the accent chip.
+  `Visit`, `Check in`, `Save` — things you press.
+- **Green loses**: reward progress dots, `REWARD READY`, completion
+  checkmarks, "verified" ticks, anything that reports state rather than
+  invites action. Those become **ink with a mark** — a filled ink dot, a
+  check glyph — which reads as a tally, not a traffic light.
+
+Ink for completion also happens to suit the product: a stamp card is a
+*record*, and records are printed in ink, not lit up in green.
+
+If Phase C shows the collision surviving even under this rule, the accent
+moves — it is one token. Try the cheaper fix first.
+
+Related, already consistent with the rule: the filled `FollowButton` state
+was kept ink rather than accent for the same reason.
 ## Card padding rule (decided, Slice 1.8)
 
 **`p-4` on mobile, `sm:p-5` from 640px up**, for any card containing prose.

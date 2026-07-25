@@ -26,12 +26,24 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 
 const argv = process.argv.slice(2);
-const routes = argv.filter((a) => !a.startsWith("--") && !/^\d+$/.test(a));
+// Options that take a value; everything else beginning with -- is a bare flag.
+const VALUED = new Set(["width", "theme", "out", "base"]);
+
 function opt(name, fallback) {
   const i = argv.indexOf(`--${name}`);
   return i === -1 ? fallback : argv[i + 1];
 }
 const flag = (name) => argv.includes(`--${name}`);
+
+// Routes are the positional args — skipping both the option tokens and the
+// values that follow them. Without the second check, `--theme light` left
+// "light" behind and the script tried to navigate to it as a route.
+const routes = argv.filter((a, i) => {
+  if (a.startsWith("--")) return false;
+  const prev = argv[i - 1];
+  if (prev && prev.startsWith("--") && VALUED.has(prev.slice(2))) return false;
+  return true;
+});
 
 const width = Number(opt("width", 375));
 const themes = String(opt("theme", "light,dark")).split(",").map((t) => t.trim());
