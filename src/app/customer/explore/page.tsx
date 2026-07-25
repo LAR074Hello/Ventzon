@@ -161,7 +161,12 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
             </p>
           </div>
         ) : progress && remaining === 0 ? (
-          <p className="mt-1 text-xs font-medium text-primary">Reward ready to redeem</p>
+          /* The single most motivating state in the product, so it gets
+             presence from a filled pill rather than from colour — green
+             stays reserved for things you press. */
+          <span className="mt-1 inline-flex rounded-full bg-primary px-2.5 py-1 text-2xs font-semibold uppercase tracking-caps text-inverse">
+            Reward ready
+          </span>
         ) : (
           <p className="text-xs text-muted mt-0.5 font-normal">
             {shop.reward_goal} visits to reward

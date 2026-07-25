@@ -112,8 +112,8 @@ export default function ProfilePage() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-subtle border-t-ink" />
       </div>
     );
   }
@@ -126,16 +126,16 @@ export default function ProfilePage() {
   const avatarUrl = profile?.avatar_url ?? user.user_metadata?.avatar_url ?? null;
 
   return (
-    <div className="flex min-h-full flex-col bg-bg pb-10">
+    <div className="flex min-h-full flex-col bg-surface pb-10">
       {/* Top bar — gear opens the full settings screen */}
       <div
         className="flex items-center justify-between px-5 pb-1"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 12px)" }}
       >
-        <h1 className="font-display text-[20px] font-semibold text-ink">{name}</h1>
+        <h1 className="font-display text-xl font-semibold tracking-tight text-primary">{name}</h1>
         <button
           onClick={() => router.push("/customer/profile/settings")}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface-raised"
           aria-label="Settings"
         >
           <Settings className="h-4 w-4 text-muted" />
@@ -145,18 +145,18 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex flex-col items-center px-6 pt-4 pb-5">
         {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="h-24 w-24 rounded-full border-2 border-line object-cover" />
+          <img src={avatarUrl} alt={name} className="h-24 w-24 rounded-full border-2 border-subtle object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface-raised">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-subtle bg-surface-raised">
             <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
-        <h2 className="mt-4 font-display text-[22px] font-semibold text-ink">{name}</h2>
+        <h2 className="font-display text-xl font-semibold tracking-tight text-primary mt-4">{name}</h2>
         {profile?.is_creator && (
-          <p className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-muted">CREATOR</p>
+          <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">CREATOR</p>
         )}
         {profile?.bio && (
-          <p className="mt-3 max-w-xs text-center text-[13px] font-normal leading-relaxed text-muted">{profile.bio}</p>
+          <p className="text-sm text-secondary mt-3 max-w-xs text-center font-normal leading-relaxed">{profile.bio}</p>
         )}
       </div>
 
@@ -185,14 +185,14 @@ export default function ProfilePage() {
       <div className="mt-5 flex gap-2 px-5">
         <button
           onClick={() => router.push("/customer/profile/settings")}
-          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface-raised py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface-raised"
+          className="text-xs font-semibold uppercase tracking-caps text-primary flex flex-1 items-center justify-center gap-2 rounded-card border border-subtle bg-surface-raised py-3 active:bg-surface-raised"
         >
           <Pencil className="h-3.5 w-3.5" />
           EDIT PROFILE
         </button>
         <button
           onClick={shareProfile}
-          className="flex flex-1 items-center justify-center gap-2 rounded-card border border-line bg-surface-raised py-3 text-[12px] font-medium tracking-[0.08em] text-ink active:bg-surface-raised"
+          className="text-xs font-semibold uppercase tracking-caps text-primary flex flex-1 items-center justify-center gap-2 rounded-card border border-subtle bg-surface-raised py-3 active:bg-surface-raised"
         >
           <Share2 className="h-3.5 w-3.5" />
           SHARE PROFILE
@@ -210,25 +210,25 @@ export default function ProfilePage() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`relative pb-1 text-[11px] font-semibold tracking-[0.12em] transition-colors ${
-                  tab === t.id ? "text-ink" : "text-muted"
+                className={`relative pb-1 text-sm font-semibold transition-colors ${
+                  tab === t.id ? "text-primary" : "text-muted"
                 }`}
               >
                 {t.label}
-                {tab === t.id && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-ink" />}
+                {tab === t.id && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />}
               </button>
             ))}
           </div>
           {tab === "posts" && profile?.is_creator && (
             <button
               onClick={() => setShowComposer((v) => !v)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-ink"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary"
               aria-label="New post"
             >
               {showComposer ? (
-                <X className="h-4 w-4 text-bg" />
+                <X className="h-4 w-4 text-inverse" />
               ) : (
-                <Plus className="h-4 w-4 text-bg" strokeWidth={2.5} />
+                <Plus className="h-4 w-4 text-inverse" strokeWidth={2.5} />
               )}
             </button>
           )}
@@ -247,12 +247,12 @@ export default function ProfilePage() {
 
         {tab === "saved" ? (
           savedPosts.length === 0 ? (
-            <div className="flex flex-col items-center rounded-card border border-line px-6 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-ctl border border-line bg-surface-raised">
+            <div className="flex flex-col items-center rounded-card border border-subtle px-6 py-10 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-ctl border border-subtle bg-surface-raised">
                 <Bookmark className="h-6 w-6 text-muted" />
               </div>
-              <p className="mt-4 font-display text-[17px] font-semibold text-ink">Nothing saved yet</p>
-              <p className="mt-1.5 text-[12px] font-normal leading-relaxed text-muted">
+              <p className="font-display text-lg font-semibold tracking-tight text-primary mt-4">Nothing saved yet</p>
+              <p className="text-xs text-muted mt-1.5 font-normal leading-relaxed">
                 Tap the bookmark on a post to keep it here —<br />it becomes your want-to-go list
               </p>
             </div>
@@ -260,30 +260,30 @@ export default function ProfilePage() {
             <>
               {savedShops.length > 0 && (
                 <div className="mb-4">
-                  <p className="mb-2 text-[10px] font-semibold tracking-[0.12em] text-muted">
+                  <p className="text-2xs font-semibold uppercase tracking-caps text-muted mb-2">
                     PLACES YOU SAVED
                   </p>
-                  <div className="overflow-hidden rounded-card border border-line">
+                  <div className="overflow-hidden rounded-card border border-subtle">
                     {savedShops.map((sh, i) => (
                       <button
                         key={sh.shop_slug}
                         onClick={() => router.push(`/customer/shop/${sh.shop_slug}`)}
                         className={`flex w-full items-center gap-3 bg-surface-raised px-4 py-3 text-left active:bg-black/10 ${
-                          i > 0 ? "border-t border-line/60" : ""
+                          i > 0 ? "border-t border-subtle/60" : ""
                         }`}
                       >
                         {sh.logo_url ? (
                           <img src={sh.logo_url} alt="" className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
                         ) : (
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl border border-line">
-                            <span className="text-[14px] font-medium text-muted">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl border border-subtle">
+                            <span className="text-base text-secondary font-medium">
                               {sh.shop_name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="text-[14px] font-medium text-ink truncate">{sh.shop_name}</p>
-                          <p className="mt-0.5 text-[11px] font-normal text-muted truncate">
+                          <p className="text-base text-primary font-medium truncate">{sh.shop_name}</p>
+                          <p className="text-xs text-muted mt-0.5 font-normal truncate">
                             {!sh.visited
                               ? "Haven't been yet"
                               : sh.remaining === 0
@@ -303,25 +303,25 @@ export default function ProfilePage() {
         ) : posts.length > 0 ? (
           <PostGrid posts={posts} />
         ) : profile?.is_creator ? (
-          <div className="rounded-card border border-line px-5 py-10 text-center">
-            <p className="text-[14px] font-medium text-muted">No posts yet</p>
-            <p className="mt-1.5 text-[12px] font-normal text-muted">
+          <div className="rounded-card border border-subtle px-5 py-10 text-center">
+            <p className="text-base text-secondary font-medium">No posts yet</p>
+            <p className="text-xs text-muted mt-1.5 font-normal">
               Tap + to share your first find
             </p>
           </div>
         ) : (
-          <div className="flex flex-col items-center rounded-card border border-line px-6 py-10 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-card border border-line bg-surface-raised">
+          <div className="flex flex-col items-center rounded-card border border-subtle px-6 py-10 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-card border border-subtle bg-surface-raised">
               <Sparkles className="h-6 w-6 text-muted" />
             </div>
-            <p className="mt-4 font-display text-[17px] font-semibold text-ink">Share your local finds</p>
-            <p className="mt-1.5 text-[12px] font-normal leading-relaxed text-muted">
+            <p className="font-display text-lg font-semibold tracking-tight text-primary mt-4">Share your local finds</p>
+            <p className="text-xs text-muted mt-1.5 font-normal leading-relaxed">
               Become a creator to post photos and tips from<br />the places you love — open to everyone
             </p>
             <button
               onClick={becomeCreator}
               disabled={becomingCreator}
-              className="mt-6 rounded-full bg-ink px-7 py-3 text-[12px] font-semibold tracking-[0.1em] text-bg disabled:opacity-40"
+              className="text-sm font-medium text-inverse mt-6 rounded-full bg-primary px-7 py-3 disabled:opacity-40"
             >
               {becomingCreator ? "SETTING UP…" : "BECOME A CREATOR"}
             </button>

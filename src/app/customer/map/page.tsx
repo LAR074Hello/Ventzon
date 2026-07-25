@@ -122,7 +122,7 @@ export default function MapPage() {
         const initial = shop.shop_name.charAt(0).toUpperCase();
         const p = progressMap[shop.slug];
         const rewardReady = p && p.visits >= p.goal;
-        const ring = rewardReady ? "var(--accent)" : "var(--border-subtle)";
+        const ring = rewardReady ? "var(--text-primary)" : "var(--border-subtle)";
 
         const face = shop.logo_url
           ? `<img src="${shop.logo_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
@@ -137,10 +137,10 @@ export default function MapPage() {
               overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.6);
             ">${face}</div>
             ${rewardReady ? `<div style="
-              background:var(--accent);color:var(--on-accent);border-radius:999px;
+              background:var(--text-primary);color:var(--text-inverse);border-radius:999px;
               font-size:8px;font-weight:700;letter-spacing:0.05em;
               padding:1px 6px;font-family:sans-serif;white-space:nowrap;
-            ">REWARD</div>` : ""}
+            ">Ready</div>` : ""}
           </div>
         `;
 
@@ -189,18 +189,18 @@ export default function MapPage() {
         style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)", paddingBottom: "12px" }}
       >
         <div className="flex items-center gap-3 w-full">
-          <div className="flex-1 rounded-card border border-line bg-bg/80 backdrop-blur-md px-4 py-3">
-            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">NEARBY</p>
-            <p className="text-[15px] font-semibold text-ink mt-0.5">
+          <div className="flex-1 rounded-card border border-subtle bg-surface/80 backdrop-blur-md px-4 py-3">
+            <p className="text-2xs font-semibold uppercase tracking-caps text-muted">NEARBY</p>
+            <p className="font-display text-lg font-semibold tracking-tight text-primary mt-0.5">
               {loading ? "Loading stores…" : shops.length === 0 ? "Explore nearby stores" : `${shops.length} store${shops.length === 1 ? "" : "s"} nearby`}
             </p>
           </div>
           <button
             onClick={locateMe}
             disabled={locating}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-line bg-bg/80 backdrop-blur-md transition-colors active:bg-surface-raised"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-subtle bg-surface/80 backdrop-blur-md transition-colors active:bg-surface-raised"
           >
-            <Locate className={`h-5 w-5 ${locating ? "text-ink animate-pulse" : "text-muted"}`} />
+            <Locate className={`h-5 w-5 ${locating ? "text-primary animate-pulse" : "text-muted"}`} />
           </button>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function MapPage() {
       {selected && (
         <div className="absolute bottom-0 left-0 right-0 z-[1001] animate-in slide-in-from-bottom-4 duration-200">
           <div
-            className="mx-3 mb-3 overflow-hidden rounded-sheet border border-line bg-surface-raised"
+            className="mx-3 mb-3 overflow-hidden rounded-sheet border border-subtle bg-surface-raised"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             {/* Dismiss */}
@@ -226,16 +226,16 @@ export default function MapPage() {
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl"
                     style={{ background: "var(--surface-raised)", border: "1px solid var(--border-subtle)" }}
                   >
-                    <span className="text-[16px] font-semibold" style={{ color: "var(--text-muted)" }}>
+                    <span className="font-display text-lg font-semibold tracking-tight" style={{ color: "var(--text-muted)" }}>
                       {selected.shop_name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[15px] font-semibold text-ink truncate">{selected.shop_name}</p>
+                    <p className="font-display text-lg font-semibold tracking-tight text-primary truncate">{selected.shop_name}</p>
                     <span
-                      className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-medium tracking-[0.08em]"
+                      className="text-2xs font-semibold uppercase tracking-caps shrink-0 rounded-full px-2 py-0.5"
                       style={{
                         backgroundColor: "var(--surface-raised)",
                         color: "var(--text-muted)",
@@ -246,7 +246,7 @@ export default function MapPage() {
                     </span>
                   </div>
                   {selected.address && (
-                    <p className="text-[12px] text-muted truncate mt-0.5">{selected.address}</p>
+                    <p className="text-xs text-muted truncate mt-0.5">{selected.address}</p>
                   )}
                 </div>
               </div>
@@ -260,20 +260,20 @@ export default function MapPage() {
 
             {/* Deal */}
             {selected.deal_title && (
-              <div className="mx-5 mb-3 rounded-card border border-line bg-surface-raised px-4 py-3">
-                <p className="text-[11px] font-medium tracking-[0.1em] text-muted">REWARD</p>
-                <p className="mt-1 text-[15px] font-semibold text-ink">{selected.deal_title}</p>
+              <div className="mx-5 mb-3 rounded-card border border-subtle bg-surface-raised px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-caps text-muted">REWARD</p>
+                <p className="font-display text-lg font-semibold tracking-tight text-primary mt-1">{selected.deal_title}</p>
                 {selected.deal_details && (
-                  <p className="mt-0.5 text-[12px] text-muted">{selected.deal_details}</p>
+                  <p className="text-xs text-muted mt-0.5">{selected.deal_details}</p>
                 )}
                 {(() => {
                   const p = progressMap[selected.slug];
                   if (!p) {
-                    return <p className="mt-2 text-[11px] text-muted">After {selected.reward_goal} visits</p>;
+                    return <p className="text-xs text-muted mt-2">After {selected.reward_goal} visits</p>;
                   }
                   const remaining = Math.max(p.goal - p.visits, 0);
                   if (remaining === 0) {
-                    return <p className="mt-2 text-[11px] font-medium text-accent">Your reward is ready to redeem</p>;
+                    return <span className="mt-2 inline-flex rounded-full bg-primary px-2.5 py-1 text-2xs font-semibold uppercase tracking-caps text-inverse">Reward ready</span>;
                   }
                   return (
                     <div className="mt-2 flex items-center gap-1.5">
@@ -282,11 +282,11 @@ export default function MapPage() {
                           <div
                             key={i}
                             className="h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: i < p.visits ? "var(--accent)" : "var(--border-subtle)" }}
+                            style={{ backgroundColor: i < p.visits ? "var(--text-primary)" : "var(--border-subtle)" }}
                           />
                         ))}
                       </div>
-                      <p className="text-[11px]" style={{ color: "var(--accent)" }}>
+                      <p className="text-xs text-muted">
                         {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
                       </p>
                     </div>
@@ -299,10 +299,10 @@ export default function MapPage() {
             <div className="px-5 pb-4">
               <button
                 onClick={() => router.push(`/customer/shop/${selected.slug}`)}
-                className="flex w-full items-center justify-between rounded-card bg-ink px-5 py-3.5 transition-colors active:opacity-80"
+                className="flex w-full items-center justify-between rounded-card bg-primary px-5 py-3.5 transition-colors active:opacity-80"
               >
-                <span className="text-[12px] font-semibold tracking-[0.08em] text-bg">View loyalty card</span>
-                <ChevronRight className="h-4 w-4 text-bg" />
+                <span className="text-sm font-medium text-inverse">View loyalty card</span>
+                <ChevronRight className="h-4 w-4 text-inverse" />
               </button>
             </div>
           </div>

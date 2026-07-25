@@ -113,20 +113,20 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-subtle border-t-ink" />
       </div>
     );
   }
 
   if (notFound || !data) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.3em] text-muted">NOT FOUND</p>
-        <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Post not found</h1>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-8 text-center">
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted">NOT FOUND</p>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-primary">Post not found</h1>
         <button
           onClick={() => router.back()}
-          className="mt-8 rounded-full border border-line px-6 py-3 text-[12px] tracking-[0.15em] text-ink"
+          className="text-xs font-semibold uppercase tracking-caps text-primary mt-8 rounded-full border border-subtle px-6 py-3"
         >
           Go back
         </button>
@@ -138,7 +138,7 @@ export default function PostPage() {
   const remaining = viewer.progress ? Math.max(viewer.progress.goal - viewer.progress.visits, 0) : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg pb-8">
+    <div className="flex min-h-screen flex-col bg-surface pb-8">
       {/* Top bar */}
       <div
         className="flex items-center gap-3 px-4 pb-3"
@@ -146,9 +146,9 @@ export default function PostPage() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface/80"
         >
-          <ArrowLeft className="h-4 w-4 text-ink" />
+          <ArrowLeft className="h-4 w-4 text-primary" />
         </button>
         {author && (
           <button
@@ -159,17 +159,17 @@ export default function PostPage() {
               <img src={author.avatar_url} alt={author.display_name} className="h-8 w-8 rounded-full object-cover" />
             ) : (
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised">
-                <span className="text-[12px] font-medium text-muted">{author.display_name.charAt(0).toUpperCase()}</span>
+                <span className="text-xs text-muted font-medium">{author.display_name.charAt(0).toUpperCase()}</span>
               </div>
             )}
             <div className="text-left">
-              <p className="text-[13px] font-medium text-ink">{author.display_name}</p>
-              <p className="flex items-center gap-1.5 text-[10px] font-normal text-muted">
+              <p className="text-base text-primary font-medium">{author.display_name}</p>
+              <p className="text-xs text-muted flex items-center gap-1.5 font-normal">
                 {timeAgo(post.created_at)}
                 {verified_visit && (
-                  <span className="inline-flex items-center gap-1 text-accent">
+                  <span className="inline-flex items-center gap-1 text-primary">
                     <BadgeCheck className="h-3 w-3" />
-                    <span className="font-semibold tracking-[0.06em]">VERIFIED VISIT</span>
+                    <span className="text-2xs font-semibold uppercase tracking-caps">Verified visit</span>
                   </span>
                 )}
               </p>
@@ -193,18 +193,18 @@ export default function PostPage() {
       <div className="flex items-center gap-5 px-5 pt-4">
         <button onClick={toggleLike} className="flex items-center gap-1.5">
           <Heart
-            className={`h-5 w-5 transition-colors ${viewer.liked ? "text-ink" : "text-muted"}`}
+            className={`h-5 w-5 transition-colors ${viewer.liked ? "text-primary" : "text-muted"}`}
             fill={viewer.liked ? "currentColor" : "none"}
           />
-          <span className="text-[12px] font-medium text-muted">{counts.likes}</span>
+          <span className="text-xs text-muted font-medium">{counts.likes}</span>
         </button>
         <div className="flex items-center gap-1.5">
           <MessageCircle className="h-5 w-5 text-muted" />
-          <span className="text-[12px] font-medium text-muted">{counts.comments}</span>
+          <span className="text-xs text-muted font-medium">{counts.comments}</span>
         </div>
         <button onClick={toggleSave} className="flex items-center gap-1.5">
           <Bookmark
-            className={`h-5 w-5 transition-colors ${viewer.saved ? "text-ink" : "text-muted"}`}
+            className={`h-5 w-5 transition-colors ${viewer.saved ? "text-primary" : "text-muted"}`}
             fill={viewer.saved ? "currentColor" : "none"}
           />
         </button>
@@ -236,9 +236,9 @@ export default function PostPage() {
 
       {/* Hidden-pending-review notice (author only) */}
       {post.hidden && viewer.is_own && (
-        <div className="mx-5 mt-4 flex items-center gap-3 rounded-ctl border border-line bg-surface-raised px-4 py-3">
+        <div className="mx-5 mt-4 flex items-center gap-3 rounded-ctl border border-subtle bg-surface-raised px-4 py-3">
           <EyeOff className="h-4 w-4 shrink-0 text-muted" />
-          <p className="text-[12px] font-normal text-muted">
+          <p className="text-xs text-muted font-normal">
             This post was reported and is hidden while we review it.
           </p>
         </div>
@@ -246,25 +246,25 @@ export default function PostPage() {
 
       {/* Caption */}
       {post.body && (
-        <p className="px-5 pt-3 text-[14px] font-normal leading-relaxed text-ink">{post.body}</p>
+        <p className="text-base text-primary px-5 pt-3 font-normal leading-relaxed">{post.body}</p>
       )}
 
       {/* Linked business + Visit & Earn */}
       {shop && (
         <button
           onClick={() => router.push(`/customer/shop/${shop.slug}`)}
-          className="mx-5 mt-4 flex items-center gap-3.5 rounded-card border border-line bg-surface-raised px-4 py-3.5 text-left active:bg-surface-raised"
+          className="mx-5 mt-4 flex items-center gap-3.5 rounded-card border border-subtle bg-surface-raised px-4 py-3.5 text-left active:bg-surface-raised"
         >
           {shop.logo_url ? (
             <img src={shop.logo_url} alt={shop.name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
           ) : (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface-raised">
-              <span className="text-[14px] font-medium text-muted">{shop.name.charAt(0).toUpperCase()}</span>
+              <span className="text-base text-secondary font-medium">{shop.name.charAt(0).toUpperCase()}</span>
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-medium text-ink truncate">{shop.name}</p>
-            <p className="mt-0.5 text-[12px] font-normal text-muted truncate">
+            <p className="text-base text-primary font-medium truncate">{shop.name}</p>
+            <p className="text-xs text-muted mt-0.5 font-normal truncate">
               {remaining !== null && remaining > 0
                 ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${shop.deal_title ?? "your reward"}`
                 : remaining === 0
@@ -272,8 +272,8 @@ export default function PostPage() {
                 : shop.deal_title ?? `${shop.reward_goal} visits to reward`}
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-accent px-3.5 py-1.5 text-[10px] font-bold tracking-[0.1em] text-accent-ink">
-            VISIT &amp; EARN
+          <span className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-on-accent">
+            Visit &amp; earn
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
         </button>
@@ -281,11 +281,11 @@ export default function PostPage() {
 
       {/* Comments */}
       <div className="mt-6 px-5">
-        <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-muted">
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted mb-3">
           COMMENTS{counts.comments > 0 ? ` (${counts.comments})` : ""}
         </p>
         {comments.length === 0 ? (
-          <p className="pb-2 text-[13px] font-normal text-muted">Be the first to comment</p>
+          <p className="text-sm text-secondary pb-2 font-normal">Be the first to comment</p>
         ) : (
           <div className="space-y-3.5 pb-2">
             {comments.map((c) => (
@@ -298,18 +298,18 @@ export default function PostPage() {
                     <img src={c.author.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
                   ) : (
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised">
-                      <span className="text-[10px] font-medium text-muted">
+                      <span className="text-xs text-muted font-medium">
                         {c.author.display_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px]">
+                  <p className="text-sm">
                     <span className="font-medium text-muted">{c.author.display_name}</span>
-                    <span className="ml-2 text-[10px] text-muted">{timeAgo(c.created_at)}</span>
+                    <span className="text-xs text-muted ml-2">{timeAgo(c.created_at)}</span>
                   </p>
-                  <p className="mt-0.5 text-[13px] font-normal leading-relaxed text-muted">{c.body}</p>
+                  <p className="text-sm text-secondary mt-0.5 font-normal leading-relaxed">{c.body}</p>
                 </div>
                 {(c.is_own || viewer.is_own) && (
                   <button
@@ -340,14 +340,14 @@ export default function PostPage() {
         )}
 
         {/* Comment input */}
-        <div className="mt-3 flex items-center gap-2 rounded-card border border-line bg-surface-raised px-4 py-2.5">
+        <div className="mt-3 flex items-center gap-2 rounded-card border border-subtle bg-surface-raised px-4 py-2.5">
           <input
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submitComment()}
             placeholder="Add a comment…"
             maxLength={500}
-            className="flex-1 bg-transparent text-[13px] font-normal text-ink outline-none placeholder:text-muted"
+            className="text-base text-primary flex-1 bg-transparent font-normal outline-none placeholder:"
           />
           <button
             onClick={submitComment}
