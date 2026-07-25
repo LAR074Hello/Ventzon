@@ -160,7 +160,7 @@ export default function ScanPage() {
         >
           <X className="h-5 w-5 text-white" />
         </button>
-        <p className="text-[13px] font-light tracking-[0.2em] text-white/80">SCAN QR CODE</p>
+        <p className="text-xs font-semibold uppercase tracking-caps text-white /80">SCAN QR CODE</p>
         <button
           onClick={toggleTorch}
           className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm ${torchOn ? "bg-white/90" : "bg-black/40"}`}
@@ -173,17 +173,17 @@ export default function ScanPage() {
       <div className="relative z-10 mt-auto pb-10 px-8 text-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 40px)" }}>
         {state === "scanning" && (
           <>
-            <p className="text-[15px] font-light text-white/90">Point at a Ventzon QR code</p>
-            <p className="mt-2 text-[12px] font-light text-white/40">Found at participating stores</p>
+            <p className="font-display text-lg font-semibold tracking-tight text-white /90">Point at a Ventzon QR code</p>
+            <p className="text-sm text-white mt-2 /40">Found at participating stores</p>
           </>
         )}
         {state === "success" && (
-          <p className="text-[15px] font-light text-accent">Opening store…</p>
+          <p className="font-display text-lg font-semibold tracking-tight text-primary">Opening store…</p>
         )}
         {state === "permission-denied" && (
           <div>
-            <p className="text-[15px] font-light text-white/90">Camera access required</p>
-            <p className="mt-2 text-[12px] font-light text-white/50">
+            <p className="font-display text-lg font-semibold tracking-tight text-white /90">Camera access required</p>
+            <p className="text-sm text-white mt-2 /50">
               Go to Settings → Ventzon → Camera and enable access
             </p>
           </div>

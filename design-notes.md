@@ -185,6 +185,45 @@ captions, place descriptions — sits at page level rather than nested in a
 padded card. SocialFeed already does this correctly: its caption is a sibling
 of the media envelope, not a child of it.
 
+## Deferred to post-beta (decided 2026-07-25, with reasoning)
+
+The beta target is 1,000 users in one metro. Everything below is real work
+that is **not required to invite strangers safely**, so it waits. Recorded
+with the reasoning because in October the list alone will not explain itself.
+
+- **Claim flow and verification tiers (1.5).** A tier badge only matters once
+  merchants are competing for credibility. At 1,000 users in one neighbourhood
+  the map carries trust, and every place is either seeded or imported anyway.
+  Architecture keeps room: `places.claimed_by` and `verification_tier` land
+  with 1.3's schema so nothing has to be re-migrated later.
+- **Merchant/rep retokenization (1.7).** 894 hex values, all mechanical, and
+  no beta user ever opens those screens. Merchant chrome looking off-identity
+  for a few weeks costs nothing; the profile merge and composer sliding costs
+  the whole point of the replan.
+- **Merchant analytics on the event log.** The *log* still ships in 1.4
+  because it cannot be backfilled. Reading from it can wait — an analytics
+  dashboard is a retention tool for paying merchants, and there are no paying
+  merchants in a beta.
+- **Feed slot system.** Promotion infrastructure. `promotable` and
+  `promotion_id` ship nullable and unused in 1.4 so the columns exist; no UI.
+- **Marketing site: public Explore, city pages, /business (2.5).** This is the
+  SEO and cold-start surface for *organic* growth. A 1,000-person invited beta
+  in one metro does not grow organically — it grows by invitation. Share pages
+  for individual posts and places DO ship, because that is the loop that
+  actually operates during a beta: someone posts, sends a link, the recipient
+  lands on something real.
+- **Saves and collections.** Retention mechanic. Nothing to retain yet.
+- **D5 bottom half — haptics, spring-physics tuning.** The top half ships
+  (grid-to-post transition, skeletons, image pipeline, recruiting empty
+  states) because those are the difference between "loads" and "feels built".
+  Physics tuning is polish on polish.
+
+Explicitly NOT deferred, despite looking merchant-adjacent:
+**places as first-class objects (1.3)** — it is the cold-start fix, not
+merchant infrastructure; **minimal event logging (1.4)** — half a session and
+it cannot be reconstructed after the fact; **the $0.85 fee removal** — it is
+deletion, and leaving dead billing paths around real users is a liability.
+
 ## Open decisions (logged, not fixed)
 
 - **`promotions` has diverged in both directions.** Production has
@@ -195,6 +234,24 @@ of the media envelope, not a child of it.
   its own migration creates (`job_applications_role_idx`,
   `job_applications_submitted_at_idx`). Dev currently carries the union.
   Needs a decision about which shape wins before anything is built on it.
+- **ODbL share-alike on imported OSM places.** OpenStreetMap is licensed
+  ODbL. Displaying the data with attribution is uncontroversial; the open
+  question is share-alike on *derived databases*. If imported places become
+  a core asset — mixed with visits, posts and claims — it needs a clear read
+  on whether the resulting database is "derived" and what that obliges.
+  **Get the answer before imported places are load-bearing, not after.** A
+  workable hedge is keeping OSM-sourced rows attributed and separable from
+  user-generated data, which the content/insert split already makes cheap.
+
+- **Pittsburgh import — decisions already made (2026-07-25):**
+  unclaimed, photo-less places **do** get a map pin, muted, and the place page
+  reads as an invitation — *no one's posted here yet — be the first*. Empty
+  places are recruitment surfaces, not deficiencies to hide; a sparse map is
+  worse than a full map of quiet places. Ships with a "permanently closed?"
+  report affordance, and anything with no OSM edit in two years is
+  deprioritized. Depends on 1.3; the importer becomes a third caller of the
+  same insert layer the seed uses.
+
 - **Production service_role key rotation** — the key was found inline in
   `scripts/generate_insights_report.py` and in two iCloud config duplicates.
   Those copies are gone, but the key itself is unchanged. Rotation has to be

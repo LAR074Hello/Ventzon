@@ -253,29 +253,34 @@ export default function PostPage() {
       {shop && (
         <button
           onClick={() => router.push(`/customer/shop/${shop.slug}`)}
-          className="mx-5 mt-4 flex items-center gap-3.5 rounded-card border border-subtle bg-surface-raised px-4 py-3.5 text-left active:bg-surface-raised"
+          /* The action sits on its own row. Sharing a line with the place
+             name meant four things competing for ~300px, and the name lost
+             every time — "Perch Coffee" rendered as "Perch Cof…". */
+          className="elevation-1 mx-5 mt-4 flex flex-col gap-3 rounded-card px-4 py-3.5 text-left transition-colors active:bg-surface-sunken"
         >
-          {shop.logo_url ? (
-            <img src={shop.logo_url} alt={shop.name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface-raised">
-              <span className="text-base text-secondary font-medium">{shop.name.charAt(0).toUpperCase()}</span>
+          <div className="flex items-center gap-3.5">
+            {shop.logo_url ? (
+              <img src={shop.logo_url} alt={shop.name} className="h-10 w-10 shrink-0 rounded-ctl object-cover" />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface-sunken">
+                <span className="text-base font-medium text-secondary">{shop.name.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-base font-medium text-primary">{shop.name}</p>
+              <p className="mt-0.5 text-xs text-muted">
+                {remaining !== null && remaining > 0
+                  ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${shop.deal_title ?? "your reward"}`
+                  : remaining === 0
+                  ? "Reward ready to redeem"
+                  : shop.deal_title ?? `${shop.reward_goal} visits to reward`}
+              </p>
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-base text-primary font-medium truncate">{shop.name}</p>
-            <p className="text-xs text-muted mt-0.5 font-normal truncate">
-              {remaining !== null && remaining > 0
-                ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${shop.deal_title ?? "your reward"}`
-                : remaining === 0
-                ? "Your reward is ready to redeem"
-                : shop.deal_title ?? `${shop.reward_goal} visits to reward`}
-            </p>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
           </div>
-          <span className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-on-accent">
+          <span className="block w-full rounded-ctl bg-accent py-2.5 text-center text-sm font-medium text-on-accent">
             Visit &amp; earn
           </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
         </button>
       )}
 

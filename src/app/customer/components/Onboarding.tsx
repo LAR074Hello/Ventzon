@@ -55,7 +55,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col bg-bg"
+      className="fixed inset-0 z-[100] flex flex-col bg-surface"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       {/* Skip */}

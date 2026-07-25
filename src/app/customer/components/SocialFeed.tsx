@@ -309,7 +309,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                   </span>
                   {p.verified_visit && (
                     <span
-                      className="inline-flex shrink-0 items-center gap-1 text-accent"
+                      className="inline-flex shrink-0 items-center gap-1 text-primary"
                       title="This person checked in here"
                     >
                       <BadgeCheck className="h-3.5 w-3.5" />

@@ -62,10 +62,10 @@ export default function NotificationsPage() {
   }, []);
 
   return (
-    <div className="flex min-h-full flex-col bg-bg">
+    <div className="flex min-h-full flex-col bg-surface">
       <div className="px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
-        <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-ink">Notifications</h1>
-        <p className="mt-1 text-[12px] font-normal text-muted">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-primary">Notifications</h1>
+        <p className="text-xs text-muted mt-1 font-normal">
           Drops from stores you follow, rewards, and new places nearby
         </p>
       </div>
@@ -74,7 +74,7 @@ export default function NotificationsPage() {
         {loading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="flex gap-3 rounded-card border border-line p-4">
+              <div key={i} className="flex gap-3 rounded-card border border-subtle p-4">
                 <div className="skeleton h-9 w-9 rounded-ctl shrink-0" />
                 <div className="flex-1 space-y-2 pt-0.5">
                   <div className="skeleton h-3.5 w-40 rounded" />
@@ -85,16 +85,16 @@ export default function NotificationsPage() {
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center py-20 text-center px-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-line bg-surface-raised">
+            <div className="flex h-16 w-16 items-center justify-center rounded-sheet border border-subtle bg-surface-raised">
               <Bell className="h-7 w-7 text-muted" />
             </div>
-            <p className="mt-5 font-display text-[18px] font-semibold text-ink">Nothing yet</p>
-            <p className="mt-2 text-[13px] font-normal leading-relaxed text-muted">
+            <p className="font-display text-lg font-semibold tracking-tight text-primary mt-5">Nothing yet</p>
+            <p className="text-sm text-secondary mt-2 font-normal leading-relaxed">
               Follow stores you love and we'll let you know<br />when they post something new
             </p>
             <button
               onClick={() => router.push("/customer/explore")}
-              className="mt-7 rounded-card border border-line px-8 py-3.5 text-[12px] font-medium tracking-[0.1em] text-muted"
+              className="text-xs font-semibold uppercase tracking-caps text-muted mt-7 rounded-card border border-subtle px-8 py-3.5"
             >
               BROWSE STORES
             </button>
@@ -108,18 +108,18 @@ export default function NotificationsPage() {
                   key={n.id}
                   onClick={() => n.href && router.push(n.href)}
                   className={`flex w-full items-center gap-3.5 rounded-card border px-4 py-3.5 text-left active:bg-black/10 ${
-                    n.read ? "border-line bg-surface-raised" : "border-accent/40 bg-accent/5"
+                    n.read ? "border-subtle bg-surface" : "border-strong bg-surface-raised"
                   }`}
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ctl bg-surface-raised">
                     <Icon className="h-4 w-4 text-muted" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-medium text-ink truncate">{n.title}</p>
-                    <p className="mt-0.5 text-[12px] font-normal text-muted truncate">{n.body}</p>
+                    <p className="text-base text-primary font-medium truncate">{n.title}</p>
+                    <p className="text-xs text-muted mt-0.5 font-normal truncate">{n.body}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
-                    <span className="text-[11px] font-normal text-muted">{timeAgo(n.sent_at)}</span>
+                    <span className="text-xs text-muted font-normal">{timeAgo(n.sent_at)}</span>
                     {n.href && <ChevronRight className="h-3.5 w-3.5 text-muted" />}
                   </div>
                 </button>

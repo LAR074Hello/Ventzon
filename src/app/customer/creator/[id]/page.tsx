@@ -76,20 +76,20 @@ export default function CreatorProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-subtle border-t-ink" />
       </div>
     );
   }
 
   if (notFound || !profile) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
-        <p className="text-[11px] font-light tracking-[0.3em] text-muted">NOT FOUND</p>
-        <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Creator not found</h1>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-8 text-center">
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted">NOT FOUND</p>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-primary">Creator not found</h1>
         <button
           onClick={() => router.back()}
-          className="mt-8 rounded-full border border-line px-6 py-3 text-[12px] font-normal tracking-[0.15em] text-ink"
+          className="text-xs font-semibold uppercase tracking-caps text-primary mt-8 rounded-full border border-subtle px-6 py-3"
         >
           Go back
         </button>
@@ -100,7 +100,7 @@ export default function CreatorProfilePage() {
   const name = profile.display_name ?? "Creator";
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg pb-10">
+    <div className="flex min-h-screen flex-col bg-surface pb-10">
       {/* Top bar */}
       <div
         className="flex items-center justify-between px-4"
@@ -108,14 +108,14 @@ export default function CreatorProfilePage() {
       >
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface/80"
         >
-          <ArrowLeft className="h-4 w-4 text-ink" />
+          <ArrowLeft className="h-4 w-4 text-primary" />
         </button>
         <div className="flex items-center gap-2">
           <button
             onClick={share}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface/80"
           >
             <Share2 className="h-4 w-4 text-muted" />
           </button>
@@ -134,20 +134,20 @@ export default function CreatorProfilePage() {
       {/* Header */}
       <div className="flex flex-col items-center px-6 pt-4 pb-6">
         {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt={name} className="h-24 w-24 rounded-full border-2 border-line object-cover" />
+          <img src={profile.avatar_url} alt={name} className="h-24 w-24 rounded-full border-2 border-subtle object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-surface-raised">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-subtle bg-surface-raised">
             <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
-        <h1 className="mt-4 font-display text-[22px] font-semibold text-ink">{name}</h1>
-        <p className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-muted">CREATOR</p>
+        <h1 className="font-display text-xl font-semibold tracking-tight text-primary mt-4">{name}</h1>
+        <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">CREATOR</p>
         {profile.bio && (
-          <p className="mt-3 max-w-xs text-center text-[13px] font-normal leading-relaxed text-muted">{profile.bio}</p>
+          <p className="text-sm text-secondary mt-3 max-w-xs text-center font-normal leading-relaxed">{profile.bio}</p>
         )}
 
         {followsYou && !isOwn && (
-          <span className="mt-3 rounded-full border border-line bg-surface-raised px-3 py-1 text-[10px] font-medium tracking-[0.08em] text-muted">
+          <span className="text-2xs font-semibold uppercase tracking-caps text-muted mt-3 rounded-full border border-subtle bg-surface-raised px-3 py-1">
             FOLLOWS YOU
           </span>
         )}
@@ -195,7 +195,7 @@ export default function CreatorProfilePage() {
 
       {/* Posts — shared grid component (also used on business profiles) */}
       <div className="mt-6 px-5">
-        <p className="mb-3 text-[11px] font-light tracking-[0.15em] text-muted">POSTS</p>
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted mb-3">POSTS</p>
         <PostGrid posts={posts} />
       </div>
     </div>
