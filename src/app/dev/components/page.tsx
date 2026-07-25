@@ -20,13 +20,15 @@ import FollowButton from "@/app/customer/components/FollowButton";
    only, and it never touches the real fetch path in the app.
    ═══════════════════════════════════════════════════════════════════ */
 
-const IMG = (seed: string, w = 800, h = 1000) =>
-  `https://picsum.photos/seed/${seed}/${w}/${h}`;
+/* Local, deterministic stand-ins for photography. Remote placeholders made
+   captures non-reproducible: image heights varied between runs, so a
+   before/after crop of the same element landed on different content. */
+const IMG = (name: string) => `/dev-fixtures/${name}.jpg`;
 
 const GRID_POSTS = [
-  { id: "1", body: "", media_url: IMG("a", 600, 600), media_type: "image" as const, created_at: "" },
-  { id: "2", body: "", media_url: IMG("b", 600, 600), media_type: "video" as const, created_at: "" },
-  { id: "3", body: "", media_url: IMG("c", 600, 600), media_type: "image" as const, created_at: "" },
+  { id: "1", body: "", media_url: IMG("grid-1"), media_type: "image" as const, created_at: "" },
+  { id: "2", body: "", media_url: IMG("grid-2"), media_type: "video" as const, created_at: "" },
+  { id: "3", body: "", media_url: IMG("grid-3"), media_type: "image" as const, created_at: "" },
   {
     id: "4",
     body: "The seasonal jam is made in small batches out the back and never appears on the menu board. Ask anyway.",
@@ -34,8 +36,8 @@ const GRID_POSTS = [
     media_type: null,
     created_at: "",
   },
-  { id: "5", body: "", media_url: IMG("e", 600, 600), media_type: "image" as const, created_at: "" },
-  { id: "6", body: "", media_url: IMG("f", 600, 600), media_type: "image" as const, created_at: "" },
+  { id: "5", body: "", media_url: IMG("grid-4"), media_type: "image" as const, created_at: "" },
+  { id: "6", body: "", media_url: IMG("grid-5"), media_type: "image" as const, created_at: "" },
 ];
 
 const STATS = {
@@ -59,7 +61,7 @@ const FEED_FIXTURE = {
     {
       id: "p1",
       body: "Corner table by the window, oat flat white, and the good pastries if you get there before ten on a weekday.",
-      media_url: IMG("cafe", 800, 1000),
+      media_url: IMG("feed-cafe"),
       media_type: "image",
       hours_ago: 3,
       author: { profile_id: "u1", display_name: "Mara Ellison", avatar_url: null, followed: false },
@@ -71,7 +73,7 @@ const FEED_FIXTURE = {
     {
       id: "p2",
       body: "Third time this month. The owner has been running this place since 1974 and still opens up herself.",
-      media_url: IMG("bakery", 800, 1000),
+      media_url: IMG("feed-bakery"),
       media_type: "image",
       hours_ago: 26,
       author: { profile_id: "u2", display_name: "Devon Park", avatar_url: null, followed: true },

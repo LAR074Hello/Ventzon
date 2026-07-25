@@ -199,3 +199,56 @@ create policy "allow anon signup" on public.signups for insert to anon with chec
 create index if not exists idx_customers_shop_slug on public.customers(shop_slug);
 create index if not exists idx_checkins_shop_slug on public.checkins(shop_slug);
 create index if not exists idx_checkins_customer_id on public.checkins(customer_id);
+
+-- ── Production drift, captured 2026-07-25 ───────────────────────────
+-- Found by structural diff of dev vs production. These objects exist in
+-- production but were never in any migration, so a rebuilt database
+-- behaved differently from the live one. Production was not modified.
+
+create or replace function public.set_updated_at()
+returns trigger language plpgsql as $fn$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$fn$;
+
+drop trigger if exists trg_shop_settings_updated_at on public.shop_settings;
+create trigger trg_shop_settings_updated_at
+  before update on public.shop_settings
+  for each row execute function public.set_updated_at();
+
+-- The most consequential gap: without these a customer can check in twice
+-- in one day in a rebuilt database, but not in production.
+create unique index if not exists checkins_customer_day_unique
+  on public.checkins using btree (customer_id, checkin_date);
+create unique index if not exists checkins_shop_customer_date_unique
+  on public.checkins using btree (shop_slug, customer_id, checkin_date);
+
+create unique index if not exists shop_settings_shop_slug_unique on public.shop_settings (shop_slug);
+create unique index if not exists signups_shop_slug_phone_unique on public.signups (shop_slug, phone);
+create index if not exists signups_shop_slug_idx on public.signups (shop_slug);
+create index if not exists signups_phone_idx on public.signups (phone);
+create index if not exists idx_messages_shop_created on public.messages (shop_slug, created_at desc);
+create index if not exists idx_promotions_shop_created on public.promotions (shop_slug, created_at desc);
+create index if not exists idx_customers_shop on public.customers (shop_slug);
+
+alter table public.reward_events add column if not exists is_redeemed boolean not null default false;
+alter table public.reward_events add column if not exists redeemed_at timestamptz;
+create index if not exists idx_reward_events_pending
+  on public.reward_events (shop_slug, customer_id, is_redeemed) where (is_redeemed = false);
+
+alter table public.job_applications add column if not exists comfortable_commission text;
+alter table public.job_applications add column if not exists has_sales_experience text;
+alter table public.job_applications add column if not exists has_transportation text;
+alter table public.promotions add column if not exists audience text default 'all';
+alter table public.promotions add column if not exists name text;
+alter table public.promotions add column if not exists sent_at timestamptz;
+
+drop policy if exists "Rep can manage own logs" on public.rep_commission_logs;
+create policy "Rep can manage own logs" on public.rep_commission_logs for all
+  using (rep_id = (select rep_profiles.id from public.rep_profiles where rep_profiles.user_id = auth.uid()))
+  with check (rep_id = (select rep_profiles.id from public.rep_profiles where rep_profiles.user_id = auth.uid()));
+
+create index if not exists rep_commission_logs_rep_id_idx on public.rep_commission_logs (rep_id);
+create index if not exists rep_commission_logs_logged_at_idx on public.rep_commission_logs (logged_at);

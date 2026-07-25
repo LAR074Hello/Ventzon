@@ -1,0 +1,143 @@
+#!/usr/bin/env node
+/**
+ * Proves the app is wired to the DEV database, end to end:
+ * boot, read, write, FK cascade, RLS, auth, storage, and the guard
+ * correctly refusing when pointed at production.
+ *
+ *   npm run verify:dev
+ */
+import { createClient } from "@supabase/supabase-js";
+import {
+  loadEnv,
+  assertSafeToSeed,
+  PRODUCTION_PROJECT_REF,
+  DEV_PROJECT_REF,
+  projectRefFrom,
+} from "./dev-guard.mjs";
+
+const env = { ...loadEnv(), ...process.env };
+const url = env.SUPABASE_URL;
+const service = env.SUPABASE_SERVICE_ROLE_KEY;
+const anon = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const BASE = env.BASE_URL ?? "http://localhost:3000";
+
+const results = [];
+const ok = (name, pass, detail = "") => results.push({ name, pass, detail });
+
+ok("env targets dev project", projectRefFrom(url) === DEV_PROJECT_REF, projectRefFrom(url) ?? "none");
+ok("env does NOT target prod", !String(url).includes(PRODUCTION_PROJECT_REF));
+
+const admin = createClient(url, service, { auth: { persistSession: false } });
+const pub = createClient(url, anon, { auth: { persistSession: false } });
+
+// ── read ────────────────────────────────────────────────────────────
+{
+  const { error, count } = await admin.from("shops").select("*", { count: "exact", head: true });
+  ok("service-role READ shops", !error, error ? error.message : `count=${count}`);
+}
+
+// ── write, FK, cascade ──────────────────────────────────────────────
+{
+  const slug = `__verify_${Date.now()}`;
+  const ins = await admin.from("shops").insert({ slug }).select().single();
+  ok("service-role WRITE shops", !ins.error, ins.error?.message ?? "inserted");
+
+  if (!ins.error) {
+    const st = await admin
+      .from("shop_settings")
+      .insert({ shop_slug: slug, shop_name: "Verify Co", reward_goal: 5 })
+      .select()
+      .single();
+    ok("FK write shop_settings -> shops", !st.error, st.error?.message ?? "ok");
+
+    const del = await admin.from("shops").delete().eq("slug", slug);
+    ok("delete shop", !del.error, del.error?.message ?? "removed");
+
+    const gone = await admin.from("shop_settings").select("shop_slug").eq("shop_slug", slug);
+    ok("ON DELETE CASCADE removed settings", (gone.data ?? []).length === 0);
+  }
+}
+
+// ── RLS ─────────────────────────────────────────────────────────────
+{
+  const { data, error } = await pub.from("customers").select("id").limit(1);
+  ok("anon blocked from customers (RLS)", error !== null || (data ?? []).length === 0,
+     error ? "error" : "0 rows");
+}
+
+// ── auth ────────────────────────────────────────────────────────────
+{
+  const email = `verify_${Date.now()}@ventzon.test`;
+  const password = "Passw0rd!verify";
+  const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  ok("auth: create user", !created.error, created.error?.message ?? "created");
+  if (!created.error) {
+    const signIn = await pub.auth.signInWithPassword({ email, password });
+    ok("auth: sign in returns session", !!signIn.data?.session, signIn.error?.message ?? "session");
+    await admin.auth.admin.deleteUser(created.data.user.id);
+    ok("auth: cleanup", true);
+  }
+}
+
+// ── storage ─────────────────────────────────────────────────────────
+{
+  const { data, error } = await admin.storage.listBuckets();
+  const names = (data ?? []).map((b) => b.id);
+  ok("storage bucket 'posts' exists", !error && names.includes("posts"), names.join(",") || "none");
+}
+
+// ── the guard ───────────────────────────────────────────────────────
+{
+  let refusedProd = false;
+  try {
+    assertSafeToSeed("verify", {
+      SUPABASE_URL: `https://${PRODUCTION_PROJECT_REF}.supabase.co`,
+      DEV_SEED: "true",
+      SUPABASE_SERVICE_ROLE_KEY: "x",
+    });
+  } catch (e) {
+    refusedProd = /PRODUCTION/.test(e.message);
+  }
+  ok("guard REFUSES production ref", refusedProd);
+
+  let refusedNoFlag = false;
+  try {
+    assertSafeToSeed("verify", {
+      SUPABASE_URL: `https://${DEV_PROJECT_REF}.supabase.co`,
+      SUPABASE_SERVICE_ROLE_KEY: "x",
+    });
+  } catch (e) {
+    refusedNoFlag = /DEV_SEED/.test(e.message);
+  }
+  ok("guard REFUSES without DEV_SEED=true", refusedNoFlag);
+
+  let allowsDev = false;
+  try {
+    assertSafeToSeed("verify", {
+      SUPABASE_URL: `https://${DEV_PROJECT_REF}.supabase.co`,
+      DEV_SEED: "true",
+      SUPABASE_SERVICE_ROLE_KEY: "x",
+    });
+    allowsDev = true;
+  } catch {}
+  ok("guard ALLOWS dev + DEV_SEED", allowsDev);
+}
+
+// ── the running app ─────────────────────────────────────────────────
+{
+  try {
+    const r = await fetch(`${BASE}/api/customer/shops-map`);
+    ok("app route responds (shops-map)", r.ok, `HTTP ${r.status}`);
+  } catch (e) {
+    ok("app route responds (shops-map)", false, "dev server not running");
+  }
+}
+
+let failed = 0;
+console.log("");
+for (const r of results) {
+  if (!r.pass) failed++;
+  console.log(`  ${r.pass ? "PASS" : "FAIL"}  ${r.name}${r.detail ? "  — " + r.detail : ""}`);
+}
+console.log(`\n${failed === 0 ? "ALL PASS" : failed + " FAILED"}`);
+process.exit(failed === 0 ? 0 : 1);

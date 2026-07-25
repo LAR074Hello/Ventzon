@@ -24,10 +24,12 @@
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
+import { loadEnv, projectRefFrom } from "./dev-guard.mjs";
 
 const argv = process.argv.slice(2);
 // Options that take a value; everything else beginning with -- is a bare flag.
-const VALUED = new Set(["width", "theme", "out", "base"]);
+const VALUED = new Set(["width", "theme", "out", "base", "login", "password"]);
 
 function opt(name, fallback) {
   const i = argv.indexOf(`--${name}`);
@@ -58,6 +60,56 @@ if (routes.length === 0) {
 
 mkdirSync(outDir, { recursive: true });
 
+/**
+ * --login <email> signs in through Supabase here and injects the resulting
+ * session into localStorage, so authenticated screens can be captured without
+ * driving a login form. Dev only: it refuses anything but a seeded account.
+ */
+let session = null;
+let storageKey = null;
+const loginEmail = opt("login", null);
+if (loginEmail) {
+  if (!loginEmail.endsWith("@ventzon.test")) {
+    console.error("--login only accepts seeded @ventzon.test accounts");
+    process.exit(1);
+  }
+  const env = { ...loadEnv(), ...process.env };
+  const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+    auth: { persistSession: false },
+  });
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: loginEmail,
+    password: opt("password", "ventzon-dev-password"),
+  });
+  if (error) {
+    console.error(`--login failed: ${error.message}`);
+    process.exit(1);
+  }
+  session = data.session;
+  storageKey = `sb-${projectRefFrom(env.NEXT_PUBLIC_SUPABASE_URL)}-auth-token`;
+  console.log(`  signed in as ${loginEmail}`);
+}
+
+/**
+ * The app uses @supabase/ssr's createBrowserClient, which keeps the session in
+ * COOKIES rather than localStorage — an injected localStorage entry is simply
+ * ignored and the screen redirects to auth. Recent versions store a
+ * `base64-`-prefixed JSON blob, chunked across `.0`, `.1`, … once it exceeds
+ * ~3180 characters.
+ */
+function sessionCookies(sess, key, base) {
+  const encoded = "base64-" + Buffer.from(JSON.stringify(sess)).toString("base64");
+  const CHUNK = 3180;
+  const host = new URL(base).hostname;
+  const common = { domain: host, path: "/", httpOnly: false, secure: false, sameSite: "Lax" };
+  if (encoded.length <= CHUNK) return [{ name: key, value: encoded, ...common }];
+  const out = [];
+  for (let i = 0, n = 0; i < encoded.length; i += CHUNK, n++) {
+    out.push({ name: `${key}.${n}`, value: encoded.slice(i, i + CHUNK), ...common });
+  }
+  return out;
+}
+
 const browser = await chromium.launch();
 const written = [];
 
@@ -76,15 +128,18 @@ for (const theme of themes) {
   // --onboarding leaves the onboarded flag unset so the first-run overlay
   // renders; it is fixed inset-0 and so cannot be shown in the gallery.
   await context.addInitScript(
-    ([t, showOnboarding]) => {
+    ([t, showOnboarding, key, sess]) => {
       try {
         localStorage.setItem("ventzon_theme", t);
         if (!showOnboarding) localStorage.setItem("ventzon_onboarded_v1", "1");
         sessionStorage.setItem("ventzon_banner_dismissed", "1");
+        if (key && sess) localStorage.setItem(key, JSON.stringify(sess));
       } catch {}
     },
-    [theme, flag("onboarding")]
+    [theme, flag("onboarding"), storageKey, session]
   );
+
+  if (session) await context.addCookies(sessionCookies(session, storageKey, base));
 
   const page = await context.newPage();
 
