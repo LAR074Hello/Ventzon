@@ -224,6 +224,41 @@ merchant infrastructure; **minimal event logging (1.4)** — half a session and
 it cannot be reconstructed after the fact; **the $0.85 fee removal** — it is
 deletion, and leaving dead billing paths around real users is a liability.
 
+## Safety slice — decided ahead of build (2026-07-25)
+
+- **Age gate fires at first contribution, not at launch.** Apple requires UGC
+  *creation* to be gated, not browsing. Prompting all 90 existing accounts on
+  next launch would create churn from friction rather than from under-13
+  answers. Gate on the first post or comment attempt instead: same compliance
+  posture, near-zero friction for anyone who only reads, and existing users
+  meet it exactly when it matters. Read access is never gated.
+- **Gate on posting AND commenting.** A comment is user-generated content
+  under the same guideline; a gate that lets an unverified account comment is
+  not a gate.
+- **Under-13 closes the account.** "Keep browsing" would leave an account with
+  an email attached to a self-declared child, which is precisely the
+  collection COPPA prohibits. Under-13 → delete everything, tell them plainly,
+  set a local flag so the form cannot be casually retried with a new year.
+- **Store `birth_year` on `customer_profiles`, never on `customers`.**
+  `customers` is per-shop, so a person with nine memberships would carry nine
+  copies of their age. `customer_profiles` is the one-row-per-person table.
+- **`deleteAccount()` is a general feature, not a COPPA branch.** Apple
+  Guideline 5.1.1(v) requires in-app account deletion for any app with account
+  creation, and we are submitting for beta. One function removes posts,
+  comments, likes, check-ins, memberships, follows, blocks, notifications,
+  profile and the auth user; the under-13 branch and a Settings entry (with a
+  confirmation step) both call it. This turns a rejection risk into something
+  already 90% built.
+- **Report queue is one route, not a console.** Protected route, single role
+  check, open reports newest-first, reported content inline, three actions —
+  dismiss / hide / ban — and an audit row per action. Filters, assignment,
+  bulk actions, analytics, appeals UI, reporter reputation and auto-escalation
+  are all `// POST-BETA:`. Build for the volume 1,000 users actually generate.
+- **Share pages are a moderation surface.** They are logged out, so no viewer
+  and no block filtering is possible. They must exclude hidden content on
+  their own, and must exclude banned authors once that flag exists. A share
+  link is a moderation bypass if this is forgotten.
+
 ## Open decisions (logged, not fixed)
 
 - **`promotions` has diverged in both directions.** Production has

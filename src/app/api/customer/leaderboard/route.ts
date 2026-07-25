@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +17,24 @@ export async function GET() {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // Viewer context is optional — the leaderboard also works signed out —
+    // but when there IS a viewer, people they have blocked (in either
+    // direction) must not appear. Blocking that does not survive into a
+    // ranked list of people is not blocking.
+    let viewerEmail: string | null = null;
+    try {
+      const supabaseAuth = await createSupabaseServerClient();
+      const { data: { user } } = await supabaseAuth.auth.getUser();
+      viewerEmail = user?.email?.toLowerCase() ?? null;
+    } catch {}
+
     const { data: optedIn } = await admin
       .from("customer_profiles")
       .select("id, email, display_name, avatar_url")
       .eq("is_creator", true)
       .eq("show_on_leaderboard", true);
-    const profiles = optedIn ?? [];
+    const blocked = await getBlockedSet(admin, viewerEmail);
+    const profiles = (optedIn ?? []).filter((p) => !blocked.has(p.email));
     if (profiles.length === 0) return NextResponse.json({ leaders: [] });
 
     const { data: memberRows } = await admin

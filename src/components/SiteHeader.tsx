@@ -23,7 +23,11 @@ export default function SiteHeader() {
     pathname?.startsWith("/customer") ||
     pathname?.startsWith("/rep") ||
     pathname?.startsWith("/merchant") ||
-    pathname?.startsWith("/dev");
+    pathname?.startsWith("/dev") ||
+    // Share surfaces carry their own minimal header; the marketing chrome
+    // is still un-retokenized and would land inconsistently on them.
+    pathname?.startsWith("/p/") ||
+    pathname?.startsWith("/place/");
 
   // Close menu on route change
   useEffect(() => {

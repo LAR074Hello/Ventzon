@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { normalizeMode, earnedForCheckin, applyReward } from "@/lib/reward";
+import { writeCheckin } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -150,11 +151,12 @@ export async function POST(req: Request) {
 // index enforces one foot-traffic row per day.
 async function recordCheckin(supabase: any, shopSlug: string, customerId: string, date: string) {
   try {
-    await supabase.from("checkins").insert({
-      shop_slug: shopSlug,
-      customer_id: customerId,
-      checkin_date: date,
-      created_at: new Date().toISOString(),
+    // Same helper as the public QR path, so both write shop_slug and
+    // place_id together — see src/lib/places.ts.
+    await writeCheckin(supabase, {
+      shopSlug,
+      customerId,
+      checkinDate: date,
     });
   } catch {
     /* non-fatal */

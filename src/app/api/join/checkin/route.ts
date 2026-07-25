@@ -6,6 +6,7 @@ import { sendEmail, buildRewardEmail, buildAlmostThereEmail } from "@/lib/resend
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { sendPushToDeviceTokens } from "@/lib/push";
 import { normalizeMode, earnedForCheckin, applyReward } from "@/lib/reward";
+import { writeCheckin } from "@/lib/places";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -207,21 +208,17 @@ export async function POST(req: Request) {
     // TEST_MODE=true bypasses the 1/day limit for testing purposes
     const testMode = process.env.TEST_MODE === "true";
     const checkinDate = testMode ? `${today}-${Date.now()}` : today;
-    const { error: checkinInsertErr } = await supabase.from("checkins").insert({
-      shop_slug,
-      customer_id: customer.id,
-      checkin_date: checkinDate,
-      created_at: now.toISOString(),
+    // Routed through writeCheckin so shop_slug and place_id are always
+    // written together — see src/lib/places.ts.
+    const checkinResult = await writeCheckin(supabase, {
+      shopSlug: shop_slug,
+      customerId: customer.id,
+      checkinDate,
+      createdAt: now.toISOString(),
     });
 
-    if (checkinInsertErr) {
-      // Check for unique-constraint violation (duplicate check-in today)
-      const errCode = (checkinInsertErr as any).code;
-      const errMsg = String(checkinInsertErr.message ?? "").toLowerCase();
-      const isDuplicate =
-        errCode === "23505" ||
-        errMsg.includes("duplicate") ||
-        errMsg.includes("unique");
+    if (!checkinResult.ok) {
+      const isDuplicate = checkinResult.duplicate;
 
       if (isDuplicate) {
         const visits = Number(customer.visits ?? 0);
@@ -238,7 +235,7 @@ export async function POST(req: Request) {
         );
       }
 
-      return NextResponse.json({ error: checkinInsertErr.message }, { status: 500 });
+      return NextResponse.json({ error: checkinResult.error ?? "Check-in failed" }, { status: 500 });
     }
 
     // New check-in → add to balance.

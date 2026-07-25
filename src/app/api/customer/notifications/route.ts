@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getBlockedSet } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +37,24 @@ export async function GET() {
     const { data: followerProfiles } = followerIds.length
       ? await admin
           .from("customer_profiles")
-          .select("id, display_name, is_creator")
+          .select("id, email, display_name, is_creator")
           .in("id", followerIds)
       : { data: [] };
+
+    // A blocked person must not be able to reach you through the Activity
+    // tab. Blocking that stops the feed but still delivers "X started
+    // following you" is not blocking — it just moves the harassment.
+    const blocked = await getBlockedSet(admin, user.email.toLowerCase());
+    type FollowerProfile = { id: string; email: string; display_name: string | null; is_creator: boolean };
+    const blockedProfileIds = new Set(
+      ((followerProfiles ?? []) as FollowerProfile[])
+        .filter((p) => blocked.has(p.email))
+        .map((p) => p.id)
+    );
+
     const followerById: Record<string, { display_name: string | null; is_creator: boolean }> = {};
     for (const p of followerProfiles ?? []) {
+      if (blockedProfileIds.has(p.id)) continue;
       followerById[p.id] = { display_name: p.display_name, is_creator: p.is_creator };
     }
 
@@ -56,7 +70,14 @@ export async function GET() {
       nameMap[s.shop_slug] = { shop_name: s.shop_name, deal_title: s.deal_title };
     }
 
-    const notifications = (log ?? []).map((n) => {
+    // Drop the row outright, not just the name. Leaving it in would render
+    // "Someone started following you", which still tells the blocked person
+    // they got through.
+    const visibleLog = (log ?? []).filter(
+      (n) => !(n.type === "new_follower" && n.ref_id && blockedProfileIds.has(n.ref_id))
+    );
+
+    const notifications = visibleLog.map((n) => {
       const shop = n.shop_slug ? nameMap[n.shop_slug] : null;
       const shopName = shop?.shop_name ?? n.shop_slug ?? "a store";
       let title = "";
@@ -96,7 +117,7 @@ export async function GET() {
 
     return NextResponse.json({
       notifications,
-      unread: (log ?? []).filter((n) => n.read_at == null).length,
+      unread: visibleLog.filter((n) => n.read_at == null).length,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
