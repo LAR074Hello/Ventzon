@@ -90,22 +90,22 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
         )}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%)" }} />
         <div className="absolute bottom-3 left-4 right-4">
-          <p className="text-[16px] font-medium text-white leading-tight">{shop.shop_name}</p>
-          <p className="mt-0.5 text-[12px] text-white/60 truncate">{shop.deal_title}</p>
+          <p className="font-display text-lg font-semibold tracking-tight text-white leading-tight">{shop.shop_name}</p>
+          <p className="text-sm text-white mt-0.5 /60 truncate">{shop.deal_title}</p>
         </div>
         {progress && remaining === 0 ? (
-          <div className="absolute top-3 right-3 rounded-full bg-accent px-2.5 py-1">
-            <span className="text-[10px] font-bold tracking-[0.08em] text-accent-ink">READY</span>
+          <div className="absolute top-3 right-3 rounded-full bg-primary px-2.5 py-1">
+            <span className="text-2xs font-semibold uppercase tracking-caps text-inverse">Ready</span>
           </div>
         ) : progress && remaining !== null ? (
-          <div className="absolute top-3 right-3 rounded-full bg-accent/20 border border-accent/40 px-2.5 py-1">
-            <span className="text-[10px] font-semibold tracking-[0.08em] text-accent">
+          <div className="absolute top-3 right-3 rounded-full bg-primary/80 px-2.5 py-1">
+            <span className="text-2xs font-semibold uppercase tracking-caps text-inverse">
               {remaining} TO GO
             </span>
           </div>
         ) : (
           <div className="absolute top-3 right-3 rounded-full bg-black/50 px-2.5 py-1">
-            <span className="text-[10px] font-medium tracking-[0.08em] text-ink/80">
+            <span className="text-2xs font-semibold uppercase tracking-caps text-primary /80">
               {shop.reward_goal}× REWARD
             </span>
           </div>
@@ -129,7 +129,7 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full flex items-center justify-center bg-surface-raised border border-line">
+          <div className="h-full w-full flex items-center justify-center bg-surface-raised border border-subtle">
             <span className="text-2xl font-extralight text-muted">
               {shop.shop_name.charAt(0).toUpperCase()}
             </span>
@@ -138,32 +138,32 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[15px] font-medium text-ink truncate">{shop.shop_name}</p>
+          <p className="font-display text-lg font-semibold tracking-tight text-primary truncate">{shop.shop_name}</p>
           {tag && (
-            <span className="shrink-0 rounded-full bg-surface-raised border border-line px-2 py-0.5 text-[9px] font-medium tracking-[0.1em] text-muted">
+            <span className="text-2xs font-semibold uppercase tracking-caps text-muted shrink-0 rounded-full bg-surface-raised border border-subtle px-2 py-0.5">
               {tag}
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-[12px] font-normal text-muted truncate">{shop.deal_title}</p>
+        <p className="text-xs text-muted mt-0.5 font-normal truncate">{shop.deal_title}</p>
         {progress && remaining !== null && remaining > 0 ? (
           <div className="mt-1 flex items-center gap-1.5">
             <div className="flex gap-0.5">
               {Array.from({ length: Math.min(progress.goal, 8) }).map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 w-1.5 rounded-full ${i < progress.visits ? "bg-accent" : "bg-line"}`}
+                  className={`h-1.5 w-1.5 rounded-full ${i < progress.visits ? "bg-primary" : "bg-subtle"}`}
                 />
               ))}
             </div>
-            <p className="text-[11px] font-normal text-accent">
+            <p className="text-xs text-muted">
               {remaining} more visit{remaining === 1 ? "" : "s"} to your reward
             </p>
           </div>
         ) : progress && remaining === 0 ? (
-          <p className="mt-1 text-[11px] font-medium text-accent">Reward ready to redeem</p>
+          <p className="mt-1 text-xs font-medium text-primary">Reward ready to redeem</p>
         ) : (
-          <p className="mt-0.5 text-[11px] font-normal text-muted">
+          <p className="text-xs text-muted mt-0.5 font-normal">
             {shop.reward_goal} visits to reward
             {shop.member_count > 0 && (
               <span className="ml-2 text-muted">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
@@ -171,7 +171,7 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
           </p>
         )}
         {distanceMi != null && (
-          <p className="mt-0.5 text-[11px] font-normal text-muted">
+          <p className="text-xs text-muted mt-0.5 font-normal">
             <MapPin className="mr-1 inline h-2.5 w-2.5 align-[-1px] text-muted" />
             {fmtMiles(distanceMi)}
           </p>
@@ -186,8 +186,8 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
   return (
     <button
       onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-medium tracking-[0.04em] transition-all duration-200 ${
-        active ? "bg-ink text-black" : "bg-surface-raised text-muted border border-line"
+      className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+        active ? "bg-primary text-black" : "bg-surface-raised text-muted border border-subtle"
       }`}
     >
       {Icon && <Icon className="h-3 w-3" />}
@@ -203,7 +203,7 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
   return (
     <button
       onClick={onClick}
-      className="shrink-0 w-52 rounded-card border border-line bg-surface-raised p-4 text-left active:bg-surface-raised transition-colors duration-150"
+      className="shrink-0 w-52 rounded-card border border-subtle bg-surface-raised p-4 text-left active:bg-surface-raised transition-colors duration-150"
     >
       {/* Shop identity */}
       <div className="flex items-center gap-2 mb-3">
@@ -211,20 +211,20 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
           {shop.logo_url ? (
             <img src={shop.logo_url} alt={shop.shop_name} className="h-full w-full object-cover" />
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-surface-raised border border-line">
-              <span className="text-[11px] font-medium text-muted">
+            <div className="h-full w-full flex items-center justify-center bg-surface-raised border border-subtle">
+              <span className="text-xs text-muted font-medium">
                 {shop.shop_name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
         </div>
-        <p className="text-[12px] font-medium text-muted truncate">{shop.shop_name}</p>
+        <p className="text-xs text-muted font-medium truncate">{shop.shop_name}</p>
       </div>
 
       {/* The reward — this is the hero */}
-      <p className="text-[20px] font-semibold text-ink leading-tight mb-1">{shop.deal_title}</p>
+      <p className="font-display text-xl font-semibold tracking-tight text-primary leading-tight mb-1">{shop.deal_title}</p>
       {shop.deal_details && (
-        <p className="text-[12px] font-normal text-muted line-clamp-2 mb-3">{shop.deal_details}</p>
+        <p className="text-xs text-muted font-normal line-clamp-2 mb-3">{shop.deal_details}</p>
       )}
 
       {/* Stamp requirement — filled with the customer's live progress */}
@@ -233,11 +233,11 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
           {Array.from({ length: Math.min(shop.reward_goal, 8) }).map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 w-1.5 rounded-full ${i < filledDots ? "bg-accent" : "bg-line"}`}
+              className={`h-1.5 w-1.5 rounded-full ${i < filledDots ? "bg-primary" : "bg-subtle"}`}
             />
           ))}
         </div>
-        <p className={`text-[11px] font-normal ${progress && remaining !== null && remaining > 0 ? "text-accent" : "text-muted"}`}>
+        <p className={`text-xs ${progress && remaining !== null && remaining > 0 ? "text-primary" : "text-muted"}`}>
           {progress && remaining === 0
             ? "ready to redeem"
             : progress && remaining !== null
@@ -253,8 +253,8 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="px-5 mb-4">
-      <h2 className="text-[18px] font-semibold text-ink tracking-[-0.01em]">{title}</h2>
-      {sub && <p className="mt-0.5 text-[12px] font-normal text-muted">{sub}</p>}
+      <h2 className="font-display text-lg font-semibold tracking-tight text-primary">{title}</h2>
+      {sub && <p className="text-xs text-muted mt-0.5 font-normal">{sub}</p>}
     </div>
   );
 }
@@ -386,18 +386,18 @@ export default function ExplorePage() {
     : [];
 
   return (
-    <div className="flex min-h-full flex-col bg-bg">
+    <div className="flex min-h-full flex-col bg-surface">
 
       {/* Header — editorial: micro kicker + display title, underline tabs */}
       <div className="px-5 pt-2 pb-0" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 16px)" }}>
-        <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-muted">{greeting()}</p>
-        <h1 className="mt-1 font-display text-[28px] font-semibold tracking-[-0.02em] text-ink leading-tight">
+        <p className="text-2xs font-semibold uppercase tracking-caps text-muted uppercase">{greeting()}</p>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-primary mt-1 leading-tight">
           What&rsquo;s good near you
         </h1>
       </div>
 
       {/* Two-feed tabs */}
-      <div className="mx-5 mt-4 flex gap-6 border-b border-line">
+      <div className="mx-5 mt-4 flex gap-6 border-b border-subtle">
         {([
           { id: "explore", label: "Explore" },
           { id: "rewards", label: "Rewards" },
@@ -405,13 +405,13 @@ export default function ExplorePage() {
           <button
             key={t.id}
             onClick={() => switchTab(t.id)}
-            className={`relative pb-3 pt-1 text-[12px] font-medium tracking-[0.08em] transition-colors duration-200 ${
-              homeTab === t.id ? "text-ink" : "text-muted"
+            className={`relative pb-3 pt-1 text-sm font-medium transition-colors duration-200 ${
+              homeTab === t.id ? "text-primary" : "text-muted"
             }`}
           >
             {t.label.toUpperCase()}
             {homeTab === t.id && (
-              <span className="absolute inset-x-0 -bottom-px h-0.5 bg-ink" />
+              <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
             )}
           </button>
         ))}
@@ -419,7 +419,7 @@ export default function ExplorePage() {
 
       {/* Search — rewards tab only */}
       {homeTab === "rewards" && (
-        <div className="mx-5 mt-4 mb-1 flex items-center gap-3 rounded-ctl border border-line bg-surface-raised px-4 py-3">
+        <div className="mx-5 mt-4 mb-1 flex items-center gap-3 rounded-ctl border border-subtle bg-surface-raised px-4 py-3">
           <Search className="h-4 w-4 shrink-0 text-muted" />
           <input
             ref={inputRef}
@@ -427,10 +427,10 @@ export default function ExplorePage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search stores, deals…"
-            className="flex-1 bg-transparent text-[14px] font-normal text-ink outline-none placeholder:text-muted"
+            className="text-base text-primary flex-1 bg-transparent font-normal outline-none placeholder:"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="text-muted active:text-ink">
+            <button onClick={() => setQuery("")} className="text-muted active:text-primary">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -480,12 +480,14 @@ export default function ExplorePage() {
           {searchResults.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center px-8">
               <MapPin className="h-8 w-8 text-muted" />
-              <p className="mt-4 text-[15px] font-semibold text-ink">No results for "{query}"</p>
-              <p className="mt-1 text-[13px] font-normal text-muted">Try a different store name or deal</p>
+              <p className="mt-4 font-display text-lg font-semibold tracking-tight text-primary">
+                No results for &ldquo;{query}&rdquo;
+              </p>
+              <p className="text-sm text-secondary mt-1 font-normal">Try a different store name or deal</p>
             </div>
           ) : (
             <>
-              <p className="px-5 pb-3 text-[12px] font-normal text-muted">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-muted px-5 pb-3 font-normal">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
               <div className="divide-y divide-line/60">
                 {searchResults.map((s) => (
                   <StoreCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} distanceMi={distanceFor(s)} onClick={() => go(s.shop_slug)} />
@@ -501,8 +503,8 @@ export default function ExplorePage() {
         <div className="flex-1 pb-8">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center px-8">
-              <p className="text-[15px] font-semibold text-ink">No stores in this category yet</p>
-              <button onClick={() => setActiveCategory("all")} className="mt-5 rounded-full border border-line px-6 py-2.5 text-[12px] font-normal tracking-[0.15em] text-muted">
+              <p className="font-display text-lg font-semibold tracking-tight text-primary">No stores in this category yet</p>
+              <button onClick={() => setActiveCategory("all")} className="text-xs font-semibold uppercase tracking-caps text-muted mt-5 rounded-full border border-subtle px-6 py-2.5">
                 SEE ALL STORES
               </button>
             </div>
@@ -537,18 +539,18 @@ export default function ExplorePage() {
                         <button
                           key={`${a.profile_id}-${a.created_at}-${i}`}
                           onClick={() => router.push(`/customer/shop/${a.shop_slug}`)}
-                          className="flex shrink-0 items-center gap-3 rounded-card border border-line bg-surface-raised px-4 py-3 text-left active:bg-surface-raised"
+                          className="flex shrink-0 items-center gap-3 rounded-card border border-subtle bg-surface-raised px-4 py-3 text-left active:bg-surface-raised"
                         >
                           {a.avatar_url ? (
                             <img src={a.avatar_url} alt={a.display_name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
                           ) : (
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-raised">
-                              <span className="text-[13px] font-medium text-muted">{a.display_name.charAt(0).toUpperCase()}</span>
+                              <span className="text-sm text-secondary font-medium">{a.display_name.charAt(0).toUpperCase()}</span>
                             </div>
                           )}
                           <div>
-                            <p className="text-[13px] font-medium text-ink whitespace-nowrap">{a.display_name}</p>
-                            <p className="text-[11px] font-normal text-muted whitespace-nowrap">
+                            <p className="text-base text-primary font-medium whitespace-nowrap">{a.display_name}</p>
+                            <p className="text-xs text-muted font-normal whitespace-nowrap">
                               checked in at {a.shop_name}
                             </p>
                           </div>

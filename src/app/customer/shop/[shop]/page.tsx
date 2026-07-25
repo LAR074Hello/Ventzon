@@ -54,21 +54,21 @@ function CheckinOverlay({ visits, goal, onDismiss }: { visits: number; goal: num
   }, [onDismiss]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-bg">
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-surface">
       <div
         className="flex flex-col items-center transition-all duration-500"
         style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)" }}
       >
-        <div className="flex h-24 w-24 items-center justify-center rounded-full border border-accent/30 bg-accent/10">
-          <Check className="h-10 w-10 text-accent" strokeWidth={1.5} />
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-surface-sunken">
+          <Check className="h-10 w-10 text-primary" strokeWidth={1.5} />
         </div>
-        <h2 className="mt-6 font-display text-[24px] font-semibold tracking-[-0.01em] text-ink">Checked in</h2>
-        <p className="mt-2 text-[14px] font-normal text-muted">
+        <h2 className="font-display text-xl font-semibold tracking-tight text-primary mt-6">Checked in</h2>
+        <p className="text-base text-secondary mt-2 font-normal">
           {visits} of {goal} visit{goal !== 1 ? "s" : ""} collected
         </p>
         <div className="mt-6 flex gap-2">
           {Array.from({ length: Math.min(goal, 10) }).map((_, i) => (
-            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--accent)" : "var(--border-subtle)" }} />
+            <div key={i} className="h-2 w-2 rounded-full transition-colors" style={{ backgroundColor: i < visits ? "var(--text-primary)" : "var(--border-subtle)" }} />
           ))}
         </div>
       </div>
@@ -93,36 +93,36 @@ function RewardScreen({ shop, onClose, onRedeemed }: { shop: ShopSettings; onClo
   }
 
   return (
-    <div className="fixed inset-0 z-[150] flex flex-col bg-bg" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
+    <div className="fixed inset-0 z-[150] flex flex-col bg-surface" style={{ paddingTop: "env(safe-area-inset-top,0px)", paddingBottom: "env(safe-area-inset-bottom,0px)" }}>
       <div className="flex justify-end px-5 pt-4">
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised">
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface-raised">
           <X className="h-4 w-4 text-muted" />
         </button>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-        <div className="flex h-28 w-28 items-center justify-center rounded-sheet border border-accent/40 bg-accent/10">
-          <Trophy className="h-12 w-12 text-accent" strokeWidth={1} />
+        <div className="flex h-28 w-28 items-center justify-center rounded-sheet bg-surface-sunken">
+          <Trophy className="h-12 w-12 text-primary" strokeWidth={1} />
         </div>
-        <h2 className="mt-8 font-display text-[28px] font-semibold tracking-[-0.02em] text-ink">Reward earned</h2>
-        <p className="mt-3 text-[15px] font-normal text-muted">{shop.deal_title}</p>
-        {shop.deal_details && <p className="mt-1 text-[13px] font-normal text-muted opacity-80">{shop.deal_details}</p>}
-        <div className="mt-10 w-full rounded-card border border-accent/30 bg-accent/10 px-6 py-5">
-          <p className="text-[10px] font-semibold tracking-[0.14em] text-accent">SHOW THIS TO THE CASHIER</p>
-          <p className="mt-2 text-[13px] font-normal text-ink">{shop.shop_name}</p>
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-primary mt-8">Reward earned</h2>
+        <p className="font-display text-lg font-semibold tracking-tight text-muted mt-3">{shop.deal_title}</p>
+        {shop.deal_details && <p className="text-sm text-secondary mt-1 font-normal opacity-80">{shop.deal_details}</p>}
+        <div className="elevation-1 mt-10 w-full rounded-card px-6 py-5">
+          <p className="text-2xs font-semibold uppercase tracking-caps text-muted">Show this to the cashier</p>
+          <p className="text-base text-primary mt-2 font-normal">{shop.shop_name}</p>
         </div>
       </div>
 
       <div className="px-5 pb-8 space-y-3">
         <button
           onClick={markRedeemed}
-          className="w-full rounded-ctl bg-ink py-4 text-[12px] font-semibold tracking-[0.14em] text-bg transition-all active:opacity-80"
+          className="text-sm font-medium text-inverse w-full rounded-ctl bg-primary py-4 transition-all active:opacity-80"
         >
           MARK AS REDEEMED
         </button>
         <button
           onClick={share}
-          className="flex w-full items-center justify-center gap-2 rounded-ctl border border-line bg-surface-raised py-4 text-[12px] font-medium tracking-[0.12em] text-muted"
+          className="text-xs font-semibold uppercase tracking-caps text-muted flex w-full items-center justify-center gap-2 rounded-ctl border border-subtle bg-surface-raised py-4"
         >
           <Share2 className="h-4 w-4" />
           SHARE WITH FRIENDS
@@ -309,23 +309,23 @@ export default function CustomerShopPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-ink" />
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-subtle border-t-ink" />
       </div>
     );
   }
 
   if (!settings) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-8 text-center">
-        <p className="text-[10px] font-semibold tracking-[0.14em] text-muted">NOT FOUND</p>
-        <h1 className="mt-4 font-display text-2xl font-semibold text-ink">Shop not found</h1>
-        <p className="mt-3 text-[14px] font-normal text-muted">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-8 text-center">
+        <p className="text-2xs font-semibold uppercase tracking-caps text-muted">NOT FOUND</p>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-primary">Shop not found</h1>
+        <p className="text-base text-secondary mt-3 font-normal">
           This shop doesn&rsquo;t exist or may have been removed.
         </p>
         <button
           onClick={() => router.push("/customer/explore")}
-          className="mt-8 rounded-full border border-line px-6 py-3 text-[12px] font-medium tracking-[0.14em] text-ink transition-all duration-300 hover:border-muted"
+          className="text-xs font-semibold uppercase tracking-caps text-primary mt-8 rounded-full border border-subtle px-6 py-3 transition-all duration-300 hover:border-muted"
         >
           Explore shops
         </button>
@@ -336,7 +336,7 @@ export default function CustomerShopPage() {
   const shopName = settings?.shop_name ?? shopSlug;
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-surface">
       {showCheckinOverlay && (
         <CheckinOverlay
           visits={visits}
@@ -356,16 +356,16 @@ export default function CustomerShopPage() {
       {/* Back */}
       <button
         onClick={() => router.back()}
-        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur-sm"
+        className="fixed left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface/80 backdrop-blur-sm"
         style={{ top: "calc(env(safe-area-inset-top, 20px) + 8px)" }}
       >
-        <ArrowLeft className="h-4 w-4 text-ink" />
+        <ArrowLeft className="h-4 w-4 text-primary" />
       </button>
 
       {/* Share */}
       <button
         onClick={handleShare}
-        className="fixed right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur-sm"
+        className="fixed right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface/80 backdrop-blur-sm"
         style={{ top: "calc(env(safe-area-inset-top, 20px) + 8px)" }}
       >
         <Share2 className="h-4 w-4 text-muted" />
@@ -374,32 +374,32 @@ export default function CustomerShopPage() {
       {/* Hero */}
       <div className="flex flex-col items-center px-6 pb-8" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 64px)" }}>
         {settings?.logo_url ? (
-          <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-card border border-line object-cover" />
+          <img src={settings.logo_url} alt={shopName} className="h-24 w-24 rounded-card border border-subtle object-cover" />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-card border border-line bg-surface-raised">
+          <div className="flex h-24 w-24 items-center justify-center rounded-card border border-subtle bg-surface-raised">
             <span className="text-3xl font-light text-muted">{shopName.charAt(0).toUpperCase()}</span>
           </div>
         )}
-        <h1 className="mt-5 font-display text-[24px] font-semibold tracking-[-0.01em] text-ink">{shopName}</h1>
+        <h1 className="font-display text-xl font-semibold tracking-tight text-primary mt-5">{shopName}</h1>
         {settings?.deal_title && (
-          <div className="mt-3 rounded-ctl border border-line bg-surface-raised px-5 py-3 text-center">
-            <p className="text-[13px] font-medium text-ink">{settings.deal_title}</p>
-            {settings.deal_details && <p className="mt-1 text-[12px] font-normal text-muted">{settings.deal_details}</p>}
+          <div className="mt-3 rounded-ctl border border-subtle bg-surface-raised px-5 py-3 text-center">
+            <p className="text-base text-primary font-medium">{settings.deal_title}</p>
+            {settings.deal_details && <p className="text-xs text-muted mt-1 font-normal">{settings.deal_details}</p>}
           </div>
         )}
         <button
           onClick={toggleFollow}
           disabled={followBusy}
-          className={`mt-4 flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-medium tracking-[0.08em] transition-all duration-200 ${
+          className={`mt-4 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
             following
-              ? "border border-line bg-surface-raised text-ink"
-              : "bg-ink text-bg active:opacity-80"
+              ? "border border-subtle bg-surface-raised text-primary"
+              : "bg-primary text-inverse active:opacity-80"
           }`}
         >
           {following ? <BellRing className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
-          {following ? "FOLLOWING" : "FOLLOW"}
+          {following ? "Following" : "Follow"}
         </button>
-        <p className="mt-2 text-[11px] font-normal text-muted">
+        <p className="text-xs text-muted mt-2 font-normal">
           {following ? "You'll hear about new drops from this store" : "Get notified when they post something new"}
         </p>
         {followerCount !== null && followerCount > 0 && (
@@ -409,7 +409,7 @@ export default function CustomerShopPage() {
                 `/customer/follows?shop_slug=${shopSlug}&title=${encodeURIComponent(`${shopName} followers`)}`
               )
             }
-            className="mt-1.5 text-[11px] font-medium text-muted underline-offset-2 active:text-ink"
+            className="text-xs text-muted mt-1.5 font-medium underline-offset-2 active:"
           >
             {followerCount} follower{followerCount === 1 ? "" : "s"}
           </button>
@@ -418,19 +418,19 @@ export default function CustomerShopPage() {
 
       {/* Share your visit — offered right after a check-in */}
       {showShareVisit && user && (
-        <div className="mx-5 mb-4 rounded-card border border-accent/30 bg-accent/5 p-4">
+        <div className="elevation-1 mx-5 mb-4 rounded-card p-4">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
-              <p className="font-display text-[16px] font-semibold text-ink">
+              <p className="font-display text-lg font-semibold tracking-tight text-primary">
                 Share this visit?
               </p>
-              <p className="mt-1 text-[12px] font-normal leading-relaxed text-muted">
+              <p className="text-xs text-muted mt-1 font-normal leading-relaxed">
                 Posts from a real check-in show a verified-visit mark.
               </p>
             </div>
             <button
               onClick={() => setShowShareVisit(false)}
-              className="shrink-0 p-1 text-muted active:text-ink"
+              className="shrink-0 p-1 text-muted active:text-primary"
               aria-label="Not now"
             >
               <X className="h-4 w-4" />
@@ -453,10 +453,10 @@ export default function CustomerShopPage() {
       )}
 
       {/* Loyalty card */}
-      <div className="mx-5 rounded-card border border-line bg-surface-raised p-5">
+      <div className="mx-5 rounded-card border border-subtle bg-surface-raised p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">YOUR PROGRESS</p>
-          <p className="text-[12px] font-semibold text-ink">{visits}<span className="text-muted">/{goal}</span></p>
+          <p className="text-2xs font-semibold uppercase tracking-caps text-muted">YOUR PROGRESS</p>
+          <p className="text-sm text-primary font-semibold">{visits}<span className="text-muted">/{goal}</span></p>
         </div>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: goal }).map((_, i) => {
@@ -467,16 +467,16 @@ export default function CustomerShopPage() {
                 key={i}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
                   filled
-                    ? "bg-accent"
-                    : "border-2 border-line bg-transparent"
+                    ? "bg-primary"
+                    : "border-2 border-subtle bg-transparent"
                 } ${isNew ? "animate-stamp-pop" : ""}`}
               >
-                {filled && <Check className="h-4 w-4 text-accent-ink" />}
+                {filled && <Check className="h-4 w-4 text-inverse" />}
               </div>
             );
           })}
         </div>
-        <p className="mt-4 text-[12px] font-normal text-muted">
+        <p className="text-xs text-muted mt-4 font-normal">
           {isReady
             ? "Tap below to view your reward"
             : checkedInToday
@@ -487,7 +487,7 @@ export default function CustomerShopPage() {
 
       {err && (
         <div className="mx-5 mt-4 rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3 text-center">
-          <p className="text-[13px] font-normal text-danger">{err}</p>
+          <p className="text-sm text-danger font-normal">{err}</p>
         </div>
       )}
 
@@ -496,7 +496,7 @@ export default function CustomerShopPage() {
         <div className="mx-5 mt-5">
           <div className="flex items-center gap-2 mb-3">
             <Grid3x3 className="h-3.5 w-3.5 text-muted" />
-            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">POSTS</p>
+            <p className="text-2xs font-semibold uppercase tracking-caps text-muted">POSTS</p>
           </div>
           <PostGrid posts={shopPosts} />
         </div>
@@ -507,17 +507,17 @@ export default function CustomerShopPage() {
         <div className="mx-5 mt-5">
           <div className="flex items-center gap-2 mb-3">
             <Clock className="h-3.5 w-3.5 text-muted" />
-            <p className="text-[10px] font-semibold tracking-[0.12em] text-muted">VISIT HISTORY</p>
+            <p className="text-2xs font-semibold uppercase tracking-caps text-muted">VISIT HISTORY</p>
           </div>
-          <div className="rounded-card border border-line overflow-hidden">
+          <div className="rounded-card border border-subtle overflow-hidden">
             {history.slice(0, 8).map((entry, i) => (
               <div
                 key={entry.checkin_date}
-                className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-line/60" : ""}`}
+                className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-subtle/60" : ""}`}
               >
-                <p className="text-[13px] font-normal text-muted">{formatDate(entry.checkin_date)}</p>
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/15">
-                  <Check className="h-3 w-3 text-accent" />
+                <p className="text-sm text-secondary font-normal">{formatDate(entry.checkin_date)}</p>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-sunken">
+                  <Check className="h-3 w-3 text-primary" />
                 </div>
               </div>
             ))}
@@ -532,15 +532,15 @@ export default function CustomerShopPage() {
         {isReady && (
           <button
             onClick={async () => { await haptic("medium"); setShowRewardScreen(true); }}
-            className="w-full rounded-ctl border border-accent/40 bg-accent/10 py-4 text-[12px] font-semibold tracking-[0.14em] text-accent transition-all active:bg-accent/20"
+            className="w-full rounded-ctl bg-accent py-4 text-base font-medium text-on-accent transition-all active:bg-accent-hover"
           >
-            VIEW MY REWARD
+            View my reward
           </button>
         )}
         {!user && (
           <button
             onClick={() => router.push(`/customer/auth?redirect=/customer/shop/${shopSlug}`)}
-            className="w-full rounded-ctl bg-ink py-4 text-[12px] font-semibold tracking-[0.14em] text-bg transition-all active:opacity-80"
+            className="text-sm font-medium text-inverse w-full rounded-ctl bg-primary py-4 transition-all active:opacity-80"
           >
             SIGN IN TO TRACK PROGRESS
           </button>
@@ -549,14 +549,14 @@ export default function CustomerShopPage() {
           <button
             onClick={handleCheckin}
             disabled={checkinLoading}
-            className="w-full rounded-ctl bg-ink py-4 text-[12px] font-semibold tracking-[0.14em] text-bg transition-all active:opacity-80 disabled:opacity-40"
+            className="text-sm font-medium text-inverse w-full rounded-ctl bg-primary py-4 transition-all active:opacity-80 disabled:opacity-40"
           >
             {checkinLoading ? "CHECKING IN…" : "CHECK IN HERE"}
           </button>
         )}
         {user && checkedInToday && !isReady && (
-          <div className="w-full rounded-ctl border border-line py-4 text-center">
-            <p className="text-[11px] font-semibold tracking-[0.12em] text-muted">CHECKED IN TODAY</p>
+          <div className="w-full rounded-ctl border border-subtle py-4 text-center">
+            <p className="text-xs font-semibold uppercase tracking-caps text-muted">CHECKED IN TODAY</p>
           </div>
         )}
       </div>

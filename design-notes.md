@@ -185,6 +185,21 @@ captions, place descriptions — sits at page level rather than nested in a
 padded card. SocialFeed already does this correctly: its caption is a sibling
 of the media envelope, not a child of it.
 
+## Open decisions (logged, not fixed)
+
+- **`promotions` has diverged in both directions.** Production has
+  `audience`, `name`, `sent_at`; `20260218_promotions.sql` creates
+  `created_by`, `reject_reason`, `approved_at`, `rejected_at`, `updated_at`.
+  Neither is a superset, so the migration no longer describes the live table
+  and there is no single canonical shape. Production also lacks two indexes
+  its own migration creates (`job_applications_role_idx`,
+  `job_applications_submitted_at_idx`). Dev currently carries the union.
+  Needs a decision about which shape wins before anything is built on it.
+- **Production service_role key rotation** — the key was found inline in
+  `scripts/generate_insights_report.py` and in two iCloud config duplicates.
+  Those copies are gone, but the key itself is unchanged. Rotation has to be
+  coordinated with Vercel's env vars or the live app breaks.
+
 ## Removed-one-thing log
 - Explore feed: removed the share arrow from the action row (share lives on
   the post page), then folded like/comment counts into one muted text line.

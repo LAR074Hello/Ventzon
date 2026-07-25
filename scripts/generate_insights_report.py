@@ -9,8 +9,25 @@ import os, json, sys, subprocess, datetime, re
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 
-SUPABASE_URL = "https://pxdnwpqnmuzpdtjvbawa.supabase.co"
-SERVICE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4ZG53cHFubXV6cGR0anZiYXdhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTk4NTYxMiwiZXhwIjoyMDg1NTYxNjEyfQ.7ZOQgJlvRkcnUPGLDGbCaWKbNBOZESo3oxp6FOGZKiI"
+# Credentials come from the environment, never the source file.
+#
+# This script previously carried a production service_role key inline — full
+# read/write on live merchant and customer data, sitting in plaintext in an
+# iCloud-synced folder. Removed 2026-07-25.
+#
+# Point it at whichever database you mean, deliberately:
+#   source ~/.ventzon/prod.env && python3 scripts/generate_insights_report.py
+# or export SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY yourself.
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+
+if not SUPABASE_URL or not SERVICE_KEY:
+    sys.exit(
+        "Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY.\n"
+        "This report reads live data, so it will not guess which database to use.\n"
+        "  source ~/.ventzon/prod.env && python3 scripts/generate_insights_report.py"
+    )
+
 HEADERS = {
     "apikey": SERVICE_KEY,
     "Authorization": f"Bearer {SERVICE_KEY}",
