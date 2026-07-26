@@ -48,3 +48,7 @@ next-env.d.ts
 
 # database dumps (contain real data)
 .backups/
+
+# python bytecode
+__pycache__/
+*.pyc

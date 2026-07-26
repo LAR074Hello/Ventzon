@@ -106,6 +106,54 @@ for (const t of TABLES) {
   console.log(`    ${String(users.length).padStart(6)}  auth.users`);
 }
 
+// ── storage objects ─────────────────────────────────────────────────
+// Nothing else covers these. Not the JSON dump, not the migrations, and not
+// Supabase on the free plan — "database backups do not include objects you
+// store via the Storage API". Schema and rows are reconstructible; a
+// customer's photo is not. So the files come down as files.
+{
+  const { data: buckets, error: bErr } = await db.storage.listBuckets();
+  if (bErr) throw new Error(`storage buckets: ${bErr.message}`);
+
+  let files = 0;
+  let bytes = 0;
+  const failures = [];
+
+  // storage.list() is per-prefix and non-recursive, so walk it.
+  async function walk(bucket, prefix = "") {
+    const { data, error } = await db.storage.from(bucket).list(prefix, { limit: 1000 });
+    if (error) throw new Error(`storage ${bucket}/${prefix}: ${error.message}`);
+    for (const entry of data ?? []) {
+      const full = prefix ? `${prefix}/${entry.name}` : entry.name;
+      // A folder placeholder has no id; a real object always does.
+      if (entry.id === null || entry.id === undefined) {
+        await walk(bucket, full);
+        continue;
+      }
+      const { data: blob, error: dErr } = await db.storage.from(bucket).download(full);
+      if (dErr) {
+        failures.push(`${bucket}/${full}: ${dErr.message}`);
+        continue;
+      }
+      const buf = Buffer.from(await blob.arrayBuffer());
+      const dest = path.join(dir, "storage", bucket, full);
+      mkdirSync(path.dirname(dest), { recursive: true });
+      writeFileSync(dest, buf);
+      files++;
+      bytes += buf.length;
+    }
+  }
+
+  for (const b of buckets ?? []) await walk(b.id);
+  counts["storage.objects"] = files;
+  console.log(`    ${String(files).padStart(6)}  storage objects (${(bytes / 1048576).toFixed(1)} MB across ${(buckets ?? []).length} buckets)`);
+  if (failures.length) {
+    console.log(`    WARNING: ${failures.length} object(s) failed to download:`);
+    for (const f of failures.slice(0, 5)) console.log(`      ${f}`);
+    process.exitCode = 1;
+  }
+}
+
 writeFileSync(
   path.join(dir, "manifest.json"),
   JSON.stringify(
@@ -113,7 +161,7 @@ writeFileSync(
       ref,
       at: stamp,
       counts,
-      restores: "DATA ONLY (rows). Schema, constraints, indexes, triggers and RLS policies come from supabase/migrations/. Storage objects are NOT included.",
+      restores: "Rows for all public tables, auth.users, and storage objects as files under storage/<bucket>/. Schema, constraints, indexes, triggers and RLS policies come from supabase/migrations/.",
     },
     null,
     2
