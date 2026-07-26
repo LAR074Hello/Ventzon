@@ -259,6 +259,37 @@ deletion, and leaving dead billing paths around real users is a liability.
   their own, and must exclude banned authors once that flag exists. A share
   link is a moderation bypass if this is forgotten.
 
+## Launch-phase required costs (not optional at 1,000 users)
+
+- **Supabase Pro — $25/mo per project, plus PITR add-on.** The production
+  project is on the **free** plan, which per Supabase's own docs means: daily
+  backups cover Pro/Team/Enterprise only, backups are **not downloadable** on
+  free, and **PITR is a paid add-on** available only on Pro and above (and
+  requires at least a Small compute add-on). Today the only recovery path is
+  `npm run backup`, run manually.
+
+  That is defensible at 90 users and untenable at 1,000. A manual dump is a
+  dump someone forgets. What beta actually needs:
+
+  | Item | Cost | Buys |
+  |---|---|---|
+  | Pro plan | ~$25/mo | daily automatic backups, 7-day retention, downloadable; no inactivity pausing; support access |
+  | PITR add-on, 7-day | ~$100/mo | recovery to any point, ~2 min RPO |
+  | Small compute (PITR prerequisite) | ~$15/mo | required for PITR |
+
+  **Minimum: Pro alone (~$25/mo)** gets automatic daily backups and removes
+  the free-tier pause risk — that is the floor for real users. PITR is the
+  difference between losing a day and losing two minutes; worth it once
+  check-in volume is real, not before.
+
+  Free-plan projects can also be **paused for inactivity**, which for a live
+  App Store app is its own argument for Pro.
+
+- **Storage objects still have no automatic backup at any tier.** Supabase's
+  database backups exclude Storage. `npm run backup` now pulls them down as
+  files; that stays the only mechanism regardless of plan, so it needs to run
+  on a schedule before beta.
+
 ## Open decisions (logged, not fixed)
 
 - **`promotions` has diverged in both directions.** Production has
