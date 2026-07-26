@@ -16,15 +16,17 @@
  *   notice     -> customer_notification_log
  *   flag       -> reports (+ posts.hidden)
  *
- * `places` and `verification_tier` do not exist yet (Slices 1.3 and 1.5), so
- * claimed/subscribed are carried on shops.plan_type and is_paid for now.
+ * Since Slice 1.3, `places` is first-class and this seed owns it. posts and
+ * checkins carry BOTH shop_slug and place_id (expand-contract), written from
+ * one slug->id map so the two can never diverge here either.
+ * `verification_tier` is seeded but the claim FLOW is Slice 1.5.
  *
  *   npm run dev:seed     seed on top of whatever is there
  *   npm run dev:reset    wipe seeded rows, then seed
  */
 import { createClient } from "@supabase/supabase-js";
 import { assertSafeToSeed } from "../dev-guard.mjs";
-import { buildCity } from "./content.mjs";
+import { buildCity, IMPORTED_PLACES, UNCLAIMED_SLUGS } from "./content.mjs";
 
 const RESET = process.argv.includes("--reset");
 
@@ -63,6 +65,11 @@ async function reset() {
   await db.from("reward_events").delete().in("shop_slug", slugs);
   // checkins and customers cascade from shops; shop_settings too.
   await db.from("shops").delete().in("slug", slugs);
+  // places do NOT cascade from shops (claimed_by is ON DELETE SET NULL), so
+  // they are removed explicitly — otherwise dev:reset leaves orphans and the
+  // reviewed database stops matching the one the seed produces.
+  await db.from("places").delete().in("slug", slugs);
+  await db.from("places").delete().in("slug", IMPORTED_PLACES.map((p) => p.slug));
 
   // Auth users
   const { data } = await db.auth.admin.listUsers({ perPage: 1000 });
@@ -103,7 +110,67 @@ async function seed() {
     })),
     (rows) => db.from("shop_settings").insert(rows)
   );
-  log(`places        ${city.places.length}`);
+  // ── places (Slice 1.3) ────────────────────────────────────────────
+  // The seed owns places now. Without this, dev:reset produces a database
+  // with shops but no places, which is not what the app reads.
+  await chunked(
+    city.places.map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      address: p.address,
+      latitude: p.lat,
+      longitude: p.lng,
+      neighborhood: p.neighbourhood,
+      city: city.city.name,
+      category: p.category,
+      // One seeded place is left unclaimed on purpose: a shop can exist
+      // without anyone having claimed the place it sits at.
+      verification_tier: UNCLAIMED_SLUGS.has(p.slug)
+        ? "unclaimed"
+        : p.subscribed
+        ? "subscribed"
+        : "claimed",
+      source: "seed",
+    })),
+    (rows) => db.from("places").insert(rows)
+  );
+
+  // Imported-place fixtures: unclaimed, no posts, OSM provenance. These are
+  // what the "be the first" invitation exists for.
+  await chunked(
+    IMPORTED_PLACES.map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      address: p.address,
+      latitude: p.lat,
+      longitude: p.lng,
+      neighborhood: p.neighborhood,
+      city: p.city,
+      category: p.category,
+      verification_tier: "unclaimed",
+      source: "osm",
+      osm_updated_at: new Date("2026-03-14T00:00:00Z").toISOString(),
+    })),
+    (rows) => db.from("places").insert(rows)
+  );
+
+  // Link claimed places back to their shop account.
+  const { data: shopRows } = await db.from("shops").select("id, slug").in("slug", city.places.map((p) => p.slug));
+  for (const shop of shopRows ?? []) {
+    if (UNCLAIMED_SLUGS.has(shop.slug)) continue;
+    await db.from("places").update({ claimed_by: shop.id, claimed_at: new Date().toISOString() }).eq("slug", shop.slug);
+  }
+
+  // One map, used for every place_id written below. Expand-contract means
+  // shop_slug and place_id must always agree; deriving both from here is how
+  // that is guaranteed rather than remembered.
+  const { data: placeRows } = await db
+    .from("places")
+    .select("id, slug")
+    .in("slug", [...city.places.map((p) => p.slug), ...IMPORTED_PLACES.map((p) => p.slug)]);
+  const placeIdBySlug = new Map((placeRows ?? []).map((p) => [p.slug, p.id]));
+
+  log(`places        ${city.places.length} seeded + ${IMPORTED_PLACES.length} imported (${UNCLAIMED_SLUGS.size} unclaimed)`);
 
   // ── people ────────────────────────────────────────────────────────
   for (const person of city.people) {
@@ -150,6 +217,7 @@ async function seed() {
       const d = new Date(Date.now() - day * 86400e3);
       checkinRows.push({
         shop_slug: m.placeSlug,
+        place_id: placeIdBySlug.get(m.placeSlug) ?? null,
         customer_id: id,
         // The unique index is on (customer_id, checkin_date), so one per day.
         checkin_date: d.toISOString().slice(0, 10),
@@ -175,6 +243,7 @@ async function seed() {
   const postRows = city.posts.map((p) => ({
     author_email: p.authorEmail,
     shop_slug: p.placeSlug,
+    place_id: placeIdBySlug.get(p.placeSlug) ?? null,
     body: p.body,
     media_url: p.mediaUrl,
     media_type: p.mediaType,

@@ -7,6 +7,7 @@
  *   npm run verify:dev
  */
 import { createClient } from "@supabase/supabase-js";
+import { readFileSync } from "node:fs";
 import {
   loadEnv,
   assertSafeToSeed,
@@ -121,6 +122,33 @@ const pub = createClient(url, anon, { auth: { persistSession: false } });
     allowsDev = true;
   } catch {}
   ok("guard ALLOWS dev + DEV_SEED", allowsDev);
+}
+
+// ── banned authors must never outlive the ban ───────────────────────
+// `ban` ships with the report queue, in beta scope. If it lands without the
+// share-page filter being wired, a moderator bans someone and their content
+// stays publicly reachable by share link — looking removed while it is not.
+// This check fails the moment a ban column exists and the filter is still off.
+{
+  const { data: probe } = await admin
+    .from("customer_profiles")
+    .select("*")
+    .limit(1);
+  const columns = probe && probe.length ? Object.keys(probe[0]) : [];
+  const banColumn = columns.find((c) => /^(banned|banned_at|is_banned|ban_reason)$/.test(c));
+
+  const src = readFileSync("src/lib/public-visibility.ts", "utf8");
+  const wired = !/export const BANNED_COLUMN: string \| null = null;/.test(src);
+
+  if (!banColumn) {
+    ok("ban filter not yet required (no ban column)", true, "safety slice");
+  } else {
+    ok(
+      `ban column "${banColumn}" is filtered on share pages`,
+      wired,
+      wired ? "wired" : `SET BANNED_COLUMN in src/lib/public-visibility.ts`
+    );
+  }
 }
 
 // ── the running app ─────────────────────────────────────────────────

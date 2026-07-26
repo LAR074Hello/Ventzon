@@ -24,11 +24,18 @@ export const BASE_DATE = new Date("2026-07-25T18:00:00Z");
 export const daysAgo = (n) => new Date(BASE_DATE.getTime() - n * 86400e3);
 export const hoursAgo = (n) => new Date(BASE_DATE.getTime() - n * 3600e3);
 
-export const CITY = { name: "San Vicente", state: "CA" };
+/**
+ * The demo city is Pittsburgh — the actual beta metro. Seeding the real
+ * target rather than an invented one means the map, the neighbourhood
+ * labels and the imported-place fixtures all sit in one coherent place,
+ * and review looks like what users will see.
+ */
+export const CITY = { name: "Pittsburgh", state: "PA" };
+const CITY_CENTRE = { lat: 40.4552, lng: -79.9530 };
 
 export const NEIGHBOURHOODS = [
-  "Mission Flats", "Old Harbour", "Cedar Hill", "The Annex",
-  "Riverside", "Printworks", "North Gate", "Lantern Row",
+  "Lawrenceville", "Bloomfield", "Strip District", "Shadyside",
+  "East Liberty", "Squirrel Hill", "Polish Hill", "Garfield",
 ];
 
 /** Local fixture images, served by the app itself — no external host. */
@@ -44,36 +51,74 @@ export const MEDIA = [
 
 /** 30 places. Category drives the reward wording so copy reads plausibly. */
 export const PLACES = [
-  ["Cafe Mercado", "Coffee", "Mission Flats", "Free drink", 10],
-  ["Bao Down", "Food", "Old Harbour", "Free bao", 5],
-  ["Bloom & Co", "Retail", "Cedar Hill", "10% off stems", 6],
-  ["The Reading Room", "Retail", "The Annex", "Free paperback", 8],
-  ["Kettle & Crumb", "Coffee", "Riverside", "Free pastry", 7],
-  ["Govans Groceries", "Retail", "Printworks", "10% off a shop", 9],
-  ["Fade Room", "Beauty", "North Gate", "Free line-up", 6],
-  ["Salt & Char", "Food", "Lantern Row", "Free side", 5],
-  ["Perch Coffee", "Coffee", "Mission Flats", "Free filter", 10],
-  ["Dandelion Nails", "Beauty", "Cedar Hill", "Free file & polish", 6],
-  ["Iron Gate Gym", "Fitness", "Old Harbour", "Free class", 12],
-  ["The Pressing Room", "Retail", "Printworks", "Free print", 8],
-  ["Noodle Parade", "Food", "The Annex", "Free starter", 5],
-  ["Sunday Best", "Retail", "Lantern Row", "15% off", 7],
-  ["Halcyon Yoga", "Fitness", "Riverside", "Free drop-in", 10],
-  ["The Cure Deli", "Food", "North Gate", "Free coffee with lunch", 6],
-  ["Tin Whistle Bar", "Food", "Old Harbour", "Free snack", 8],
-  ["Camellia Tea", "Coffee", "Cedar Hill", "Free pot", 9],
-  ["Two Rivers Bikes", "Retail", "Riverside", "Free tune-up", 10],
-  ["Sable Barbers", "Beauty", "Mission Flats", "Free hot towel", 6],
-  ["Pome & Seed", "Retail", "The Annex", "Free bunch", 7],
-  ["Ferry Building Bakery", "Food", "Old Harbour", "Free loaf", 8],
-  ["Alder Kitchen", "Food", "Printworks", "Free dessert", 6],
-  ["The Wash House", "Retail", "North Gate", "Free service wash", 10],
-  ["Ridgeline Outfitters", "Retail", "Cedar Hill", "10% off", 9],
-  ["Moth & Moon", "Retail", "Lantern Row", "Free candle", 8],
-  ["Copper Pot", "Food", "Mission Flats", "Free side", 5],
-  ["Still Water Spa", "Beauty", "Riverside", "Free add-on", 12],
-  ["The Green Door", "Coffee", "The Annex", "Free refill", 7],
-  ["Larkspur Records", "Retail", "Printworks", "Free 7-inch", 10],
+  ["Cafe Mercado", "Coffee", "Lawrenceville", "Free drink", 10],
+  ["Bao Down", "Food", "Strip District", "Free bao", 5],
+  ["Bloom & Co", "Retail", "Shadyside", "10% off stems", 6],
+  ["The Reading Room", "Retail", "Squirrel Hill", "Free paperback", 8],
+  ["Kettle & Crumb", "Coffee", "Bloomfield", "Free pastry", 7],
+  ["Govans Groceries", "Retail", "East Liberty", "10% off a shop", 9],
+  ["Fade Room", "Beauty", "Garfield", "Free line-up", 6],
+  ["Salt & Char", "Food", "Polish Hill", "Free side", 5],
+  ["Perch Coffee", "Coffee", "Lawrenceville", "Free filter", 10],
+  ["Dandelion Nails", "Beauty", "Shadyside", "Free file & polish", 6],
+  ["Iron Gate Gym", "Fitness", "Strip District", "Free class", 12],
+  ["The Pressing Room", "Retail", "East Liberty", "Free print", 8],
+  ["Noodle Parade", "Food", "Squirrel Hill", "Free starter", 5],
+  ["Sunday Best", "Retail", "Polish Hill", "15% off", 7],
+  ["Halcyon Yoga", "Fitness", "Bloomfield", "Free drop-in", 10],
+  ["The Cure Deli", "Food", "Garfield", "Free coffee with lunch", 6],
+  ["Tin Whistle Bar", "Food", "Strip District", "Free snack", 8],
+  ["Camellia Tea", "Coffee", "Shadyside", "Free pot", 9],
+  ["Two Rivers Bikes", "Retail", "Bloomfield", "Free tune-up", 10],
+  ["Sable Barbers", "Beauty", "Lawrenceville", "Free hot towel", 6],
+  ["Pome & Seed", "Retail", "Squirrel Hill", "Free bunch", 7],
+  ["Ferry Building Bakery", "Food", "Strip District", "Free loaf", 8],
+  ["Alder Kitchen", "Food", "East Liberty", "Free dessert", 6],
+  ["The Wash House", "Retail", "Garfield", "Free service wash", 10],
+  ["Ridgeline Outfitters", "Retail", "Shadyside", "10% off", 9],
+  // Deliberately left UNCLAIMED below — see UNCLAIMED_SLUGS.
+  ["Moth & Moon", "Retail", "Polish Hill", "Free candle", 8],
+  ["Copper Pot", "Food", "Lawrenceville", "Free side", 5],
+  ["Still Water Spa", "Beauty", "Bloomfield", "Free add-on", 12],
+  ["The Green Door", "Coffee", "Squirrel Hill", "Free refill", 7],
+  ["Larkspur Records", "Retail", "East Liberty", "Free 7-inch", 10],
+];
+
+/**
+ * Places that must render as UNCLAIMED even though they were seeded from a
+ * merchant. Covers the "shop exists but nobody has claimed the place" state
+ * that the place page and map both have to handle.
+ */
+export const UNCLAIMED_SLUGS = new Set(["moth-moon"]);
+
+/**
+ * Imported-place fixtures: unclaimed, no posts, no photos, OSM provenance.
+ * This is what a Pittsburgh import actually produces, and it is the state the
+ * "no one's posted here yet — be the first" invitation exists for. Kept in the
+ * seed rather than inserted by hand so `dev:reset` reproduces exactly the
+ * database that gets reviewed.
+ */
+export const IMPORTED_PLACES = [
+  {
+    slug: "quarry-lane-coffee",
+    name: "Quarry Lane Coffee",
+    address: "214 Quarry Lane",
+    neighborhood: "Lawrenceville",
+    city: "Pittsburgh",
+    category: "Coffee",
+    lat: 40.4654,
+    lng: -79.9615,
+  },
+  {
+    slug: "penn-avenue-hardware",
+    name: "Penn Avenue Hardware",
+    address: "4812 Penn Ave",
+    neighborhood: "Bloomfield",
+    city: "Pittsburgh",
+    category: "Retail",
+    lat: 40.4622,
+    lng: -79.9489,
+  },
 ];
 
 /** 15 people. postCount is set explicitly for the two sparse/dense cases. */
@@ -178,9 +223,9 @@ export function buildCity() {
     rewardMode: i % 7 === 0 ? "points" : "stamps",
     pointsPerVisit: 10,
     // Rough coordinates around the demo city centre.
-    lat: 37.7749 + (rnd() - 0.5) * 0.08,
-    lng: -122.4194 + (rnd() - 0.5) * 0.08,
-    address: `${int(10, 890)} ${pick(["Alder", "Cedar", "Harbour", "Mission", "Lantern", "River"])} ${pick(["St", "Ave", "Row", "Way"])}`,
+    lat: CITY_CENTRE.lat + (rnd() - 0.5) * 0.05,
+    lng: CITY_CENTRE.lng + (rnd() - 0.5) * 0.06,
+    address: `${int(10, 890)} ${pick(["Penn", "Liberty", "Butler", "Ellsworth", "Negley", "Carson"])} ${pick(["St", "Ave", "Row", "Way"])}`,
     // Three tiers of maturity, standing in for verification_tier until 1.5.
     claimed: i % 3 !== 0,
     subscribed: i % 5 === 0,

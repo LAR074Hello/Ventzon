@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { haversineMiles } from "@/lib/geo";
 import { getBlockedSet, getVerifiedVisitSet } from "@/lib/social";
+import { getPlacesBySlugs } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -80,12 +81,17 @@ export async function GET(req: Request) {
     const postIds = posts.map((p) => p.id);
     const shopSlugs = [...new Set(posts.map((p) => p.shop_slug))] as string[];
 
+    // Slice 1.3: the PLACE owns identity and location; the shop account owns
+    // the reward programme. Reading name/neighbourhood from places is what
+    // lets an unclaimed place appear in the feed at all.
     const [
+      placesBySlug,
       { data: settings },
       { data: shopRows },
       { data: likeRows },
       { data: commentRows },
     ] = await Promise.all([
+      getPlacesBySlugs(admin, shopSlugs),
       admin
         .from("shop_settings")
         .select("shop_slug, shop_name, deal_title, reward_goal")
@@ -145,6 +151,7 @@ export async function GET(req: Request) {
       const author = authorByEmail[p.author_email];
       const setting = settingsMap[p.shop_slug!];
       const shop = shopMap[p.shop_slug!];
+      const place = placesBySlug.get(p.shop_slug!);
       const ageHours = (now - new Date(p.created_at).getTime()) / 3600000;
 
       let score = -ageHours;
@@ -169,7 +176,12 @@ export async function GET(req: Request) {
         },
         shop: {
           slug: p.shop_slug,
-          name: setting?.shop_name ?? p.shop_slug,
+          // Place is the authority for identity; shop_settings is the
+          // fallback during expand, and the reward fields stay on the
+          // merchant account where they belong.
+          name: place?.name ?? setting?.shop_name ?? p.shop_slug,
+          neighborhood: place?.neighborhood ?? null,
+          verification_tier: place?.verification_tier ?? "unclaimed",
           logo_url: shop?.logo_url ?? null,
           deal_title: setting?.deal_title ?? null,
           reward_goal: setting?.reward_goal ?? 5,

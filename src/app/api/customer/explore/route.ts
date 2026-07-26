@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getPlacesBySlugs } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -56,18 +57,27 @@ export async function GET() {
       countMap[r.shop_slug] = (countMap[r.shop_slug] ?? 0) + 1;
     }
 
-    const shops = (data ?? []).map((s) => ({
-      shop_slug: s.shop_slug,
-      shop_name: s.shop_name,
-      deal_title: s.deal_title,
-      deal_details: s.deal_details,
-      reward_goal: s.reward_goal ?? 5,
-      logo_url: shopMap[s.shop_slug]?.logo_url ?? null,
-      created_at: shopMap[s.shop_slug]?.created_at ?? null,
-      latitude: shopMap[s.shop_slug]?.latitude ?? null,
-      longitude: shopMap[s.shop_slug]?.longitude ?? null,
-      member_count: countMap[s.shop_slug] ?? 0,
-    }));
+    // Place is the authority for name and location; shop_settings keeps the
+    // reward programme. Falls back to shop_settings during expand.
+    const placesBySlug = await getPlacesBySlugs(supabase, slugs);
+
+    const shops = (data ?? []).map((s) => {
+      const place = placesBySlug.get(s.shop_slug);
+      return {
+        shop_slug: s.shop_slug,
+        shop_name: place?.name ?? s.shop_name,
+        neighborhood: place?.neighborhood ?? null,
+        verification_tier: place?.verification_tier ?? "unclaimed",
+        deal_title: s.deal_title,
+        deal_details: s.deal_details,
+        reward_goal: s.reward_goal ?? 5,
+        logo_url: shopMap[s.shop_slug]?.logo_url ?? null,
+        created_at: shopMap[s.shop_slug]?.created_at ?? null,
+        latitude: place?.latitude ?? shopMap[s.shop_slug]?.latitude ?? null,
+        longitude: place?.longitude ?? shopMap[s.shop_slug]?.longitude ?? null,
+        member_count: countMap[s.shop_slug] ?? 0,
+      };
+    });
 
     return NextResponse.json({ shops });
   } catch (err: any) {

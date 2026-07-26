@@ -8,6 +8,9 @@ import "leaflet/dist/leaflet.css";
 type ShopPin = {
   slug: string;
   shop_name: string;
+  /** Slice 1.3: unclaimed places appear on the map too, muted. */
+  verification_tier?: "unclaimed" | "claimed" | "subscribed";
+  neighborhood?: string | null;
   deal_title: string | null;
   deal_details: string | null;
   reward_goal: number;
@@ -122,7 +125,15 @@ export default function MapPage() {
         const initial = shop.shop_name.charAt(0).toUpperCase();
         const p = progressMap[shop.slug];
         const rewardReady = p && p.visits >= p.goal;
-        const ring = rewardReady ? "var(--text-primary)" : "var(--border-subtle)";
+        // An unclaimed place still gets a pin — that is the whole point of
+        // places being first-class. It is muted rather than absent, because
+        // a sparse map is worse than a full map of quiet places.
+        const unclaimed = shop.verification_tier === "unclaimed";
+        const ring = rewardReady
+          ? "var(--text-primary)"
+          : unclaimed
+          ? "var(--border-subtle)"
+          : "var(--border-strong)";
 
         const face = shop.logo_url
           ? `<img src="${shop.logo_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
@@ -133,6 +144,7 @@ export default function MapPage() {
             <div style="
               width:38px; height:38px; border-radius:50%;
               background:var(--surface-raised); border:2px solid ${ring};
+              opacity:${unclaimed ? "0.7" : "1"};
               display:flex; align-items:center; justify-content:center;
               overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.6);
             ">${face}</div>
@@ -258,10 +270,22 @@ export default function MapPage() {
               </button>
             </div>
 
+            {/* Unclaimed places have no reward programme yet. The sheet
+                invites rather than showing a blank — an empty place is a
+                recruitment surface. */}
+            {!selected.deal_title && (
+              <div className="elevation-1 mx-5 mb-3 rounded-card px-4 py-3">
+                <p className="text-base text-primary">No one&rsquo;s posted here yet</p>
+                <p className="mt-1 text-sm text-secondary">
+                  Be the first to share what it&rsquo;s like.
+                </p>
+              </div>
+            )}
+
             {/* Deal */}
             {selected.deal_title && (
               <div className="mx-5 mb-3 rounded-card border border-subtle bg-surface-raised px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-caps text-muted">REWARD</p>
+                <p className="text-xs font-semibold uppercase tracking-caps text-muted">Reward</p>
                 <p className="font-display text-lg font-semibold tracking-tight text-primary mt-1">{selected.deal_title}</p>
                 {selected.deal_details && (
                   <p className="text-xs text-muted mt-0.5">{selected.deal_details}</p>

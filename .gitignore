@@ -45,3 +45,6 @@ next-env.d.ts
 
 # design-review screenshots (artifacts, not repo content)
 .screenshots/
+
+# database dumps (contain real data)
+.backups/

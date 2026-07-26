@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { getPublicPost } from "@/lib/public-visibility";
 
 /* ═══════════════════════════════════════════════════════════════════
    /p/[id] — public share page for a single post.
@@ -15,8 +16,9 @@ import Link from "next/link";
    so this route must exclude hidden content on its own. Reported posts are
    hidden pending review and therefore drop out automatically.
 
-   PRE-LAUNCH: also exclude posts by banned authors once the ban flag lands
-   with the safety slice. Right now no such flag exists.
+   Banned authors are excluded via lib/public-visibility.ts, which is
+   asserted by verify:dev rather than left as a comment — ban ships with the
+   report queue in the same beta scope, and the two must not land apart.
 
    noindex until moderation is real — we are an invited beta and there is
    no reason to be crawlable yet.
@@ -32,12 +34,13 @@ async function getPost(id: string) {
   // Reads run with the service role: places has RLS enabled with no anon
   // policy, so this cannot be done from a browser client.
   const db = admin();
-  const { data: post } = await db
-    .from("posts")
-    .select("id, body, media_url, media_type, created_at, author_email, shop_slug, place_id, hidden")
-    .eq("id", id)
-    .eq("hidden", false)
-    .maybeSingle();
+  // Single source of truth for logged-out visibility — hidden content today,
+  // banned authors the moment banning lands. verify:dev fails if that filter
+  // is not wired once a ban column exists.
+  const post = (await getPublicPost(db, id)) as {
+    id: string; body: string | null; media_url: string | null; media_type: string | null;
+    created_at: string; author_email: string; shop_slug: string | null; place_id: string | null;
+  } | null;
   if (!post) return null;
 
   const [{ data: author }, { data: place }] = await Promise.all([

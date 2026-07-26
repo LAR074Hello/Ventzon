@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { getPublicPostsForPlace } from "@/lib/public-visibility";
 
 /* ═══════════════════════════════════════════════════════════════════
    /place/[slug] — public share page for a place.
@@ -14,9 +15,9 @@ import Link from "next/link";
    sparse map is worse than a full map of quiet places. So a place with no
    posts reads as an invitation rather than as a blank.
 
-   LOGGED OUT, SO NO VIEWER and no block filtering. Hidden posts are
-   excluded here directly.
-   PRE-LAUNCH: exclude banned authors once that flag exists.
+   LOGGED OUT, SO NO VIEWER and no block filtering. Visibility runs through
+   lib/public-visibility.ts — hidden content now, banned authors the moment
+   banning lands, asserted by verify:dev so the two cannot ship apart.
 
    noindex until moderation is real.
    ═══════════════════════════════════════════════════════════════════ */
@@ -36,15 +37,11 @@ async function getPlace(slug: string) {
     .maybeSingle();
   if (!place) return null;
 
-  const { data: posts } = await db
-    .from("posts")
-    .select("id, body, media_url, media_type, created_at, author_email")
-    .eq("place_id", place.id)
-    .eq("hidden", false)
-    .order("created_at", { ascending: false })
-    .limit(12);
+  const posts = (await getPublicPostsForPlace(db, place.id)) as {
+    id: string; body: string | null; media_url: string | null; author_email: string;
+  }[];
 
-  return { place, posts: posts ?? [] };
+  return { place, posts };
 }
 
 export async function generateMetadata({
