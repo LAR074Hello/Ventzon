@@ -24,7 +24,28 @@ import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { loadEnv, projectRefFrom, PRODUCTION_PROJECT_REF } from "./dev-guard.mjs";
 
-const TABLES = ["shops", "shop_settings", "customers", "checkins", "posts", "places"];
+/**
+ * EVERY public table that can hold data, not a hand-picked six.
+ *
+ * The original list covered shops/shop_settings/customers/checkins/posts/
+ * places and missed twelve tables that hold live production rows — including
+ * stripe_events, shop_members, reward_events and customer_profiles. That was
+ * survivable while PITR was assumed to exist. It is not survivable now that
+ * this dump is the ONLY recovery path on the free plan.
+ */
+const TABLES = [
+  "shops", "shop_settings", "customers", "checkins", "places",
+  "posts", "post_likes", "post_saves", "post_comments",
+  "customer_profiles", "user_follows", "customer_follows",
+  "customer_notification_log", "customer_notification_prefs",
+  "reward_events", "birthday_reward_sends", "referrals",
+  "shop_members", "signups", "stripe_events", "messages", "promotions",
+  "rep_profiles", "rep_invites", "rep_commission_logs",
+  "job_applications", "scheduled_emails",
+  "ad_campaigns", "ad_sends", "shop_occasions", "occasion_sends",
+  "community_eligibility", "merchant_community_settings", "loyalty_events",
+  "device_tokens", "user_blocks", "reports",
+];
 const VERIFY = process.argv.includes("--verify");
 const PAGE = 1000;
 
@@ -69,7 +90,35 @@ for (const t of TABLES) {
   writeFileSync(path.join(dir, `${t}.json`), JSON.stringify(rows));
   console.log(`    ${String(rows.length).padStart(6)}  ${t}`);
 }
-writeFileSync(path.join(dir, "manifest.json"), JSON.stringify({ ref, at: stamp, counts }, null, 2));
+// auth.users is NOT a public table and no SQL dump reaches it. Losing
+// accounts is the most painful possible loss, so it is exported separately
+// through the admin API.
+{
+  const users = [];
+  for (let page = 1; ; page++) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw new Error(`auth.users: ${error.message}`);
+    users.push(...(data?.users ?? []));
+    if ((data?.users ?? []).length < 1000) break;
+  }
+  counts["auth.users"] = users.length;
+  writeFileSync(path.join(dir, "auth_users.json"), JSON.stringify(users));
+  console.log(`    ${String(users.length).padStart(6)}  auth.users`);
+}
+
+writeFileSync(
+  path.join(dir, "manifest.json"),
+  JSON.stringify(
+    {
+      ref,
+      at: stamp,
+      counts,
+      restores: "DATA ONLY (rows). Schema, constraints, indexes, triggers and RLS policies come from supabase/migrations/. Storage objects are NOT included.",
+    },
+    null,
+    2
+  )
+);
 
 if (!VERIFY) {
   console.log(`\n  dump complete. Run with --verify to prove it restores.\n`);
