@@ -259,6 +259,35 @@ deletion, and leaving dead billing paths around real users is a liability.
   their own, and must exclude banned authors once that flag exists. A share
   link is a moderation bypass if this is forgotten.
 
+## Every deploy is an App Store release (no review)
+
+`ios/App/App/capacitor.config.json` sets
+`server.url = "https://www.ventzon.com/customer"`. With `server.url` set,
+Capacitor **ignores the bundled web assets and loads the live site**. The
+installed iOS app is a thin remote wrapper.
+
+Consequences worth holding onto:
+
+- **Pushing to Vercel ships to every installed user immediately.** No review,
+  no update prompt, no staged rollout. A bad deploy reaches all of them at
+  once.
+- **Rollback is equally instant** — promoting a previous Vercel deployment
+  reverts the iOS app too. That is a real advantage and the reason the
+  migration runbook can treat "promote previous build" as a first-class
+  rollback step.
+- **Moderation obligations bind at deploy time, not at submission.** The
+  moment a feature that accepts user content is live on the web, it is live
+  in the App Store app. The safety slice therefore cannot be "finished just
+  before we resubmit" — it has to be finished before the deploy that exposes
+  what it protects.
+- The redesign only affects **consumers**. Merchant surfaces are still
+  hardcoded hex and untouched, so merchants see essentially no change.
+
+**Needs a native build (App Store review), so bundle into the beta
+submission:** splash screen and status bar are hardcoded `#000000`, giving a
+black splash into a light app. Cosmetic, not broken — do not hold the web
+deploy for it.
+
 ## Launch-phase required costs (not optional at 1,000 users)
 
 - **Supabase Pro — $25/mo per project, plus PITR add-on.** The production
@@ -289,6 +318,20 @@ deletion, and leaving dead billing paths around real users is a liability.
   database backups exclude Storage. `npm run backup` now pulls them down as
   files; that stays the only mechanism regardless of plan, so it needs to run
   on a schedule before beta.
+
+## Beta submission checklist (needs a native iOS build)
+
+Everything here requires an App Store build and review, so it ships in one
+submission rather than trickling:
+
+- **Age rating updated to 13+ with UGC declared**, matching the actual gate.
+  A mismatch is a rejection risk.
+- **Splash screen and status bar** off hardcoded `#000000` — currently a
+  black splash into a light app.
+- **In-app account deletion** reachable from Settings (Guideline 5.1.1(v)) —
+  the same `deleteAccount()` the under-13 branch calls.
+- **`support@ventzon.com` receiving mail** — the parental-contact route in the
+  under-13 copy points at it, so it must exist before that ships.
 
 ## Open decisions (logged, not fixed)
 
