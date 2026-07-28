@@ -289,7 +289,10 @@ export default function ExplorePage() {
   const [loading, setLoading] = useState(true);
   // Two-feed Home: "explore" = social feed, "rewards" = the original
   // discovery experience. Last choice persists across sessions.
-  const [homeTab, setHomeTab] = useState<"explore" | "rewards">("rewards");
+  // Defaults to the FEED, not the reward list. Rewards is empty until
+  // merchants exist, so landing there made the first screen after onboarding
+  // the emptiest one in the app.
+  const [homeTab, setHomeTab] = useState<"explore" | "rewards">("explore");
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 

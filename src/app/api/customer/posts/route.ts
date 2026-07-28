@@ -62,18 +62,25 @@ export async function POST(req: Request) {
     }
 
     const admin = adminClient();
+    // No creator gate. Posting is the first thing we want a new user to do,
+    // and requiring them to adopt a "creator" identity first put an identity
+    // change in front of the one action the product needs. is_creator is now
+    // a description of someone who has posted, not a permission to post.
     const profile = await getOrCreateProfile(admin, user.email!);
-    if (!profile.is_creator) {
-      return NextResponse.json({ error: "Become a creator to post" }, { status: 403 });
-    }
 
     if (shopSlug) {
-      const { data: shop } = await admin
-        .from("shops")
-        .select("slug")
-        .eq("slug", shopSlug)
-        .maybeSingle();
-      if (!shop) return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+      // Validated against PLACES, not shops. Every imported place exists only
+      // in `places` — checking `shops` meant all ~2,700 OSM places rejected a
+      // post with "Shop not found", which is every place a new user can
+      // actually see on the map. Falls back to shops for any legacy slug that
+      // predates the places backfill.
+      const [{ data: place }, { data: shop }] = await Promise.all([
+        admin.from("places").select("slug").eq("slug", shopSlug).maybeSingle(),
+        admin.from("shops").select("slug").eq("slug", shopSlug).maybeSingle(),
+      ]);
+      if (!place && !shop) {
+        return NextResponse.json({ error: "Place not found" }, { status: 404 });
+      }
     }
 
     const { data, error } = await admin

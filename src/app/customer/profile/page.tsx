@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import PostGrid, { type GridPost } from "../components/PostGrid";
@@ -19,6 +19,7 @@ type OwnProfile = {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createSupabaseBrowserClient();
 
   const [user, setUser] = useState<any>(null);
@@ -35,6 +36,12 @@ export default function ProfilePage() {
       visits: number; goal: number; remaining: number; visited: boolean }[]
   >([]);
   const [becomingCreator, setBecomingCreator] = useState(false);
+
+  // The centre nav button routes here with ?compose=1. Opening the composer
+  // straight away is the whole point — the button is the post affordance.
+  useEffect(() => {
+    if (searchParams?.get("compose") === "1") setShowComposer(true);
+  }, [searchParams]);
 
   const loadPosts = useCallback(async () => {
     try {
@@ -303,7 +310,7 @@ export default function ProfilePage() {
           )
         ) : posts.length > 0 ? (
           <PostGrid posts={posts} />
-        ) : profile?.is_creator ? (
+        ) : (
           <EmptyState
             compact
             icon={Camera}
@@ -311,23 +318,6 @@ export default function ProfilePage() {
             body="Share somewhere you actually go. The people who follow you will see it first."
             primary={{ label: "Find a place", onClick: () => router.push("/customer/map") }}
           />
-        ) : (
-          <div className="flex flex-col items-center rounded-card border border-subtle px-6 py-10 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-card border border-subtle bg-surface-raised">
-              <Sparkles className="h-6 w-6 text-muted" />
-            </div>
-            <p className="font-display text-lg font-semibold tracking-tight text-primary mt-4">Share your local finds</p>
-            <p className="text-xs text-muted mt-1.5 font-normal leading-relaxed">
-              Become a creator to post photos and tips from<br />the places you love — open to everyone
-            </p>
-            <button
-              onClick={becomeCreator}
-              disabled={becomingCreator}
-              className="text-sm font-medium text-inverse mt-6 rounded-full bg-primary px-7 py-3 disabled:opacity-40"
-            >
-              {becomingCreator ? "SETTING UP…" : "BECOME A CREATOR"}
-            </button>
-          </div>
         )}
       </div>
     </div>

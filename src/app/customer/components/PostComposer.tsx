@@ -29,6 +29,7 @@ export default function PostComposer({
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [tagShop, setTagShop] = useState(defaultShopSlug ?? "");
   const [myShops, setMyShops] = useState<{ shop_slug: string; shop_name: string }[]>([]);
+  const [nearby, setNearby] = useState<{ shop_slug: string; shop_name: string }[]>([]);
   const mediaRef = useRef<HTMLInputElement>(null);
   const supabase = createSupabaseBrowserClient();
 
@@ -44,6 +45,52 @@ export default function PostComposer({
       })
       .catch(() => {});
   }, []);
+
+  /**
+   * Nearby places, and the nearest one pre-selected.
+   *
+   * The list used to come only from memberships — shops the user had already
+   * joined — so a brand-new user opened the composer to an EMPTY dropdown and
+   * could not tag anywhere at all. That made "post one photo of somewhere near
+   * you" impossible on the one path we most want to work.
+   *
+   * Location is optional and never sent anywhere: the fix is computed on the
+   * device against the public place list.
+   */
+  useEffect(() => {
+    if (lockShop || defaultShopSlug) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch("/api/customer/shops-map");
+          if (!res.ok) return;
+          const d = await res.json();
+          const { latitude: la, longitude: lo } = pos.coords;
+          const withDist = (d.shops ?? [])
+            .filter((p: any) => p.latitude != null && p.longitude != null)
+            .map((p: any) => {
+              const dLat = ((p.latitude - la) * Math.PI) / 180;
+              const dLng = ((p.longitude - lo) * Math.PI) / 180;
+              const a =
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos((la * Math.PI) / 180) * Math.cos((p.latitude * Math.PI) / 180) *
+                  Math.sin(dLng / 2) ** 2;
+              return { ...p, _d: 7917.5 * Math.asin(Math.sqrt(a)) };
+            })
+            .sort((x: any, y: any) => x._d - y._d)
+            .slice(0, 12);
+
+          setNearby(withDist.map((p: any) => ({ shop_slug: p.slug, shop_name: p.shop_name })));
+          // Two taps to a first post: the nearest place is already chosen.
+          setTagShop((cur) => cur || withDist[0]?.slug || "");
+        } catch {}
+      },
+      () => {},
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  }, [lockShop, defaultShopSlug]);
 
   function pickMedia(file: File | null) {
     setMediaFile(file);
@@ -145,17 +192,28 @@ export default function PostComposer({
         >
           <ImagePlus className="h-4 w-4" />
         </button>
-        {!lockShop && myShops.length > 0 && (
+        {!lockShop && (myShops.length > 0 || nearby.length > 0) && (
           <select
             value={tagShop}
             onChange={(e) => setTagShop(e.target.value)}
             className="min-w-0 flex-1 rounded-full bg-surface-sunken px-3.5 py-2.5 text-sm text-secondary outline-none"
             style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
           >
-            <option value="">Tag a business (shows in Explore)</option>
-            {myShops.map((s) => (
-              <option key={s.shop_slug} value={s.shop_slug}>{s.shop_name}</option>
-            ))}
+            <option value="">Tag a place</option>
+            {nearby.length > 0 && (
+              <optgroup label="Near you">
+                {nearby.map((s) => (
+                  <option key={`n-${s.shop_slug}`} value={s.shop_slug}>{s.shop_name}</option>
+                ))}
+              </optgroup>
+            )}
+            {myShops.length > 0 && (
+              <optgroup label="Places you've joined">
+                {myShops.map((s) => (
+                  <option key={`m-${s.shop_slug}`} value={s.shop_slug}>{s.shop_name}</option>
+                ))}
+              </optgroup>
+            )}
           </select>
         )}
         <button

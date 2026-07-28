@@ -49,8 +49,10 @@ export async function GET(
       .maybeSingle();
 
     const isOwn = !!viewerEmail && viewerEmail === post.author_email;
-    // Non-creator authors are not public — only they can see their post.
-    if ((!author || !author.is_creator) && !isOwn) {
+    // Every author is public. This used to 404 posts by non-creators to
+    // everyone but the author, which would have silently hidden the first
+    // post of every new user now that the creator gate is gone.
+    if (!author && !isOwn) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
     // Reported content is hidden pending review — only the author sees it.

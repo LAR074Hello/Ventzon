@@ -1,25 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ScanLine, Gift, Compass } from "lucide-react";
+import { MapPin, Camera, Users } from "lucide-react";
 
 const SLIDES = [
   {
-    icon: Compass,
-    title: "Discover local rewards",
-    sub: "Find participating stores near you and start earning rewards every time you visit.",
+    icon: MapPin,
+    title: "Every place near you",
+    sub: "Thousands of real spots in your neighbourhood — the coffee place on the corner, the bar you keep meaning to try.",
     accent: "var(--text-muted)",
   },
   {
-    icon: ScanLine,
-    title: "Scan & check in",
-    sub: "Tap Scan and point your camera at any Ventzon QR code in-store. It takes two seconds.",
+    icon: Camera,
+    title: "Show people what it's like",
+    sub: "One photo from somewhere you actually go says more than any review. That's the whole app.",
     accent: "var(--text-muted)",
   },
   {
-    icon: Gift,
-    title: "Get rewarded",
-    sub: "Collect stamps or points with every visit. Hit your goal, show your card at the register, and the reward's yours.",
+    icon: Users,
+    title: "Post one photo to start",
+    sub: "Pick a place near you and share it. Your friends see it first — and the feed fills up from there.",
     accent: "var(--accent)",
   },
 ];

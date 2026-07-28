@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, Trophy, User, ScanLine, Map, Bell } from "lucide-react";
+import { Home, Trophy, User, ScanLine, Map, Bell, Plus } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -166,13 +166,20 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
               );
             })}
 
-            {/* Center scan button */}
+            {/* Centre POST button.
+                This was Scan. Scan points a camera at a merchant QR code, and
+                there are no merchants — it was the most prominent control in
+                the app and it did nothing. Posting is the one action the
+                product needs from a new user, and it had no affordance in the
+                nav at all. Scan moves to the Rewards tab, where it belongs
+                once merchants exist. */}
             <button
-              onClick={() => router.push("/customer/scan")}
+              onClick={() => router.push("/customer/profile?compose=1")}
+              aria-label="Post"
               className="flex flex-1 flex-col items-center gap-1 py-1"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg">
-                <ScanLine className="h-6 w-6 text-inverse" strokeWidth={2} />
+                <Plus className="h-7 w-7 text-inverse" strokeWidth={2} />
               </div>
             </button>
 

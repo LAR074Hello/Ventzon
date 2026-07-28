@@ -68,11 +68,15 @@ export async function GET(req: Request) {
     // Authors must be public creators — a profile that turned the creator
     // toggle off disappears from public feeds.
     const authorEmails = [...new Set(postRows.map((p) => p.author_email))];
+    // NOT filtered to is_creator. It used to be, which meant a post was
+    // invisible in the feed unless its author had opted into the "creator"
+    // role first. Removing the creator gate from posting without removing it
+    // here would have been worse than leaving both: people could post, and
+    // their posts would silently go nowhere.
     const { data: authorProfiles } = await admin
       .from("customer_profiles")
       .select("id, email, display_name, avatar_url, is_creator")
-      .in("email", authorEmails)
-      .eq("is_creator", true);
+      .in("email", authorEmails);
     const authorByEmail: Record<string, any> = {};
     for (const a of authorProfiles ?? []) authorByEmail[a.email] = a;
 
