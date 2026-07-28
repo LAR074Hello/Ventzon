@@ -603,3 +603,92 @@ made in July, forever.
 The badge claims "this person was here", but means "this person was here once,
 at some point". Fix is a window — the check-in should be near the post's
 creation time, not merely somewhere in history.
+
+## Pre-beta: `job_applications` needs a retention policy (logged 2026-07-28)
+
+Noted, not acted on.
+
+Production `job_applications` holds **12 real applicants** with real PII:
+names, emails, phone numbers, city, LinkedIn URLs, work-authorization and
+sponsorship answers, over-18 status, and **felony disclosure text**. These are
+actual people who applied to work at Ventzon. They are unrelated to shops and
+survived the 2026-07-28 cleanup untouched, correctly.
+
+Before there are real users this needs:
+
+- **A retention period.** Right now the answer to "how long do we keep a
+  rejected applicant's felony disclosure" is "forever, by default." That is
+  the wrong default and it is not one anybody chose.
+- **An access review.** Who can read this table, through which key, and is it
+  reachable from any anon-key path.
+- **A deletion path**, so an applicant can ask for their record to be removed.
+
+Felony disclosure and work-authorization status are sensitive categories. This
+is a small table, which makes it easy to fix now and awkward to explain later.
+
+## OSM place import — scope (logged 2026-07-28, not built)
+
+Target for the friends test: **East Village / Lower East Side, Williamsburg,
+Hoboken**. NYC metro only. Philadelphia and Baltimore are explicitly later.
+
+Live Overpass counts taken 2026-07-28 (`amenity` in cafe/restaurant/bar/
+fast_food/pub/ice_cream/bakery, plus all `shop=*`):
+
+| Neighbourhood | Places |
+|---|---|
+| East Village + LES | 2,265 |
+| Williamsburg | 1,306 |
+| Hoboken | 536 |
+| *(rejected)* Park Slope | 1,569 |
+| *(rejected)* Astoria | 1,315 |
+| *(rejected)* Bushwick | 1,217 |
+| *(rejected)* New Haven CT | 513 |
+| *(rejected)* Jersey City downtown | 370 |
+| *(rejected)* Stamford CT | 118 |
+
+**~4,100 raw features**, expected to land nearer 2,500–3,000 after filtering.
+
+### The four problems, in order of how much they hurt
+
+**1. Name quality is the gating issue, not volume.** OSM completeness is
+uneven: a corner bodega may exist as an unnamed `shop=convenience` node. Any
+feature without a `name` tag must be **dropped, not synthesised** — a place
+called "Convenience Store" is indistinguishable from the fabricated businesses
+we just deleted from production. Rule: `name` required, no fallback.
+
+**2. Dedupe.** Three collisions to handle:
+- *Within OSM* — the same business as both a node and a building way. Collapse
+  on `name` + ~50m proximity, keep the node.
+- *Against existing `places`* — the import must not create a second row for a
+  place a merchant already claimed. Match on `osm_id` first, then name +
+  proximity, and **never overwrite a row where `claimed_by` is not null**.
+- *Chains* — 14 Dunkin' branches are 14 genuine places. Dedupe must be
+  proximity-scoped, never name-only.
+
+`places.osm_id` and the partial index on it already exist for this.
+
+**3. Category mapping.** OSM `amenity`/`shop`/`cuisine` are a long tail of
+hundreds of values; the app's vocabulary is Coffee / Food / Retail / Beauty /
+Fitness. Needs an explicit mapping table with a default of Retail, plus a
+review of what lands in the default bucket. `amenity=cafe` → Coffee is easy;
+`shop=hairdresser` → Beauty is easy; `shop=car_repair` is a judgement call
+about whether it belongs in a consumer discovery app at all.
+
+Worth deciding deliberately: **not every OSM feature should be imported.**
+Petrol stations, car washes and dentists are real businesses nobody posts a
+photo of. A tighter filter produces a better feed than a complete one.
+
+**4. A place page with no photos — the state that decides the test.** Every
+imported place starts unclaimed, with no posts and no photos. That is the
+*majority* state at launch, not an edge case, and it is the screen a friend
+will actually land on. It must not read as broken or empty. It needs: the
+name, category and neighbourhood carrying the page; a map/static-map block
+standing in for the hero; and a genuine invitation — "no one's posted here
+yet, be the first" — as the primary action rather than a grey placeholder.
+The `photos` column defaults to `'[]'` precisely so this state is normal.
+
+### Licensing
+
+OSM is **ODbL**. Imported rows must stay separable from user-generated content
+(`source = 'osm'` already does this) and attribution is required wherever
+imported data is displayed. Attribution copy is a PRE-LAUNCH item.

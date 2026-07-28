@@ -25,17 +25,24 @@ export const daysAgo = (n) => new Date(BASE_DATE.getTime() - n * 86400e3);
 export const hoursAgo = (n) => new Date(BASE_DATE.getTime() - n * 3600e3);
 
 /**
- * The demo city is Pittsburgh — the actual beta metro. Seeding the real
- * target rather than an invented one means the map, the neighbourhood
- * labels and the imported-place fixtures all sit in one coherent place,
- * and review looks like what users will see.
+ * The demo metro is New York — East Village / Lower East Side, Williamsburg,
+ * and Hoboken. Moved off Pittsburgh 2026-07-28: the friends test targets the
+ * NYC metro (NJ / NYC / CT), and seeding the real target means the map, the
+ * neighbourhood labels and the imported-place fixtures all sit in one
+ * coherent place.
+ *
+ * THE BUSINESS NAMES BELOW ARE INVENTED AND MUST STAY THAT WAY. This seed is
+ * DEV-ONLY, permanently — fabricated businesses must never reach real users.
+ * Real places come from the OSM import, which carries real businesses that
+ * actually exist. See design-notes.md.
  */
-export const CITY = { name: "Pittsburgh", state: "PA" };
-const CITY_CENTRE = { lat: 40.4552, lng: -79.9530 };
+export const CITY = { name: "New York", state: "NY" };
+// Between the East Village and the Lower East Side. The jitter below is sized
+// to reach Hoboken to the west and Williamsburg to the east.
+const CITY_CENTRE = { lat: 40.7250, lng: -73.9900 };
 
 export const NEIGHBOURHOODS = [
-  "Lawrenceville", "Bloomfield", "Strip District", "Shadyside",
-  "East Liberty", "Squirrel Hill", "Polish Hill", "Garfield",
+  "East Village", "Lower East Side", "Williamsburg", "Hoboken",
 ];
 
 /** Local fixture images, served by the app itself — no external host. */
@@ -51,37 +58,37 @@ export const MEDIA = [
 
 /** 30 places. Category drives the reward wording so copy reads plausibly. */
 export const PLACES = [
-  ["Cafe Mercado", "Coffee", "Lawrenceville", "Free drink", 10],
-  ["Bao Down", "Food", "Strip District", "Free bao", 5],
-  ["Bloom & Co", "Retail", "Shadyside", "10% off stems", 6],
-  ["The Reading Room", "Retail", "Squirrel Hill", "Free paperback", 8],
-  ["Kettle & Crumb", "Coffee", "Bloomfield", "Free pastry", 7],
-  ["Govans Groceries", "Retail", "East Liberty", "10% off a shop", 9],
-  ["Fade Room", "Beauty", "Garfield", "Free line-up", 6],
-  ["Salt & Char", "Food", "Polish Hill", "Free side", 5],
-  ["Perch Coffee", "Coffee", "Lawrenceville", "Free filter", 10],
-  ["Dandelion Nails", "Beauty", "Shadyside", "Free file & polish", 6],
-  ["Iron Gate Gym", "Fitness", "Strip District", "Free class", 12],
-  ["The Pressing Room", "Retail", "East Liberty", "Free print", 8],
-  ["Noodle Parade", "Food", "Squirrel Hill", "Free starter", 5],
-  ["Sunday Best", "Retail", "Polish Hill", "15% off", 7],
-  ["Halcyon Yoga", "Fitness", "Bloomfield", "Free drop-in", 10],
-  ["The Cure Deli", "Food", "Garfield", "Free coffee with lunch", 6],
-  ["Tin Whistle Bar", "Food", "Strip District", "Free snack", 8],
-  ["Camellia Tea", "Coffee", "Shadyside", "Free pot", 9],
-  ["Two Rivers Bikes", "Retail", "Bloomfield", "Free tune-up", 10],
-  ["Sable Barbers", "Beauty", "Lawrenceville", "Free hot towel", 6],
-  ["Pome & Seed", "Retail", "Squirrel Hill", "Free bunch", 7],
-  ["Ferry Building Bakery", "Food", "Strip District", "Free loaf", 8],
-  ["Alder Kitchen", "Food", "East Liberty", "Free dessert", 6],
-  ["The Wash House", "Retail", "Garfield", "Free service wash", 10],
-  ["Ridgeline Outfitters", "Retail", "Shadyside", "10% off", 9],
+  ["Cafe Mercado", "Coffee", "East Village", "Free drink", 10],
+  ["Bao Down", "Food", "Lower East Side", "Free bao", 5],
+  ["Bloom & Co", "Retail", "Williamsburg", "10% off stems", 6],
+  ["The Reading Room", "Retail", "Hoboken", "Free paperback", 8],
+  ["Kettle & Crumb", "Coffee", "Williamsburg", "Free pastry", 7],
+  ["Corner & Co Grocers", "Retail", "East Village", "10% off a shop", 9],
+  ["Fade Room", "Beauty", "Lower East Side", "Free line-up", 6],
+  ["Salt & Char", "Food", "Hoboken", "Free side", 5],
+  ["Perch Coffee", "Coffee", "Lower East Side", "Free filter", 10],
+  ["Dandelion Nails", "Beauty", "Williamsburg", "Free file & polish", 6],
+  ["Iron Gate Gym", "Fitness", "East Village", "Free class", 12],
+  ["The Pressing Room", "Retail", "Hoboken", "Free print", 8],
+  ["Noodle Parade", "Food", "East Village", "Free starter", 5],
+  ["Sunday Best", "Retail", "Williamsburg", "15% off", 7],
+  ["Halcyon Yoga", "Fitness", "Lower East Side", "Free drop-in", 10],
+  ["The Cure Deli", "Food", "Hoboken", "Free coffee with lunch", 6],
+  ["Tin Whistle Bar", "Food", "East Village", "Free snack", 8],
+  ["Camellia Tea", "Coffee", "Williamsburg", "Free pot", 9],
+  ["Crosstown Bikes", "Retail", "Hoboken", "Free tune-up", 10],
+  ["Sable Barbers", "Beauty", "Lower East Side", "Free hot towel", 6],
+  ["Pome & Seed", "Retail", "East Village", "Free bunch", 7],
+  ["Rye & Ember Bakery", "Food", "Williamsburg", "Free loaf", 8],
+  ["Alder Kitchen", "Food", "Lower East Side", "Free dessert", 6],
+  ["The Wash House", "Retail", "Hoboken", "Free service wash", 10],
+  ["Ridgeline Outfitters", "Retail", "Williamsburg", "10% off", 9],
   // Deliberately left UNCLAIMED below — see UNCLAIMED_SLUGS.
-  ["Moth & Moon", "Retail", "Polish Hill", "Free candle", 8],
-  ["Copper Pot", "Food", "Lawrenceville", "Free side", 5],
-  ["Still Water Spa", "Beauty", "Bloomfield", "Free add-on", 12],
-  ["The Green Door", "Coffee", "Squirrel Hill", "Free refill", 7],
-  ["Larkspur Records", "Retail", "East Liberty", "Free 7-inch", 10],
+  ["Moth & Moon", "Retail", "East Village", "Free candle", 8],
+  ["Copper Pot", "Food", "Hoboken", "Free side", 5],
+  ["Still Water Spa", "Beauty", "Williamsburg", "Free add-on", 12],
+  ["The Green Door", "Coffee", "Lower East Side", "Free refill", 7],
+  ["Larkspur Records", "Retail", "East Village", "Free 7-inch", 10],
 ];
 
 /**
@@ -93,31 +100,31 @@ export const UNCLAIMED_SLUGS = new Set(["moth-moon"]);
 
 /**
  * Imported-place fixtures: unclaimed, no posts, no photos, OSM provenance.
- * This is what a Pittsburgh import actually produces, and it is the state the
+ * This is what an OSM import actually produces, and it is the state the
  * "no one's posted here yet — be the first" invitation exists for. Kept in the
  * seed rather than inserted by hand so `dev:reset` reproduces exactly the
  * database that gets reviewed.
  */
 export const IMPORTED_PLACES = [
   {
-    slug: "quarry-lane-coffee",
-    name: "Quarry Lane Coffee",
-    address: "214 Quarry Lane",
-    neighborhood: "Lawrenceville",
-    city: "Pittsburgh",
+    slug: "orchard-street-coffee",
+    name: "Orchard Street Coffee",
+    address: "88 Orchard St",
+    neighborhood: "Lower East Side",
+    city: "New York",
     category: "Coffee",
-    lat: 40.4654,
-    lng: -79.9615,
+    lat: 40.7185,
+    lng: -73.9895,
   },
   {
-    slug: "penn-avenue-hardware",
-    name: "Penn Avenue Hardware",
-    address: "4812 Penn Ave",
-    neighborhood: "Bloomfield",
-    city: "Pittsburgh",
+    slug: "grand-street-hardware",
+    name: "Grand Street Hardware",
+    address: "412 Grand St",
+    neighborhood: "Williamsburg",
+    city: "New York",
     category: "Retail",
-    lat: 40.4622,
-    lng: -79.9489,
+    lat: 40.7118,
+    lng: -73.9600,
   },
 ];
 
@@ -223,8 +230,8 @@ export function buildCity() {
     rewardMode: i % 7 === 0 ? "points" : "stamps",
     pointsPerVisit: 10,
     // Rough coordinates around the demo city centre.
-    lat: CITY_CENTRE.lat + (rnd() - 0.5) * 0.05,
-    lng: CITY_CENTRE.lng + (rnd() - 0.5) * 0.06,
+    lat: CITY_CENTRE.lat + (rnd() - 0.5) * 0.06,
+    lng: CITY_CENTRE.lng + (rnd() - 0.5) * 0.09,
     address: `${int(10, 890)} ${pick(["Penn", "Liberty", "Butler", "Ellsworth", "Negley", "Carson"])} ${pick(["St", "Ave", "Row", "Way"])}`,
     // Three tiers of maturity, standing in for verification_tier until 1.5.
     claimed: i % 3 !== 0,
