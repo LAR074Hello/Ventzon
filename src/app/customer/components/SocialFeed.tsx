@@ -234,7 +234,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
 
   if (loading) {
     return (
-      <div className="space-y-5 px-5">
+      <div className="mx-auto max-w-[510px] space-y-5 px-5">
         {[0, 1].map((i) => (
           <div key={i} className="elevation-1 overflow-hidden rounded-card">
             <div className="flex items-center gap-3 p-4">
@@ -270,7 +270,9 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
   }
 
   return (
-    <div className="space-y-7 px-5 pb-4">
+    // max-w caps the column on desktop (~470px of media inside the px-5 gutter,
+    // matching Instagram web). It does not bind at 375px, so mobile stays full-bleed.
+    <div className="mx-auto max-w-[510px] space-y-7 px-5 pb-4">
       {/* A sparse feed gets suggestions to follow — the new-user fix. */}
       {posts.length < 3 && (
         <div className="-mx-5">
@@ -325,9 +327,11 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
               {p.media_url && (
                 <button onClick={() => router.push(`/customer/post/${p.id}`)} className="block w-full">
                   {p.media_type === "video" ? (
-                    <video src={p.media_url} muted playsInline preload="metadata" className="aspect-[4/5] w-full object-cover" />
+                    // max-h stops a 4:5 frame from eating a short laptop viewport;
+                    // object-cover crops rather than letterboxing.
+                    <video src={p.media_url} muted playsInline preload="metadata" className="aspect-[4/5] max-h-[70vh] w-full object-cover" />
                   ) : (
-                    <img src={p.media_url} alt="" loading="lazy" className="aspect-[4/5] w-full object-cover" />
+                    <img src={p.media_url} alt="" loading="lazy" className="aspect-[4/5] max-h-[70vh] w-full object-cover" />
                   )}
                 </button>
               )}

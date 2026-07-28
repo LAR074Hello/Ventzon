@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 
     if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json(
-        { error: "Server misconfigured: missing Supabase env vars" },
+        { error: "Server misconfigured: missing Supabase env vars", code: "server_error" },
         { status: 500 }
       );
     }
@@ -45,21 +45,25 @@ export async function GET(req: Request) {
       .maybeSingle();
 
     if (readErr) {
-      return NextResponse.json({ error: readErr.message }, { status: 500 });
+      return NextResponse.json({ error: readErr.message, code: "server_error" }, { status: 500 });
     }
 
-    // 2) If missing, verify the shop actually exists before creating a settings row.
-    //    Without this check anyone could POST an arbitrary slug and pollute shop_settings.
+    // 2) If missing, fall back to derived defaults — WITHOUT writing.
+    //    This handler used to upsert a shop_settings row here. A GET must not
+    //    write: Next.js prefetches on hover and crawlers hit URLs, so rows could
+    //    appear with no user action. The real creation path is the merchant
+    //    onboarding insert (api/merchant/onboard), which is the only place a
+    //    settings row should be born.
     if (!existing) {
       const { data: shopExists } = await supabase
         .from("shops")
-        .select("slug")
+        .select("slug, logo_url")
         .eq("slug", shop_slug)
         .maybeSingle();
 
       if (!shopExists) {
         return NextResponse.json(
-          { error: "Shop not found" },
+          { error: "Shop not found", code: "shop_not_found" },
           { status: 404 }
         );
       }
@@ -70,34 +74,20 @@ export async function GET(req: Request) {
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
 
-      const defaultRow = {
+      // Same shape the client expects, derived in memory rather than persisted.
+      const derived = {
         shop_slug,
         shop_name: defaultShopName || shop_slug,
         deal_title: "",
         deal_details: "",
+        reward_goal: 5,
+        reward_expires_days: null,
+        bonus_days: null,
+        logo_url: shopExists.logo_url ?? null,
       };
 
-      const { data: inserted, error: upsertErr } = await supabase
-        .from("shop_settings")
-        .upsert(defaultRow, { onConflict: "shop_slug" })
-        .select(
-          "shop_slug, shop_name, deal_title, deal_details, reward_goal, reward_expires_days, bonus_days"
-        )
-        .single();
-
-      if (upsertErr) {
-        return NextResponse.json({ error: upsertErr.message }, { status: 500 });
-      }
-
-      // Fetch logo_url from shops table
-      const { data: shopRowNew } = await supabase
-        .from("shops")
-        .select("logo_url")
-        .eq("slug", shop_slug)
-        .maybeSingle();
-
       return NextResponse.json(
-        { ok: true, join_token: validToken, settings: { ...inserted, logo_url: shopRowNew?.logo_url ?? null } },
+        { ok: true, join_token: validToken, settings: derived },
         { status: 200 }
       );
     }
@@ -115,7 +105,7 @@ export async function GET(req: Request) {
     );
   } catch (err: any) {
     return NextResponse.json(
-      { error: err?.message ?? "Unknown error" },
+      { error: err?.message ?? "Unknown error", code: "server_error" },
       { status: 500 }
     );
   }

@@ -139,6 +139,9 @@ export default function CustomerShopPage() {
   const supabase = createSupabaseBrowserClient();
 
   const [settings, setSettings] = useState<ShopSettings | null>(null);
+  // "not_found" = the shop genuinely isn't there. "failed" = we couldn't ask.
+  // Kept distinct because collapsing them made a missing env var read as missing data.
+  const [loadError, setLoadError] = useState<"not_found" | "failed" | null>(null);
   const [status, setStatus] = useState<CustomerStatus | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,9 +185,21 @@ export default function CustomerShopPage() {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
 
-      const res = await fetch(`/api/join/settings?shop_slug=${shopSlug}`);
-      const json = await res.json();
-      if (res.ok) setSettings(json.settings);
+      try {
+        const res = await fetch(`/api/join/settings?shop_slug=${shopSlug}`);
+        // A non-JSON body (an SSO redirect, an HTML error page) is a failure,
+        // not a missing shop — .catch(null) keeps it out of the not-found branch.
+        const json = await res.json().catch(() => null);
+        if (res.ok && json?.settings) {
+          setSettings(json.settings);
+        } else if (res.status === 404 && json?.code === "shop_not_found") {
+          setLoadError("not_found");
+        } else {
+          setLoadError("failed");
+        }
+      } catch {
+        setLoadError("failed");
+      }
 
       // Posts featuring this business — same grid as creator profiles.
       fetch(`/api/customer/feed?shop_slug=${shopSlug}`)
@@ -315,10 +330,39 @@ export default function CustomerShopPage() {
     );
   }
 
+  // Couldn't reach the server, or it errored. The shop may well exist — say so,
+  // and offer a retry rather than sending the user away.
+  if (!settings && loadError === "failed") {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-8 text-center">
+        <p className="text-2xs font-semibold uppercase tracking-caps text-muted">Couldn&rsquo;t load</p>
+        <h1 className="mt-4 font-display text-2xl font-semibold text-primary">Something went wrong</h1>
+        <p className="text-base text-secondary mt-3 font-normal">
+          We couldn&rsquo;t reach the server. This shop may still be here — check
+          your connection and try again.
+        </p>
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs font-semibold uppercase tracking-caps text-inverse rounded-full bg-primary px-6 py-3 transition-all duration-300 active:opacity-80"
+          >
+            Try again
+          </button>
+          <button
+            onClick={() => router.push("/customer/explore")}
+            className="text-xs font-semibold uppercase tracking-caps text-secondary px-6 py-2 transition-all duration-300 hover:text-primary"
+          >
+            Back to explore
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!settings) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-8 text-center">
-        <p className="text-2xs font-semibold uppercase tracking-caps text-muted">NOT FOUND</p>
+        <p className="text-2xs font-semibold uppercase tracking-caps text-muted">Not found</p>
         <h1 className="mt-4 font-display text-2xl font-semibold text-primary">Shop not found</h1>
         <p className="text-base text-secondary mt-3 font-normal">
           This shop doesn&rsquo;t exist or may have been removed.
