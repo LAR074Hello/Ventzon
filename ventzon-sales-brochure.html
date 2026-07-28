@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#fff; color:#111; }
+
+  .page { width:8.5in; min-height:11in; padding:0.75in 0.8in; position:relative; page-break-after:always; background:#fff; }
+  .page-dark { background:#000; color:#ededed; }
+  .page-light { background:#fff; color:#111; }
+
+  @media print {
+    .page { page-break-after: always; }
+  }
+
+  /* ---- COVER ---- */
+  .cover { display:flex; flex-direction:column; justify-content:space-between; min-height:11in; background:#000; color:#fff; padding:0; }
+  .cover-top { padding:0.75in 0.8in 0; }
+  .cover-mid { padding:0 0.8in; flex:1; display:flex; flex-direction:column; justify-content:center; }
+  .cover-bot { padding:0.35in 0.8in 0.75in; border-top:1px solid #1a1a1a; }
+
+  .logo-name { font-size:11px; letter-spacing:0.5em; color:#ededed; font-weight:300; }
+  .cover-tag { font-size:11px; letter-spacing:0.3em; color:#555; margin-bottom:20px; }
+  .cover-h1 { font-size:56px; font-weight:200; line-height:1.05; letter-spacing:-0.02em; color:#fff; }
+  .cover-h1 span { color:#555; }
+  .cover-sub { font-size:16px; font-weight:300; color:#888; margin-top:20px; max-width:5in; line-height:1.6; }
+  .cover-bot-flex { display:flex; justify-content:space-between; align-items:flex-end; }
+  .cover-bot p { font-size:12px; color:#444; font-weight:300; }
+  .cover-url { font-size:13px; color:#666; letter-spacing:0.1em; }
+
+  /* ---- LABELS & DIVIDERS ---- */
+  .section-label { font-size:10px; letter-spacing:0.35em; color:#888; margin-bottom:10px; }
+  .section-label-dark { color:#555; }
+  hr.divider { border:none; border-top:1px solid #f0f0f0; margin:36px 0; }
+  hr.divider-dark { border-top:1px solid #1a1a1a; }
+
+  /* ---- TYPOGRAPHY ---- */
+  .big-h2 { font-size:36px; font-weight:200; letter-spacing:-0.01em; line-height:1.15; }
+  .big-h2-dark { color:#fff; }
+  .lead { font-size:15px; font-weight:300; color:#555; line-height:1.7; margin-top:14px; }
+  .lead-dark { color:#888; }
+
+  /* ---- CARDS ---- */
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:28px; }
+  .card { border:1px solid #eee; border-radius:12px; padding:24px; }
+  .card-dark { border:1px solid #1a1a1a; background:#050505; border-radius:12px; padding:24px; }
+  .card-num { font-size:32px; font-weight:200; color:#ccc; line-height:1; }
+  .card-num-dark { color:#333; }
+  .card h3 { font-size:16px; font-weight:400; margin:8px 0 6px; }
+  .card-dark h3 { font-size:16px; font-weight:300; color:#ededed; margin:8px 0 6px; }
+  .card p { font-size:13px; color:#666; line-height:1.6; font-weight:300; }
+  .card-dark p { font-size:13px; color:#555; line-height:1.6; }
+
+  /* ---- STEPS ---- */
+  .steps { margin-top:24px; }
+  .step { display:flex; gap:18px; align-items:flex-start; margin-bottom:20px; }
+  .step-num { width:32px; height:32px; border-radius:50%; border:1px solid #e0e0e0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#999; flex-shrink:0; }
+  .step-num-dark { border:1px solid #1a1a1a; color:#555; }
+  .step-body h4 { font-size:14px; font-weight:400; margin-bottom:3px; }
+  .step-body-dark h4 { font-size:14px; font-weight:300; color:#ededed; margin-bottom:3px; }
+  .step-body p { font-size:12px; color:#888; line-height:1.5; }
+  .step-body-dark p { font-size:12px; color:#444; line-height:1.5; }
+
+  /* ---- PRICING ---- */
+  .price-card { border:1px solid #1a1a1a; border-radius:14px; padding:32px; margin-top:24px; }
+  .price-main { font-size:48px; font-weight:200; color:#fff; line-height:1; }
+  .price-sub { font-size:14px; color:#555; margin-top:4px; font-weight:300; }
+  .price-plus { font-size:15px; color:#555; margin-top:16px; font-weight:300; }
+  .price-features { list-style:none; margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:8px 32px; }
+  .price-features li { font-size:13px; color:#555; font-weight:300; padding-left:16px; position:relative; }
+  .price-features li::before { content:"✓"; position:absolute; left:0; color:#444; }
+
+  /* ---- HIGHLIGHT BOX ---- */
+  .highlight-box { background:#f7f7f7; border-left:3px solid #111; padding:18px 22px; border-radius:0 8px 8px 0; margin:24px 0; }
+  .highlight-box p { font-size:14px; color:#333; line-height:1.6; font-style:italic; font-weight:300; }
+  .highlight-box-dark { background:#0a0a0a; border-left:3px solid #ededed; }
+  .highlight-box-dark p { color:#888; }
+
+  /* ---- CTA ---- */
+  .cta-box { background:#111; border-radius:14px; padding:32px; margin-top:32px; text-align:center; }
+  .cta-box h3 { font-size:22px; font-weight:200; color:#fff; }
+  .cta-box p { font-size:13px; color:#555; margin-top:8px; font-weight:300; }
+  .cta-url { display:inline-block; margin-top:18px; font-size:14px; color:#ededed; letter-spacing:0.15em; border:1px solid #333; border-radius:100px; padding:10px 28px; }
+
+  /* ---- TWO-COL TEXT ---- */
+  .two-col-text { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:28px; }
+  .col-head { font-size:11px; letter-spacing:0.3em; color:#555; margin-bottom:16px; }
+  .col-head-dark { color:#444; }
+
+  .page-num { position:absolute; bottom:0.5in; right:0.8in; font-size:10px; color:#ccc; letter-spacing:0.1em; }
+  .page-num-dark { color:#333; }
+</style>
+</head>
+<body>
+
+
+<!-- ══ PAGE 1 — COVER ══════════════════════════════════════ -->
+<div class="page page-dark cover">
+  <div class="cover-top">
+    <p class="logo-name">VENTZON</p>
+  </div>
+
+  <div class="cover-mid">
+    <p class="cover-tag">MERCHANT OVERVIEW</p>
+    <h1 class="cover-h1">The loyalty program<br>your customers will<br><span>actually use.</span></h1>
+    <p class="cover-sub">No punch cards. No app download required. Just scan, earn, and come back for more — powered by a QR code you print and post.</p>
+  </div>
+
+  <div class="cover-bot">
+    <div class="cover-bot-flex">
+      <p>Prepared by your Ventzon rep</p>
+      <p class="cover-url">ventzon.com</p>
+    </div>
+  </div>
+  <span class="page-num page-num-dark">0 1</span>
+</div>
+
+
+<!-- ══ PAGE 2 — OVERVIEW ══════════════════════════════════ -->
+<div class="page page-light">
+  <p class="section-label">OVERVIEW</p>
+  <h2 class="big-h2">What is Ventzon?</h2>
+  <p class="lead">Ventzon is a digital loyalty rewards platform built for local businesses. You replace the paper punch card with a QR code — customers scan it on their phone, earn stamps, and get rewarded automatically. No hardware. No app download needed to check in.</p>
+
+  <hr class="divider"/>
+
+  <p class="section-label">THE PROBLEM WE SOLVE</p>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-num">01</div>
+      <h3>Paper cards don't work</h3>
+      <p>Customers lose them, forget them, or switch shops. There's no way to know who your regulars are or how often they come back.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">02</div>
+      <h3>Apps have too much friction</h3>
+      <p>Most loyalty apps require a download, account creation, and setup time. 80% of people won't bother. Ventzon works with just an email address.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">03</div>
+      <h3>You have no customer data</h3>
+      <p>Without a system, you don't know your top customers, how often they visit, or how to reach them. Ventzon changes that from day one.</p>
+    </div>
+    <div class="card">
+      <div class="card-num">04</div>
+      <h3>Competitors are gaining ground</h3>
+      <p>Chains and franchises run loyalty programs at scale. Ventzon gives local businesses the same tools — at a fraction of the cost.</p>
+    </div>
+  </div>
+
+  <span class="page-num">0 2</span>
+</div>
+
+
+<!-- ══ PAGE 3 — VALUE PROPOSITION ════════════════════════ -->
+<div class="page page-dark">
+  <p class="section-label section-label-dark">VALUE PROPOSITION</p>
+  <h2 class="big-h2 big-h2-dark">Why it matters — for you and your customers</h2>
+
+  <div class="two-col-text" style="margin-top:36px;">
+    <div>
+      <p class="col-head col-head-dark">FOR YOUR BUSINESS</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num step-num-dark">01</div>
+          <div class="step-body step-body-dark">
+            <h4>Keep customers coming back</h4>
+            <p>Loyalty members visit 40% more often than one-time customers. Every stamp is a reason to return instead of going somewhere else.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num step-num-dark">02</div>
+          <div class="step-body step-body-dark">
+            <h4>Real-time dashboard</h4>
+            <p>See who checked in today, track total loyalty members, and view your most active customers — all from your phone or laptop.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num step-num-dark">03</div>
+          <div class="step-body step-body-dark">
+            <h4>Send email campaigns</h4>
+            <p>Message your entire loyalty list at once. Announce specials, double-stamp days, or new arrivals — directly to their inbox.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num step-num-dark">04</div>
+          <div class="step-body step-body-dark">
+            <h4>Live from day one</h4>
+            <p>No hardware to order, no staff training, no long setup. Your QR code is ready to print within minutes of signing up.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="col-head col-head-dark">FOR YOUR CUSTOMERS</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num step-num-dark">01</div>
+          <div class="step-body step-body-dark">
+            <h4>Nothing to download</h4>
+            <p>Customers scan your QR code, enter their phone or email, and they're in. No app required to earn stamps or track progress.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num step-num-dark">02</div>
+          <div class="step-body step-body-dark">
+            <h4>Automatic notifications</h4>
+            <p>They get an email on check-in, when they're one stamp away from a reward, and when they've earned it — ready to redeem.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num step-num-dark">03</div>
+          <div class="step-body step-body-dark">
+            <h4>A card that never gets lost</h4>
+            <p>Their stamp count lives in the system. They never have to find a crumpled punch card at the bottom of their bag again.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num step-num-dark">04</div>
+          <div class="step-body step-body-dark">
+            <h4>One place for all loyalty cards</h4>
+            <p>Customers can download the Ventzon app to track all their local loyalty programs in one place.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <span class="page-num page-num-dark">0 3</span>
+</div>
+
+
+<!-- ══ PAGE 4 — HOW IT WORKS ══════════════════════════════ -->
+<div class="page page-light">
+  <p class="section-label">HOW IT WORKS</p>
+  <h2 class="big-h2">The experience, from both sides</h2>
+
+  <div class="two-col-text" style="margin-top:32px;">
+    <div>
+      <p class="col-head">CUSTOMER EXPERIENCE</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Walks into your store</h4>
+            <p>Sees your Ventzon QR code near the register or counter.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Scans the QR code</h4>
+            <p>Opens directly in their browser. Enters phone number or email in about 5 seconds. No app needed.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Earns a stamp</h4>
+            <p>Sees their progress toward the reward. Gets a confirmation email right away.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Hits the goal — earns the reward</h4>
+            <p>Gets notified "You earned a reward at [your shop]" and shows it at the register to redeem.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="col-head">MERCHANT EXPERIENCE</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Sign up in 5 minutes</h4>
+            <p>Create your shop, set your reward (e.g. "Free coffee after 8 visits"), and how many stamps equal one reward.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Print and post your QR code</h4>
+            <p>Your dashboard gives you a print-ready QR card. Tape it near the register — that's the whole setup.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Watch the dashboard</h4>
+            <p>See real-time check-ins, loyalty members, and analytics from any device. No separate hardware needed.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Grow repeat business</h4>
+            <p>Run double-stamp days, email your entire loyalty list, and watch customers come back more often.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <p>"With 75 regular customers and an 8-visit reward goal, you're looking at roughly 18 rewards redeemed per month — Ventzon costs just $25/mo. Most merchants see more than that back in repeat revenue within the first week."</p>
+  </div>
+
+  <span class="page-num">0 4</span>
+</div>
+
+
+<!-- ══ PAGE 5 — PRICING + ACTION ══════════════════════════ -->
+<div class="page page-dark">
+  <p class="section-label section-label-dark">PRICING</p>
+  <h2 class="big-h2 big-h2-dark">Simple, transparent pricing</h2>
+  <p class="lead lead-dark">One plan. No setup fees. No contracts. Cancel anytime.</p>
+
+  <div class="price-card">
+    <div class="price-main">$25<span style="font-size:20px;color:#555">/mo</span></div>
+    <div class="price-sub">Flat monthly subscription — no per-reward fees, no hidden charges</div>
+    <p class="price-plus">Everything included:</p>
+    <ul class="price-features">
+      <li>Unlimited customers</li>
+      <li>Real-time merchant dashboard</li>
+      <li>QR code + print card</li>
+      <li>Automated reward emails</li>
+      <li>"Almost there" nudge emails</li>
+      <li>Email campaigns to all customers</li>
+      <li>Customer analytics</li>
+      <li>No hardware required</li>
+    </ul>
+  </div>
+
+  <hr class="divider divider-dark"/>
+
+  <p class="section-label section-label-dark">WHAT WE ARE ASKING</p>
+
+  <div class="two-col" style="margin-top:0;">
+    <div class="card-dark">
+      <div class="card-num card-num-dark">A</div>
+      <h3>Sign up now</h3>
+      <p>Go to ventzon.com, create your shop, and activate your subscription. Your QR code is ready to print in under 5 minutes.</p>
+      <p style="margin-top:14px; font-size:12px; letter-spacing:0.1em; color:#444;">ventzon.com/get-started</p>
+    </div>
+    <div class="card-dark">
+      <div class="card-num card-num-dark">B</div>
+      <h3>Leave your info</h3>
+      <p>Not ready yet? Leave your name and email with your Ventzon rep and we'll walk you through it personally — no pressure.</p>
+      <p style="margin-top:14px; font-size:12px; color:#444; font-weight:300;">Your rep will follow up within 24 hrs.</p>
+    </div>
+  </div>
+
+  <span class="page-num page-num-dark">0 5</span>
+</div>
+
+
+<!-- ══ PAGE 6 — CLOSE ══════════════════════════════════════ -->
+<div class="page page-dark" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:11in;">
+  <p style="font-size:11px;letter-spacing:0.4em;color:#555;margin-bottom:32px;">VENTZON</p>
+  <h2 style="font-size:40px;font-weight:200;color:#fff;letter-spacing:-0.01em;max-width:5.5in;line-height:1.2;">Ready to turn first-time visitors<br>into regulars?</h2>
+  <p style="font-size:15px;font-weight:300;color:#666;margin-top:20px;max-width:4in;line-height:1.7;">Join local businesses already using Ventzon. Your loyalty program can be live today.</p>
+  <p style="font-size:20px;font-weight:200;color:#ededed;margin-top:48px;letter-spacing:0.15em;">v e n t z o n . c o m</p>
+  <span class="page-num page-num-dark">0 6</span>
+</div>
+
+
+</body>
+</html>

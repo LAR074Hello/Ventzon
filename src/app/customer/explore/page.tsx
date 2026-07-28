@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag } from "lucide-react";
+import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag, Landmark, Trees } from "lucide-react";
 import SocialFeed from "../components/SocialFeed";
 
 type Shop = {
@@ -41,6 +41,12 @@ const CATEGORIES = [
   { id: "retail", label: "Retail", icon: ShoppingBag },
   { id: "beauty", label: "Beauty", icon: Sparkles },
   { id: "fitness", label: "Fitness", icon: Dumbbell },
+  // Culture and Outdoors exist because the OSM import produces them: ~148
+  // galleries/museums/venues and ~134 parks across the three launch
+  // neighbourhoods. Remapping a museum into "Retail" would be worse than a
+  // sixth and seventh filter.
+  { id: "culture", label: "Culture", icon: Landmark },
+  { id: "outdoors", label: "Outdoors", icon: Trees },
   { id: "deals", label: "Deals", icon: Tag },
 ];
 
@@ -49,7 +55,9 @@ function inferCategory(shop: Shop): string {
   if (/coffee|café|cafe|latte|espresso|brew|tea/.test(text)) return "coffee";
   if (/pizza|burger|taco|sushi|food|eat|restaurant|grill|bbq|sandwich|wrap/.test(text)) return "food";
   if (/salon|spa|beauty|nail|hair|skin|barber/.test(text)) return "beauty";
-  if (/gym|fitness|yoga|workout|sport|crossfit/.test(text)) return "fitness";
+  if (/gym|fitness|yoga|workout|sport|crossfit|pilates/.test(text)) return "fitness";
+  if (/museum|gallery|theatre|theater|venue|records|record shop|books|bookshop|arts/.test(text)) return "culture";
+  if (/park|garden|playground|greenway|plaza/.test(text)) return "outdoors";
   if (/shop|store|retail|boutique|fashion|cloth/.test(text)) return "retail";
   return "other";
 }

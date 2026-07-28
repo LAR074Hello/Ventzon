@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ventzon</string>
+    <string name="title_activity_main">Ventzon</string>
+    <string name="package_name">com.ventzon.app</string>
+    <string name="custom_url_scheme">com.ventzon.app</string>
+</resources>

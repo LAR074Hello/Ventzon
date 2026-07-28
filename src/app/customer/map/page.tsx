@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Locate, X, ChevronRight } from "lucide-react";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
 
 type ShopPin = {
   slug: string;
@@ -36,6 +37,11 @@ export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  // The cluster group owns every pin. Adding ~2,700 bare markers to the map
+  // renders them as overlapping grey masses at city zoom — correct data,
+  // unreadable surface.
+  const clusterRef = useRef<any>(null);
+  const resizeObs = useRef<ResizeObserver | null>(null);
 
   const [shops, setShops] = useState<ShopPin[]>([]);
   const [selected, setSelected] = useState<ShopPin | null>(null);
@@ -98,10 +104,21 @@ export default function MapPage() {
         .addTo(map);
 
       mapInstance.current = map;
+
+      // Leaflet caches the container size at init and never re-reads it. The
+      // install banner mounts after the map does and changes the container
+      // height, which left the tile pane painting at the old size — the map
+      // rendered inset with grey gutters on every load. Observe the element
+      // rather than guessing at a timeout.
+      const ro = new ResizeObserver(() => map.invalidateSize());
+      ro.observe(mapRef.current!);
+      resizeObs.current = ro;
     })();
 
     return () => {
       cancelled = true;
+      resizeObs.current?.disconnect();
+      resizeObs.current = null;
     };
   }, []);
 
@@ -113,13 +130,52 @@ export default function MapPage() {
 
     (async () => {
       const L = (await import("leaflet")).default;
+      // Attaches L.markerClusterGroup onto the Leaflet instance.
+      await import("leaflet.markercluster");
       if (cancelled) return;
 
       const map = mapInstance.current;
 
-      // Clear old markers
+      // Clear old markers and the group that held them.
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
+      if (clusterRef.current) {
+        map.removeLayer(clusterRef.current);
+        clusterRef.current = null;
+      }
+
+      /**
+       * Clusters are drawn by us, not by the plugin. The default look is a
+       * lime/amber bubble that belongs to another product — this is an
+       * ink-filled disc with the count in mono, sized in three steps so a
+       * dense block reads as heavier without shouting.
+       */
+      const cluster = (L as any).markerClusterGroup({
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: true,
+        maxClusterRadius: 60,
+        disableClusteringAtZoom: 18,
+        iconCreateFunction: (c: any) => {
+          const n = c.getChildCount();
+          const size = n < 10 ? 36 : n < 100 ? 44 : 52;
+          const label = n < 1000 ? String(n) : `${Math.floor(n / 1000)}k+`;
+          return L.divIcon({
+            html: `<div style="
+              width:${size}px;height:${size}px;border-radius:50%;
+              background:var(--text-primary);color:var(--text-inverse);
+              display:flex;align-items:center;justify-content:center;
+              font-family:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace);
+              font-size:${n < 100 ? 13 : 12}px;font-weight:600;
+              letter-spacing:0.02em;
+              box-shadow:0 2px 10px rgba(0,0,0,0.35);
+            ">${label}</div>`,
+            className: "",
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+        },
+      });
+      clusterRef.current = cluster;
 
       shops.forEach((shop) => {
         const initial = shop.shop_name.charAt(0).toUpperCase();
@@ -163,10 +219,19 @@ export default function MapPage() {
           iconAnchor: [19, rewardReady ? 26 : 19],
         });
 
-        const marker = L.marker([shop.latitude, shop.longitude], { icon }).addTo(map);
+        const marker = L.marker([shop.latitude, shop.longitude], { icon });
         marker.on("click", () => setSelected(shop));
+        cluster.addLayer(marker);
         markersRef.current.push(marker);
       });
+
+      map.addLayer(cluster);
+
+      // Leaflet caches the container size at init. The cluster layer mounts
+      // after the app-banner/chrome has settled the layout, so without this
+      // the tile pane keeps painting at the old size and the map renders
+      // inset with grey gutters.
+      map.invalidateSize();
 
       // Fit map to markers if any
       if (shops.length > 0) {

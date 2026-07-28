@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import PlaceMiniMap from "@/components/PlaceMiniMap";
 import { getPublicPostsForPlace } from "@/lib/public-visibility";
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -32,7 +33,7 @@ async function getPlace(slug: string) {
   const db = admin();
   const { data: place } = await db
     .from("places")
-    .select("id, slug, name, address, neighborhood, city, category, verification_tier, claimed_by")
+    .select("id, slug, name, address, latitude, longitude, neighborhood, city, category, verification_tier, claimed_by")
     .eq("slug", slug)
     .maybeSingle();
   if (!place) return null;
@@ -111,6 +112,15 @@ export default async function PlaceSharePage({ params }: { params: Promise<{ slu
           </span>
         )}
         {place.address && <p className="mt-3 text-sm text-muted">{place.address}</p>}
+
+        {/* Where it is. For a place nobody has posted about this is the most
+            useful thing the page can offer, and it stops the no-post state
+            from bottoming out into dead space. */}
+        {place.latitude != null && place.longitude != null && (
+          <div className="mt-6">
+            <PlaceMiniMap lat={place.latitude} lng={place.longitude} />
+          </div>
+        )}
 
         {posts.length === 0 ? (
           /* The invitation, not an apology. 800 quiet places are 800
