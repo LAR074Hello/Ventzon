@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Play, AlignLeft } from "lucide-react";
+import { Play, AlignLeft, Camera } from "lucide-react";
+import EmptyState from "./EmptyState";
 
 export type GridPost = {
   id: string;
@@ -22,12 +23,12 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
 
   if (posts.length === 0) {
     return (
-      <div
-        className="rounded-card px-5 py-10 text-center"
-        style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
-      >
-        <p className="text-base text-secondary">No posts yet</p>
-      </div>
+      <EmptyState
+        compact
+        icon={Camera}
+        title="No one's posted here yet"
+        body="Be the first. A single photo is enough to start this place off."
+      />
     );
   }
 

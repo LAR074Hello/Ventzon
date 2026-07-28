@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, Compass, Sparkles, BadgeCheck } from "lucide-react";
 import FollowButton from "./FollowButton";
+import EmptyState from "./EmptyState";
 
 type FeedPost = {
   id: string;
@@ -255,16 +256,14 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
     return (
       <div>
         <SuggestionRow userLoc={userLoc} />
-        <div className="flex flex-col items-center px-8 py-10 text-center">
-          <div className="elevation-1 flex h-16 w-16 items-center justify-center rounded-sheet">
-            <Compass className="h-7 w-7 text-muted" />
-          </div>
-          <p className="mt-5 font-display text-lg font-semibold tracking-tight text-primary">Nothing here yet</p>
-          <p className="mt-2 text-base leading-relaxed text-secondary">
-            Posts from creators at local businesses will show up here.<br />
-            Follow creators you like to shape your feed.
-          </p>
-        </div>
+        <EmptyState
+          icon={Compass}
+          eyebrow="Your feed"
+          title="Be the first one here"
+          body="Nobody you follow has posted yet. Find a place you like and show people what it's actually like inside."
+          primary={{ label: "Explore the map", onClick: () => router.push("/customer/map") }}
+          secondary={{ label: "Find people to follow", onClick: () => router.push("/customer/explore") }}
+        />
       </div>
     );
   }

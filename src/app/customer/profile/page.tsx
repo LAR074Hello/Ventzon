@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight } from "lucide-react";
+import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import PostGrid, { type GridPost } from "../components/PostGrid";
 import PostComposer from "../components/PostComposer";
+import EmptyState from "../components/EmptyState";
 import { ProfileStats, BadgePills, type ProfileStatValues, type BadgeValue } from "../components/ProfileStats";
 
 type OwnProfile = {
@@ -303,12 +304,13 @@ export default function ProfilePage() {
         ) : posts.length > 0 ? (
           <PostGrid posts={posts} />
         ) : profile?.is_creator ? (
-          <div className="rounded-card border border-subtle px-5 py-10 text-center">
-            <p className="text-base text-secondary font-medium">No posts yet</p>
-            <p className="text-xs text-muted mt-1.5 font-normal">
-              Tap + to share your first find
-            </p>
-          </div>
+          <EmptyState
+            compact
+            icon={Camera}
+            title="Your first post goes here"
+            body="Share somewhere you actually go. The people who follow you will see it first."
+            primary={{ label: "Find a place", onClick: () => router.push("/customer/map") }}
+          />
         ) : (
           <div className="flex flex-col items-center rounded-card border border-subtle px-6 py-10 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-card border border-subtle bg-surface-raised">

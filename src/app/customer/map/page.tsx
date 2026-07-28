@@ -274,11 +274,19 @@ export default function MapPage() {
                 invites rather than showing a blank — an empty place is a
                 recruitment surface. */}
             {!selected.deal_title && (
-              <div className="elevation-1 mx-5 mb-3 rounded-card px-4 py-3">
-                <p className="text-base text-primary">No one&rsquo;s posted here yet</p>
-                <p className="mt-1 text-sm text-secondary">
-                  Be the first to share what it&rsquo;s like.
-                </p>
+              <div className="elevation-1 mx-5 mb-3 flex items-center gap-3 rounded-card px-4 py-3.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-medium text-primary">No one&rsquo;s posted here yet</p>
+                  <p className="mt-0.5 text-sm text-secondary">
+                    Be the first to show what it&rsquo;s like.
+                  </p>
+                </div>
+                <button
+                  onClick={() => router.push(`/place/${selected.slug}`)}
+                  className="shrink-0 rounded-full bg-primary px-4 py-2 text-2xs font-semibold uppercase tracking-caps text-inverse transition-all duration-300 active:opacity-80"
+                >
+                  Be the first
+                </button>
               </div>
             )}
 

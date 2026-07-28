@@ -28,26 +28,59 @@ export async function GET() {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: placeRows, error } = await supabase
-      .from("places")
-      .select("slug, name, address, latitude, longitude, neighborhood, city, category, verification_tier, source")
-      .not("latitude", "is", null)
-      .not("longitude", "is", null)
-      .limit(500);
+    // PAGINATED, and it has to be. Two traps stack here:
+    //   1. The old flat `.limit(500)` silently returned a fifth of the city
+    //      once the OSM import took this table from 32 rows to ~2,700 — the
+    //      map looked sparse in exactly the neighbourhoods that were most
+    //      complete.
+    //   2. Raising that limit does NOT help on its own: PostgREST enforces a
+    //      server-side max-rows (1000 on Supabase), so `.limit(5000)` still
+    //      returns 1000 with no error and no indication it truncated.
+    // Only .range() looping actually reads the whole table.
+    //
+    // POST-BETA: replace this with a viewport-bounded query plus clustering.
+    // Shipping every pin to the client does not scale past one metro; the
+    // hard stop below is a backstop so a runaway table cannot OOM the client.
+    const PAGE = 1000;
+    const HARD_STOP = 8000;
+    const placeRows: {
+      slug: string; name: string; address: string | null;
+      latitude: number | null; longitude: number | null;
+      neighborhood: string | null; city: string | null; category: string | null;
+      verification_tier: string; source: string;
+    }[] = [];
+    for (let from = 0; from < HARD_STOP; from += PAGE) {
+      const { data, error } = await supabase
+        .from("places")
+        .select("slug, name, address, latitude, longitude, neighborhood, city, category, verification_tier, source")
+        .not("latitude", "is", null)
+        .not("longitude", "is", null)
+        .order("slug", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      placeRows.push(...(data ?? []));
+      if ((data ?? []).length < PAGE) break;
+    }
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (placeRows.length === 0) return NextResponse.json({ shops: [] });
 
-    const slugs = (placeRows ?? []).map((p) => p.slug);
-    if (slugs.length === 0) return NextResponse.json({ shops: [] });
+    // Only CLAIMED places can have a reward programme, so only their slugs go
+    // to shop_settings. Passing all ~2,700 would build a URL long enough to be
+    // rejected, and would hit the same 1000-row response cap as above — for a
+    // lookup that is empty for every unclaimed row by definition.
+    const claimedSlugs = placeRows
+      .filter((p) => p.verification_tier !== "unclaimed")
+      .map((p) => p.slug);
 
-    // The reward programme belongs to the merchant account, not the place.
-    const [{ data: settings }, { data: shopRows }] = await Promise.all([
-      supabase
-        .from("shop_settings")
-        .select("shop_slug, shop_name, deal_title, deal_details, reward_goal")
-        .in("shop_slug", slugs),
-      supabase.from("shops").select("slug, logo_url").in("slug", slugs),
-    ]);
+    const [{ data: settings }, { data: shopRows }] = claimedSlugs.length
+      ? await Promise.all([
+          supabase
+            .from("shop_settings")
+            .select("shop_slug, shop_name, deal_title, deal_details, reward_goal")
+            .in("shop_slug", claimedSlugs),
+          supabase.from("shops").select("slug, logo_url").in("slug", claimedSlugs),
+        ])
+      : [{ data: [] }, { data: [] }];
 
     const settingsBySlug = new Map((settings ?? []).map((s) => [s.shop_slug, s]));
     const logoBySlug = new Map((shopRows ?? []).map((s) => [s.slug, s.logo_url]));
