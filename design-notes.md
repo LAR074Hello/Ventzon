@@ -692,3 +692,37 @@ The `photos` column defaults to `'[]'` precisely so this state is normal.
 OSM is **ODbL**. Imported rows must stay separable from user-generated content
 (`source = 'osm'` already does this) and attribution is required wherever
 imported data is displayed. Attribution copy is a PRE-LAUNCH item.
+
+## GPS check-in must be optional and non-blocking (logged 2026-07-28)
+
+Design constraint for the post-Friday GPS build. **If the check-in fails —
+permission denied, location unavailable, or the user is too far away — the
+post still publishes. It just publishes without the badge.**
+
+Failure costs a badge, not a post. The check-in is an enhancement applied to a
+post, never a gate in front of one.
+
+This removes most of the risk that justified deferring the feature: a
+misfiring geofence degrades to "ordinary post" rather than blocking the one
+action the product needs from a new user. It also means the radius can be
+tuned conservatively — a false negative is cheap.
+
+Sequencing consequence: the post must be publishable before the location fix
+resolves. Do not await geolocation in the submit path.
+
+## Safety: the feed is global (logged 2026-07-28)
+
+`/api/customer/feed` filters on `post_kind`, `hidden`, and a place link. **It
+does not filter by author, follow graph, geography, or audience.** Any signed-in
+account sees every post from every user, ordered by recency and re-ranked by
+follows and proximity — proximity is a *scoring* nudge, never a filter.
+
+This is correct and desirable at eight friends: it is what lets the network
+feel alive from minute one, and it is why Luke can seed the feed from Columbus
+while testers are in NYC.
+
+It is not acceptable at social-media scale. Before any open signup, the feed
+needs a real audience model — at minimum follows-plus-nearby rather than
+everything, and an answer for what a brand-new account with zero follows is
+allowed to see. Bundle this with the safety slice; it is the same question as
+"who can see what" that blocking and reporting already touch.

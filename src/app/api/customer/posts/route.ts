@@ -68,26 +68,35 @@ export async function POST(req: Request) {
     // a description of someone who has posted, not a permission to post.
     const profile = await getOrCreateProfile(admin, user.email!);
 
+    // Resolve the tag against PLACES, which is the identity that outlives a
+    // claim. Every imported place exists only in `places`.
+    //
+    // shop_slug carries a FOREIGN KEY to shops.slug, so it can only be set
+    // when a merchant account actually exists — writing an imported slug there
+    // fails at the database, not in application code. This is precisely what
+    // posts.place_id was added for in Migration C: both columns coexist, new
+    // writes populate what they legitimately can, and reads prefer place_id
+    // with a shop_slug fallback.
+    let placeId: string | null = null;
+    let shopSlugForRow: string | null = null;
     if (shopSlug) {
-      // Validated against PLACES, not shops. Every imported place exists only
-      // in `places` — checking `shops` meant all ~2,700 OSM places rejected a
-      // post with "Shop not found", which is every place a new user can
-      // actually see on the map. Falls back to shops for any legacy slug that
-      // predates the places backfill.
       const [{ data: place }, { data: shop }] = await Promise.all([
-        admin.from("places").select("slug").eq("slug", shopSlug).maybeSingle(),
+        admin.from("places").select("id, slug").eq("slug", shopSlug).maybeSingle(),
         admin.from("shops").select("slug").eq("slug", shopSlug).maybeSingle(),
       ]);
       if (!place && !shop) {
         return NextResponse.json({ error: "Place not found" }, { status: 404 });
       }
+      placeId = place?.id ?? null;
+      shopSlugForRow = shop ? shopSlug : null;
     }
 
     const { data, error } = await admin
       .from("posts")
       .insert({
         author_email: user.email!.toLowerCase(),
-        shop_slug: shopSlug,
+        shop_slug: shopSlugForRow,
+        place_id: placeId,
         body: text,
         media_url: mediaUrl,
         media_type: mediaUrl ? mediaType : null,

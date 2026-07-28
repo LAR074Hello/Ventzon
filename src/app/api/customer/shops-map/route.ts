@@ -96,6 +96,9 @@ export async function GET() {
         // working through the expand phase; the value is now the place name.
         shop_name: p.name,
         neighborhood: p.neighborhood,
+        // Needed by the map to choose an opening view per city rather than
+        // fitting bounds across every city at once.
+        city: p.city,
         category: p.category,
         verification_tier: p.verification_tier,
         // Unclaimed places have no reward programme — the map renders these

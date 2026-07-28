@@ -44,6 +44,17 @@ const AREAS = [
     bbox: "40.700,-73.970,40.725,-73.930" },
   { key: "hoboken",          neighborhood: "Hoboken",            city: "Hoboken",
     bbox: "40.735,-74.045,40.760,-74.020" },
+
+  // Columbus — where Luke is. Testers are in NYC, so these places are ~500
+  // miles from everyone else; that is fine and intended, but it is why the
+  // map header counts only what is genuinely within NEARBY_MILES rather than
+  // calling the whole table "nearby".
+  { key: "short-north",      neighborhood: "Short North",        city: "Columbus",
+    bbox: "39.970,-83.010,39.995,-82.990" },
+  { key: "german-village",   neighborhood: "German Village",     city: "Columbus",
+    bbox: "39.940,-83.010,39.960,-82.985" },
+  { key: "campus-high-st",   neighborhood: "High St / Campus",   city: "Columbus",
+    bbox: "39.995,-83.020,40.020,-82.995" },
 ];
 
 // ── the editorial filter ───────────────────────────────────────────────────

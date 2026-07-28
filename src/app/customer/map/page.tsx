@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Locate, X, ChevronRight } from "lucide-react";
+import { haversineMiles } from "@/lib/geo";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 
@@ -12,6 +13,7 @@ type ShopPin = {
   /** Slice 1.3: unclaimed places appear on the map too, muted. */
   verification_tier?: "unclaimed" | "claimed" | "subscribed";
   neighborhood?: string | null;
+  city?: string | null;
   deal_title: string | null;
   deal_details: string | null;
   reward_goal: number;
@@ -32,6 +34,9 @@ function inferCategory(name: string, deal: string | null, details: string | null
   return "Local";
 }
 
+/** What "near you" is allowed to mean. */
+const NEARBY_MILES = 5;
+
 export default function MapPage() {
   const router = useRouter();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -42,12 +47,36 @@ export default function MapPage() {
   // unreadable surface.
   const clusterRef = useRef<any>(null);
   const resizeObs = useRef<ResizeObserver | null>(null);
+  // The opening view is chosen once; later renders must not yank the map back.
+  const didInitialView = useRef(false);
 
   const [shops, setShops] = useState<ShopPin[]>([]);
   const [selected, setSelected] = useState<ShopPin | null>(null);
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, { visits: number; goal: number }>>({});
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Only counted once we actually know where the user is.
+  const nearbyCount = userLoc
+    ? shops.filter(
+        (s) =>
+          s.latitude != null &&
+          s.longitude != null &&
+          haversineMiles(userLoc.lat, userLoc.lng, s.latitude, s.longitude) <= NEARBY_MILES
+      ).length
+    : 0;
+
+  // Location is optional and never leaves the device; it only decides whether
+  // the header may say "near you" at all.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
 
   // Load shops
   useEffect(() => {
@@ -233,17 +262,41 @@ export default function MapPage() {
       // inset with grey gutters.
       map.invalidateSize();
 
-      // Fit map to markers if any
-      if (shops.length > 0) {
-        const bounds = L.latLngBounds(shops.map((s) => [s.latitude, s.longitude]));
-        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+      /**
+       * Opening view. This used to fitBounds() across every place, which was
+       * fine with one city and wrong with two: adding Columbus made the map
+       * open on the entire US East Coast with two distant clusters and no
+       * detail. A user should land in a neighbourhood, not in an atlas.
+       *
+       * Prefer the user's own location. Otherwise centre on the densest
+       * cluster of places rather than the midpoint of all of them — the
+       * midpoint of New York and Columbus is a field in Pennsylvania.
+       */
+      if (!didInitialView.current && shops.length > 0) {
+        didInitialView.current = true;
+        if (userLoc) {
+          map.setView([userLoc.lat, userLoc.lng], 14, { animate: false });
+        } else {
+          const byCity: Record<string, { lat: number; lng: number; n: number }> = {};
+          for (const sp of shops) {
+            const k = sp.city ?? "unknown";
+            byCity[k] ??= { lat: 0, lng: 0, n: 0 };
+            byCity[k].lat += sp.latitude;
+            byCity[k].lng += sp.longitude;
+            byCity[k].n += 1;
+          }
+          const densest = Object.values(byCity).sort((a, b) => b.n - a.n)[0];
+          if (densest) {
+            map.setView([densest.lat / densest.n, densest.lng / densest.n], 13, { animate: false });
+          }
+        }
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [shops, progressMap]);
+  }, [shops, progressMap, userLoc]);
 
   function locateMe() {
     if (!mapInstance.current || locating) return;
@@ -251,6 +304,7 @@ export default function MapPage() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         mapInstance.current.setView([pos.coords.latitude, pos.coords.longitude], 14, { animate: true });
+        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
       },
       () => setLocating(false),
@@ -267,9 +321,26 @@ export default function MapPage() {
       >
         <div className="flex items-center gap-3 w-full">
           <div className="flex-1 rounded-card border border-subtle bg-surface/80 backdrop-blur-md px-4 py-3">
-            <p className="text-2xs font-semibold uppercase tracking-caps text-muted">NEARBY</p>
+            {/* This said "N stores nearby" for the whole table, which was
+                imprecise with one city in it and becomes plainly false with
+                two — Columbus places are not near a tester in Brooklyn. It
+                now counts only what is actually within NEARBY_MILES of the
+                user, and says "on the map" when we have no location rather
+                than claiming proximity we cannot support. "Places", not
+                "stores": most of these are not shops. */}
+            <p className="text-2xs font-semibold uppercase tracking-caps text-muted">
+              {userLoc ? "Near you" : "Explore"}
+            </p>
             <p className="font-display text-lg font-semibold tracking-tight text-primary mt-0.5">
-              {loading ? "Loading stores…" : shops.length === 0 ? "Explore nearby stores" : `${shops.length} store${shops.length === 1 ? "" : "s"} nearby`}
+              {loading
+                ? "Loading places…"
+                : shops.length === 0
+                ? "No places yet"
+                : userLoc
+                ? nearbyCount === 0
+                  ? `Nothing within ${NEARBY_MILES} miles`
+                  : `${nearbyCount} place${nearbyCount === 1 ? "" : "s"} within ${NEARBY_MILES} miles`
+                : `${shops.length} place${shops.length === 1 ? "" : "s"} on the map`}
             </p>
           </div>
           <button

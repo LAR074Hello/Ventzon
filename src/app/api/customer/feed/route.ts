@@ -48,10 +48,13 @@ export async function GET(req: Request) {
 
     let query = admin
       .from("posts")
-      .select("id, author_email, shop_slug, body, media_url, media_type, created_at")
+      .select("id, author_email, shop_slug, place_id, body, media_url, media_type, created_at")
       .eq("post_kind", "business")
       .eq("hidden", false)
-      .not("shop_slug", "is", null)
+      // A post at an imported place has place_id and NO shop_slug, because
+      // shop_slug is FK-bound to a merchant account that does not exist.
+      // Requiring shop_slug here hid every post made at an OSM place.
+      .or("shop_slug.not.is.null,place_id.not.is.null")
       .order("created_at", { ascending: false })
       .limit(Math.min(fetchWindow + limit, 300));
     if (shopFilter) query = query.eq("shop_slug", shopFilter);
