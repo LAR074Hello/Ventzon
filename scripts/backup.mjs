@@ -67,11 +67,32 @@ if (VERIFY && ref === PRODUCTION_PROJECT_REF) {
 
 const db = createClient(url, key, { auth: { persistSession: false } });
 
+/**
+ * A table in TABLES that does not exist yet is reported as ABSENT rather than
+ * throwing. TABLES is the post-migration schema, but the backup that matters
+ * most is the one taken *before* a migration — and `places` does not exist
+ * until 20260726_places_core runs. Aborting there meant the pre-migration
+ * backup could never complete, which is the exact backup you cannot skip.
+ *
+ * This is deliberately narrow: only PostgREST's "table not in schema cache"
+ * is tolerated. Any other error still throws, because a permissions failure
+ * or a network fault must never be silently recorded as an empty table.
+ */
+function isMissingTable(error) {
+  return (
+    error?.code === "PGRST205" ||
+    /Could not find the table/i.test(error?.message ?? "")
+  );
+}
+
 async function dumpTable(table) {
   const rows = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await db.from(table).select("*").range(from, from + PAGE - 1);
-    if (error) throw new Error(`${table}: ${error.message}`);
+    if (error) {
+      if (isMissingTable(error)) return null;
+      throw new Error(`${table}: ${error.message}`);
+    }
     rows.push(...(data ?? []));
     if ((data ?? []).length < PAGE) break;
   }
@@ -84,8 +105,15 @@ mkdirSync(dir, { recursive: true });
 
 console.log(`\n  dumping ${ref} -> ${dir}`);
 const counts = {};
+const absent = [];
 for (const t of TABLES) {
   const rows = await dumpTable(t);
+  if (rows === null) {
+    absent.push(t);
+    counts[t] = null;
+    console.log(`    ${"ABSENT".padStart(6)}  ${t}  (not in this schema yet — not backed up)`);
+    continue;
+  }
   counts[t] = rows.length;
   writeFileSync(path.join(dir, `${t}.json`), JSON.stringify(rows));
   console.log(`    ${String(rows.length).padStart(6)}  ${t}`);
@@ -161,6 +189,9 @@ writeFileSync(
       ref,
       at: stamp,
       counts,
+      // Tables in TABLES that did not exist in this schema. Recorded explicitly
+      // so a restore can tell "absent" from "existed but was empty".
+      absent_tables: absent,
       restores: "Rows for all public tables, auth.users, and storage objects as files under storage/<bucket>/. Schema, constraints, indexes, triggers and RLS policies come from supabase/migrations/.",
     },
     null,

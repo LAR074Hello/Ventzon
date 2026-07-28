@@ -507,3 +507,99 @@ with a customer attached orphans or cascades that customer. Decide per row.
 applies no `deal_title` filter. If the places migration mints a `places` row for
 these slugs, they become visible on the map — a surface where the explore filter
 does not protect them.
+
+## GPS check-in — planned, deferred until after the friends test (logged 2026-07-28)
+
+Approved in principle 2026-07-28. **Not built.** Build after the friends test.
+
+### Why it exists
+
+The differentiator is the verified visit — a post that proves someone walked
+in. Verified visits come from QR check-ins, which need merchants. There are no
+merchants. Without a second path, the first 1,000 users get a location-tagged
+photo feed, which is Instagram with fewer friends on it.
+
+GPS check-in verifies presence by phone location instead of a merchant's QR
+code. It works with **zero merchant participation**, which is the actual
+constraint.
+
+### How it works
+
+Client sends `{place_id, lat, lng, accuracy}`. The server recomputes haversine
+distance **itself** — never trusting a client-supplied distance — and accepts
+within roughly 150m, widened when reported accuracy is poor and rejected
+outright when accuracy exceeds the radius. It writes the same `checkins` row
+the QR path writes, through the existing `writeCheckin` in `lib/places.ts`,
+plus a new `checkins.method` (`'qr' | 'gps'`) and the captured accuracy.
+
+### Why it fits cleanly
+
+- `writeCheckin` is already the single funnel for both `shop_slug` and
+  `place_id`, so a second entry point does not fork the write path.
+- `getVerifiedVisitSet` keys off "a check-in row exists", so a GPS check-in
+  lights the badge with no change to the feed.
+- What must be added is the **tier**: carry `method` through to the badge so
+  `Postmark` can render "Verified by location" vs "Verified by the business".
+  That is the two-tier story for when merchants arrive.
+
+### The reward gate — the load-bearing decision
+
+**GPS check-ins earn the social badge and nothing else. Reward accrual stays
+QR-only.** An early return before `applyReward` when `method = 'gps'`.
+
+A shop that never signed up cannot honour a free coffee. Letting a
+phone-earned reward reach a real counter manufactures a problem for a business
+that never agreed to anything. And the gate is not just a safety measure — it
+is the *incentive*: QR is how a merchant turns loyalty on, so gating rewards
+behind it is the reason a merchant claims their place.
+
+### Spoofing, and why it does not matter yet
+
+Defeatable by simulated location. Cheap mitigations worth doing: server-side
+distance only, one check-in per place per day (the existing
+`already_checked_in` guard already does this), implausible-velocity rejection
+between consecutive check-ins, and rejecting low-accuracy fixes. Not worth it
+now: device attestation, anomaly detection.
+
+Nobody spoofs GPS to farm a badge on a network with no audience. Fraud
+pressure arrives when rewards are worth money — which is exactly when
+merchants exist and QR is available as the stronger tier. **The spoofing risk
+and the merchant availability arrive together.** That is why tiering is the
+right sequence rather than a compromise.
+
+### The real cost is data, not code
+
+Only **5 of 32** production shops have coordinates. GPS proximity is arithmetic
+against a lat/lng that does not exist yet. The feature is a slice or two; the
+**OSM import is the bigger half** and determines the timeline. `PlaceSource`
+already anticipates this (`"seed" | "merchant" | "osm"`).
+
+## Two security findings for the safety slice (logged 2026-07-28)
+
+Both found while diagnosing the preview 500. Neither is fixed.
+
+### 1. `/api/join/checkin` performs no token validation
+
+The endpoint accepts `{shop_slug, phone, pin?}` and **never checks the join
+token**. `generateJoinToken` is only called in `/api/join/settings`, and even
+there only when a `t` param happens to be present.
+
+So anyone who knows a slug can POST a check-in for any phone number. Visits
+can be manufactured, which means the verified-visit badge — the whole
+differentiator — is currently unauthenticated. Rewards accrue on this path,
+so at scale it is also a route to free merchandise.
+
+Worth stating plainly: **QR is not actually enforced today.** Any comparison
+of "rigorous QR" against "spoofable GPS" is measuring GPS against something
+that is not shipped.
+
+### 2. `getVerifiedVisitSet` has no time window
+
+`src/lib/social.ts:157` returns true when a `customers` row exists for
+(email, shop) **and any check-in row exists at all** — unbounded in time and
+unrelated to when the post was made. One check-in in February badges a post
+made in July, forever.
+
+The badge claims "this person was here", but means "this person was here once,
+at some point". Fix is a window — the check-in should be near the post's
+creation time, not merely somewhere in history.
