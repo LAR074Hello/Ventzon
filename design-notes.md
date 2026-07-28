@@ -288,6 +288,47 @@ submission:** splash screen and status bar are hardcoded `#000000`, giving a
 black splash into a light app. Cosmetic, not broken — do not hold the web
 deploy for it.
 
+## Share pages are a new public surface (logged 2026-07-25)
+
+`/p/[id]` and `/place/[slug]` become **publicly reachable for the first time**
+when the Slice 1.3 places code deploys. Logged now so the safety slice scopes
+for it rather than discovering it.
+
+**Timing correction worth holding onto:** this is *not* the visual-redesign
+deploy. The share routes do not exist in `af8d550` — they were added in
+`348fab4`, four commits later, as part of Slice 1.3. So the deploy sequence is:
+
+1. `af8d550` — visual redesign. No database, **no new public surface.**
+2. the three `20260726_places_*` migrations. Expand-only, no code reads them.
+3. `master` (`a5515a3`) — the places code. **This is the one that opens the
+   surface.**
+
+Only step 3 carries the obligation, which means there is a deliberate gap to
+finish the safety work in.
+
+**Low risk today, but not zero and not permanent:** both routes are
+`robots: { index: false, follow: false }`, and production holds 3 posts. So
+today the exposure is three posts to anyone holding a link. The reason it still
+matters:
+
+- **Deploy-time is release-time.** `server.url` points the installed iOS app at
+  the live site, so the moment these routes are live on the web they are live
+  in the App Store app — no review, no staged rollout. There is no later
+  moment at which this surface "goes live" and can be gated then.
+- **Logged-out means no viewer**, so no block filtering is possible. These
+  pages must exclude hidden content *on their own* — they do today, via
+  `lib/public-visibility.ts`, and `verify:dev` fails if that filter is dropped.
+  Banned authors must join that filter the moment banning lands.
+- **noindex is a crawler instruction, not access control.** It keeps the pages
+  out of search results; it does not stop anyone with a link.
+- Three posts is a fact about today, not a property of the surface. The
+  Pittsburgh import and beta invitations both change the number without
+  changing anything about the routes.
+
+The safety slice therefore has to cover share pages explicitly — they are the
+one surface where a moderation decision made in-app has to be independently
+re-enforced by a logged-out renderer.
+
 ## Launch-phase required costs (not optional at 1,000 users)
 
 - **Supabase Pro — $25/mo per project, plus PITR add-on.** The production
@@ -402,3 +443,67 @@ submission rather than trickling:
   customer-facing surface, propped on a counter in daylight — it stays
   **light** regardless of the merchant's theme, and must not be swept into
   the blanket dark wrapper.
+
+## Promoting a preview bakes in the wrong database (logged 2026-07-27)
+
+**Vercel "Promote to Production" reuses the existing build artifact — it does
+not rebuild.** `NEXT_PUBLIC_*` values are inlined into the client bundle at
+build time. So once Preview points at the dev Supabase project (which it now
+does, deliberately), promoting a preview deployment ships **dev database URLs
+to production users**.
+
+This invalidates the original Phase A step A7. A production deploy must be
+*built* against the Production environment (`vercel --prod`), never promoted
+from a preview build. The runbook has been corrected.
+
+The tell is in the bundle itself: the production JS must contain
+`pxdnwpqnmuzpdtjvbawa` and must not contain `ziowgeluoertdxslehbl`. That check
+is now a required step in Phase A rather than an assumption.
+
+Server-side variables (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) are read at
+runtime and would resolve correctly either way — it is specifically the
+`NEXT_PUBLIC_` ones that are frozen at build time. That asymmetry is what makes
+this failure quiet: the server half would look fine.
+
+## Pre-beta cleanup: 11 junk merchant rows in production (logged 2026-07-27)
+
+Not fixed, deliberately — recorded so it happens before invitations go out.
+
+Production `shop_settings` holds 32 rows; **21 are real merchants and 11 are
+test signups** left over from Feb–May 2026. They were created by the merchant
+onboarding insert (`api/merchant/onboard`), not by the GET-that-writes — that
+handler produced zero rows, because its upsert only fires for a slug present in
+`shops` but missing from `shop_settings`, and onboarding always writes both.
+
+The slugs:
+
+| slug | shop_name | customers |
+|---|---|---|
+| `test-coffee-shop` | Test Coffee Shop | **1** |
+| `test-coffee-co` | Test Coffee Co | 0 |
+| `monkeycakeboyfriend` | monkeycakeboyfriend | 0 |
+| `ftyu` | ftyu | 0 |
+| `fdjs-uaos` | fdjs uaos | 0 |
+| `hehehe` | hehehe | **1** |
+| `como` | como | 0 |
+| `poppi` | poppi | 0 |
+| `popo` | Popo | 0 |
+| `kumalala-2` | Kumalala | 0 |
+| `kumalala` | Kumalala | 0 |
+
+**They are not visible in explore.** All 11 have `deal_title IS NULL`, and the
+explore query requires `deal_title` to be non-null and non-empty — the live API
+returns 21 shops and none of these. The earlier worry that non-null shop names
+made them browsable does not hold: the name is not what gates the listing.
+
+**They are reachable by direct URL.** `/customer/shop/monkeycakeboyfriend`
+returns 200 today. Low exposure while nothing links to them, but they are real
+rows on a public route.
+
+Two carry a customer row, so this is **not** a blind `DELETE` — deleting a shop
+with a customer attached orphans or cascades that customer. Decide per row.
+
+**Check after Phase B:** `shops-map` keys off `places`, not `shop_settings`, and
+applies no `deal_title` filter. If the places migration mints a `places` row for
+these slugs, they become visible on the map — a surface where the explore filter
+does not protect them.
