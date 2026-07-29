@@ -57,7 +57,13 @@ export default function ProfilePage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
-        router.replace("/customer/auth?redirect=/customer/profile");
+        // Preserve the query string. The centre nav sends signed-out users
+        // here as /customer/profile?compose=1, and hardcoding the bare path
+        // dropped ?compose=1 across the auth boundary — so someone who tapped
+        // Post, signed up, and came back landed on their profile with no
+        // composer and no idea what they were meant to do.
+        const back = `/customer/profile${window.location.search}`;
+        router.replace(`/customer/auth?redirect=${encodeURIComponent(back)}`);
         return;
       }
       setUser(data.session.user);

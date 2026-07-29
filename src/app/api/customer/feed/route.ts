@@ -86,7 +86,12 @@ export async function GET(req: Request) {
     const posts = postRows.filter((p) => authorByEmail[p.author_email]);
     if (posts.length === 0) return NextResponse.json({ posts: [] });
     const postIds = posts.map((p) => p.id);
-    const shopSlugs = [...new Set(posts.map((p) => p.shop_slug))] as string[];
+    const shopSlugs = [...new Set(posts.map((p) => p.shop_slug).filter(Boolean))] as string[];
+    // Posts made at an imported place carry place_id and NO shop_slug, so they
+    // are invisible to every slug-keyed lookup below. Without this they
+    // rendered as "at ·" with no place name — which is every post a new user
+    // makes, since imported places are all they can see.
+    const placeIds = [...new Set(posts.map((p: any) => p.place_id).filter(Boolean))] as string[];
 
     // Slice 1.3: the PLACE owns identity and location; the shop account owns
     // the reward programme. Reading name/neighbourhood from places is what
@@ -97,6 +102,7 @@ export async function GET(req: Request) {
       { data: shopRows },
       { data: likeRows },
       { data: commentRows },
+      { data: placeRowsById },
     ] = await Promise.all([
       getPlacesBySlugs(admin, shopSlugs),
       admin
@@ -109,6 +115,12 @@ export async function GET(req: Request) {
         .in("slug", shopSlugs),
       admin.from("post_likes").select("post_id, email").in("post_id", postIds),
       admin.from("post_comments").select("post_id").in("post_id", postIds),
+      placeIds.length
+        ? admin
+            .from("places")
+            .select("id, slug, name, neighborhood, latitude, longitude, category, verification_tier")
+            .in("id", placeIds)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
 
     const settingsMap: Record<string, any> = {};
@@ -153,12 +165,19 @@ export async function GET(req: Request) {
       posts.map((p) => ({ author_email: p.author_email, shop_slug: p.shop_slug }))
     );
 
+    const placeById = new Map((placeRowsById ?? []).map((pl: any) => [pl.id, pl]));
+
     const now = Date.now();
     const enriched = posts.map((p) => {
       const author = authorByEmail[p.author_email];
       const setting = settingsMap[p.shop_slug!];
       const shop = shopMap[p.shop_slug!];
-      const place = placesBySlug.get(p.shop_slug!);
+      // Prefer the slug-keyed place (claimed/legacy), fall back to the
+      // place_id-keyed one (imported).
+      const place =
+        placesBySlug.get(p.shop_slug!) ??
+        placeById.get((p as any).place_id) ??
+        undefined;
       const ageHours = (now - new Date(p.created_at).getTime()) / 3600000;
 
       let score = -ageHours;
@@ -182,7 +201,9 @@ export async function GET(req: Request) {
           followed: followedAuthors.has(p.author_email),
         },
         shop: {
-          slug: p.shop_slug,
+          // Falls back to the place slug so a post at an imported place still
+          // has something to link to — shop_slug is null for those.
+          slug: p.shop_slug ?? place?.slug ?? null,
           // Place is the authority for identity; shop_settings is the
           // fallback during expand, and the reward fields stay on the
           // merchant account where they belong.
