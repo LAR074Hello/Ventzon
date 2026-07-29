@@ -38,4 +38,12 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- WebView geolocation needs these granted to the host app; without them
+         navigator.geolocation fails silently, the composer gets no nearby
+         places, and the user cannot tag a place. Mirrors the iOS
+         NSLocationWhenInUseUsageDescription added at the same time. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
 </manifest>

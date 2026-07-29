@@ -68,6 +68,18 @@ export async function POST(req: Request) {
     // a description of someone who has posted, not a permission to post.
     const profile = await getOrCreateProfile(admin, user.email!);
 
+    // A PLACE IS REQUIRED. Ventzon is place-anchored: an untagged post is an
+    // Instagram post with extra steps. It also used to be worse than useless —
+    // the feed requires a place link, so an untagged post returned 200,
+    // appeared on the author's own profile, and never reached the feed. The
+    // user saw a successful post that nobody could ever see.
+    if (!shopSlug) {
+      return NextResponse.json(
+        { error: "Pick a place before posting.", code: "place_required" },
+        { status: 400 }
+      );
+    }
+
     // Resolve the tag against PLACES, which is the identity that outlives a
     // claim. Every imported place exists only in `places`.
     //

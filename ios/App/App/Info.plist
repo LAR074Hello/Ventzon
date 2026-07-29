@@ -34,7 +34,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Ventzon uses your camera to scan QR codes at participating stores.</string>
+	<string>Ventzon uses your camera so you can take a photo of the place you're posting about.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Ventzon uses your location to show places near you and to pick the right one when you post.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ventzon needs access to your photos so you can share one from a place you've been.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ventzon saves photos you create in the app to your photo library.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

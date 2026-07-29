@@ -71,9 +71,9 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
       )}
 
       {/* Content */}
-      <div key={idx} className="flex flex-1 flex-col items-center justify-center px-8 text-center animate-fade-in-up">
+      <div key={idx} className="flex flex-1 flex-col items-center justify-center px-8 pb-8 text-center animate-slide-in">
         <div
-          className="flex h-24 w-24 items-center justify-center rounded-sheet mb-10"
+          className="flex h-28 w-28 items-center justify-center rounded-sheet mb-8"
           style={{ backgroundColor: accent + "18", border: `1px solid ${accent}30` }}
         >
           <Icon className="h-10 w-10" style={{ color: accent }} strokeWidth={1} />

@@ -229,7 +229,11 @@ function AuthForm() {
             <span className="text-2xl font-extralight tracking-tight text-primary">V</span>
           </div>
           <p className="text-xs font-semibold uppercase tracking-caps text-primary mt-4">VENTZON</p>
-          <p className="text-sm text-secondary mt-2">Your rewards, one tap away</p>
+          {/* No rewards language on the signup path. Someone arrives here
+              straight after onboarding told them to post a photo, and often by
+              tapping Post — promising rewards contradicts both, and promises a
+              feature that does not exist yet. */}
+          <p className="text-sm text-secondary mt-2">Real places, from people who actually go</p>
         </div>
 
         <div className="w-full max-w-sm">
@@ -332,7 +336,7 @@ function AuthForm() {
           ) : (
             <>
               <p className="text-sm text-secondary mb-6 text-center">
-                {mode === "signin" ? "Sign in to track your rewards" : "Create your rewards account"}
+                {mode === "signin" ? "Sign in to pick up where you left off" : "Create an account to post your first place"}
               </p>
 
               {/* Apple — only shown on native iOS, not Android */}

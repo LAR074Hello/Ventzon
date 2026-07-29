@@ -30,6 +30,12 @@ export default function PostComposer({
   const [tagShop, setTagShop] = useState(defaultShopSlug ?? "");
   const [myShops, setMyShops] = useState<{ shop_slug: string; shop_name: string }[]>([]);
   const [nearby, setNearby] = useState<{ shop_slug: string; shop_name: string }[]>([]);
+  // 'idle' until the user has read why we want location. iOS only ever shows
+  // the system prompt ONCE — if they tap "Don't Allow" you cannot re-ask, so
+  // the ask has to arrive with context, not out of nowhere.
+  const [locState, setLocState] = useState<"idle" | "asking" | "granted" | "unavailable">("idle");
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<{ shop_slug: string; shop_name: string; sub?: string }[]>([]);
   const mediaRef = useRef<HTMLInputElement>(null);
   const supabase = createSupabaseBrowserClient();
 
@@ -57,15 +63,17 @@ export default function PostComposer({
    * Location is optional and never sent anywhere: the fix is computed on the
    * device against the public place list.
    */
-  useEffect(() => {
-    if (lockShop || defaultShopSlug) return;
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
-
+  async function requestNearby() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setLocState("unavailable");
+      return;
+    }
+    setLocState("asking");
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
           const res = await fetch("/api/customer/shops-map");
-          if (!res.ok) return;
+          if (!res.ok) { setLocState("unavailable"); return; }
           const d = await res.json();
           const { latitude: la, longitude: lo } = pos.coords;
           const withDist = (d.shops ?? [])
@@ -82,15 +90,40 @@ export default function PostComposer({
             .sort((x: any, y: any) => x._d - y._d)
             .slice(0, 12);
 
+          if (withDist.length === 0) { setLocState("unavailable"); return; }
           setNearby(withDist.map((p: any) => ({ shop_slug: p.slug, shop_name: p.shop_name })));
-          // Two taps to a first post: the nearest place is already chosen.
-          setTagShop((cur) => cur || withDist[0]?.slug || "");
-        } catch {}
+          setTagShop((cur) => cur || withDist[0].slug);
+          setLocState("granted");
+        } catch { setLocState("unavailable"); }
       },
-      () => {},
+      // Denied, or timed out. NOT a dead end — fall through to search.
+      () => setLocState("unavailable"),
       { timeout: 8000, maximumAge: 300000 }
     );
-  }, [lockShop, defaultShopSlug]);
+  }
+
+  // Name search: the fallback when we cannot or may not use location.
+  // Deliberately NOT a geographic guess — showing East Village places to
+  // someone in Columbus invites a wrong tag, which is worse than no tag.
+  useEffect(() => {
+    const q = placeQuery.trim();
+    if (q.length < 2) { setSearchResults([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const r = await fetch(`/api/customer/places-search?q=${encodeURIComponent(q)}`);
+        if (!r.ok) return;
+        const d = await r.json();
+        setSearchResults(
+          (d.places ?? []).map((p: any) => ({
+            shop_slug: p.slug,
+            shop_name: p.name,
+            sub: [p.neighborhood, p.city].filter(Boolean).join(" · "),
+          }))
+        );
+      } catch {}
+    }, 250);
+    return () => clearTimeout(t);
+  }, [placeQuery]);
 
   function pickMedia(file: File | null) {
     setMediaFile(file);
@@ -192,33 +225,100 @@ export default function PostComposer({
         >
           <ImagePlus className="h-4 w-4" />
         </button>
-        {!lockShop && (myShops.length > 0 || nearby.length > 0) && (
-          <select
-            value={tagShop}
-            onChange={(e) => setTagShop(e.target.value)}
-            className="min-w-0 flex-1 rounded-full bg-surface-sunken px-3.5 py-2.5 text-sm text-secondary outline-none"
-            style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
-          >
-            <option value="">Tag a place</option>
-            {nearby.length > 0 && (
-              <optgroup label="Near you">
-                {nearby.map((s) => (
-                  <option key={`n-${s.shop_slug}`} value={s.shop_slug}>{s.shop_name}</option>
-                ))}
-              </optgroup>
+        {!lockShop && (
+          <div className="w-full">
+            {/* A place is REQUIRED. Publish stays disabled until one is chosen,
+                because an untagged post cannot appear in the feed at all. */}
+            {locState === "idle" && nearby.length === 0 && myShops.length === 0 && (
+              <div className="rounded-card px-4 py-3.5" style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}>
+                <p className="text-sm font-medium text-primary">Where are you posting from?</p>
+                <p className="mt-1 text-xs leading-relaxed text-secondary">
+                  We use your location once, to list the places around you. It is
+                  never shared or attached to your post.
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    onClick={requestNearby}
+                    className="rounded-full bg-primary px-4 py-2 text-2xs font-semibold uppercase tracking-caps text-inverse active:opacity-80"
+                  >
+                    Use my location
+                  </button>
+                  <button
+                    onClick={() => setLocState("unavailable")}
+                    className="px-3 py-2 text-2xs font-semibold uppercase tracking-caps text-secondary"
+                  >
+                    Search instead
+                  </button>
+                </div>
+              </div>
             )}
-            {myShops.length > 0 && (
-              <optgroup label="Places you've joined">
-                {myShops.map((s) => (
-                  <option key={`m-${s.shop_slug}`} value={s.shop_slug}>{s.shop_name}</option>
-                ))}
-              </optgroup>
+
+            {locState === "asking" && (
+              <p className="px-1 text-xs text-secondary">Finding places near you…</p>
             )}
-          </select>
+
+            {(nearby.length > 0 || myShops.length > 0) && (
+              <select
+                value={tagShop}
+                onChange={(e) => setTagShop(e.target.value)}
+                className="w-full min-w-0 rounded-full bg-surface-sunken px-3.5 py-2.5 text-sm text-secondary outline-none"
+                style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
+              >
+                <option value="">Pick a place (required)</option>
+                {nearby.length > 0 && (
+                  <optgroup label="Near you">
+                    {nearby.map((s2) => (
+                      <option key={`n-${s2.shop_slug}`} value={s2.shop_slug}>{s2.shop_name}</option>
+                    ))}
+                  </optgroup>
+                )}
+                {myShops.length > 0 && (
+                  <optgroup label="Places you've joined">
+                    {myShops.map((s2) => (
+                      <option key={`m-${s2.shop_slug}`} value={s2.shop_slug}>{s2.shop_name}</option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+            )}
+
+            {locState === "unavailable" && (
+              <div className="mt-2">
+                <input
+                  value={placeQuery}
+                  onChange={(e) => setPlaceQuery(e.target.value)}
+                  placeholder="Search for a place by name"
+                  className="w-full rounded-full bg-surface-sunken px-3.5 py-2.5 text-sm text-primary outline-none"
+                  style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
+                />
+                {searchResults.length > 0 && (
+                  <div className="mt-2 max-h-44 overflow-y-auto rounded-card" style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}>
+                    {searchResults.map((r) => (
+                      <button
+                        key={r.shop_slug}
+                        onClick={() => { setTagShop(r.shop_slug); setPlaceQuery(r.shop_name); setSearchResults([]); }}
+                        className="flex w-full flex-col items-start px-4 py-2.5 text-left active:bg-surface-raised"
+                      >
+                        <span className="text-sm text-primary">{r.shop_name}</span>
+                        {r.sub && <span className="text-2xs text-muted">{r.sub}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!tagShop && (
+              <p className="mt-2 px-1 text-2xs text-muted">
+                Pick a place to post — it is what makes this a Ventzon post.
+              </p>
+            )}
+          </div>
         )}
+
         <button
           onClick={submitPost}
-          disabled={(!composer.trim() && !mediaFile) || posting}
+          disabled={(!composer.trim() && !mediaFile) || (!lockShop && !tagShop) || posting}
           className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-inverse disabled:opacity-40"
         >
           <Send className="h-4 w-4" />
