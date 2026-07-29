@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import PostGrid, { type GridPost } from "../components/PostGrid";
@@ -19,7 +19,6 @@ type OwnProfile = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createSupabaseBrowserClient();
 
   const [user, setUser] = useState<any>(null);
@@ -39,9 +38,16 @@ export default function ProfilePage() {
 
   // The centre nav button routes here with ?compose=1. Opening the composer
   // straight away is the whole point — the button is the post affordance.
+  //
+  // Read from window rather than useSearchParams(): this is a client page that
+  // Next statically prerenders, and useSearchParams() there requires a Suspense
+  // boundary or the build fails outright on /customer/profile. Caught by a
+  // preview deploy, which is the only reason it did not reach production.
   useEffect(() => {
-    if (searchParams?.get("compose") === "1") setShowComposer(true);
-  }, [searchParams]);
+    if (new URLSearchParams(window.location.search).get("compose") === "1") {
+      setShowComposer(true);
+    }
+  }, []);
 
   const loadPosts = useCallback(async () => {
     try {
