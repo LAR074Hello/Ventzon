@@ -1,5 +1,5 @@
 import SiteHeader from "@/components/SiteHeader";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo, Public_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -33,6 +33,31 @@ const monoFont = DM_Mono({
   display: "swap",
 });
 
+/**
+ * viewport-fit=cover is LOAD-BEARING, not cosmetic.
+ *
+ * Without it iOS resolves every env(safe-area-inset-*) to 0, and this app
+ * relies on those insets in 27 places — including the bottom nav's
+ * padding-bottom and the customer header's padding-top. Combined with
+ * apple-mobile-web-app-status-bar-style: black-translucent (which deliberately
+ * extends content UNDER the status bar), the result was content beneath the
+ * notch with no compensation and a bottom nav under the home indicator — with
+ * the Post button in it.
+ *
+ * VERIFY ON A REAL DEVICE: the interaction between viewport-fit=cover and
+ * black-translucent cannot be checked in a desktop browser.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  // Matches the manifest. Was black, which flashed against the light app.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F7F4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0A0A" },
+  ],
+};
+
 export const metadata: Metadata = {
   title: "Ventzon — Loyalty Rewards App for Local Businesses",
   description:
@@ -56,7 +81,17 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   other: {
-    "apple-itunes-app": "app-id=6763768638",
+    // SMART APP BANNER — DISABLED 2026-07-29, deliberately kept here.
+    //
+    // `apple-itunes-app` renders Safari's Smart App Banner across the top of
+    // the page. The beta runs in mobile Safari, and the banner pointed at the
+    // App Store build — the one WITHOUT the Info.plist permission strings — so
+    // it actively recruited testers away from the working web version into the
+    // broken native one. It also stacked with the in-app AppStoreBanner.
+    //
+    // RE-ENABLE by uncommenting, once the native build carries the permission
+    // strings and the safety slice has landed. Nothing else needs changing.
+    // "apple-itunes-app": "app-id=6763768638",
   },
   openGraph: {
     title: "Ventzon — Loyalty Rewards App for Local Businesses",

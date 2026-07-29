@@ -1,20 +1,43 @@
 {
   "id": "/",
-  "name": "Ventzon Rewards",
+  "name": "Ventzon",
   "short_name": "Ventzon",
-  "description": "Digital loyalty stamp cards for local businesses. Scan a QR code to earn rewards.",
+  "description": "Find real places near you and see what they're actually like, from people who went.",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
+  "theme_color": "#F7F7F4",
+  "background_color": "#F7F7F4",
   "display": "standalone",
   "orientation": "portrait",
-  "start_url": "/merchant/dashboard",
+  "start_url": "/customer/explore",
   "scope": "/",
-  "categories": ["business", "lifestyle"],
+  "categories": [
+    "business",
+    "lifestyle"
+  ],
   "screenshots": []
 }
