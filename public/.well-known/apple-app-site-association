@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TXP5UF765H.com.ventzon.app"],
+        "components": [
+          { "/": "/p/*", "comment": "Shared post pages open in the app." },
+          { "/": "/place/*", "comment": "Shared place pages open in the app." }
+        ]
+      }
+    ]
+  }
+}

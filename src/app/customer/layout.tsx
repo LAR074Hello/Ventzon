@@ -15,13 +15,28 @@ const tabs = [
   { href: "/customer/profile", label: "Profile", icon: User },
 ];
 
+/**
+ * Registers for push ONLY if permission has already been granted.
+ *
+ * The requestPermissions() call was removed deliberately. It fired on first
+ * launch, which spent an OS-level permission prompt — the kind you only get to
+ * ask once — before the user had done anything or had any reason to say yes.
+ * The first sixty seconds already needs a location prompt to make posting work;
+ * a notification prompt competing with it makes both more likely to be denied.
+ *
+ * checkPermissions() is non-interactive: it reads the current state without
+ * prompting. So an existing grant still registers, and nothing is asked.
+ *
+ * POST-BETA: ask for notifications from a settings toggle, or after the user's
+ * first post, where the reason to accept is obvious.
+ */
 async function registerPushNotifications(userId: string) {
   try {
     const { Capacitor } = await import("@capacitor/core");
     if (!Capacitor.isNativePlatform()) return;
     const { PushNotifications } = await import("@capacitor/push-notifications");
-    const permResult = await PushNotifications.requestPermissions();
-    if (permResult.receive !== "granted") return;
+    const perm = await PushNotifications.checkPermissions();
+    if (perm.receive !== "granted") return;
     const platform = Capacitor.getPlatform(); // "ios" | "android"
     await PushNotifications.register();
     PushNotifications.addListener("registration", async ({ value: token }) => {

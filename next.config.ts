@@ -3,6 +3,20 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  /**
+   * Apple fetches /.well-known/apple-app-site-association and requires it to be
+   * served as application/json. The file has no extension, so Next would
+   * otherwise serve it as application/octet-stream and iOS would reject the
+   * association — universal links would fail silently with no error anywhere.
+   */
+  async headers() {
+    return [
+      {
+        source: "/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+    ];
+  },
   // pdfkit uses Node.js built-ins (fs, stream, zlib) that can't be
   // webpack-bundled — tell Next.js to require() them at runtime instead.
   serverExternalPackages: ["pdfkit"],

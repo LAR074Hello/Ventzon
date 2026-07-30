@@ -726,3 +726,32 @@ needs a real audience model — at minimum follows-plus-nearby rather than
 everything, and an answer for what a brand-new account with zero follows is
 allowed to see. Bundle this with the safety slice; it is the same question as
 "who can see what" that blocking and reporting already touch.
+
+## App Store Connect metadata is stale — required before EXTERNAL TestFlight (logged 2026-07-30)
+
+Deliberately deferred: the product is changing daily and the metadata should be
+updated once, accurately, immediately before submission. Recorded so it is not
+discovered at submission time.
+
+**The timing point that is easy to get wrong: external TestFlight distribution
+is itself a submission and goes through Apple beta review.** This is not "before
+the next App Store update" — it is before friends outside the team can install
+anything. Internal TestFlight (your own devices) needs no review and is not
+blocked by any of it.
+
+The app was originally submitted as a **loyalty app**. It has since gained
+posts, photos, comments, and precise location. Three things are now wrong:
+
+- **App Privacy declaration.** Almost certainly declares email and coarse usage
+  only. The app now collects **precise location** and **photo library** access.
+  An inaccurate privacy declaration is a rejection reason at review and a
+  removal reason after it. This is the one to fix first — it is a compliance
+  problem, not a polish problem.
+- **Age rating questionnaire.** It asks specifically about user-generated
+  content; a loyalty app would have answered "none." With posts, photos and
+  comments that answer is now false, and it typically moves the rating to 12+.
+- **Description and screenshots.** If they describe stamp cards and QR
+  check-ins, they no longer describe the product.
+
+Nothing here blocks internal TestFlight, which is the fastest path to verifying
+the native shell fix on a real device.
