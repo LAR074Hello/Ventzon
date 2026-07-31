@@ -12,7 +12,8 @@
     "verify:dev": "node scripts/verify-dev.mjs",
     "dev:seed": "DEV_SEED=true node scripts/seed/index.mjs",
     "dev:reset": "DEV_SEED=true node scripts/seed/index.mjs --reset",
-    "backup": "node scripts/backup.mjs"
+    "backup": "node scripts/backup.mjs",
+    "postinstall": "node scripts/patch-apple-signin.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
