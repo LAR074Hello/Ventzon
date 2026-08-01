@@ -16,6 +16,18 @@
 -- SECURITY DEFINER with a pinned search_path, and EXECUTE revoked from anon and
 -- authenticated. It returns schema shape, never row data, and service_role can
 -- already read everything, so this grants no access that did not exist.
+--
+-- ⚠ DO NOT "SIMPLIFY" INDEXES OR CONSTRAINTS DOWN TO NAMES OR COUNTS.
+--
+-- Storing the full `indexdef` / `pg_get_constraintdef` output looks redundant
+-- next to a name, and it is the only reason the first real find was found:
+-- `rep_commission_logs_logged_at_idx` was `btree (logged_at)` on dev and
+-- `btree (logged_at DESC)` on production. Same name. Same count. Same table.
+-- Different index. A name-only or count-only comparison reports a clean match
+-- and the drift survives the check that exists to catch it.
+--
+-- The same argument applies to constraint definitions: two CHECKs can share a
+-- name and enforce different things.
 
 create or replace function public.schema_snapshot()
 returns jsonb

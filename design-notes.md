@@ -1341,3 +1341,64 @@ prints `✗ NOT CLEAN — the production schema check DID NOT RUN` instead of a
 quiet SKIP under a green summary. Opting out is possible but must be said out
 loud: `SCHEMA_DIFF_OPTIONAL=true npm run verify:dev`. A check that silently
 does nothing looks like coverage, which is worse than no check at all.
+
+## The promotions routes are BROKEN, not unfinished (logged 2026-08-01)
+
+For whoever picks up the merchant work: these three routes do not fail because
+they are half-built. They fail because they write columns production does not
+have, and have done since they were written.
+
+| route | columns it uses that production lacks |
+|---|---|
+| `src/app/api/promotions/route.ts` | `created_by` (write), `reject_reason` / `approved_at` / `rejected_at` (read) |
+| `src/app/api/promotions/[id]/approve/route.ts` | `approved_at`, `updated_at` |
+| `src/app/api/promotions/[id]/reject/route.ts` | `reject_reason`, `rejected_at`, `updated_at` |
+
+`20260218_promotions.sql` created those columns for a review workflow that was
+never deployed. Production never got them. **Dev had them, so every one of
+these routes worked perfectly on a laptop and would have thrown against a real
+merchant.** Nobody noticed, because nobody exercised them in production.
+
+Do not "fix" them by re-adding the columns without deciding whether the review
+workflow is being built at all. If it is, that is a schema decision plus these
+three routes; if it is not, the routes should go.
+
+### This is the actual cost of schema drift
+
+The schema mismatch was the visible half. The invisible half was three routes
+that had been broken for months behind an environment that disagreed with
+production. **Drift does not just mean two databases differ — it means local
+green stops being evidence of anything.** That is the argument for the
+`verify:dev` check being a failing test rather than a note: the note existed,
+accurately, for a week, and changed nothing.
+
+## Why the snapshot stores full definitions, not names (logged 2026-08-01)
+
+Recorded because it looks like redundancy and will otherwise be optimised away
+by someone who was not here.
+
+`rep_commission_logs_logged_at_idx` was `btree (logged_at)` on dev and
+`btree (logged_at DESC)` on production. **Same name, same count, same table,
+different index.** Comparing index names finds nothing. Counting indexes per
+table finds nothing. Only comparing `indexdef` finds it — and it was the first
+genuine drift the check turned up that no earlier manual pass had.
+
+The same holds for constraints: two CHECKs can share a name and enforce
+different rules. `schema_snapshot()` therefore stores `pg_get_indexdef` and
+`pg_get_constraintdef` output verbatim, and a `COMMENT ON FUNCTION` in both
+databases says so at the point someone would edit it.
+
+## Correction: production wins, but never level down (2026-08-01)
+
+The reconciliation rule as first stated — "production wins" — was too broad, and
+following it literally meant dropping dev's `CHECK (status in (...))` on
+`promotions` because production lacked it. That is levelling down: deleting a
+guard to make a diff green.
+
+**The corrected rule: production wins where live data conforms to it. Never drop
+a guard to satisfy a diff.**
+
+Dev being *stricter* than production is the harmless direction — it fails on a
+laptop, not in front of users. Dev being *looser* is the dangerous one, and is
+what this entire exercise started from. The CHECK is now on **both** databases;
+both `promotions` tables hold 0 rows, so it was free.
