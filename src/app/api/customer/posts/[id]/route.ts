@@ -294,6 +294,95 @@ export async function POST(
 
 // DELETE /api/customer/posts/[id]?comment_id=… — remove a comment.
 // Allowed for the comment's author, or the author of the post it's on.
+/**
+ * PATCH /api/customer/posts/[id] — edit a post's PLACE and CAPTION only.
+ *
+ * Deliberately narrow. No media replacement, no delete-and-recreate: the row
+ * is updated in place so likes, comments and created_at all survive. Before
+ * this existed the only remedy for a wrong place tag was deleting the post,
+ * which threw away its engagement — and there was no remedy at all for the
+ * untagged posts that predate the required-place check.
+ *
+ * THE VERIFIED-VISIT BADGE RE-EVALUATES, because it has to.
+ *
+ * The badge means "this person was actually here". It is derived, not stored:
+ * getVerifiedVisitSet asks whether a check-in exists for (author, place). So
+ * moving a post from a place you visited to one you never have does NOT carry
+ * the badge across — the next read simply finds no check-in for the new place
+ * and the badge is absent. Editing the place cannot be used to launder a badge
+ * onto somewhere you have never been.
+ *
+ * That falls out of the badge being computed at read time rather than written
+ * onto the post. Recorded explicitly because it is the kind of property that
+ * is easy to break later by "optimising" the badge into a column.
+ */
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const viewerEmail = await getViewerEmail();
+    if (!viewerEmail) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const admin = adminClient();
+    const { data: post } = await admin
+      .from("posts")
+      .select("id, author_email")
+      .eq("id", id)
+      .maybeSingle();
+    if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    if (post.author_email !== viewerEmail) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
+
+    const payload = await req.json().catch(() => ({}));
+    const updates: Record<string, unknown> = {};
+
+    if (typeof payload?.body === "string") {
+      const text = payload.body.trim().slice(0, 1000);
+      updates.body = text;
+    }
+
+    if (payload?.shop_slug !== undefined) {
+      const slug = String(payload.shop_slug ?? "").toLowerCase().trim();
+      if (!slug) {
+        return NextResponse.json({ error: "A place is required" }, { status: 400 });
+      }
+      // Same resolution as creation: place_id is the identity, shop_slug is
+      // only set when a merchant account actually exists (it is FK-bound).
+      const [{ data: place }, { data: shop }] = await Promise.all([
+        admin.from("places").select("id, slug").eq("slug", slug).maybeSingle(),
+        admin.from("shops").select("slug").eq("slug", slug).maybeSingle(),
+      ]);
+      if (!place && !shop) {
+        return NextResponse.json({ error: "Place not found" }, { status: 404 });
+      }
+      updates.place_id = place?.id ?? null;
+      updates.shop_slug = shop ? slug : null;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+    }
+
+    // created_at is never touched: an edit is not a repost.
+    const { data, error } = await admin
+      .from("posts")
+      .update(updates)
+      .eq("id", id)
+      .select("id, body, shop_slug, place_id, media_url, media_type, created_at")
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ ok: true, post: data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

@@ -802,3 +802,31 @@ This becomes a real problem the moment the group widens beyond iPhone. The fix
 is transcoding to H.264/MP4, which belongs with the compression work rather
 than the metadata strip: the strip deliberately does not re-encode, so it
 cannot change the container.
+
+## Storage writes go live at origin instantly; the public URL does not (logged 2026-08-01)
+
+Found while stripping GPS from a video already in the `posts` bucket.
+
+The overwrite succeeded and the **origin** object was clean immediately —
+verified by downloading through the service-role client. The **public CDN URL
+kept serving the old bytes**, coordinates included, for several minutes
+afterwards. A plain re-fetch of the canonical URL still returned the leaking
+file well after the write returned success.
+
+**Consequence for moderation:** overwriting or deleting an object is not the
+same as it being gone. If something has to come down fast — a report, a
+takedown, a privacy incident — the object must be removed **and the cache
+purged**, or a copy stays publicly fetchable for the remainder of the TTL.
+Anyone with the URL still has it in that window.
+
+Practical notes:
+- A cache-busting query string (`?v=<timestamp>`) fetches the fresh object and
+  is the quickest way to confirm origin state without waiting.
+- Always **re-fetch the canonical public URL** to confirm a removal, never
+  trust the write result. The write is not the thing users see.
+- `cf-cache-status` and `last-modified` on a `HEAD` request tell you whether
+  the CDN has caught up.
+
+This is the storage analogue of the deploy lesson already recorded here: what
+is true at the origin and what is being served are two different facts, and
+only the second one matters to the person looking at it.
