@@ -99,11 +99,17 @@ export const PLACES = [
 export const UNCLAIMED_SLUGS = new Set(["moth-moon"]);
 
 /**
- * Imported-place fixtures: unclaimed, no posts, no photos, OSM provenance.
- * This is what an OSM import actually produces, and it is the state the
+ * Imported-place fixtures: unclaimed, no photos, OSM provenance. This is what
+ * an OSM import actually produces, and the first two are the state the
  * "no one's posted here yet — be the first" invitation exists for. Kept in the
  * seed rather than inserted by hand so `dev:reset` reproduces exactly the
  * database that gets reviewed.
+ *
+ * `seedPosts` marks the two that DO carry activity. They are separate fixtures
+ * on purpose: the empty ones must stay empty or the invitation state has
+ * nowhere to be reviewed, and an imported place with posts is the only way to
+ * see a verified-visit badge where there is no merchant account at all — the
+ * case Slice 1.9 exists for.
  */
 export const IMPORTED_PLACES = [
   {
@@ -125,6 +131,28 @@ export const IMPORTED_PLACES = [
     category: "Retail",
     lat: 40.7118,
     lng: -73.9600,
+  },
+  {
+    slug: "delancey-bagels",
+    name: "Delancey Bagels",
+    address: "155 Delancey St",
+    neighborhood: "Lower East Side",
+    city: "New York",
+    category: "Food",
+    lat: 40.7181,
+    lng: -73.9852,
+    seedPosts: 3,
+  },
+  {
+    slug: "bedford-cycle-works",
+    name: "Bedford Cycle Works",
+    address: "230 Bedford Ave",
+    neighborhood: "Williamsburg",
+    city: "New York",
+    category: "Retail",
+    lat: 40.7167,
+    lng: -73.9578,
+    seedPosts: 2,
   },
 ];
 
@@ -257,6 +285,36 @@ export function buildCity() {
         commentBodies: Array.from({ length: int(0, 5) }, () => comment()),
         hidden: false,
         flagged: false,
+        // Roughly two in five carry a verified visit. Deliberately a mix: the
+        // badge only reads as a signal if the feed also shows posts without
+        // it, and a feed where everything is verified says nothing.
+        verifiedVisit: rnd() < 0.4,
+      });
+    }
+  }
+
+  // Posts at imported places — no merchant account, therefore no membership
+  // and no shop_slug. Before Slice 1.9 a check-in could not exist here at all,
+  // so this is the only place the badge's new lane can be reviewed.
+  for (const place of IMPORTED_PLACES.filter((p) => p.seedPosts)) {
+    for (let k = 0; k < place.seedPosts; k++) {
+      const person = people[int(0, people.length - 1)];
+      posts.push({
+        key: `imported${n++}`,
+        authorEmail: person.email,
+        placeSlug: place.slug,
+        imported: true,
+        body: caption(),
+        mediaUrl: MEDIA[int(0, MEDIA.length - 1)],
+        mediaType: "image",
+        createdAt: hoursAgo(int(1, 24 * 12)),
+        likes: int(0, 18),
+        commentBodies: Array.from({ length: int(0, 2) }, () => comment()),
+        hidden: false,
+        flagged: false,
+        // First post at each imported place is verified, the rest are not —
+        // both states, side by side, on the same place page.
+        verifiedVisit: k === 0,
       });
     }
   }
@@ -277,6 +335,7 @@ export function buildCity() {
       commentBodies: [],
       hidden: i === 0,
       flagged: true,
+      verifiedVisit: false,
       flagReason: FLAGGED_REASONS[i % FLAGGED_REASONS.length],
     });
   }

@@ -63,6 +63,12 @@ async function reset() {
   await db.from("customer_notification_log").delete().like("email", `%${SEED_EMAIL_DOMAIN}`);
   await db.from("customer_profiles").delete().like("email", `%${SEED_EMAIL_DOMAIN}`);
   await db.from("reward_events").delete().in("shop_slug", slugs);
+  // Place check-ins cascade from NOTHING: customer_id is null so the shops
+  // cascade never reaches them, and checkins.place_id is ON DELETE SET NULL —
+  // which is an UPDATE, so deleting the place would try to null the column and
+  // trip checkins_subject_present_check, failing the places delete outright.
+  // Removing them first is what keeps `dev:reset` working.
+  await db.from("checkins").delete().like("customer_email", `%${SEED_EMAIL_DOMAIN}`);
   // checkins and customers cascade from shops; shop_settings too.
   await db.from("shops").delete().in("slug", slugs);
   // places do NOT cascade from shops (claimed_by is ON DELETE SET NULL), so
@@ -225,8 +231,68 @@ async function seed() {
       });
     }
   }
+  // ── verified-visit fixtures ───────────────────────────────────────
+  //
+  // The badge requires a check-in within 24h BEFORE the post (VISIT_WINDOW_MS
+  // in src/lib/social.ts). A seed that writes check-ins and posts at unrelated
+  // times therefore demonstrates almost no badges — when the window landed,
+  // dev went from 43 badged posts to 1. These rows put a check-in two hours
+  // before every post marked `verifiedVisit`, so the feed can actually be
+  // reviewed with the signal it is built around.
+  //
+  // Which lane a post lands in is not arbitrary: it is whether a membership
+  // exists to point at, which is exactly the real-world split.
+  const byMembershipDay = new Map(
+    checkinRows.map((r) => [`${r.customer_id}|${r.checkin_date}`, r])
+  );
+  const placeCheckins = new Map();
+
+  for (const p of city.posts.filter((x) => x.verifiedVisit)) {
+    const at = new Date(p.createdAt.getTime() - 2 * 3600e3);
+    const checkinDate = at.toISOString().slice(0, 10);
+    const placeId = placeIdBySlug.get(p.placeSlug) ?? null;
+    const membershipId = custId.get(`${p.authorEmail}|${p.placeSlug}`);
+
+    if (membershipId) {
+      // Lane A — the QR path. `checkins_customer_day_unique` is on
+      // (customer_id, checkin_date), so when the loop above already wrote a
+      // check-in for this member on this day, move that row's time into the
+      // window rather than inserting a second one that would violate it.
+      const key = `${membershipId}|${checkinDate}`;
+      const existing = byMembershipDay.get(key);
+      if (existing) {
+        existing.created_at = at.toISOString();
+      } else {
+        const row = {
+          shop_slug: p.placeSlug,
+          place_id: placeId,
+          customer_id: membershipId,
+          checkin_date: checkinDate,
+          created_at: at.toISOString(),
+        };
+        byMembershipDay.set(key, row);
+        checkinRows.push(row);
+      }
+    } else if (placeId) {
+      // Lane B — no membership to point at, so identity is the email. This is
+      // the ONLY lane available at an imported place, and it is also what a
+      // GPS check-in at an unclaimed place will write.
+      placeCheckins.set(`${p.authorEmail}|${placeId}|${checkinDate}`, {
+        shop_slug: null,
+        place_id: placeId,
+        customer_email: p.authorEmail,
+        checkin_date: checkinDate,
+        created_at: at.toISOString(),
+      });
+    }
+  }
+
   await chunked(checkinRows, (rows) => db.from("checkins").insert(rows));
-  log(`memberships   ${customerRows.length}   check-ins ${checkinRows.length}`);
+  await chunked([...placeCheckins.values()], (rows) => db.from("checkins").insert(rows));
+  log(
+    `memberships   ${customerRows.length}   check-ins ${checkinRows.length}` +
+      ` (+${placeCheckins.size} place check-ins)`
+  );
 
   const rewardRows = city.memberships
     .filter((m) => m.rewardReady)
@@ -242,7 +308,10 @@ async function seed() {
   // ── posts, likes, comments ────────────────────────────────────────
   const postRows = city.posts.map((p) => ({
     author_email: p.authorEmail,
-    shop_slug: p.placeSlug,
+    // posts.shop_slug is FK-bound to shops.slug, and an imported place has no
+    // shop account — so a post there carries place_id and NO slug. Writing the
+    // slug anyway is a foreign-key violation, not a cosmetic difference.
+    shop_slug: p.imported ? null : p.placeSlug,
     place_id: placeIdBySlug.get(p.placeSlug) ?? null,
     body: p.body,
     media_url: p.mediaUrl,
