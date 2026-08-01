@@ -1207,3 +1207,33 @@ Collective Database (safe) and the Derivative Database (share-alike). The join
 through `place_id` is what keeps user content out of scope. It is a licence
 boundary wearing the costume of a normalisation preference — treat a proposal
 to denormalise it as a licensing change, not a performance tweak.
+
+## Attribution shipped; production index drift closed (2026-08-01)
+
+**Attribution.** `© OpenStreetMap contributors`, linked to the copyright page,
+now appears on the map and on `PlaceMiniMap`, and `/data-attribution` names
+ODbL, explains that corrections belong upstream in OSM, and carries the offer
+of the imported place data under ODbL. Settings → Legal links to it. Styling
+moved out of an inline `#888` into `.leaflet-control-attribution` rules in
+`globals.css`, so it sits on a translucent plate at 11px and stays legible over
+either basemap — a fixed grey over theme-dependent tiles is how attribution ends
+up unreadable without anyone deciding it should be.
+
+**The one that bit:** adding an `onClick` to the attribution link in
+`PlaceMiniMap` **500'd every place page**. That component is deliberately a
+server component — "no JavaScript, no map library" on a public share surface —
+and an event handler there throws at render. Caught by the pre-commit
+screenshot, not by tsc and not by lint, which is the entire argument for §7:
+`/place/[slug]` returned a 500 page and the diff looked completely reasonable.
+
+**Index drift closed.** Production was missing `idx_checkins_shop_slug` and
+`idx_checkins_customer_id`, which its own baseline migration creates. Restored
+via `20260801_checkins_restore_missing_indexes.sql`; dev and production now
+carry byte-identical index sets on `checkins` (7 each).
+
+This is the **second** confirmed instance of production lacking indexes its
+migrations define — `job_applications` was the first. The pattern is the point:
+migration files describe an *intended* database and nothing verifies production
+against them, so drift is only ever found by someone looking for something
+else. A schema-diff check in `verify:dev` (or a production-safe equivalent)
+would turn that from luck into a test. Worth doing before beta, not after.

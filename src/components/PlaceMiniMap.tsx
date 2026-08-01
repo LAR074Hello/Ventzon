@@ -93,10 +93,23 @@ export default function PlaceMiniMap({
         />
       </div>
 
-      {/* ODbL attribution is required wherever imported data is displayed. */}
-      <p className="absolute bottom-1 right-2 text-[9px] text-muted">
-        © OpenStreetMap © CARTO
-      </p>
+      {/* ODbL attribution is required wherever imported data is displayed —
+          and the place name, address and category on this page are OSM-derived
+          too, not just the tiles. "contributors" plus the link to the copyright
+          page is the form the OSMF guidelines ask for; "© OpenStreetMap" alone
+          is not it. The backing plate keeps it legible over any tile, which the
+          guidelines also ask for. */}
+      <a
+        href="https://www.openstreetmap.org/copyright"
+        target="_blank"
+        rel="noopener noreferrer"
+        /* No onClick — this is a server component by design (see above), and
+           an event handler here throws at render. A plain anchor is all the
+           attribution link needs anyway. */
+        className="absolute bottom-1 right-1 rounded-ctl bg-surface-raised/90 px-1.5 py-0.5 text-2xs text-secondary underline underline-offset-2"
+      >
+        © OpenStreetMap contributors © CARTO
+      </a>
     </div>
   );
 }

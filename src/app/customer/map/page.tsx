@@ -127,9 +127,16 @@ export default function MapPage() {
         { subdomains: "abcd", maxZoom: 19 }
       ).addTo(map);
 
-      // Attribution small bottom-right
+      // ODbL attribution. Required wherever OpenStreetMap data is shown — and
+      // both the tiles AND every pin on this map are OSM-derived, so this is
+      // the licence obligation, not a courtesy. "contributors" and the link to
+      // the copyright page are what the OSMF guidelines actually ask for;
+      // "© OpenStreetMap" alone is not the required form. Styling lives in
+      // globals.css so it stays legible over either basemap.
       L.control.attribution({ position: "bottomright", prefix: false })
-        .addAttribution('<span style="color:#888">&copy; OpenStreetMap &copy; CARTO</span>')
+        .addAttribution(
+          '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">&copy; OpenStreetMap contributors</a> &copy; CARTO'
+        )
         .addTo(map);
 
       mapInstance.current = map;

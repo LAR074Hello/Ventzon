@@ -491,3 +491,33 @@ body {
     transparent
   );
 }
+
+/* ═══ Map attribution — an ODbL requirement, not decoration ══════ */
+/*
+ * OpenStreetMap's licence requires attribution wherever its data is shown,
+ * and the OSMF guidelines ask that it not be obscured. It previously rendered
+ * as inline #888 over basemap tiles whose own colour varies with the theme —
+ * a fixed grey on an unknown background, which is exactly how attribution ends
+ * up unreadable without anyone deciding it should be.
+ *
+ * A translucent backing plate makes it legible over any tile in either theme,
+ * and the size comes off the type scale (11px, the legal/dense step) rather
+ * than being invented per surface.
+ */
+.leaflet-control-attribution {
+  background: var(--surface-raised) !important;
+  color: var(--text-secondary) !important;
+  font-size: var(--text-2xs) !important;
+  line-height: 1rem !important;
+  padding: 2px 6px !important;
+  border-radius: 6px 0 0 0;
+  opacity: 0.92;
+}
+/* !important because leaflet.css carries an equal-specificity `.leaflet-container a`
+   rule and is imported from the map page, after globals. The underline is what
+   makes the copyright link look like a link rather than grey chrome. */
+.leaflet-control-attribution a {
+  color: var(--text-secondary) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}

@@ -7,7 +7,7 @@ import { stripImageMetadata } from "@/lib/strip-exif";
 import {
   LogOut, User, ChevronRight, Trophy, Share2, Bell,
   Trash2, Pencil, Check, X, Camera, Mail, HelpCircle, FileText,
-  Shield, Star, MessageSquare, Info, ChevronDown, Sparkles, Eye, Ban,
+  Shield, Star, MessageSquare, Info, ChevronDown, Sparkles, Eye, Ban, Map,
 } from "lucide-react";
 
 type Membership = {
@@ -934,6 +934,15 @@ export default function ProfilePage() {
             icon={Shield}
             label="Privacy Policy"
             onClick={() => window.open("https://www.ventzon.com/privacy", "_blank")}
+          />
+          <div className="border-t border-subtle/60" />
+          {/* ODbL requires OpenStreetMap to be credited wherever its data is
+              shown. The map and place pages carry the credit inline; this is
+              the page they lean on, and the only place the licence is named. */}
+          <SettingsRow
+            icon={Map}
+            label="Data & licences"
+            onClick={() => window.open("https://www.ventzon.com/data-attribution", "_blank")}
           />
         </div>
       </div>
