@@ -1032,3 +1032,36 @@ empty shell for a place no merchant has claimed.
 fallback, never the reverse, and never the slug alone.** Three routes already
 did it correctly; the two that did not both failed by omission, which is why
 neither was noticed.
+
+## The 3,602nd place, and when the production import actually ran (2026-08-01)
+
+Asked because production read 3,602 places when 3,601 were expected. Two
+answers, and the second is the larger one.
+
+**The extra row is not new.** `monkeycakeboyfriend` — `source = 'merchant'`,
+`verification_tier = 'claimed'`, no coordinates, created **2026-07-28
+19:48:59** by the places backfill, which derives a place from every shop. Its
+`claimed_at` is 2026-03-20, the original shop's own creation date. It is one of
+the 11 junk test-merchant rows logged for pre-beta cleanup on 2026-07-27, and
+it is now the **only** shop left on production: 1 shop, 0 customers,
+`deal_title` null.
+
+**This closes an open worry from that entry.** The 2026-07-27 note asked to
+check after Phase B whether minting `places` rows for the junk slugs would make
+them visible on the map, since `shops-map` applies no `deal_title` filter. It
+does not: `shops-map` requires non-null latitude and longitude, and this row
+has neither. Junk merchant rows cannot reach the map through the places
+backfill. The cleanup is still worth doing, but it is not a visibility bug.
+
+**The OSM import ran against production today**, in three batches — 3,255 rows
+at 19:48, then 117 at 19:57 and 229 at 19:58. All 3,601 imported places date
+from 2026-08-01, none from before. The split matches the three Columbus-suburb
+areas added in the uncommitted change to `scripts/import-osm.mjs` (North
+Columbus, Westerville, Polaris), whose own comment predicts ~130 each.
+
+Worth holding onto: **the importer writes to whatever the environment points
+at, and it left no trace in git.** The script change that produced those 346
+rows is still uncommitted, so the production database currently contains data
+produced by a version of the importer that exists only on one laptop. Committing
+the importer before it is run again is the cheap fix; the ODbL attribution
+question logged earlier now applies to live production data, not a plan.
