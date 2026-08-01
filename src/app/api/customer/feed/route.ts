@@ -159,10 +159,19 @@ export async function GET(req: Request) {
       }
     }
 
-    // Verified visits: the author actually checked in at the tagged shop.
+    // Verified visits: the author checked in at the tagged place within 24h
+    // before posting. Keyed by post id — with a time window the answer belongs
+    // to the post, not to the (author, place) pair. place_id is what makes the
+    // badge reachable at an imported place, where there is no shop_slug at all.
     const verified = await getVerifiedVisitSet(
       admin,
-      posts.map((p) => ({ author_email: p.author_email, shop_slug: p.shop_slug }))
+      posts.map((p) => ({
+        id: p.id,
+        author_email: p.author_email,
+        shop_slug: p.shop_slug,
+        place_id: (p as { place_id?: string | null }).place_id ?? null,
+        created_at: p.created_at,
+      }))
     );
 
     const placeById = new Map((placeRowsById ?? []).map((pl: any) => [pl.id, pl]));
@@ -218,7 +227,7 @@ export async function GET(req: Request) {
           likes: likeCounts[p.id] ?? 0,
           comments: commentCounts[p.id] ?? 0,
         },
-        verified_visit: verified.has(`${p.author_email}|${p.shop_slug}`),
+        verified_visit: verified.has(p.id),
         viewer: {
           liked: viewerLiked.has(p.id),
           progress: progressMap[p.shop_slug!] ?? null,

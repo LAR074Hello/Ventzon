@@ -830,3 +830,80 @@ Practical notes:
 This is the storage analogue of the deploy lesson already recorded here: what
 is true at the origin and what is being served are two different facts, and
 only the second one matters to the person looking at it.
+
+## Check-ins at imported places — schema and read path (built 2026-08-01)
+
+`customers.shop_slug` is FK-bound to `shops.slug`, so a membership cannot
+exist for a place with no merchant account — and `checkins.customer_id`
+requires a membership. The verified-visit badge was therefore **structurally
+unreachable at all 3,281 imported places**, i.e. at everything a beta user can
+actually see. The differentiator was unreachable everywhere it mattered.
+
+`checkins.customer_email` is the second anchor: identity when there is no
+membership to point at. `customer_id` stays and stays populated for QR.
+
+### Four things the obvious version of this migration gets wrong
+
+1. **Adding the column is not enough.** `shop_slug` and `customer_id` were both
+   `NOT NULL`, and a place check-in has neither. Both dropped — safe, because
+   all eight readers filter on `shop_slug = ...` or `customer_id in (...)`,
+   which a NULL never matches. Audited call site by call site *before*
+   shipping. A compensating CHECK (`checkins_subject_present_check`) re-asserts
+   what the NOT NULLs were carrying: every row is either a membership check-in
+   or a place check-in, never a row belonging to nobody.
+
+2. **Postgres treats NULLs as distinct in a unique index.** The moment
+   `customer_id` can be NULL, both existing uniques stop constraining place
+   check-ins — unlimited rows per place per day, i.e. badge-by-refresh. The
+   partial unique on `(customer_email, place_id, checkin_date)` restores the
+   guard, and doubles as the read index since `customer_email` leads.
+
+3. **Union the two lanes, deduplicate on the VISIT, never count rows.** After a
+   merchant claims a place, one person legitimately holds both a membership
+   check-in and an older place check-in for the same visit. Deduplicating on
+   `(email, place_id, checkin_date)` makes double-counting impossible by
+   construction rather than by everyone downstream remembering.
+
+4. **Identity is not presence — so no write endpoint in this slice.** A
+   session-derived email proves *who*, never *where*. An authenticated route
+   that writes a check-in on request would let any account badge any of 3,281
+   places by POSTing an id: same forgery as trusting the request body, one step
+   removed. The write path belongs with the GPS slice and its server-recomputed
+   haversine. **A badge nobody can earn yet beats one anyone can forge.**
+
+### The time window, and the trap waiting in the GPS slice
+
+The badge now requires a check-in **within 24 hours before the post's
+`created_at`**, fixing the unbounded-window finding logged 2026-07-28 rather
+than duplicating it into the lane that will carry all beta traffic. A verified
+visit means "you were there when you posted", not "you went once in February".
+
+Consequence: the result is keyed by **post id**, not `email|shop_slug`. With a
+window, two posts by the same author at the same place can differ, so the
+answer belongs to the post.
+
+**The window is backward-only, and that collides with the GPS design.** GPS
+check-in is specified to publish the post *before* the location fix resolves,
+so a check-in landing seconds AFTER its own post is the normal case there —
+and it will not badge. Resolve it in that slice with an explicit forward grace
+value, not by quietly widening `VISIT_WINDOW_MS`.
+
+### What the window costs in dev
+
+Dev seed: **43 posts badged before, 1 after.** Not a bug — the seed writes
+check-ins and posts at unrelated times, so almost none coincide. But it means
+the dev feed now demonstrates ~zero verified visits, which is the one thing a
+visual review of the feed is supposed to show. The seed needs to emit a
+check-in inside the window for posts meant to read as verified. **Production
+regression is zero** — 2 posts, both untagged, no check-ins, badged before and
+after: false.
+
+### Known gap, deliberately left
+
+Place check-ins are invisible to `creatorStats`, the leaderboard, friend
+activity, merchant analytics and history — all of which filter by
+`customer_id` or `shop_slug`. So a user who only ever place-checks-in shows 0
+visits and earns no milestone badges. Correct for merchant-facing surfaces
+(no merchant should be metered for a place they never signed up for); wrong
+for the consumer profile. Fix belongs with the GPS slice, once those rows
+actually exist.

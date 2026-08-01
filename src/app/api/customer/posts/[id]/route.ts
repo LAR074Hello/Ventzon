@@ -37,7 +37,7 @@ export async function GET(
 
     const { data: post } = await admin
       .from("posts")
-      .select("id, author_email, shop_slug, body, media_url, media_type, post_kind, hidden, created_at")
+      .select("id, author_email, shop_slug, place_id, body, media_url, media_type, post_kind, hidden, created_at")
       .eq("id", id)
       .maybeSingle();
     if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -139,11 +139,17 @@ export async function GET(
     }
 
     const verified = await getVerifiedVisitSet(admin, [
-      { author_email: post.author_email, shop_slug: post.shop_slug },
+      {
+        id: post.id,
+        author_email: post.author_email,
+        shop_slug: post.shop_slug,
+        place_id: (post as { place_id?: string | null }).place_id ?? null,
+        created_at: post.created_at,
+      },
     ]);
 
     return NextResponse.json({
-      verified_visit: verified.has(`${post.author_email}|${post.shop_slug}`),
+      verified_visit: verified.has(post.id),
       post: {
         id: post.id,
         body: post.body,

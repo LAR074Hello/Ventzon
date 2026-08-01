@@ -143,47 +143,187 @@ export function computeBadges(stats: {
   ];
 }
 
+/** A post, reduced to what the verified-visit question needs. */
+export type VisitCandidate = {
+  id: string;
+  author_email: string;
+  shop_slug: string | null;
+  place_id: string | null;
+  created_at: string;
+};
+
 /**
- * Which (author_email, shop_slug) pairs represent a REAL visit?
+ * How long before a post a check-in still counts as proof of that visit.
  *
- * A post is a "verified visit" when its author has at least one
- * check-in at the business it's tagged to. This is the one trust
- * signal no other platform can copy — it comes from the QR moat, not
- * from self-reporting — so it is computed from `checkins`, never
- * stored on the post where it could drift or be forged.
+ * A verified visit means "you were there when you posted this", not "you went
+ * there once, at some point". Without a window a single check-in in February
+ * badges every post at that place forever, which is a claim the data does not
+ * support.
  *
- * Returns a Set of "email|shop_slug" keys.
+ * NOTE for the GPS slice: the window is deliberately BACKWARD-only, so a
+ * check-in written after the post does not count. That matters, because the
+ * GPS design has the post publishing before the location fix resolves — a
+ * check-in landing seconds AFTER its own post is the normal case there, not an
+ * edge case, and it will not badge under this rule. Resolve it there with an
+ * explicit forward grace value rather than by widening this one silently.
+ */
+const VISIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Which posts represent a REAL visit?
+ *
+ * A post is a "verified visit" when its author checked in at the place it is
+ * tagged to, within VISIT_WINDOW_MS before the post was made. This is the one
+ * trust signal no other platform can copy, so it is computed from `checkins`,
+ * never stored on the post where it could drift or be forged.
+ *
+ * TWO LANES, because a check-in can be anchored two ways:
+ *
+ *   A. membership — `customers` ties an email to a shop, `checkins.customer_id`
+ *      ties that membership to visits. The original QR path.
+ *   B. place — `checkins.customer_email` + `place_id`, for the 3,281 imported
+ *      places where no merchant account exists, so no membership can.
+ *
+ * The lanes are UNIONED AND DEDUPLICATED ON (email, place_id, checkin_date),
+ * not counted. One person can legitimately hold both kinds of row for the same
+ * visit once a merchant claims a place — the membership appears and the older
+ * place check-in stays — and any count built on top of this later would then
+ * report one visit as two. Deduplicating on the identity of the visit rather
+ * than on the row makes that impossible by construction instead of by everyone
+ * downstream remembering.
+ *
+ * Returns a Set of POST IDS. It used to return "email|shop_slug" keys, which a
+ * time window makes wrong: two posts by the same author at the same place can
+ * now differ, so the answer belongs to the post, not to the pair.
  */
 export async function getVerifiedVisitSet(
   admin: any,
-  pairs: { author_email: string; shop_slug: string | null }[]
+  posts: VisitCandidate[]
 ): Promise<Set<string>> {
   const verified = new Set<string>();
-  const emails = [...new Set(pairs.map((p) => p.author_email))];
-  const slugs = [...new Set(pairs.map((p) => p.shop_slug).filter(Boolean))] as string[];
-  if (emails.length === 0 || slugs.length === 0) return verified;
+  if (posts.length === 0) return verified;
 
-  // customers rows tie an email to a shop; checkins tie a customer row
-  // to actual visits. Both are needed — a membership without a check-in
-  // is not a visit.
-  const { data: memberships } = await admin
-    .from("customers")
-    .select("id, email, shop_slug")
-    .in("email", emails)
-    .in("shop_slug", slugs);
-  if (!memberships?.length) return verified;
+  const emails = [...new Set(posts.map((p) => p.author_email))];
+  const slugs = [...new Set(posts.map((p) => p.shop_slug).filter(Boolean))] as string[];
+  const placeIds = [...new Set(posts.map((p) => p.place_id).filter(Boolean))] as string[];
+  if (emails.length === 0 || (slugs.length === 0 && placeIds.length === 0)) return verified;
 
-  const { data: visits } = await admin
-    .from("checkins")
-    .select("customer_id")
-    .in(
-      "customer_id",
-      memberships.map((m: any) => m.id)
-    );
-  const visited = new Set((visits ?? []).map((v: any) => v.customer_id));
+  // One window covering the whole batch, narrowed per post below. Fetching
+  // per post would be N queries for a feed page.
+  const times = posts.map((p) => new Date(p.created_at).getTime()).filter((t) => !isNaN(t));
+  if (times.length === 0) return verified;
+  const windowStart = new Date(Math.min(...times) - VISIT_WINDOW_MS).toISOString();
+  const windowEnd = new Date(Math.max(...times)).toISOString();
 
-  for (const m of memberships as any[]) {
-    if (visited.has(m.id)) verified.add(`${m.email}|${m.shop_slug}`);
+  // A visit, independent of which lane produced it.
+  type Visit = { email: string; shopSlug: string | null; placeId: string | null; at: number };
+  type MembershipRow = { id: string; email: string; shop_slug: string };
+  type CheckinRow = {
+    customer_id?: string | null;
+    customer_email?: string | null;
+    place_id: string | null;
+    shop_slug: string | null;
+    checkin_date: string;
+    created_at: string;
+  };
+  const seen = new Set<string>();
+  const byEmail = new Map<string, Visit[]>();
+
+  const addVisit = (v: Visit, checkinDate: string) => {
+    // The dedup identity. `place_id` is the real anchor; a check-in at a shop
+    // with no `places` row falls back to its slug so those rows still collapse
+    // against themselves rather than silently defeating the check.
+    const anchor = v.placeId ?? (v.shopSlug ? `slug:${v.shopSlug}` : "none");
+    const key = `${v.email}|${anchor}|${checkinDate}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const list = byEmail.get(v.email);
+    if (list) list.push(v);
+    else byEmail.set(v.email, [v]);
+  };
+
+  // ── Lane A: membership check-ins ──────────────────────────────────────
+  if (slugs.length > 0) {
+    const { data: memberships } = await admin
+      .from("customers")
+      .select("id, email, shop_slug")
+      .in("email", emails)
+      .in("shop_slug", slugs);
+
+    if (memberships?.length) {
+      const byCustomerId = new Map<string, { email: string; shop_slug: string }>(
+        (memberships as MembershipRow[]).map((m) => [
+          m.id,
+          { email: m.email, shop_slug: m.shop_slug },
+        ])
+      );
+      const { data: visits } = await admin
+        .from("checkins")
+        .select("customer_id, place_id, shop_slug, checkin_date, created_at")
+        .in("customer_id", [...byCustomerId.keys()])
+        .gte("created_at", windowStart)
+        .lte("created_at", windowEnd);
+
+      for (const v of (visits ?? []) as CheckinRow[]) {
+        const owner = v.customer_id ? byCustomerId.get(v.customer_id) : undefined;
+        if (!owner) continue;
+        addVisit(
+          {
+            email: owner.email,
+            shopSlug: v.shop_slug ?? owner.shop_slug,
+            placeId: v.place_id ?? null,
+            at: new Date(v.created_at).getTime(),
+          },
+          v.checkin_date
+        );
+      }
+    }
   }
+
+  // ── Lane B: place check-ins ───────────────────────────────────────────
+  if (placeIds.length > 0) {
+    const { data: placeVisits } = await admin
+      .from("checkins")
+      .select("customer_email, place_id, shop_slug, checkin_date, created_at")
+      .in("customer_email", emails)
+      .in("place_id", placeIds)
+      .gte("created_at", windowStart)
+      .lte("created_at", windowEnd);
+
+    for (const v of (placeVisits ?? []) as CheckinRow[]) {
+      if (!v.customer_email) continue;
+      addVisit(
+        {
+          email: v.customer_email,
+          shopSlug: v.shop_slug ?? null,
+          placeId: v.place_id ?? null,
+          at: new Date(v.created_at).getTime(),
+        },
+        v.checkin_date
+      );
+    }
+  }
+
+  // ── Resolve per post ──────────────────────────────────────────────────
+  for (const post of posts) {
+    const postedAt = new Date(post.created_at).getTime();
+    if (isNaN(postedAt)) continue;
+    const candidates = byEmail.get(post.author_email);
+    if (!candidates) continue;
+
+    const hit = candidates.some((v) => {
+      // Same place: by id when both sides have one, by slug otherwise. A post
+      // at an imported place has place_id and NO shop_slug, which is exactly
+      // the case the slug-only version could never match.
+      const samePlace =
+        (post.place_id != null && v.placeId != null && v.placeId === post.place_id) ||
+        (post.shop_slug != null && v.shopSlug != null && v.shopSlug === post.shop_slug);
+      if (!samePlace) return false;
+      return v.at <= postedAt && v.at >= postedAt - VISIT_WINDOW_MS;
+    });
+
+    if (hit) verified.add(post.id);
+  }
+
   return verified;
 }
