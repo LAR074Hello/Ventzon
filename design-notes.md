@@ -907,3 +907,79 @@ visits and earns no milestone badges. Correct for merchant-facing surfaces
 (no merchant should be metered for a place they never signed up for); wrong
 for the consumer profile. Fix belongs with the GPS slice, once those rows
 actually exist.
+
+## A key-shape change is invisible to the type checker (logged 2026-08-01)
+
+`getVerifiedVisitSet` used to return a `Set` of `"email|shop_slug"` keys. The
+time window made that shape wrong — with a window, two posts by the same
+author at the same place can differ, so the answer belongs to the post — and
+it became a `Set` of post ids.
+
+Both call sites were updated. One of them was updated **only at the call**:
+the feed still asked `verified.has(`${p.author_email}|${p.shop_slug}`)`.
+
+Nothing caught it:
+
+- **`tsc` cannot.** `Set<string>.has(string)` accepts any string. Both the old
+  key and the new one are strings, so the type checker sees a correct program.
+- **The unit-level harness could not.** It called the function directly and
+  asserted on the returned Set, which was right. The bug was in a *consumer*.
+- The symptom was `verified_visit: false` everywhere — indistinguishable from
+  "no check-ins match", which is also what correct behaviour looks like on a
+  seed with no check-ins in the window.
+
+It surfaced on the first end-to-end request, because the post detail route
+returned `true` for a post the feed returned `false` for. **Two consumers
+disagreeing is the signal; a single consumer would have looked fine.**
+
+**The rule: when a value's KEY SHAPE changes — not its type, its shape —
+every consumer needs an end-to-end check through the real route. A harness
+proves the function; only a request proves the wiring.** Stringly-typed keys
+are the specific hazard: the compiler is structurally unable to help, so the
+test has to. Where it is cheap, prefer a key the compiler can check (a branded
+type, or the id itself) over a composed string.
+
+## `npm run backup` backs up whatever `.env.local` points at (logged 2026-08-01)
+
+Which is **dev**. Run before a production migration, it produces a dev dump,
+prints a healthy-looking table of counts, and satisfies "backup first" entirely
+on paper. The tell is in the output: 15 auth users and 3 reports are the seed's
+numbers, and the directory is named `.backups/ziowgeluoertdxslehbl-<stamp>/`.
+
+Production credentials are deliberately **not** in `.env.local` — line 25 says
+so in as many words — so backing up production requires passing them
+explicitly for that one run:
+
+```bash
+SUPABASE_URL=https://pxdnwpqnmuzpdtjvbawa.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=<production service_role> \
+npm run backup
+```
+
+Check the printed ref and the output directory before trusting any dump. The
+absence of the key is the guard working, not an obstacle to route around — the
+same reasoning as `verify:dev`.
+
+Note also that `--verify` (the restore rehearsal) **refuses to run against
+production** by design, so the rehearsal is always performed on dev.
+
+## Production is a clean slate for check-ins (state as of 2026-08-01)
+
+Worth recording because it makes a whole class of migration risk evaluate to
+zero, and it will not stay true:
+
+| | production | dev |
+|---|---|---|
+| `checkins` | **0** | 421 |
+| `customers` | 0 | 67 |
+| `shops` | 1 | 30 |
+| `posts` | 2 (both untagged) | 200 |
+| `places` | 3,602 (3,601 osm) | 3,311 (3,281 osm) |
+
+The 3,601 imported places are **production's** number. Dev carries 3,281 —
+different imports, so a count that matches one will not match the other.
+
+Because `checkins` is empty on production, the Slice 1.9 migration cannot lose
+a check-in there: it adds a column, weakens two `NOT NULL`s, and adds a CHECK
+and a partial unique index against zero rows. That is a fact about today, not a
+property of the migration.
