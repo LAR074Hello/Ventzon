@@ -55,6 +55,17 @@ const AREAS = [
     bbox: "39.940,-83.010,39.960,-82.985" },
   { key: "campus-high-st",   neighborhood: "High St / Campus",   city: "Columbus",
     bbox: "39.995,-83.020,40.020,-82.995" },
+
+  // North Columbus suburbs. Added so the person using this daily is actually
+  // on the map — you cannot dogfood a place app from outside it. Density here
+  // is suburban (~130 each) rather than Manhattan's ~1,450; that is the real
+  // shape of the data, not a shortfall.
+  { key: "north-columbus",   neighborhood: "North Columbus",     city: "Columbus",
+    bbox: "39.975,-82.930,40.040,-82.800" },
+  { key: "westerville",      neighborhood: "Westerville",        city: "Westerville",
+    bbox: "40.100,-82.960,40.160,-82.880" },
+  { key: "polaris",          neighborhood: "Polaris",            city: "Columbus",
+    bbox: "40.120,-83.020,40.175,-82.940" },
 ];
 
 // ── the editorial filter ───────────────────────────────────────────────────
