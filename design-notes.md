@@ -1166,3 +1166,44 @@ The fix is roughly an hour and clears the only clearly-required item.
    name onto `posts` for convenience would blur the Collective/Derivative line
    and start pulling user content toward the share-alike side. The separation is
    load-bearing.
+
+## Merchant edits are an overlay, never an edit to the OSM row (decided 2026-08-01)
+
+**Constraint on Slice 1.5. Decided before the claim flow is built, because it
+is cheap now and expensive once merchants have started editing.**
+
+When a merchant claims an imported place, they will want to correct it — the
+name, the category, the hours, eventually the address. The obvious
+implementation is to update the `places` row. **Do not.**
+
+Editing the OSM-derived row folds merchant-supplied data into a Derivative
+Database, and ODbL §4.4 then obliges publishing those corrections under ODbL
+to anyone who receives a Produced Work made from it. That means a merchant's
+own description of their own business would have to be released under an open
+licence because it happened to be typed into a row that started life in
+OpenStreetMap. Nobody would choose that; it would simply happen.
+
+**The rule: the place keeps its imported values, permanently. The claim
+carries its own fields, and those win at read time.**
+
+- `places` stays as imported: OSM's name, category, coordinates, address.
+  Corrections to OSM belong upstream in OSM, not in our copy of it.
+- The claim (shop account / a `place_claims` overlay) carries merchant-supplied
+  name, category, hours, description.
+- Reads resolve overlay-first, imported-as-fallback — the same shape as the
+  `place_id`-first / `shop_slug`-fallback rule already in use.
+
+This keeps every field a merchant ever types permanently outside ODbL's reach,
+and it has a second benefit worth having anyway: an unclaimed place and a
+claimed one stop being the same row in two states, so "what did OSM say" and
+"what does the owner say" remain separately answerable. When a claim lapses,
+the place reverts to imported values by construction rather than by cleanup.
+
+### The companion rule: never denormalise a place name onto `posts`
+
+Copying `places.name` onto a post row for read convenience would put
+OSM-derived data inside the user-content tables, blurring the line between the
+Collective Database (safe) and the Derivative Database (share-alike). The join
+through `place_id` is what keeps user content out of scope. It is a licence
+boundary wearing the costume of a normalisation preference — treat a proposal
+to denormalise it as a licensing change, not a performance tweak.
