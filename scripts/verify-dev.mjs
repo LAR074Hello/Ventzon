@@ -15,6 +15,7 @@ import {
   DEV_PROJECT_REF,
   projectRefFrom,
 } from "./dev-guard.mjs";
+import { runSchemaDiff, formatFindings } from "./schema-diff.mjs";
 
 const env = { ...loadEnv(), ...process.env };
 const url = env.SUPABASE_URL;
@@ -161,11 +162,35 @@ const pub = createClient(url, anon, { auth: { persistSession: false } });
   }
 }
 
+// ── production schema drift ─────────────────────────────────────────
+// Twice production has been missing indexes its own migrations create, and
+// both times it was found by accident. This is the check that would have
+// caught either one on the day it happened.
+//
+// It SKIPS rather than passes when production credentials are absent, which
+// they are by default and on purpose. A skip is reported as its own state —
+// never folded into "ALL PASS", because a check that reports success without
+// running is worse than not having it.
+let schemaDiff;
+{
+  schemaDiff = await runSchemaDiff();
+  if (schemaDiff.status === "match") ok("production schema matches dev", true, schemaDiff.message);
+  else if (schemaDiff.status === "drift") ok("production schema matches dev", false, schemaDiff.message);
+  else if (schemaDiff.status === "error") ok("production schema matches dev", false, schemaDiff.message);
+}
+
 let failed = 0;
 console.log("");
 for (const r of results) {
   if (!r.pass) failed++;
   console.log(`  ${r.pass ? "PASS" : "FAIL"}  ${r.name}${r.detail ? "  — " + r.detail : ""}`);
 }
+
+if (schemaDiff.status === "skipped") {
+  console.log(`  SKIP  production schema diff — ${schemaDiff.message}`);
+} else if (schemaDiff.status === "drift") {
+  console.log(formatFindings(schemaDiff.findings));
+}
+
 console.log(`\n${failed === 0 ? "ALL PASS" : failed + " FAILED"}`);
 process.exit(failed === 0 ? 0 : 1);

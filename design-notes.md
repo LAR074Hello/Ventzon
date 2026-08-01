@@ -1237,3 +1237,48 @@ migration files describe an *intended* database and nothing verifies production
 against them, so drift is only ever found by someone looking for something
 else. A schema-diff check in `verify:dev` (or a production-safe equivalent)
 would turn that from luck into a test. Worth doing before beta, not after.
+
+## Schema drift is now a test, and it found three things immediately (2026-08-01)
+
+`npm run verify:dev` ends with a production-vs-dev schema comparison —
+columns, constraints, indexes, RLS flags, policies, functions and triggers.
+
+**How it reads a schema at all.** PostgREST exposes tables, not catalogs, so a
+service-role key cannot query `information_schema`; Supabase does not expose the
+database password, so there is no psql path either. The mechanism is a fixed,
+parameterless `public.schema_snapshot()` function, `security definer`, EXECUTE
+revoked from anon and authenticated. Parameterless is the point: it accepts no
+SQL, builds no SQL, and can only ever return this one snapshot. It returns
+shape, never rows, and service_role could already read everything.
+
+**It SKIPS rather than passes without production credentials**, which are
+deliberately absent from `.env.local`. A skip prints the exact command and is
+reported as its own state, never folded into ALL PASS — a check that reports
+success without running is worse than no check. That is also its weakness,
+stated plainly: it only runs when someone remembers to supply the key.
+
+### What it found on the first run
+
+**1. `job_applications` is still missing both its indexes.** `role_idx` and
+`submitted_at_idx` were logged as missing on 2026-07-25 and never fixed — dev
+3, production 1. This is the third instance of the same class and it had been
+sitting in the notes, correctly described, for a week.
+
+**2. `promotions` columns: dev 13, production 8.** The known divergence, now
+measured rather than described. Still needs the decision about which shape wins
+before anything is built on it.
+
+**3. Two constraints exist in PRODUCTION and not in dev** — this is new, and it
+is the direction nobody thinks to look:
+
+- `messages.messages_shop_slug_fkey` — FK to `shops(slug)` ON DELETE CASCADE
+- `rep_commission_logs.rep_commission_logs_amount_check` — CHECK (amount > 0)
+
+**Dev is more permissive than production.** Code that inserts a `messages` row
+with a non-existent shop, or a zero-amount commission, passes locally and fails
+against real users. Every previous drift was "production is missing something";
+this is the opposite, and it is the one that produces a green local run and a
+production error.
+
+Neither constraint appears in any migration, so both were applied to production
+by hand at some point and never written down.
