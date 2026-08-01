@@ -1065,3 +1065,104 @@ rows is still uncommitted, so the production database currently contains data
 produced by a version of the importer that exists only on one laptop. Committing
 the importer before it is run again is the cheap fix; the ODbL attribution
 question logged earlier now applies to live production data, not a plan.
+
+## Slice 1.9 migration applied to production (2026-08-01)
+
+Backup `.backups/pxdnwpqnmuzpdtjvbawa-2026-08-01T20-41-07-747Z` taken first,
+3,602 places, production ref confirmed.
+
+| | before | after |
+|---|---|---|
+| `checkins` rows | 0 | 0 |
+| `checkins` columns | 7 | 8 (`customer_email`) |
+| `checkins` indexes | 4 | 5 (`checkins_email_place_date_unique`) |
+| `shop_slug` / `customer_id` | NOT NULL | nullable, with the CHECK |
+| posts / places / customers / shops | 2 / 3602 / 0 / 1 | unchanged |
+
+Both existing posts verified identical afterwards: rows unchanged, `/p/[id]`
+and `/api/customer/posts/[id]` both 200, `verified_visit: false` as before, and
+`place` **absent** from the response because production still runs the previous
+build. That absence is the expand-only contract working — the schema is ahead
+of the code and the deployed app neither knows nor cares.
+
+**Drift worth knowing:** production has 4 check-in indexes where dev has 6. It
+lacks `idx_checkins_shop_slug` and `idx_checkins_customer_id`, which its own
+baseline migration creates. Same class as the missing `job_applications`
+indexes already logged. Not urgent at 0 rows; it will matter when check-ins are
+real.
+
+## ODbL: promoted from plan-stage to live obligation (2026-08-01)
+
+3,601 OSM places are in production in front of real users, so this is no
+longer a question about a plan. **Not legal advice** — a practical read of ODbL
+1.0 and the OSMF attribution guidelines. The two flagged items at the end
+deserve a real opinion if imported places become the core asset.
+
+### The licence has two separate obligations, and they bite differently
+
+**Attribution** applies to everything. **Share-alike** applies only to the
+database, and only in one of three cases:
+
+- **Produced Work** — rendered output: a place page, the map on screen, a
+  screenshot. **Attribution only. No share-alike.**
+- **Collective Database** — your own data sitting *alongside* OSM's, joined but
+  not merged. The independent part is **not** subject to share-alike.
+- **Derivative Database** — OSM records modified or extended. Share-alike
+  applies, and §4.4 is the clause that matters: publicly using a Produced Work
+  *made from* a Derivative Database obliges you to offer that database under
+  ODbL to recipients.
+
+### Where that leaves Ventzon
+
+**Posts, photos, comments, check-ins and users are safe.** They live in
+separate tables keyed by `place_id` and are joined at read time — the textbook
+Collective Database shape. Nothing a user creates becomes ODbL. The
+content/insert split that already exists is what protects this, which makes
+`source = 'osm'` and `osm_id` a **constraint to preserve, not a convenience**.
+
+**`places` is very likely a Derivative Database.** We do not merely store OSM
+rows: we add `category` (mapped from `amenity`/`shop` tags), `neighborhood`,
+`city` and `slug`, and we filter and dedupe. That is extension and
+modification. Publishing place pages from it therefore triggers §4.4.
+
+**What that actually costs is almost nothing:** an export of the OSM-derived
+place rows offered under ODbL, in practice a link on the legal page. It does
+**not** oblige opening the app, the schema, the posts, or anything a merchant
+supplies about their own business.
+
+### Attribution — what exists today, and the gap
+
+Present: `© OpenStreetMap © CARTO` in the map's Leaflet attribution control
+(`customer/map/page.tsx`) and in `PlaceMiniMap`, which the place page renders
+when a place has coordinates. All 3,601 imported rows have coordinates, so
+place pages are attributed in practice.
+
+Missing, and all of it PRE-LAUNCH:
+
+1. **Neither credit is a link.** OSMF asks for "© OpenStreetMap contributors"
+   linking to `https://www.openstreetmap.org/copyright`. Both are plain text
+   and neither says "contributors".
+2. **No licence is named anywhere.** Nothing in the app mentions ODbL.
+3. **No legal/about entry.** Settings has no "Data & licences" line, which is
+   the anchor every other surface leans on under the reasonable-prominence
+   standard.
+4. Surfaces that show OSM-derived names with no credit nearby: the feed, the
+   post page's place row, and the place picker in compose. **Per-item credit is
+   not required** — a credit on the map and place page plus a reachable legal
+   page satisfies "reasonable" — but that legal page has to exist first.
+5. The attribution is `#888` on both surfaces. OSMF asks that attribution not
+   be obscured; worth a contrast check rather than an assumption.
+
+The fix is roughly an hour and clears the only clearly-required item.
+
+### Two questions that deserve a real opinion
+
+1. **The claim flow (Slice 1.5) will let merchants correct imported place
+   data.** Those corrections flow into the derivative database, so §4.4 would
+   oblige publishing merchant-supplied corrections under ODbL. Decide before
+   that ships, not after — it is a product question (what do we promise a
+   merchant about their own edits) as much as a licence one.
+2. **Keep OSM-derived fields separable, permanently.** Denormalising a place
+   name onto `posts` for convenience would blur the Collective/Derivative line
+   and start pulling user content toward the share-alike side. The separation is
+   load-bearing.
