@@ -186,10 +186,30 @@ for (const r of results) {
   console.log(`  ${r.pass ? "PASS" : "FAIL"}  ${r.name}${r.detail ? "  — " + r.detail : ""}`);
 }
 
-if (schemaDiff.status === "skipped") {
-  console.log(`  SKIP  production schema diff — ${schemaDiff.message}`);
-} else if (schemaDiff.status === "drift") {
+if (schemaDiff.status === "drift") {
   console.log(formatFindings(schemaDiff.findings));
+}
+
+// A skipped check must never be readable as coverage. It is not a quiet SKIP
+// line under a green summary — the run is NOT CLEAN and exits non-zero, so
+// nothing downstream can treat "verify:dev passed" as "production matches".
+// Opting out is possible, but only by saying so out loud:
+//   SCHEMA_DIFF_OPTIONAL=true npm run verify:dev
+const skipTolerated = String(env.SCHEMA_DIFF_OPTIONAL ?? "") === "true";
+
+if (schemaDiff.status === "skipped" && !skipTolerated) {
+  console.log(`\n${failed === 0 ? `${results.length} checks passed` : failed + " FAILED"}`);
+  console.log("\n  ✗ NOT CLEAN — the production schema check DID NOT RUN.");
+  console.log("    " + schemaDiff.message.split("\n").join("\n    "));
+  console.log("\n    Twice production has drifted from its own migrations and both");
+  console.log("    times it was found by accident. A check that silently does nothing");
+  console.log("    looks like coverage and is worse than no check, so this exits 1.");
+  console.log("    Deliberately skipping: SCHEMA_DIFF_OPTIONAL=true npm run verify:dev\n");
+  process.exit(1);
+}
+
+if (schemaDiff.status === "skipped") {
+  console.log(`  SKIP  production schema diff — explicitly opted out via SCHEMA_DIFF_OPTIONAL`);
 }
 
 console.log(`\n${failed === 0 ? "ALL PASS" : failed + " FAILED"}`);

@@ -1282,3 +1282,62 @@ production error.
 
 Neither constraint appears in any migration, so both were applied to production
 by hand at some point and never written down.
+
+## Dev and production reconciled; the diff is clean (2026-08-01)
+
+All seven sections now match digest-for-digest: columns 320, constraints 121,
+indexes 121, policies 14, RLS 37, functions 4, triggers 3.
+
+**Direction of reconciliation: toward production**, because production is what
+live data conforms to. Three migrations, not one-off SQL, so a rebuilt database
+lands in the same place.
+
+1. **Dev gained two constraints production already enforced** —
+   `messages_shop_slug_fkey` and `rep_commission_logs_amount_check
+   (amount > 0)`. Dev was accepting a message addressed to a nonexistent shop
+   and a zero-value commission; production was not. Both dev tables were empty,
+   so validation was trivially safe.
+
+2. **`job_applications` finally got its two indexes**, logged missing on
+   2026-07-25 and still missing a week later.
+
+3. **`promotions`: production is canonical.** Dev dropped `created_by`,
+   `reject_reason`, `approved_at`, `rejected_at`, `updated_at`, loosened
+   `created_at` and `status` to nullable, gained the FK to `shops`. Both tables
+   hold 0 rows, so nothing was lost that anything had used.
+
+### The one only a definition-level check could find
+
+`rep_commission_logs_logged_at_idx` was `btree (logged_at)` on dev and
+`btree (logged_at DESC)` on production. **Same name, same count, different
+index.** Any check comparing index *names*, or counting them per table, reports
+a match. The snapshot stores `indexdef`, which is the only reason this surfaced
+— worth remembering the next time it is tempting to compare something cheaper.
+
+### What the reconciliation revealed rather than caused
+
+Three routes write or read the dropped `promotions` columns —
+`api/promotions/route.ts`, and the `[id]/approve` and `[id]/reject` routes.
+Those columns have never existed in production, so **all three have been broken
+against production the whole time**; dev's looser schema was hiding it. They are
+merchant surfaces and deferred until after beta, so they stay as they are. The
+point is that a schema divergence was also a silent code failure, and only one
+of the two was visible.
+
+### One guard deliberately given up
+
+Dev enforced `CHECK (status in ('draft','approved','rejected'))` on
+`promotions`; production does not. "Production wins" meant dropping it. Dev
+being *stricter* is the harmless direction — it fails locally and passes live —
+so this traded a real guard for a clean diff. Both tables are empty, so adding
+the CHECK to **production** instead would have been strictly better and equally
+safe. Recorded as a recommendation rather than done quietly, because a decision
+record that says "production wins, except where I disagreed" is not one.
+
+### A skipped check is now a failure
+
+The schema check exits **non-zero** when production credentials are absent, and
+prints `✗ NOT CLEAN — the production schema check DID NOT RUN` instead of a
+quiet SKIP under a green summary. Opting out is possible but must be said out
+loud: `SCHEMA_DIFF_OPTIONAL=true npm run verify:dev`. A check that silently
+does nothing looks like coverage, which is worse than no check at all.
