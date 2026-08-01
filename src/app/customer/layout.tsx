@@ -30,6 +30,37 @@ const tabs = [
  * POST-BETA: ask for notifications from a settings toggle, or after the user's
  * first post, where the reason to accept is obvious.
  */
+/**
+ * Sets the native status bar to dark text on our light surface.
+ *
+ * Capacitor's Style enum names the BACKGROUND, not the text:
+ *   Style.Dark  = "Light text for dark backgrounds."
+ *   Style.Light = "Dark text for light backgrounds."
+ * capacitor.config.ts says 'Dark', which produced white glyphs on a
+ * near-white bar — the clock and battery were barely legible on device.
+ *
+ * Set at RUNTIME rather than by fixing the config, because config values are
+ * compiled into the binary and would need another archive, upload and review.
+ * The app is a remote wrapper on production, so this ships the moment the web
+ * deploy lands. Info.plist sets UIViewControllerBasedStatusBarAppearance=true,
+ * which hands control to this plugin, so the runtime call is authoritative.
+ * (The apple-mobile-web-app-status-bar-style meta tag governs Safari's
+ * standalone PWA only and does not apply here.)
+ *
+ * PRE-LAUNCH: correct capacitor.config.ts to 'Light' too, so a fresh install
+ * is right before this code runs. Until then this is the fix that ships.
+ */
+async function applyNativeStatusBarStyle() {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) return;
+    const { StatusBar, Style } = await import("@capacitor/status-bar");
+    await StatusBar.setStyle({ style: Style.Light });
+  } catch {
+    // Plugin missing or web context — nothing to do.
+  }
+}
+
 async function registerPushNotifications(userId: string) {
   try {
     const { Capacitor } = await import("@capacitor/core");
@@ -104,6 +135,12 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
       const dismissed = sessionStorage.getItem("ventzon_banner_dismissed");
       if (!dismissed) setShowBanner(true);
     }
+  }, []);
+
+  // Runs for signed-out users too — the status bar is wrong on every screen,
+  // not just authenticated ones.
+  useEffect(() => {
+    applyNativeStatusBarStyle();
   }, []);
 
   useEffect(() => {

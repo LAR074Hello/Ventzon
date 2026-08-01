@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send, ImagePlus, X } from "lucide-react";
+import { stripVideoMetadata } from "@/lib/strip-video-metadata";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { stripImageMetadata } from "@/lib/strip-exif";
 
@@ -135,6 +136,12 @@ export default function PostComposer({
     const body = composer.trim();
     if ((!body && !mediaFile) || posting) return;
     setPosting(true);
+    // Tracked so a failed post does not strand its upload. The storage write
+    // and the row insert are two calls with no transaction between them; when
+    // the second fails the file used to stay in a PUBLIC bucket forever,
+    // unreachable in the app. Production had exactly that, and one of the
+    // stranded files was leaking coordinates.
+    let uploadedPath: string | null = null;
     try {
       let mediaUrl: string | null = null;
       let mediaType: "image" | "video" | null = null;
@@ -145,9 +152,27 @@ export default function PostComposer({
         if (!uid) throw new Error("Not signed in");
         if (mediaFile.size > 50 * 1024 * 1024) throw new Error("Media must be under 50 MB");
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
-        // Strip EXIF/GPS from photos before they leave the device. Videos
-        // can't be rewritten client-side — they upload as-is (flagged).
-        const uploadFile = mediaType === "image" ? await stripImageMetadata(mediaFile) : mediaFile;
+
+        // Strip identifying metadata before anything leaves the device.
+        //
+        // FAIL CLOSED. If a video cannot be parsed with confidence we reject
+        // the post rather than uploading it unstripped. iOS embeds GPS to
+        // metre precision and this bucket is public, so a silent pass-through
+        // on an unusual file is a privacy leak nobody would ever notice.
+        let uploadFile: File;
+        if (mediaType === "image") {
+          uploadFile = await stripImageMetadata(mediaFile);
+        } else {
+          try {
+            uploadFile = await stripVideoMetadata(mediaFile);
+          } catch (stripErr: any) {
+            throw new Error(
+              "We couldn't process this video safely, so it wasn't posted. " +
+                "This can happen with unusual formats — try a different clip. " +
+                `(${stripErr?.message ?? "unknown"})`
+            );
+          }
+        }
         const ext = uploadFile.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
         const path = `${uid}/${Date.now()}.${ext}`;
         const { error: uploadErr } = await supabase.storage
@@ -156,6 +181,7 @@ export default function PostComposer({
         if (uploadErr) throw uploadErr;
         const { data: urlData } = supabase.storage.from("posts").getPublicUrl(path);
         mediaUrl = urlData.publicUrl;
+        uploadedPath = path;
       }
 
       const res = await fetch("/api/customer/posts", {
@@ -174,12 +200,26 @@ export default function PostComposer({
         await onPosted();
       } else {
         const err = await res.json().catch(() => ({}));
+        await discardUpload(uploadedPath);
+        uploadedPath = null;
         alert(err?.error ?? "Failed to post");
       }
     } catch (e: any) {
+      await discardUpload(uploadedPath);
+      uploadedPath = null;
       alert(e?.message ?? "Failed to post");
     } finally {
       setPosting(false);
+    }
+
+    async function discardUpload(path: string | null) {
+      if (!path) return;
+      try {
+        await supabase.storage.from("posts").remove([path]);
+      } catch {
+        // Best effort. Nothing else to do from here, and surfacing a second
+        // error on top of the one the user already saw helps nobody.
+      }
     }
   }
 

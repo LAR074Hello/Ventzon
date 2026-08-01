@@ -755,3 +755,50 @@ posts, photos, comments, and precise location. Three things are now wrong:
 
 Nothing here blocks internal TestFlight, which is the fastest path to verifying
 the native shell fix on a real device.
+
+## Rule: a public bucket needs a metadata gate on EVERY upload path (logged 2026-07-30)
+
+Photos were stripped of EXIF before upload. Videos were not. Both land in the
+same **public** `posts` bucket, so iOS videos reached production carrying
+`com.apple.quicktime.location.ISO6709` — GPS to roughly metre precision —
+along with device make, model, software and capture time. Anyone with the URL
+could fetch the file and read the coordinates. Verified on a real production
+video, not inferred.
+
+**The rule is about the BUCKET, not the file type.** It slipped through because
+the guard was attached to images rather than to the destination: someone added
+a video path later and there was nothing to notice it was missing. Any new
+upload path into a public bucket must strip metadata before the write, and the
+review question is "what bucket does this write to", not "is this a photo".
+
+### Why the strip rewrites the container instead of re-encoding
+
+A canvas + MediaRecorder re-encode **cannot work on iOS Safari** — WebKit does
+not implement `HTMLMediaElement.captureStream()`, which is the only way to feed
+a decoded video into MediaRecorder. It would have failed silently on the exact
+platform the beta runs on. Where it does work it is roughly real-time, lossy,
+and usually drops audio.
+
+`src/lib/strip-video-metadata.ts` instead walks the QuickTime box tree and
+overwrites `moov/meta` and `moov/udta` **in place** with `free` boxes of
+identical length and zeroed payloads. In place and identical length matters:
+`moov` precedes `mdat` in iOS camera output, and `stco`/`co64` reference sample
+data by ABSOLUTE FILE OFFSET, so removing bytes would shift `mdat` and corrupt
+playback silently. Byte length is unchanged, every offset stays valid, no frame
+is touched, and it runs in milliseconds.
+
+It **fails closed**: any parse inconsistency rejects the upload rather than
+letting it through unstripped, and the output is re-parsed and re-scanned for
+the forbidden keys before it is allowed to upload. A leak that only occurs on
+unusual files is worse than one that always occurs, because nobody sees it.
+
+## `.mov` will not play outside Apple platforms (logged 2026-07-30)
+
+iOS records `video/quicktime`. Safari plays it natively, so the all-iPhone beta
+group is fine. **Chrome on Android and desktop Chrome will not play it** — the
+tile renders blank or errors.
+
+This becomes a real problem the moment the group widens beyond iPhone. The fix
+is transcoding to H.264/MP4, which belongs with the compression work rather
+than the metadata strip: the strip deliberately does not re-encode, so it
+cannot change the container.
