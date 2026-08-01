@@ -65,7 +65,21 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
+    // A post at an imported place has place_id and NO shop_slug, because
+    // posts.shop_slug is FK-bound to a merchant account that does not exist.
+    // Resolving identity from the slug alone therefore returned nothing and
+    // the page dropped its whole place block — a "Verified visit" badge with
+    // nothing naming what was visited. Same fallback the feed and /p/[id]
+    // already use: prefer the slug, fall back to place_id.
     let shop: any = null;
+    let place: {
+      slug: string;
+      name: string;
+      neighborhood: string | null;
+      city: string | null;
+      category: string | null;
+    } | null = null;
+
     if (post.shop_slug) {
       const [{ data: setting }, { data: shopRow }] = await Promise.all([
         admin
@@ -86,6 +100,13 @@ export async function GET(
         deal_title: setting?.deal_title ?? null,
         reward_goal: setting?.reward_goal ?? 5,
       };
+    } else if ((post as { place_id?: string | null }).place_id) {
+      const { data: placeRow } = await admin
+        .from("places")
+        .select("slug, name, neighborhood, city, category")
+        .eq("id", (post as { place_id?: string | null }).place_id)
+        .maybeSingle();
+      place = placeRow ?? null;
     }
 
     const [{ data: likes }, { count: saveCount }, { data: comments }] = await Promise.all([
@@ -166,6 +187,10 @@ export async function GET(
           }
         : null,
       shop,
+      // Mutually exclusive with `shop` by construction: an imported place has
+      // no merchant account, so there is no reward programme to report and the
+      // page must not invent one.
+      place,
       counts: {
         likes: (likes ?? []).length,
         saves: saveCount ?? 0,

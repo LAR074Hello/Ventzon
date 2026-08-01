@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff, BadgeCheck,
+  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff, BadgeCheck, MapPin,
 } from "lucide-react";
 import SafetyMenu from "../../components/SafetyMenu";
 
@@ -12,6 +12,9 @@ type PostData = {
   post: { id: string; body: string; media_url: string | null; media_type: string | null; created_at: string; hidden?: boolean };
   author: { profile_id: string; display_name: string; avatar_url: string | null } | null;
   shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number } | null;
+  // An imported place, when there is no merchant account. Carries no reward
+  // fields on purpose — see the render below.
+  place: { slug: string; name: string; neighborhood: string | null; city: string | null; category: string | null } | null;
   counts: { likes: number; saves: number; comments: number };
   viewer: { liked: boolean; saved: boolean; is_own: boolean; progress: { visits: number; goal: number } | null };
   comments: {
@@ -134,7 +137,7 @@ export default function PostPage() {
     );
   }
 
-  const { post, author, shop, counts, viewer, comments, verified_visit } = data;
+  const { post, author, shop, place, counts, viewer, comments, verified_visit } = data;
   const remaining = viewer.progress ? Math.max(viewer.progress.goal - viewer.progress.visits, 0) : null;
 
   return (
@@ -281,6 +284,30 @@ export default function PostPage() {
           <span className="block w-full rounded-ctl bg-accent py-2.5 text-center text-sm font-medium text-on-accent">
             Visit &amp; earn
           </span>
+        </button>
+      )}
+
+      {/* An imported place: real location, no merchant account. Deliberately
+          NOT the block above — there is no reward programme here, and
+          rendering progress toward a reward nobody offers would invent one.
+          Name and neighbourhood carry the row; the tap goes to the place page
+          rather than /customer/shop, which is shop-settings-driven and would
+          be an empty shell for a place no merchant has claimed. */}
+      {!shop && place && (
+        <button
+          onClick={() => router.push(`/place/${place.slug}`)}
+          className="elevation-1 mx-5 mt-4 flex w-[calc(100%-2.5rem)] items-center gap-3.5 rounded-card px-4 py-3.5 text-left transition-colors active:bg-surface-sunken"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface-sunken">
+            <MapPin className="h-4 w-4 text-secondary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-medium text-primary">{place.name}</p>
+            <p className="mt-0.5 truncate text-xs text-muted">
+              {[place.neighborhood, place.category].filter(Boolean).join(" · ") || place.city}
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
         </button>
       )}
 

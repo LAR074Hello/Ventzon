@@ -983,3 +983,52 @@ Because `checkins` is empty on production, the Slice 1.9 migration cannot lose
 a check-in there: it adds a column, weakens two `NOT NULL`s, and adds a CHECK
 and a partial unique index against zero rows. That is a fact about today, not a
 property of the migration.
+
+## Place identity resolved by slug — the fourth instance (logged 2026-08-01)
+
+`posts.shop_slug` is FK-bound to `shops.slug`, so a post at an imported place
+carries `place_id` and **no slug at all**. Any code that resolves place
+identity from `shop_slug` alone therefore renders nothing there — and because
+the fallback is "show less", it fails silently rather than loudly.
+
+Audited every consumer surface. The full picture:
+
+**Fixed here.** `/api/customer/posts/[id]` → `/customer/post/[id]` resolved
+`shop` only inside `if (post.shop_slug)`, so the page dropped its entire place
+block: a "Verified visit" badge with nothing naming what was visited, on the
+screen you reach by tapping any feed tile.
+
+**Logged, not fixed.** `/api/customer/saves` rolls up "the distinct places
+these saves point to" from `shop_slug` only, so a post saved at an imported
+place contributes nothing and that place never appears in the Saved list.
+Saves is deferred post-beta — nobody sees it yet — so it waits, but it is the
+same bug and will need the same fallback.
+
+**Not affected, checked rather than assumed:**
+
+- `/p/[id]` and `/place/[slug]` — already query `places` by `place_id` first.
+  The *shareable* surface was never broken; the in-app page was.
+- Own-posts grid and creator grid select `shop_slug`, but `PostGrid` renders
+  thumbnails only and never shows a place name. The selected slug is vestigial.
+- `shops-map` keys off `places`.
+- `notifications` is slug-keyed with an `"a store"` fallback, but nothing
+  generates a notification for an imported place yet. It becomes an instance
+  the day something does.
+- `friend-activity`, `history`, `leaderboard`, `passport`, `explore`,
+  `memberships` are membership- or shop-scoped by design.
+- The feed's place name is not a link, so there is no dead navigation into
+  `/customer/shop/<imported-slug>`.
+
+### The rendering rule this settles
+
+An unclaimed place gets **name and neighbourhood, and no reward line**. The
+claimed-shop block renders progress ("3 more visits to a free coffee"); an
+imported place has no reward programme, and showing progress toward a reward
+nobody offers would invent one. The tap goes to `/place/[slug]`, not
+`/customer/shop/[slug]` — the latter is shop-settings-driven and would be an
+empty shell for a place no merchant has claimed.
+
+**The general rule: resolve place identity by `place_id` with a `shop_slug`
+fallback, never the reverse, and never the slug alone.** Three routes already
+did it correctly; the two that did not both failed by omission, which is why
+neither was noticed.
