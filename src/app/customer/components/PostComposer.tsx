@@ -5,6 +5,18 @@ import { Send, ImagePlus, X } from "lucide-react";
 import { stripVideoMetadata } from "@/lib/strip-video-metadata";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { stripImageMetadata } from "@/lib/strip-exif";
+import { checkMediaLimits } from "@/lib/media-limits";
+import { uploadWithProgress, type RunningUpload } from "@/lib/upload-with-progress";
+
+/** Thrown to unwind a deliberate cancel through the same cleanup as a failure. */
+class CanceledError extends Error {
+  constructor() {
+    super("canceled");
+    this.name = "CanceledError";
+  }
+}
+
+type Phase = "idle" | "preparing" | "uploading" | "saving";
 
 /**
  * Shared post composer — used on the public creator page (own profile)
@@ -26,6 +38,29 @@ export default function PostComposer({
 }) {
   const [composer, setComposer] = useState("");
   const [posting, setPosting] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [progress, setProgress] = useState(0);
+  const uploadRef = useRef<RunningUpload | null>(null);
+  // A ref, not state: the submit path reads this between awaits, and a state
+  // value captured in that closure would still be the pre-cancel one.
+  const canceledRef = useRef(false);
+
+  /**
+   * Cancel means the bytes stop AND nothing is left behind.
+   *
+   * Aborting the request is only half of it — the server may already have
+   * written the object, so the submit path's catch runs `discardUpload` on the
+   * path it recorded before the upload began. An orphan in a public bucket is
+   * the exact shape of the file that kept leaking coordinates after its post
+   * was gone.
+   *
+   * During "preparing" there is no request yet, so the flag is what stops it:
+   * the strip finishes, the next checkpoint sees it, and nothing uploads.
+   */
+  function cancelUpload() {
+    canceledRef.current = true;
+    uploadRef.current?.cancel();
+  }
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [tagShop, setTagShop] = useState(defaultShopSlug ?? "");
@@ -149,8 +184,17 @@ export default function PostComposer({
       if (mediaFile) {
         const { data: { session } } = await supabase.auth.getSession();
         const uid = session?.user?.id;
-        if (!uid) throw new Error("Not signed in");
-        if (mediaFile.size > 50 * 1024 * 1024) throw new Error("Media must be under 50 MB");
+        const accessToken = session?.access_token;
+        if (!uid || !accessToken) throw new Error("Not signed in");
+
+        // Caps BEFORE the strip. Reading a 50 MB file into memory to strip
+        // metadata from something about to be rejected is pure waiting, and
+        // the message names which limit was hit — "too big" when the real
+        // problem is length sends someone off to compress a video that will
+        // still be too long.
+        const limits = await checkMediaLimits(mediaFile);
+        if (!limits.ok) throw new Error(limits.reason);
+
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
 
         // Strip identifying metadata before anything leaves the device.
@@ -159,6 +203,18 @@ export default function PostComposer({
         // the post rather than uploading it unstripped. iOS embeds GPS to
         // metre precision and this bucket is public, so a silent pass-through
         // on an unusual file is a privacy leak nobody would ever notice.
+        // "Preparing" is its own phase because the strip is not instant on a
+        // real iPhone video — reading it into memory dominates. Without a
+        // distinct state the progress bar sits at 0% through it and the whole
+        // point of adding progress is lost: a frozen "Posting…" becomes a
+        // frozen 0%, which reads exactly the same.
+        //
+        // The yield matters. Setting state and immediately starting the strip
+        // means React never gets a frame to paint the new phase, so the user
+        // watches nothing change while the main thread is busy.
+        setPhase("preparing");
+        await new Promise((r) => requestAnimationFrame(() => r(null)));
+
         let uploadFile: File;
         if (mediaType === "image") {
           uploadFile = await stripImageMetadata(mediaFile);
@@ -173,16 +229,40 @@ export default function PostComposer({
             );
           }
         }
+        if (canceledRef.current) throw new CanceledError();
+
         const ext = uploadFile.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
         const path = `${uid}/${Date.now()}.${ext}`;
-        const { error: uploadErr } = await supabase.storage
-          .from("posts")
-          .upload(path, uploadFile, { upsert: true });
-        if (uploadErr) throw uploadErr;
+
+        // The path is recorded BEFORE the upload starts, not after it succeeds.
+        // A cancelled or failed PUT can still have created the object, and an
+        // orphan in a PUBLIC bucket is exactly how the GPS leak outlived the
+        // post it came from.
+        uploadedPath = path;
+        setPhase("uploading");
+        setProgress(0);
+
+        const running = uploadWithProgress({
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          bucket: "posts",
+          path,
+          file: uploadFile,
+          accessToken,
+          onProgress: setProgress,
+        });
+        uploadRef.current = running;
+
+        const outcome = await running.done;
+        uploadRef.current = null;
+        if (outcome.ok === false && outcome.canceled) throw new CanceledError();
+        if (outcome.ok === false) throw new Error(outcome.error);
+
         const { data: urlData } = supabase.storage.from("posts").getPublicUrl(path);
         mediaUrl = urlData.publicUrl;
-        uploadedPath = path;
       }
+
+      setPhase("saving");
 
       const res = await fetch("/api/customer/posts", {
         method: "POST",
@@ -205,11 +285,17 @@ export default function PostComposer({
         alert(err?.error ?? "Failed to post");
       }
     } catch (e: any) {
+      // Cancel and failure clean up identically — the object may exist either
+      // way. The only difference is that a cancel is not an error to report.
       await discardUpload(uploadedPath);
       uploadedPath = null;
-      alert(e?.message ?? "Failed to post");
+      if (!(e instanceof CanceledError)) alert(e?.message ?? "Failed to post");
     } finally {
       setPosting(false);
+      setPhase("idle");
+      setProgress(0);
+      canceledRef.current = false;
+      uploadRef.current = null;
     }
 
     async function discardUpload(path: string | null) {
@@ -241,12 +327,51 @@ export default function PostComposer({
           ) : (
             <img src={mediaPreview} alt="" className="max-h-48 w-full object-cover" />
           )}
-          <button
-            onClick={() => pickMedia(null)}
-            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70"
-          >
-            <X className="h-3.5 w-3.5 text-white" />
-          </button>
+          {phase === "idle" && (
+            <button
+              onClick={() => pickMedia(null)}
+              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70"
+            >
+              <X className="h-3.5 w-3.5 text-white" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Upload state, over the media it belongs to.
+          "Preparing" is INDETERMINATE and animated with a transform, which the
+          compositor keeps running even while the strip occupies the main
+          thread. A percentage that cannot move, or a bar driven by JS that is
+          blocked, is the frozen-Posting problem wearing a progress bar. */}
+      {phase !== "idle" && (
+        <div className="mt-2 rounded-ctl bg-surface-sunken px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-secondary">
+              {phase === "preparing"
+                ? "Preparing…"
+                : phase === "uploading"
+                ? `Uploading ${Math.round(progress * 100)}%`
+                : "Posting…"}
+            </span>
+            {(phase === "preparing" || phase === "uploading") && (
+              <button
+                onClick={cancelUpload}
+                className="text-xs font-medium text-secondary underline underline-offset-2"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-border-subtle">
+            {phase === "uploading" ? (
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-150 ease-out"
+                style={{ width: `${Math.max(2, progress * 100)}%` }}
+              />
+            ) : (
+              <div className="h-full w-1/3 rounded-full bg-accent motion-safe:animate-[composer-indeterminate_1.1s_ease-in-out_infinite]" />
+            )}
+          </div>
         </div>
       )}
 

@@ -521,3 +521,16 @@ body {
   text-decoration: underline !important;
   text-underline-offset: 2px;
 }
+
+/* ═══ Composer: indeterminate upload bar ═════════════════════════ */
+/*
+ * transform only — no width, no left. A transform animation runs on the
+ * compositor, so it keeps moving while the metadata strip occupies the main
+ * thread. Animating width would freeze at exactly the moment motion is the
+ * only thing telling the user the app has not hung, which is the problem this
+ * bar exists to solve.
+ */
+@keyframes composer-indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}

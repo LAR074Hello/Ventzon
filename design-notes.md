@@ -1402,3 +1402,74 @@ Dev being *stricter* than production is the harmless direction — it fails on a
 laptop, not in front of users. Dev being *looser* is the dangerous one, and is
 what this entire exercise started from. The CHECK is now on **both** databases;
 both `promotions` tables hold 0 rows, so it was free.
+
+## Upload progress with cancel — and the orphan that is real (built 2026-08-01)
+
+### `supabase.storage.upload()` cannot do this
+
+Installed storage-js 2.99.2 takes `cacheControl, contentType, upsert, duplex,
+metadata, headers` — no progress callback, no AbortSignal. `fetch` cannot
+report request-upload progress either. XMLHttpRequest is the only browser API
+with `upload.onprogress` and a working `abort()`, so `lib/upload-with-progress.ts`
+speaks to the storage endpoint directly.
+
+**The wire format was copied out of storage-js, not guessed:** multipart POST to
+`/storage/v1/object/{bucket}/{path}`, a `cacheControl` field, and the file
+appended under the **empty-string field name** (`body.append("", file)`), plus
+`x-upsert`. That empty name looks like a bug and is what the server expects.
+
+### An aborted upload DOES strand a file — measured, not assumed
+
+A 14 MB upload to dev completes in ~1.1 s. Aborting at different points:
+
+| abort at | client saw | object on server afterwards |
+|---|---|---|
+| 250 ms (~20%) | aborted | **no** |
+| 948 ms (85%) | aborted | **YES** |
+| 1059 ms (95%) | completed 200 | **YES** |
+| 1104 ms (99%) | completed 200 | **YES** |
+
+**At 85% the client believed it had cancelled and the server had already
+committed the object.** That is a file in a PUBLIC bucket belonging to a post
+that will never exist — the same shape as the orphan that kept a video leaking
+GPS after its post was gone.
+
+So cancel is two things, and the second is the one that matters: `xhr.abort()`
+stops the bytes, and `discardUpload(path)` removes what the server may already
+have written. The path is therefore recorded **before** the upload starts, not
+after it succeeds. Verified: with the cleanup in place, aborting at 85% and 95%
+both leave the bucket clean, and the delete works through the *user's* client,
+so RLS permits an owner to remove their own object.
+
+### The "preparing" phase is seconds, not milliseconds
+
+Measured in the browser on a real 45.7 MB MP4:
+
+- `Preparing…` — **5.3 s** (701 ms → 6024 ms)
+- `Uploading 0% → 100%` — **3.7 s**, ticking 13% → 43% → 73% → 100%
+
+Scaled down, a 14 MB video spends roughly **1.5 s** in preparing. In Node with
+the bytes already in memory the same strip takes 54 ms — which is exactly why
+that measurement was not trusted: the cost is reading the file, and Node had
+nothing to read.
+
+Seconds of silence is precisely the frozen-`Posting…` problem the progress bar
+exists to remove, so **preparing is indeterminate and animated with a
+`transform`**, which runs on the compositor and keeps moving even while the box
+walk occupies the main thread. Animating `width` would stall at the one moment
+motion is the only signal the app has not hung.
+
+There is also a deliberate `requestAnimationFrame` yield after setting the
+phase: without it React never gets a frame to paint "Preparing…" before the
+strip begins, and the state change is invisible.
+
+### Caps
+
+60 seconds or 50 MB, whichever is hit first, **checked before the strip** — no
+point reading 50 MB into memory to sanitise a file about to be rejected. The
+message names which limit was hit; "too big" when the real problem is length
+sends someone off to compress a video that will still be too long.
+
+Duration that cannot be read does **not** reject. An unreadable duration is far
+more likely to be an odd container than a 40-minute recording, and the size cap
+still applies.
