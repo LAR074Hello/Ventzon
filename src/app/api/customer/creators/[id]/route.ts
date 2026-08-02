@@ -34,7 +34,7 @@ export async function GET(
 
     const { data: posts } = await admin
       .from("posts")
-      .select("id, body, shop_slug, media_url, media_type, created_at")
+      .select("id, body, shop_slug, media_url, media_type, poster_url, created_at")
       .eq("author_email", profile.email)
       .eq("hidden", false)
       .order("created_at", { ascending: false })

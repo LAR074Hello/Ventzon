@@ -9,7 +9,7 @@ import SafetyMenu from "../../components/SafetyMenu";
 
 type PostData = {
   verified_visit?: boolean;
-  post: { id: string; body: string; media_url: string | null; media_type: string | null; created_at: string; hidden?: boolean };
+  post: { id: string; body: string; media_url: string | null; media_type: string | null; poster_url?: string | null; created_at: string; hidden?: boolean };
   author: { profile_id: string; display_name: string; avatar_url: string | null } | null;
   shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number } | null;
   // An imported place, when there is no merchant account. Carries no reward
@@ -185,7 +185,13 @@ export default function PostPage() {
       {post.media_url && (
         <div className="w-full bg-surface-raised">
           {post.media_type === "video" ? (
-            <video src={post.media_url} controls playsInline className="max-h-[60vh] w-full object-contain" />
+            <video
+              src={post.media_url}
+              poster={post.poster_url ?? undefined}
+              controls
+              playsInline
+              className="max-h-[60vh] w-full object-contain"
+            />
           ) : (
             <img src={post.media_url} alt="" className="max-h-[60vh] w-full object-contain" />
           )}

@@ -16,6 +16,7 @@ type FeedPost = {
   shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number };
   counts: { likes: number; comments: number };
   verified_visit?: boolean;
+  poster_url?: string | null;
   viewer: { liked: boolean; progress: { visits: number; goal: number } | null };
 };
 
@@ -328,7 +329,17 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                   {p.media_type === "video" ? (
                     // max-h stops a 4:5 frame from eating a short laptop viewport;
                     // object-cover crops rather than letterboxing.
-                    <video src={p.media_url} muted playsInline preload="metadata" className="aspect-[4/5] max-h-[70vh] w-full object-cover" />
+                    <video
+                      src={p.media_url}
+                      // A poster is what a video tile shows before it decodes —
+                      // and on Chrome, which will not play iOS quicktime at
+                      // all, it is the ONLY thing it will ever show.
+                      poster={p.poster_url ?? undefined}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="aspect-[4/5] max-h-[70vh] w-full object-cover"
+                    />
                   ) : (
                     <img src={p.media_url} alt="" loading="lazy" className="aspect-[4/5] max-h-[70vh] w-full object-cover" />
                   )}

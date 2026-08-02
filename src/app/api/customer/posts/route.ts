@@ -28,7 +28,7 @@ export async function GET() {
     const admin = adminClient();
     const { data, error } = await admin
       .from("posts")
-      .select("id, body, shop_slug, media_url, media_type, created_at")
+      .select("id, body, shop_slug, media_url, media_type, poster_url, created_at")
       .eq("author_email", user.email!.toLowerCase())
       .order("created_at", { ascending: false })
       .limit(60);
@@ -50,6 +50,9 @@ export async function POST(req: Request) {
     const text = String(payload?.body ?? "").trim().slice(0, 1000);
     const shopSlug = payload?.shop_slug ? String(payload.shop_slug).toLowerCase().trim() : null;
     const mediaUrl = payload?.media_url ? String(payload.media_url).trim() : null;
+    // A poster only means anything alongside a video. Storing one for an
+    // image post would be a second copy of the same picture.
+    const posterUrl = payload?.poster_url ? String(payload.poster_url).trim() : null;
     const mediaType =
       payload?.media_type === "image" || payload?.media_type === "video"
         ? payload.media_type
@@ -59,6 +62,12 @@ export async function POST(req: Request) {
     }
     if (mediaUrl && (!/^https:\/\//.test(mediaUrl) || !mediaType)) {
       return NextResponse.json({ error: "Invalid media" }, { status: 400 });
+    }
+    // The poster is rendered in the feed, so it gets the same scheme check as
+    // the media itself. Without it, poster_url is an arbitrary attacker-chosen
+    // URL that every viewer of the post fetches.
+    if (posterUrl && !/^https:\/\//.test(posterUrl)) {
+      return NextResponse.json({ error: "Invalid poster" }, { status: 400 });
     }
 
     const admin = adminClient();
@@ -112,11 +121,12 @@ export async function POST(req: Request) {
         body: text,
         media_url: mediaUrl,
         media_type: mediaUrl ? mediaType : null,
+        poster_url: mediaUrl && mediaType === "video" ? posterUrl : null,
         // 'community' (no linked business) stays stubbed off — see the
         // COMMUNITY_FEED_ENABLED note in /api/customer/feed.
         post_kind: "business",
       })
-      .select("id, body, shop_slug, media_url, media_type, created_at")
+      .select("id, body, shop_slug, media_url, media_type, poster_url, created_at")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

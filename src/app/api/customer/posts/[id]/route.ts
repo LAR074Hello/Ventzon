@@ -37,7 +37,7 @@ export async function GET(
 
     const { data: post } = await admin
       .from("posts")
-      .select("id, author_email, shop_slug, place_id, body, media_url, media_type, post_kind, hidden, created_at")
+      .select("id, author_email, shop_slug, place_id, body, media_url, media_type, poster_url, post_kind, hidden, created_at")
       .eq("id", id)
       .maybeSingle();
     if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -176,6 +176,7 @@ export async function GET(
         body: post.body,
         media_url: post.media_url,
         media_type: post.media_type,
+        poster_url: (post as { poster_url?: string | null }).poster_url ?? null,
         created_at: post.created_at,
         hidden: post.hidden,
       },

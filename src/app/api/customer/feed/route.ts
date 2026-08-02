@@ -48,7 +48,7 @@ export async function GET(req: Request) {
 
     let query = admin
       .from("posts")
-      .select("id, author_email, shop_slug, place_id, body, media_url, media_type, created_at")
+      .select("id, author_email, shop_slug, place_id, body, media_url, media_type, poster_url, created_at")
       .eq("post_kind", "business")
       .eq("hidden", false)
       // A post at an imported place has place_id and NO shop_slug, because
@@ -201,6 +201,7 @@ export async function GET(req: Request) {
         id: p.id,
         body: p.body,
         media_url: p.media_url,
+        poster_url: (p as { poster_url?: string | null }).poster_url ?? null,
         media_type: p.media_type,
         created_at: p.created_at,
         author: {

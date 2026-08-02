@@ -7,6 +7,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { stripImageMetadata } from "@/lib/strip-exif";
 import { checkMediaLimits } from "@/lib/media-limits";
 import { uploadWithProgress, type RunningUpload } from "@/lib/upload-with-progress";
+import { capturePosterFrame } from "@/lib/poster-frame";
 
 /** Thrown to unwind a deliberate cancel through the same cleanup as a failure. */
 class CanceledError extends Error {
@@ -177,8 +178,10 @@ export default function PostComposer({
     // unreachable in the app. Production had exactly that, and one of the
     // stranded files was leaking coordinates.
     let uploadedPath: string | null = null;
+    let posterPathUploaded: string | null = null;
     try {
       let mediaUrl: string | null = null;
+      let posterUrl: string | null = null;
       let mediaType: "image" | "video" | null = null;
 
       if (mediaFile) {
@@ -260,6 +263,23 @@ export default function PostComposer({
 
         const { data: urlData } = supabase.storage.from("posts").getPublicUrl(path);
         mediaUrl = urlData.publicUrl;
+
+        // Poster frame: captured from the ALREADY-STRIPPED file, so it cannot
+        // reintroduce the metadata the strip just removed. Best effort by
+        // design — a null poster costs a thumbnail, never the post.
+        if (mediaType === "video") {
+          const poster = await capturePosterFrame(uploadFile);
+          if (poster && !canceledRef.current) {
+            const posterPath = `${uid}/${Date.now()}-poster.jpg`;
+            const { error: posterErr } = await supabase.storage
+              .from("posts")
+              .upload(posterPath, poster.blob, { upsert: true, contentType: "image/jpeg" });
+            if (!posterErr) {
+              posterUrl = supabase.storage.from("posts").getPublicUrl(posterPath).data.publicUrl;
+              posterPathUploaded = posterPath;
+            }
+          }
+        }
       }
 
       setPhase("saving");
@@ -271,6 +291,7 @@ export default function PostComposer({
           body,
           ...(tagShop ? { shop_slug: tagShop } : {}),
           ...(mediaUrl ? { media_url: mediaUrl, media_type: mediaType } : {}),
+          ...(posterUrl ? { poster_url: posterUrl } : {}),
         }),
       });
       if (res.ok) {
@@ -281,14 +302,20 @@ export default function PostComposer({
       } else {
         const err = await res.json().catch(() => ({}));
         await discardUpload(uploadedPath);
+        await discardUpload(posterPathUploaded);
         uploadedPath = null;
+        posterPathUploaded = null;
         alert(err?.error ?? "Failed to post");
       }
     } catch (e: any) {
       // Cancel and failure clean up identically — the object may exist either
       // way. The only difference is that a cancel is not an error to report.
+      // The poster goes with it: a poster whose video never became a post is
+      // the same orphan in the same public bucket.
       await discardUpload(uploadedPath);
+      await discardUpload(posterPathUploaded);
       uploadedPath = null;
+      posterPathUploaded = null;
       if (!(e instanceof CanceledError)) alert(e?.message ?? "Failed to post");
     } finally {
       setPosting(false);

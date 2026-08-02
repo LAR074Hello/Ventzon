@@ -9,6 +9,7 @@ export type GridPost = {
   body: string;
   media_url: string | null;
   media_type: "image" | "video" | null;
+  poster_url?: string | null;
   created_at: string;
 };
 
@@ -45,6 +46,7 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
               <>
                 <video
                   src={p.media_url}
+                  poster={p.poster_url ?? undefined}
                   muted
                   playsInline
                   preload="metadata"

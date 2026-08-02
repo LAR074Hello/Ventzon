@@ -34,7 +34,7 @@ export async function GET() {
 
     const { data: posts } = await admin
       .from("posts")
-      .select("id, author_email, shop_slug, body, media_url, media_type, created_at")
+      .select("id, author_email, shop_slug, body, media_url, media_type, poster_url, created_at")
       .in("id", saves.map((s) => s.post_id))
       .eq("hidden", false);
 
@@ -87,6 +87,7 @@ export async function GET() {
         body: p.body,
         media_url: p.media_url,
         media_type: p.media_type,
+        poster_url: (p as { poster_url?: string | null }).poster_url ?? null,
         created_at: p.created_at,
       })),
       shops,
