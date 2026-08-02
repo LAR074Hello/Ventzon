@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Compass, Sparkles, BadgeCheck } from "lucide-react";
+import { Heart, Compass, Sparkles, BadgeCheck , MapPin } from "lucide-react";
 import FollowButton from "./FollowButton";
 import EmptyState from "./EmptyState";
 
@@ -13,7 +13,14 @@ type FeedPost = {
   media_type: "image" | "video" | null;
   created_at: string;
   author: { profile_id: string; display_name: string; avatar_url: string | null; followed: boolean };
-  shop: { slug: string; name: string; logo_url: string | null; deal_title: string | null; reward_goal: number };
+  shop: {
+    slug: string;
+    name: string;
+    neighborhood?: string | null;
+    logo_url: string | null;
+    deal_title: string | null;
+    reward_goal: number;
+  };
   counts: { likes: number; comments: number };
   verified_visit?: boolean;
   poster_url?: string | null;
@@ -287,40 +294,63 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
         const visits = p.viewer.progress?.visits ?? 0;
         return (
           <div key={p.id}>
-            {/* Byline */}
-            <button
-              onClick={() => router.push(`/customer/creator/${p.author.profile_id}`)}
-              className="mb-2.5 flex w-full items-center gap-2.5 text-left"
-            >
-              {p.author.avatar_url ? (
-                <img src={p.author.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-sunken">
-                  <span className="text-sm font-medium text-muted">
-                    {p.author.display_name.charAt(0).toUpperCase()}
+            {/* Card header — PLACE FIRST.
+                The place and the proof lead; the person is the second line.
+                This ordering is the product: a photo feed with location tags
+                is a different app, and the differentiator is lost by inches if
+                the place keeps sliding into the caption. */}
+            <div className="mb-2.5">
+              <button
+                onClick={() =>
+                  p.shop.slug ? router.push(`/place/${p.shop.slug}`) : undefined
+                }
+                className="flex w-full items-start gap-2 text-left"
+              >
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-display text-lg font-semibold leading-tight text-primary">
+                    {p.shop.name}
                   </span>
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-semibold text-primary">
-                  {p.author.display_name}
-                </p>
-                <p className="flex items-center gap-1.5 truncate text-xs text-muted">
-                  <span className="truncate">
-                    at <span className="text-primary">{p.shop.name}</span> · {timeAgo(p.created_at)}
-                  </span>
-                  {p.verified_visit && (
-                    <span
-                      className="inline-flex shrink-0 items-center gap-1 text-primary"
-                      title="This person checked in here"
-                    >
-                      <BadgeCheck className="h-3.5 w-3.5" />
-                      <span className="text-2xs font-semibold uppercase tracking-caps">Verified visit</span>
+                  {p.shop.neighborhood && (
+                    <span className="mt-0.5 block truncate text-xs text-muted">
+                      {p.shop.neighborhood}
                     </span>
                   )}
+                </span>
+                {p.verified_visit && (
+                  <span
+                    /* Ink, NOT accent. Green is brand and never reports state
+                       (design-notes, 2026-07-25) — a green "verified" pill is
+                       exactly the collision that rule exists to prevent, and it
+                       would sit inches from the green Visit button. A stamp is
+                       a record, and records are printed in ink. */
+                    className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5 text-primary"
+                    title="This person checked in here"
+                  >
+                    <BadgeCheck className="h-3.5 w-3.5" />
+                    <span className="text-2xs font-semibold uppercase tracking-caps">Verified</span>
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => router.push(`/customer/creator/${p.author.profile_id}`)}
+                className="mt-2 flex w-full items-center gap-2 text-left"
+              >
+                {p.author.avatar_url ? (
+                  <img src={p.author.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-sunken">
+                    <span className="text-2xs font-medium text-muted">
+                      {p.author.display_name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <p className="min-w-0 flex-1 truncate text-xs text-secondary">
+                  {p.author.display_name} · {timeAgo(p.created_at)}
                 </p>
-              </div>
-            </button>
+              </button>
+            </div>
 
             {/* One envelope: media + Visit & Earn footer share the card */}
             <div className="elevation-1 overflow-hidden rounded-card">
@@ -350,7 +380,13 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-sunken"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-semibold text-primary">{p.shop.name}</p>
+                  {/* The place name lives in the card HEADER now. Repeating it
+                      here said the same thing twice in one card and pushed the
+                      reward progress — the only thing this footer actually
+                      adds — down into second place. */}
+                  <p className="truncate text-2xs font-semibold uppercase tracking-caps text-muted">
+                    Loyalty
+                  </p>
                   <div className="mt-1 flex items-center gap-1">
                     {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
                       <span

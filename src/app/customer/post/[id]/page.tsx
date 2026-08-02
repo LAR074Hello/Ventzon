@@ -3,9 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff, BadgeCheck, MapPin,
+  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff, BadgeCheck, MapPin, Pencil,
 } from "lucide-react";
 import SafetyMenu from "../../components/SafetyMenu";
+import EditPostSheet from "../../components/EditPostSheet";
 
 type PostData = {
   verified_visit?: boolean;
@@ -40,6 +41,7 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [comment, setComment] = useState("");
+  const [editing, setEditing] = useState(false);
   const [sending, setSending] = useState(false);
 
   const load = useCallback(async () => {
@@ -231,6 +233,11 @@ export default function PostPage() {
           />
         )}
         {viewer.is_own && (
+          <button onClick={() => setEditing(true)} aria-label="Edit post">
+            <Pencil className="h-5 w-5 text-muted" />
+          </button>
+        )}
+        {viewer.is_own && (
           <button
             onClick={async () => {
               if (!window.confirm("Delete this post?")) return;
@@ -242,6 +249,17 @@ export default function PostPage() {
           </button>
         )}
       </div>
+
+      {editing && (
+        <EditPostSheet
+          postId={postId}
+          initialBody={post.body ?? ""}
+          initialPlaceName={shop?.name ?? place?.name ?? null}
+          hadVerifiedVisit={!!verified_visit}
+          onClose={() => setEditing(false)}
+          onSaved={load}
+        />
+      )}
 
       {/* Hidden-pending-review notice (author only) */}
       {post.hidden && viewer.is_own && (

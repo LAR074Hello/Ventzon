@@ -534,3 +534,22 @@ body {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(400%); }
 }
+
+/* ═══ Bottom sheets ══════════════════════════════════════════════ */
+/*
+ * One motion for every sheet in the app — edit post, comments, anything that
+ * arrives from the bottom edge. Defined once so they cannot drift apart into
+ * "nearly the same" animations, which is what makes an app feel assembled
+ * rather than designed.
+ *
+ * transform + opacity only: both are compositor properties, so the sheet stays
+ * smooth while the list behind it is still rendering.
+ */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
