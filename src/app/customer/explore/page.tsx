@@ -8,14 +8,23 @@ import SocialFeed from "../components/SocialFeed";
 type Shop = {
   shop_slug: string;
   shop_name: string;
-  deal_title: string;
+  /* Nullable now: Explore reads `places`, and the overwhelming majority have
+     no merchant account and therefore no offer. A place with no deal is the
+     normal case, not missing data. */
+  deal_title: string | null;
   deal_details: string | null;
-  reward_goal: number;
+  reward_goal: number | null;
   logo_url: string | null;
-  created_at: string | null;
+  created_at?: string | null;
   latitude: number | null;
   longitude: number | null;
-  member_count: number;
+  member_count?: number;
+  neighborhood?: string | null;
+  city?: string | null;
+  category?: string | null;
+  photo_url?: string | null;
+  post_count?: number;
+  distance_mi?: number | null;
 };
 
 type Progress = { visits: number; goal: number };
@@ -51,7 +60,7 @@ const CATEGORIES = [
 ];
 
 function inferCategory(shop: Shop): string {
-  const text = `${shop.shop_name} ${shop.deal_title} ${shop.deal_details ?? ""}`.toLowerCase();
+  const text = `${shop.shop_name} ${shop.neighborhood ?? ""} ${shop.category ?? ""} ${shop.city ?? ""} ${shop.deal_title ?? ""} ${shop.deal_details ?? ""}`.toLowerCase();
   if (/coffee|café|cafe|latte|espresso|brew|tea/.test(text)) return "coffee";
   if (/pizza|burger|taco|sushi|food|eat|restaurant|grill|bbq|sandwich|wrap/.test(text)) return "food";
   if (/salon|spa|beauty|nail|hair|skin|barber/.test(text)) return "beauty";
@@ -67,7 +76,7 @@ function isNew(shop: Shop) {
 }
 function isLimitedDeal(shop: Shop) {
   return /limited|offer|special|promo|discount|free|today|week|deal/.test(
-    `${shop.deal_title} ${shop.deal_details ?? ""}`.toLowerCase()
+    `${shop.deal_title ?? ""} ${shop.deal_details ?? ""}`.toLowerCase()
   );
 }
 
@@ -153,7 +162,14 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
             </span>
           )}
         </div>
-        <p className="text-xs text-muted mt-0.5 font-normal truncate">{shop.deal_title}</p>
+        <p className="text-xs text-muted mt-0.5 font-normal truncate">
+          {[shop.neighborhood, shop.category].filter(Boolean).join(" · ") ||
+            shop.city ||
+            "A place in the city"}
+        </p>
+        {shop.deal_title && (
+          <p className="mt-0.5 truncate text-xs text-secondary">{shop.deal_title}</p>
+        )}
         {progress && remaining !== null && remaining > 0 ? (
           <div className="mt-1 flex items-center gap-1.5">
             <div className="flex gap-0.5">
@@ -177,8 +193,8 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
           </span>
         ) : (
           <p className="text-xs text-muted mt-0.5 font-normal">
-            {shop.reward_goal} visits to reward
-            {shop.member_count > 0 && (
+            {shop.reward_goal ?? 5} visits to reward
+            {(shop.member_count ?? 0) > 0 && (
               <span className="ml-2 text-muted">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
             )}
           </p>
@@ -211,7 +227,8 @@ function Pill({ label, icon: Icon, active, onClick }: { label: string; icon?: an
 
 /* ── Deal card — leads with the reward text ── */
 function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void; progress?: Progress }) {
-  const filledDots = progress ? Math.min(progress.visits, Math.min(shop.reward_goal, 8)) : 0;
+  const goal = shop.reward_goal ?? 5;
+  const filledDots = progress ? Math.min(progress.visits, Math.min(goal, 8)) : 0;
   const remaining = progress ? Math.max(progress.goal - progress.visits, 0) : null;
   return (
     <button
@@ -243,7 +260,7 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
       {/* Stamp requirement — filled with the customer's live progress */}
       <div className="flex items-center gap-1.5 mt-auto">
         <div className="flex gap-0.5">
-          {Array.from({ length: Math.min(shop.reward_goal, 8) }).map((_, i) => (
+          {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
             <div
               key={i}
               className={`h-1.5 w-1.5 rounded-full ${i < filledDots ? "bg-primary" : "bg-subtle"}`}
@@ -352,7 +369,9 @@ export default function ExplorePage() {
   const searchResults = searchActive
     ? shops.filter((s) =>
         s.shop_name.toLowerCase().includes(query.toLowerCase()) ||
-        s.deal_title.toLowerCase().includes(query.toLowerCase())
+        (s.neighborhood ?? "").toLowerCase().includes(query.toLowerCase()) ||
+        (s.category ?? "").toLowerCase().includes(query.toLowerCase()) ||
+        (s.deal_title ?? "").toLowerCase().includes(query.toLowerCase())
       )
     : [];
 
@@ -363,8 +382,16 @@ export default function ExplorePage() {
   const featured = filtered.slice(0, 8);
   const newArrivals = filtered.filter(isNew).slice(0, 6);
   const deals = filtered.filter(isLimitedDeal).slice(0, 5);
-  const popular = [...filtered].sort((a, b) => b.member_count - a.member_count).slice(0, 8);
-  const quickWins = [...filtered].sort((a, b) => a.reward_goal - b.reward_goal).slice(0, 8);
+  // "Popular" now means posted-about, not signed-up-to: with no merchants,
+  // member counts are zero everywhere and would rank nothing.
+  const popular = [...filtered]
+    .sort((a, b) => (b.post_count ?? 0) - (a.post_count ?? 0) || (b.member_count ?? 0) - (a.member_count ?? 0))
+    .slice(0, 8);
+  // Only places that actually have a reward can be a "quick win".
+  const quickWins = [...filtered]
+    .filter((s) => s.reward_goal != null)
+    .sort((a, b) => (a.reward_goal ?? 99) - (b.reward_goal ?? 99))
+    .slice(0, 8);
 
   const distanceFor = (s: Shop): number | null =>
     userLoc && s.latitude != null && s.longitude != null
