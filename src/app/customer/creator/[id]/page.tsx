@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Share2 } from "lucide-react";
 import PostGrid, { type GridPost } from "../../components/PostGrid";
+import Avatar from "../../components/Avatar";
 import FollowButton from "../../components/FollowButton";
 import SafetyMenu from "../../components/SafetyMenu";
 import PostComposer from "../../components/PostComposer";
@@ -133,13 +134,13 @@ export default function CreatorProfilePage() {
 
       {/* Header */}
       <div className="flex flex-col items-center px-6 pt-4 pb-6">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt={name} className="h-24 w-24 rounded-full border-2 border-subtle object-cover" />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-subtle bg-surface-raised">
-            <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
-          </div>
-        )}
+        <Avatar
+          name={name}
+          seed={profile.id ?? name}
+          url={profile.avatar_url}
+          size={96}
+          className="border-2 border-subtle"
+        />
         <h1 className="font-display text-xl font-semibold tracking-tight text-primary mt-4">{name}</h1>
         <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">CREATOR</p>
         {profile.bio && (

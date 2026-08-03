@@ -52,6 +52,13 @@ export async function PUT(req: Request) {
     if (typeof body?.display_name === "string" && body.display_name.trim()) {
       updates.display_name = body.display_name.trim().slice(0, 80);
     }
+    // Accepted so Settings and the composer's first-post prompt write the
+    // profile row through ONE path. The URL comes from our own storage upload
+    // moments earlier, but it arrives over the wire, so it gets the same scheme
+    // check as post media rather than being trusted for its provenance.
+    if (typeof body?.avatar_url === "string" && /^https:\/\//.test(body.avatar_url)) {
+      updates.avatar_url = body.avatar_url.slice(0, 500);
+    }
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No valid fields" }, { status: 400 });
     }

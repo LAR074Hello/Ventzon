@@ -1,7 +1,9 @@
+
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Avatar from "../components/Avatar";
 import { ArrowLeft, Search, X } from "lucide-react";
 import FollowButton from "../components/FollowButton";
 
@@ -153,15 +155,12 @@ function FollowListContent() {
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                     disabled={!item.profile_id}
                   >
-                    {item.avatar_url ? (
-                      <img src={item.avatar_url} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
-                    ) : (
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-raised">
-                        <span className="text-base text-secondary font-medium">
-                          {item.display_name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                    <Avatar
+                      name={item.display_name}
+                      seed={item.profile_id ?? item.display_name}
+                      url={item.avatar_url}
+                      size={44}
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="text-base text-primary font-medium truncate">
                         {item.display_name}

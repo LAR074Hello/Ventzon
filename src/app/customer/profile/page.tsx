@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import PostGrid, { type GridPost } from "../components/PostGrid";
+import Avatar from "../components/Avatar";
 import PostComposer from "../components/PostComposer";
 import EmptyState from "../components/EmptyState";
 import { ProfileStats, BadgePills, type ProfileStatValues, type BadgeValue } from "../components/ProfileStats";
@@ -164,13 +165,15 @@ export default function ProfilePage() {
 
       {/* Header */}
       <div className="flex flex-col items-center px-6 pt-4 pb-5">
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="h-24 w-24 rounded-full border-2 border-subtle object-cover" />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-subtle bg-surface-raised">
-            <span className="text-2xl font-medium text-muted">{name.charAt(0).toUpperCase()}</span>
-          </div>
-        )}
+        <Avatar
+          name={name}
+          /* Own profile: id when the row exists, else email. Both are stable
+             for this person, which is what the tint needs. */
+          seed={profile?.id ?? user.email ?? name}
+          url={avatarUrl}
+          size={96}
+          className="border-2 border-subtle"
+        />
         <h2 className="font-display text-xl font-semibold tracking-tight text-primary mt-4">{name}</h2>
         {profile?.is_creator && (
           <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">CREATOR</p>

@@ -118,18 +118,20 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
               }
               className="flex flex-col items-center"
             >
-              {s.avatar_url ? (
-                <img
-                  src={s.avatar_url}
-                  alt=""
-                  className={`h-14 w-14 object-cover ${s.kind === "creator" ? "rounded-full" : "rounded-ctl"}`}
+              {s.kind === "creator" ? (
+                <Avatar
+                  name={s.display_name}
+                  seed={s.profile_id ?? s.display_name}
+                  url={s.avatar_url}
+                  size={56}
                 />
+              ) : s.avatar_url ? (
+                // A PLACE, not a person: square tile, and no initials-on-tint.
+                // Places are identified by their own logo or by the map, never
+                // by a colour we assigned them — see the rejected per-shop hues.
+                <img src={s.avatar_url} alt="" className="h-14 w-14 rounded-ctl object-cover" />
               ) : (
-                <div
-                  className={`flex h-14 w-14 items-center justify-center bg-surface-sunken ${
-                    s.kind === "creator" ? "rounded-full" : "rounded-ctl"
-                  }`}
-                >
+                <div className="flex h-14 w-14 items-center justify-center rounded-ctl bg-surface-sunken">
                   <span className="text-lg font-medium text-muted">
                     {s.display_name.charAt(0).toUpperCase()}
                   </span>

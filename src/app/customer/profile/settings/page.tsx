@@ -284,12 +284,31 @@ export default function ProfilePage() {
     router.replace("/customer/auth");
   }
 
+  /**
+   * ONE write path for a display name, shared with the composer's first-post
+   * prompt.
+   *
+   * This used to update auth metadata ONLY, while every surface that shows you
+   * to other people renders `customer_profiles.display_name`. Renaming yourself
+   * here therefore changed nothing anyone else could see — and the profile
+   * backfill does not rescue it, because backfill only fills a field that is
+   * still empty. A rename is not a fill.
+   */
   async function saveName() {
-    if (!nameInput.trim()) return;
+    const chosen = nameInput.trim();
+    if (!chosen) return;
     setSavingName(true);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: nameInput.trim() } });
+    const { error } = await supabase.auth.updateUser({ data: { full_name: chosen } });
     if (!error) {
-      setUser((u: any) => ({ ...u, user_metadata: { ...u.user_metadata, full_name: nameInput.trim() } }));
+      await fetch("/api/customer/creator-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_name: chosen }),
+      });
+      setUser((u: { user_metadata?: Record<string, unknown> } | null) => ({
+        ...(u ?? {}),
+        user_metadata: { ...(u?.user_metadata ?? {}), full_name: chosen },
+      }));
       setEditingName(false);
     }
     setSavingName(false);
@@ -310,6 +329,12 @@ export default function ProfilePage() {
       const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
       const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
       await supabase.auth.updateUser({ data: { avatar_url: avatarUrl } });
+      // Same reasoning as saveName: the profile row is what other people see.
+      await fetch("/api/customer/creator-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar_url: avatarUrl }),
+      });
       setUser((u: any) => ({ ...u, user_metadata: { ...u.user_metadata, avatar_url: avatarUrl } }));
     } catch (err: any) {
       alert(err?.message ?? "Failed to upload photo.");
