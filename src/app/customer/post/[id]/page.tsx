@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, Send, ChevronRight, Trash2, EyeOff, BadgeCheck, MapPin, Pencil,
+  ArrowLeft, Heart, Bookmark, MessageCircle, Share2, ChevronRight, Trash2, EyeOff, BadgeCheck, MapPin, Pencil,
 } from "lucide-react";
 import SafetyMenu from "../../components/SafetyMenu";
 import EditPostSheet from "../../components/EditPostSheet";
 import Avatar from "../../components/Avatar";
+import CommentsSheet from "../../components/CommentsSheet";
 
 type PostData = {
   verified_visit?: boolean;
@@ -41,9 +42,8 @@ export default function PostPage() {
   const [data, setData] = useState<PostData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [comment, setComment] = useState("");
   const [editing, setEditing] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/customer/posts/${postId}`);
@@ -95,17 +95,6 @@ export default function PostPage() {
     if (!ok) load();
   }
 
-  async function submitComment() {
-    const text = comment.trim();
-    if (!text || sending) return;
-    setSending(true);
-    const ok = await act("comment", text);
-    if (ok) {
-      setComment("");
-      await load();
-    }
-    setSending(false);
-  }
 
   async function share() {
     try {
@@ -335,84 +324,35 @@ export default function PostPage() {
         </button>
       )}
 
-      {/* Comments */}
-      <div className="mt-6 px-5">
-        <p className="text-xs font-semibold uppercase tracking-caps text-muted mb-3">
-          COMMENTS{counts.comments > 0 ? ` (${counts.comments})` : ""}
-        </p>
-        {comments.length === 0 ? (
-          <p className="text-sm text-secondary pb-2 font-normal">Be the first to comment</p>
-        ) : (
-          <div className="space-y-3.5 pb-2">
-            {comments.map((c) => (
-              <div key={c.id} className="flex gap-3">
-                <button
-                  onClick={() => c.author.linkable && c.author.profile_id && router.push(`/customer/creator/${c.author.profile_id}`)}
-                  className="shrink-0"
-                >
-                  <Avatar
-                    name={c.author.display_name}
-                    /* profile_id when we have one; the display name is a poor
-                       seed because renaming would recolour you. */
-                    seed={c.author.profile_id ?? c.author.display_name}
-                    url={c.author.avatar_url}
-                    size={28}
-                  />
-                </button>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium text-muted">{c.author.display_name}</span>
-                    <span className="text-xs text-muted ml-2">{timeAgo(c.created_at)}</span>
-                  </p>
-                  <p className="text-sm text-secondary mt-0.5 font-normal leading-relaxed">{c.body}</p>
-                </div>
-                {(c.is_own || viewer.is_own) && (
-                  <button
-                    onClick={async () => {
-                      if (!window.confirm("Delete this comment?")) return;
-                      await fetch(`/api/customer/posts/${postId}?comment_id=${c.id}`, { method: "DELETE" });
-                      await load();
-                    }}
-                    className="shrink-0 p-1 text-muted active:text-danger"
-                    aria-label="Delete comment"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                {!c.is_own && (
-                  <SafetyMenu
-                    targetType="comment"
-                    targetId={c.id}
-                    blockProfileId={c.author.profile_id}
-                    targetName={c.author.display_name}
-                    compact
-                    onDone={() => load()}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Comments — a docked sheet, not an inline list.
+          On a phone the inline version put the input at the bottom of a long
+          page, so replying meant scrolling past every comment to reach it. */}
+      <button
+        onClick={() => setCommentsOpen(true)}
+        className="mt-6 flex w-full items-center justify-between px-5 py-3 text-left"
+      >
+        <span className="text-sm text-secondary">
+          {counts.comments > 0
+            ? `View ${counts.comments} comment${counts.comments === 1 ? "" : "s"}`
+            : "Be the first to say something"}
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+      </button>
 
-        {/* Comment input */}
-        <div className="mt-3 flex items-center gap-2 rounded-card border border-subtle bg-surface-raised px-4 py-2.5">
-          <input
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitComment()}
-            placeholder="Add a comment…"
-            maxLength={500}
-            className="text-base text-primary flex-1 bg-transparent font-normal outline-none placeholder:"
-          />
-          <button
-            onClick={submitComment}
-            disabled={!comment.trim() || sending}
-            className="text-muted disabled:opacity-30"
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      {commentsOpen && (
+        <CommentsSheet
+          postId={postId}
+          initialComments={comments}
+          onClose={() => {
+            setCommentsOpen(false);
+            load();
+          }}
+          onCountChange={(n) =>
+            setData((d) => (d ? { ...d, counts: { ...d.counts, comments: n } } : d))
+          }
+        />
+      )}
+
     </div>
   );
 }
