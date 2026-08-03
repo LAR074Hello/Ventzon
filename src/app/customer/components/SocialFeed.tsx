@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Compass, Sparkles, BadgeCheck , MapPin } from "lucide-react";
+import { Heart, Compass, Sparkles, BadgeCheck, MapPin, Ticket, ChevronRight } from "lucide-react";
 import FollowButton from "./FollowButton";
 import EmptyState from "./EmptyState";
 
@@ -292,6 +292,12 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
           : null;
         const goal = p.viewer.progress?.goal ?? p.shop.reward_goal;
         const visits = p.viewer.progress?.visits ?? 0;
+        // True of THIS viewer at THIS place, or not shown at all. Without a
+        // merchant there is no reward, and inventing progress toward one is
+        // the old product leaking into the new one.
+        const showLoyalty =
+          Boolean(p.shop.slug) &&
+          (visits > 0 || Boolean(p.shop.deal_title));
         return (
           <div key={p.id}>
             {/* Card header — PLACE FIRST.
@@ -375,43 +381,44 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                   )}
                 </button>
               )}
-              <button
-                onClick={() => router.push(`/customer/shop/${p.shop.slug}`)}
-                className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-surface-sunken"
-              >
-                <div className="min-w-0 flex-1">
-                  {/* The place name lives in the card HEADER now. Repeating it
-                      here said the same thing twice in one card and pushed the
-                      reward progress — the only thing this footer actually
-                      adds — down into second place. */}
-                  <p className="truncate text-2xs font-semibold uppercase tracking-caps text-muted">
-                    Loyalty
-                  </p>
-                  <div className="mt-1 flex items-center gap-1">
-                    {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
-                      <span
-                        key={i}
-                        /* Ink, not accent: green is brand only and never
-                           reports state. A filled ink dot reads as a tally on
-                           a card; a filled green dot reads as "done". The
-                           Visit pill beside this keeps the green, because it
-                           is the thing you press. */
-                        className={`h-[9px] w-[9px] rounded-full ${i < visits ? "bg-primary" : "bg-subtle"}`}
-                      />
-                    ))}
-                    <span className="ml-1.5 truncate text-2xs font-semibold uppercase tracking-caps text-muted">
-                      {remaining === 0
-                        ? "Reward ready"
-                        : remaining !== null
-                        ? `${remaining} to go`
-                        : p.shop.deal_title ?? `${p.shop.reward_goal} visits to reward`}
+              {/* LOYALTY IS A PROPERTY OF THE PLACE, NOT THE POST.
+                  It used to render on every card, which meant that with no
+                  merchants signed up the first surface a new user sees was
+                  showing reward progress at places where no reward exists —
+                  the loudest remaining artifact of the old product.
+                  It now appears only when it is TRUE of this viewer at this
+                  place: they have progress, or the place has a live deal. And
+                  it is one line, not a card section, so it stops competing
+                  with the post it is attached to. */}
+              {showLoyalty && (
+                <button
+                  onClick={() => router.push(`/customer/shop/${p.shop.slug}`)}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left active:bg-surface-sunken"
+                >
+                  {visits > 0 ? (
+                    <span className="flex shrink-0 items-center gap-1">
+                      {Array.from({ length: Math.min(goal, 8) }).map((_, i) => (
+                        <span
+                          key={i}
+                          /* Ink, not accent: green is brand and never reports
+                             state. A filled ink dot reads as a tally. */
+                          className={`h-[7px] w-[7px] rounded-full ${i < visits ? "bg-primary" : "bg-subtle"}`}
+                        />
+                      ))}
                     </span>
-                  </div>
-                </div>
-                <span className="shrink-0 rounded-full bg-accent px-4 py-2.5 text-xs font-semibold text-on-accent">
-                  Visit
-                </span>
-              </button>
+                  ) : (
+                    <Ticket className="h-3.5 w-3.5 shrink-0 text-muted" />
+                  )}
+                  <span className="min-w-0 flex-1 truncate text-xs text-secondary">
+                    {remaining === 0
+                      ? "Reward ready to redeem"
+                      : remaining !== null
+                      ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${p.shop.deal_title ?? "your reward"}`
+                      : p.shop.deal_title}
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted" />
+                </button>
+              )}
             </div>
 
             {/* Caption + quiet action line */}

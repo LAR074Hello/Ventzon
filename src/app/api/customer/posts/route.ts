@@ -75,7 +75,12 @@ export async function POST(req: Request) {
     // and requiring them to adopt a "creator" identity first put an identity
     // change in front of the one action the product needs. is_creator is now
     // a description of someone who has posted, not a permission to post.
-    const profile = await getOrCreateProfile(admin, user.email!);
+    // Seeded, because for many users POSTING is the first call that creates
+    // their profile — and an unseeded create left them permanently nameless.
+    const profile = await getOrCreateProfile(admin, user.email!, {
+      display_name: user.user_metadata?.full_name ?? null,
+      avatar_url: user.user_metadata?.avatar_url ?? null,
+    });
 
     // A PLACE IS REQUIRED. Ventzon is place-anchored: an untagged post is an
     // Instagram post with extra steps. It also used to be worse than useless —

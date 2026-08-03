@@ -33,7 +33,31 @@ export async function getOrCreateProfile(
     .select("*")
     .eq("email", e)
     .maybeSingle();
-  if (existing) return existing;
+
+  // BACKFILL, don't just return.
+  //
+  // A profile is created by whichever route the user happens to hit first, and
+  // only some of them pass a seed — posting, liking and commenting all called
+  // this with no name at all. Whoever got there first therefore decided
+  // permanently whether you have a name, and someone who posted before opening
+  // their profile was stuck rendering as "Creator" forever.
+  //
+  // Apple Sign In makes this worse rather than rarer: the name is offered ONCE,
+  // at first authorization, and never again. Missing it is not recoverable by
+  // asking the provider later.
+  if (existing) {
+    const wants: Record<string, string> = {};
+    if (!existing.display_name && seed?.display_name) wants.display_name = seed.display_name;
+    if (!existing.avatar_url && seed?.avatar_url) wants.avatar_url = seed.avatar_url;
+    if (Object.keys(wants).length === 0) return existing;
+    const { data: patched } = await admin
+      .from("customer_profiles")
+      .update(wants)
+      .eq("email", e)
+      .select("*")
+      .single();
+    return patched ?? existing;
+  }
 
   const { data: created, error } = await admin
     .from("customer_profiles")
