@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send, ImagePlus, X } from "lucide-react";
+import Avatar from "./Avatar";
 import { stripVideoMetadata } from "@/lib/strip-video-metadata";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { stripImageMetadata } from "@/lib/strip-exif";
@@ -45,6 +46,12 @@ export default function PostComposer({
   // A ref, not state: the submit path reads this between awaits, and a state
   // value captured in that closure would still be the pre-cancel one.
   const canceledRef = useRef(false);
+  // Identity, asked for at first contribution rather than at signup.
+  const [needsIdentity, setNeedsIdentity] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarRef = useRef<HTMLInputElement>(null);
 
   /**
    * Cancel means the bytes stop AND nothing is left behind.
@@ -75,6 +82,18 @@ export default function PostComposer({
   const [searchResults, setSearchResults] = useState<{ shop_slug: string; shop_name: string; sub?: string }[]>([]);
   const mediaRef = useRef<HTMLInputElement>(null);
   const supabase = createSupabaseBrowserClient();
+
+  // Do you have a name yet? Asked here, at the first post, for the same
+  // reason the age gate fires at first contribution rather than at launch:
+  // at signup it is friction before any value has been delivered.
+  useEffect(() => {
+    fetch("/api/customer/creator-profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.profile && !d.profile.display_name) setNeedsIdentity(true);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/customer/memberships")
@@ -180,6 +199,43 @@ export default function PostComposer({
     let uploadedPath: string | null = null;
     let posterPathUploaded: string | null = null;
     try {
+      // Identity first, so the post this is attached to renders with a name
+      // rather than appearing as "Creator" and correcting itself on refresh.
+      if (needsIdentity) {
+        const chosen = nameInput.trim();
+        if (!chosen) throw new Error("Add a name so people know who posted this");
+
+        let newAvatarUrl: string | null = null;
+        if (avatarFile) {
+          const { data: { session } } = await supabase.auth.getSession();
+          const uid = session?.user?.id;
+          if (uid) {
+            // Public bucket: strip before the write, no exceptions. The rule is
+            // about the DESTINATION, not the file type.
+            const clean = await stripImageMetadata(avatarFile);
+            const ext = clean.name.split(".").pop() || "jpg";
+            const path = `${uid}/avatar.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("avatars")
+              .upload(path, clean, { upsert: true });
+            if (!upErr) {
+              newAvatarUrl = `${supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl}?t=${Date.now()}`;
+              await supabase.auth.updateUser({ data: { avatar_url: newAvatarUrl } });
+            }
+          }
+        }
+        await supabase.auth.updateUser({ data: { full_name: chosen } });
+        await fetch("/api/customer/creator-profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            display_name: chosen,
+            ...(newAvatarUrl ? { avatar_url: newAvatarUrl } : {}),
+          }),
+        });
+        setNeedsIdentity(false);
+      }
+
       let mediaUrl: string | null = null;
       let posterUrl: string | null = null;
       let mediaType: "image" | "video" | null = null;
@@ -365,6 +421,62 @@ export default function PostComposer({
         </div>
       )}
 
+      {/* WHO IS POSTING — inline, at the end, as part of finishing the post.
+          Not a modal and not a gate in front of the composer: at signup this is
+          friction before any value has been delivered, and as a dialog it reads
+          as a form to survive rather than as part of writing.
+          Eight identical placeholder circles is nearly as anonymous as eight
+          accounts called "Creator", so the photo is asked for in the same
+          breath — and skipping it still yields a distinct avatar, because the
+          fallback is deterministic initials on a tint derived from identity. */}
+      {needsIdentity && (
+        <div className="mt-3 rounded-ctl bg-surface-sunken p-3.5">
+          <p className="text-sm font-medium text-primary">What should people call you?</p>
+          <p className="mt-0.5 text-xs text-secondary">
+            This is how you&apos;ll appear on your posts.
+          </p>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => avatarRef.current?.click()}
+              className="relative shrink-0"
+              aria-label="Add a photo"
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element -- local blob preview
+                <img
+                  src={avatarPreview}
+                  alt=""
+                  className="h-11 w-11 rounded-full object-cover"
+                />
+              ) : (
+                <Avatar name={nameInput || null} seed={nameInput || "new"} size={44} />
+              )}
+              <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
+                <ImagePlus className="h-2.5 w-2.5 text-inverse" />
+              </span>
+            </button>
+            <input
+              ref={avatarRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0] ?? null;
+                setAvatarFile(f);
+                if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+                setAvatarPreview(f ? URL.createObjectURL(f) : null);
+              }}
+            />
+            <input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value.slice(0, 40))}
+              placeholder="Your name"
+              className="min-w-0 flex-1 rounded-ctl border border-subtle bg-surface px-3 py-2.5 text-base text-primary outline-none placeholder:text-muted"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Upload state, over the media it belongs to.
           "Preparing" is INDETERMINATE and animated with a transform, which the
           compositor keeps running even while the strip occupies the main
@@ -510,7 +622,15 @@ export default function PostComposer({
 
         <button
           onClick={submitPost}
-          disabled={(!composer.trim() && !mediaFile) || (!lockShop && !tagShop) || posting}
+          disabled={
+            (!composer.trim() && !mediaFile) ||
+            (!lockShop && !tagShop) ||
+            // A name is required to publish, but it is asked for INLINE above
+            // rather than blocking the composer — you write first, then say
+            // who you are, and both go together.
+            (needsIdentity && !nameInput.trim()) ||
+            posting
+          }
           className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-inverse disabled:opacity-40"
         >
           <Send className="h-4 w-4" />

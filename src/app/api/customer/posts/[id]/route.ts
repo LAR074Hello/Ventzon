@@ -24,6 +24,27 @@ async function getViewerEmail(): Promise<string | null> {
   }
 }
 
+/**
+ * The seed every getOrCreateProfile call in this file needs.
+ *
+ * Liking and commenting create a profile row for people who may never have
+ * opened their own profile. Calling without a seed left them nameless, which
+ * surfaced as "Someone liked your post" in a push notification — the same bug
+ * as "Creator" on a post, wearing different words.
+ */
+async function viewerProfileSeed(): Promise<{ display_name: string | null; avatar_url: string | null }> {
+  try {
+    const supabaseAuth = await createSupabaseServerClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    return {
+      display_name: user?.user_metadata?.full_name ?? null,
+      avatar_url: user?.user_metadata?.avatar_url ?? null,
+    };
+  } catch {
+    return { display_name: null, avatar_url: null };
+  }
+}
+
 // GET /api/customer/posts/[id] → full post: media, caption, author, linked
 // business + live reward, like/save/comment counts, viewer state, comments.
 export async function GET(
@@ -269,7 +290,7 @@ export async function POST(
         });
         if (!claimed) return;
 
-        const actor = await getOrCreateProfile(admin, viewerEmail!);
+        const actor = await getOrCreateProfile(admin, viewerEmail!, await viewerProfileSeed());
         const name = actor.display_name ?? "Someone";
         const title =
           kind === "post_like" ? `${name} liked your post` : `${name} commented on your post`;
@@ -306,7 +327,7 @@ export async function POST(
       const text = String(payload?.body ?? "").trim().slice(0, 500);
       if (!text) return NextResponse.json({ error: "Comment body required" }, { status: 400 });
       // Every commenter gets a profile row so block/report can target them.
-      try { await getOrCreateProfile(admin, viewerEmail); } catch {}
+      try { await getOrCreateProfile(admin, viewerEmail, await viewerProfileSeed()); } catch {}
       const { data: inserted, error } = await admin
         .from("post_comments")
         .insert({ post_id: id, email: viewerEmail, body: text })

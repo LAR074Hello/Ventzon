@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     // a description of someone who has posted, not a permission to post.
     // Seeded, because for many users POSTING is the first call that creates
     // their profile — and an unseeded create left them permanently nameless.
-    const profile = await getOrCreateProfile(admin, user.email!, {
+    await getOrCreateProfile(admin, user.email!, {
       display_name: user.user_metadata?.full_name ?? null,
       avatar_url: user.user_metadata?.avatar_url ?? null,
     });

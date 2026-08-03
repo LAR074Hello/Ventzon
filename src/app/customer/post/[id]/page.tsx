@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import SafetyMenu from "../../components/SafetyMenu";
 import EditPostSheet from "../../components/EditPostSheet";
+import Avatar from "../../components/Avatar";
 
 type PostData = {
   verified_visit?: boolean;
@@ -160,13 +161,12 @@ export default function PostPage() {
             onClick={() => router.push(`/customer/creator/${author.profile_id}`)}
             className="flex items-center gap-2.5"
           >
-            {author.avatar_url ? (
-              <img src={author.avatar_url} alt={author.display_name} className="h-8 w-8 rounded-full object-cover" />
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised">
-                <span className="text-xs text-muted font-medium">{author.display_name.charAt(0).toUpperCase()}</span>
-              </div>
-            )}
+            <Avatar
+              name={author.display_name}
+              seed={author.profile_id}
+              url={author.avatar_url}
+              size={32}
+            />
             <div className="text-left">
               <p className="text-base text-primary font-medium">{author.display_name}</p>
               <p className="text-xs text-muted flex items-center gap-1.5 font-normal">
@@ -350,15 +350,14 @@ export default function PostPage() {
                   onClick={() => c.author.linkable && c.author.profile_id && router.push(`/customer/creator/${c.author.profile_id}`)}
                   className="shrink-0"
                 >
-                  {c.author.avatar_url ? (
-                    <img src={c.author.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
-                  ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised">
-                      <span className="text-xs text-muted font-medium">
-                        {c.author.display_name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                  <Avatar
+                    name={c.author.display_name}
+                    /* profile_id when we have one; the display name is a poor
+                       seed because renaming would recolour you. */
+                    seed={c.author.profile_id ?? c.author.display_name}
+                    url={c.author.avatar_url}
+                    size={28}
+                  />
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">

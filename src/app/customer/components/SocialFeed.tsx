@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Heart, Compass, Sparkles, BadgeCheck, MapPin, Ticket, ChevronRight } from "lucide-react";
 import FollowButton from "./FollowButton";
 import EmptyState from "./EmptyState";
+import Avatar from "./Avatar";
 
 type FeedPost = {
   id: string;
@@ -343,15 +344,12 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
                 onClick={() => router.push(`/customer/creator/${p.author.profile_id}`)}
                 className="mt-2 flex w-full items-center gap-2 text-left"
               >
-                {p.author.avatar_url ? (
-                  <img src={p.author.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" />
-                ) : (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-sunken">
-                    <span className="text-2xs font-medium text-muted">
-                      {p.author.display_name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                <Avatar
+                  name={p.author.display_name}
+                  seed={p.author.profile_id}
+                  url={p.author.avatar_url}
+                  size={24}
+                />
                 <p className="min-w-0 flex-1 truncate text-xs text-secondary">
                   {p.author.display_name} · {timeAgo(p.created_at)}
                 </p>

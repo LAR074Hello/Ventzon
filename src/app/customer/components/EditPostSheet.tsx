@@ -48,11 +48,11 @@ export default function EditPostSheet({
 
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      return;
-    }
     const t = setTimeout(async () => {
+      if (q.length < 2) {
+        setResults([]);
+        return;
+      }
       try {
         const r = await fetch(`/api/customer/places-search?q=${encodeURIComponent(q)}`);
         if (!r.ok) return;
