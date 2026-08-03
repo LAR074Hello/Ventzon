@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag, Landmark, Trees } from "lucide-react";
 import SocialFeed from "../components/SocialFeed";
+import Avatar from "../components/Avatar";
 
 type Shop = {
   shop_slug: string;
@@ -302,6 +303,14 @@ export default function ExplorePage() {
     { profile_id: string | null; display_name: string; avatar_url: string | null; shop_slug: string; shop_name: string; created_at: string }[]
   >([]);
   const [query, setQuery] = useState("");
+  // Server-backed, because filtering the ~60 loaded rows made a real bar that
+  // IS in the table come back as "no results" — which reads as Ventzon not
+  // knowing the place rather than as a search that never ran.
+  const [remote, setRemote] = useState<{
+    places: { slug: string; name: string; sub: string; photo_url: string | null }[];
+    people: { profile_id: string; display_name: string; avatar_url: string | null }[];
+  }>({ places: [], people: [] });
+  const [searching, setSearching] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   // Two-feed Home: "explore" = social feed, "rewards" = the original
@@ -365,6 +374,30 @@ export default function ExplorePage() {
   }, []);
 
   const go = (slug: string) => router.push(`/customer/shop/${slug}`);
+  useEffect(() => {
+    const q = query.trim();
+    // All state changes happen inside the timeout, never synchronously in the
+    // effect body — a synchronous set here re-renders before paint on every
+    // keystroke.
+    const t = setTimeout(async () => {
+      if (q.length < 2) {
+        setRemote({ places: [], people: [] });
+        setSearching(false);
+        return;
+      }
+      setSearching(true);
+      try {
+        const r = await fetch(`/api/customer/search?q=${encodeURIComponent(q)}`);
+        if (r.ok) setRemote(await r.json());
+      } catch {
+        /* a failed search shows no results, not an error screen */
+      } finally {
+        setSearching(false);
+      }
+    }, 220);
+    return () => clearTimeout(t);
+  }, [query]);
+
   const searchActive = query.trim().length > 0;
   const searchResults = searchActive
     ? shops.filter((s) =>
@@ -469,7 +502,7 @@ export default function ExplorePage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search stores, deals…"
+            placeholder="Search places and people"
             className="text-base text-primary flex-1 bg-transparent font-normal outline-none placeholder:"
           />
           {query && (
@@ -517,25 +550,75 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Search results */}
+      {/* Search results — places lead, people follow. The product is place
+          discovery, so "who" is the second question, never the first. */}
       {homeTab === "rewards" && !loading && searchActive && (
         <div className="flex-1 pb-4">
-          {searchResults.length === 0 ? (
-            <div className="flex flex-col items-center py-20 text-center px-8">
+          {remote.places.length === 0 && remote.people.length === 0 ? (
+            <div className="flex flex-col items-center px-8 py-20 text-center">
               <MapPin className="h-8 w-8 text-muted" />
               <p className="mt-4 font-display text-lg font-semibold tracking-tight text-primary">
-                No results for &ldquo;{query}&rdquo;
+                {searching ? "Searching…" : `Nothing matching “${query}”`}
               </p>
-              <p className="text-sm text-secondary mt-1 font-normal">Try a different store name or deal</p>
+              {!searching && (
+                <p className="mt-1 text-sm font-normal text-secondary">
+                  Try a place name, a neighbourhood, or someone&apos;s name.
+                </p>
+              )}
             </div>
           ) : (
             <>
-              <p className="text-xs text-muted px-5 pb-3 font-normal">{searchResults.length} result{searchResults.length !== 1 ? "s" : ""}</p>
-              <div className="divide-y divide-line/60">
-                {searchResults.map((s) => (
-                  <StoreCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} distanceMi={distanceFor(s)} onClick={() => go(s.shop_slug)} />
-                ))}
-              </div>
+              {remote.places.length > 0 && (
+                <>
+                  <p className="px-5 pb-2 text-2xs font-semibold uppercase tracking-caps text-muted">
+                    Places
+                  </p>
+                  <div className="divide-y divide-line/60">
+                    {remote.places.map((p) => (
+                      <button
+                        key={p.slug}
+                        onClick={() => router.push(`/place/${p.slug}`)}
+                        className="flex w-full items-center gap-3 px-5 py-3 text-left active:bg-surface-sunken"
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface-sunken">
+                          <MapPin className="h-4 w-4 text-secondary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-medium text-primary">{p.name}</p>
+                          {p.sub && <p className="truncate text-xs text-muted">{p.sub}</p>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {remote.people.length > 0 && (
+                <>
+                  <p className="px-5 pb-2 pt-5 text-2xs font-semibold uppercase tracking-caps text-muted">
+                    People
+                  </p>
+                  <div className="divide-y divide-line/60">
+                    {remote.people.map((u) => (
+                      <button
+                        key={u.profile_id}
+                        onClick={() => router.push(`/customer/creator/${u.profile_id}`)}
+                        className="flex w-full items-center gap-3 px-5 py-3 text-left active:bg-surface-sunken"
+                      >
+                        <Avatar
+                          name={u.display_name}
+                          seed={u.profile_id}
+                          url={u.avatar_url}
+                          size={40}
+                        />
+                        <p className="min-w-0 flex-1 truncate text-base font-medium text-primary">
+                          {u.display_name}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
