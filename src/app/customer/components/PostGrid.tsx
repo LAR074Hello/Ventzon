@@ -96,10 +96,10 @@ export default function PostGrid({ posts }: { posts: GridPost[] }) {
           ) : (
             /* Typographic tile. Two columns instead of three gives real width,
                so the caption can be read rather than merely indicated — it stops
-               being a placeholder for a missing photo. And NO forced ratio: A text tile stretched to a photo's shape
-               a text tile stretched to a photo's shape leaves a dead gap above
-               the words, and letting the caption size its own tile is what makes
-               the column read as masonry rather than a grid with holes. */
+               being a placeholder for a missing photo. And NO forced ratio: a
+               text tile stretched to a photo's shape leaves a dead gap above the
+               words, and letting the caption size its own tile is what makes the
+               column read as masonry rather than a grid with holes. */
             <div className="flex flex-col gap-2 p-3.5">
               <AlignLeft className="h-4 w-4 text-muted opacity-60" />
               <p className="line-clamp-6 text-sm leading-snug text-secondary">

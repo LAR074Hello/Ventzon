@@ -493,8 +493,13 @@ export default function ExplorePage() {
         ))}
       </div>
 
-      {/* Search — rewards tab only */}
-      {homeTab === "rewards" && (
+      {/* Search — on BOTH tabs, and on Explore above all.
+          It used to live only under Rewards, which is the old loyalty product's
+          information architecture surviving in the navigation: the tab for
+          discovering somewhere to go had no way to look anything up, while the
+          tab for tracking stamp cards did. Same artifact as the loyalty footer
+          and the deal-filtered Explore query. */}
+      {(
         <div className="mx-5 mt-4 mb-1 flex items-center gap-3 rounded-ctl border border-subtle bg-surface-raised px-4 py-3">
           <Search className="h-4 w-4 shrink-0 text-muted" />
           <input
@@ -515,7 +520,7 @@ export default function ExplorePage() {
       <div className="pt-4" />
 
       {/* Explore tab — the social feed */}
-      {homeTab === "explore" && <SocialFeed userLoc={userLoc} />}
+      {homeTab === "explore" && !searchActive && <SocialFeed userLoc={userLoc} />}
 
       {/* Category pills */}
       {homeTab === "rewards" && !searchActive && (
@@ -552,7 +557,7 @@ export default function ExplorePage() {
 
       {/* Search results — places lead, people follow. The product is place
           discovery, so "who" is the second question, never the first. */}
-      {homeTab === "rewards" && !loading && searchActive && (
+      {searchActive && (
         <div className="flex-1 pb-4">
           {remote.places.length === 0 && remote.people.length === 0 ? (
             <div className="flex flex-col items-center px-8 py-20 text-center">
