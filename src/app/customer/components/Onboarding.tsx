@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Camera, Users } from "lucide-react";
+import { MapPin, BadgeCheck, Users } from "lucide-react";
 
 const SLIDES = [
   {
@@ -11,9 +11,13 @@ const SLIDES = [
     accent: "var(--text-muted)",
   },
   {
-    icon: Camera,
-    title: "Show people what it's like",
-    sub: "One photo from somewhere you actually go says more than any review. That's the whole app.",
+    icon: BadgeCheck,
+    title: "Proof you were there",
+    // The differentiator went unmentioned in onboarding entirely — a new user
+    // heard "post photos of places", which describes a dozen other apps. The
+    // verified visit is the one claim nothing else can make, so it is said
+    // plainly, on its own slide, before the ask.
+    sub: "Check in and your post carries a verified visit. Not a review from someone who never went — proof.",
     accent: "var(--text-muted)",
   },
   {

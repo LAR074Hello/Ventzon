@@ -76,6 +76,14 @@ export async function generateMetadata({
   };
 }
 
+/** Same deterministic tile ratio as the in-app grid (components/PostGrid). */
+const TILE_RATIOS = ["4 / 5", "1 / 1", "3 / 4", "1 / 1", "4 / 5", "5 / 4"];
+function tileRatio(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return TILE_RATIOS[h % TILE_RATIOS.length];
+}
+
 export default async function PlaceSharePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const found = await getPlace(slug);
@@ -141,17 +149,29 @@ export default async function PlaceSharePage({ params }: { params: Promise<{ slu
             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-3 gap-[2px] overflow-hidden rounded-card">
+          /* Masonry, matching the in-app grid. The square version clipped a
+             caption mid-word — "about the… sourdough." spilling out of a
+             third-of-viewport tile — on the one surface a stranger is most
+             likely to see first, because this is what a shared link opens.
+             Server component, so the ratio comes from the same deterministic
+             id hash the client grid uses rather than from measurement. */
+          <div className="mt-8 columns-2 gap-2 sm:columns-3">
             {posts.map((p) => (
               <Link
                 key={p.id}
                 href={`/p/${p.id}`}
-                className="media-frame relative aspect-square overflow-hidden rounded-tile bg-surface-sunken"
+                className="media-frame mb-2 block break-inside-avoid overflow-hidden rounded-card bg-surface-sunken"
               >
                 {p.media_url ? (
-                  <img src={p.media_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <img
+                    src={p.media_url}
+                    alt=""
+                    loading="lazy"
+                    style={{ aspectRatio: tileRatio(p.id) }}
+                    className="w-full object-cover"
+                  />
                 ) : (
-                  <p className="line-clamp-4 p-2.5 text-2xs leading-snug text-secondary">{p.body}</p>
+                  <p className="line-clamp-6 p-3.5 text-sm leading-snug text-secondary">{p.body}</p>
                 )}
               </Link>
             ))}
