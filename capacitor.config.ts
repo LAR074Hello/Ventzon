@@ -28,11 +28,13 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     StatusBar: {
-      // Capacitor's 'Light' means LIGHT TEXT, for dark backgrounds. On a light
-      // app that rendered white glyphs on a near-white bar — which is why only
-      // the battery percentage was legible, and only over the black region.
-      // 'Dark' = dark text.
-      style: 'Dark',
+      // Capacitor's Style names describe the BACKGROUND, not the text:
+      //   'Light' (Style.Light) = light background → dark text on iOS (.darkContent)
+      //   'Dark'  (Style.Dark)  = dark background → light text on iOS (.lightContent)
+      // Our surface is near-white (#F7F7F4), so we want dark glyphs: 'Light'.
+      // Mirrors the runtime override in src/app/customer/layout.tsx, which ships
+      // ahead of this compiled-in value.
+      style: 'Light',
       backgroundColor: '#F7F7F4',
     },
   },

@@ -1,0 +1,17 @@
+# Ventzon — agent rules
+
+## Never modify without asking
+- src/app/auth/callback/route.ts (Supabase session bridge)
+- capacitor.config.ts
+- package.json capacitor/apple-sign-in versions (SwiftPM pin, patched via postinstall)
+- Any supabase/migrations/ file
+
+## Always
+- Run `npm run lint` before declaring a task done
+- Match existing file style; do not reformat unrelated lines
+- Mark merchant/monetization work with `// POST-BETA:`
+
+## Current focus
+User-facing polish for public beta: UI, animations, navigation,
+onboarding, feed, profiles, comments, search, Explore, posting,
+video playback, upload UX. Not infrastructure or hardening.
