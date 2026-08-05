@@ -8,8 +8,6 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/app", label: "Customer app" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/merchant/dashboard", label: "Merchant" },
 ];
 
 export default function SiteHeader() {
@@ -95,10 +93,10 @@ export default function SiteHeader() {
               Sign in
             </Link>
             <Link
-              href="/signup"
+              href="/customer/explore"
               className="hidden rounded-full border border-[#333] px-5 py-2 text-[11px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:border-[#666] hover:bg-white/5 sm:inline-flex"
             >
-              Get started
+              Open the app
             </Link>
 
             {/* Mobile hamburger */}
@@ -171,10 +169,10 @@ export default function SiteHeader() {
               Sign in
             </Link>
             <Link
-              href="/signup"
+              href="/customer/explore"
               className="rounded-full border border-[#333] px-6 py-2.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:border-[#666] hover:bg-white/5"
             >
-              Get started
+              Open the app
             </Link>
           </div>
         </div>

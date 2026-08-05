@@ -165,7 +165,7 @@ function FollowListContent() {
                       <p className="text-base text-primary font-medium truncate">
                         {item.display_name}
                         {item.is_creator && (
-                          <span className="text-2xs font-semibold uppercase tracking-caps text-muted ml-2">CREATOR</span>
+                          <span className="text-2xs font-semibold uppercase tracking-caps text-muted ml-2">PUBLIC PROFILE</span>
                         )}
                       </p>
                       {item.bio && (

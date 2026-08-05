@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Ventzon — Loyalty Rewards for Local Businesses";
+export const alt = "Ventzon — Find Real Places. See Who's Actually There.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -76,7 +76,9 @@ export default async function Image() {
             maxWidth: 600,
           }}
         >
-          Loyalty rewards for local businesses
+          Find real places near you.
+          <br />
+          See what they&rsquo;re actually like.
         </div>
 
         {/* Bottom strip */}
@@ -89,7 +91,7 @@ export default async function Image() {
             gap: 32,
           }}
         >
-          {["No hardware", "No setup fees", "Free for customers"].map((item) => (
+          {["Discover", "Check in", "Verified visits"].map((item) => (
             <div
               key={item}
               style={{

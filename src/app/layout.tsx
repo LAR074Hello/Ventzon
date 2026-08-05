@@ -59,22 +59,22 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Ventzon — Loyalty Rewards App for Local Businesses",
+  title: "Ventzon — Find Real Places. See Who's Actually There.",
   description:
-    "Ventzon is a digital loyalty program for restaurants, cafes, salons, and local shops. Replace paper punch cards with a QR code loyalty app. $25/month, no hardware needed.",
+    "Ventzon is a local social app. Discover real places near you, see what they're actually like from people who went, check in, and share verified visits. Free for customers.",
   metadataBase: new URL("https://www.ventzon.com"),
   manifest: "/site.webmanifest",
   keywords: [
-    "loyalty app for small business",
-    "digital loyalty card",
-    "customer loyalty program",
-    "loyalty rewards app",
-    "digital punch card",
-    "loyalty program for restaurants",
-    "loyalty app for coffee shops",
-    "stamp card app",
-    "local business loyalty program",
-    "repeat customer app",
+    "local discovery app",
+    "places near me",
+    "verified visit",
+    "local spots",
+    "restaurant recommendations",
+    "coffee shop discovery",
+    "what to do nearby",
+    "local social app",
+    "neighborhood spots",
+    "real reviews from real visits",
   ],
   appleWebApp: {
     title: "Ventzon",
@@ -94,18 +94,18 @@ export const metadata: Metadata = {
     // "apple-itunes-app": "app-id=6763768638",
   },
   openGraph: {
-    title: "Ventzon — Loyalty Rewards App for Local Businesses",
+    title: "Ventzon — Find Real Places. See Who's Actually There.",
     description:
-      "Replace paper punch cards with a digital loyalty program. QR code check-ins, real-time analytics, push notifications. Set up in 5 minutes.",
+      "Discover real places near you, see what they're actually like from people who went, check in, and share verified visits. Free for customers.",
     url: "https://www.ventzon.com",
     siteName: "Ventzon",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ventzon — Loyalty Rewards App for Local Businesses",
+    title: "Ventzon — Find Real Places. See Who's Actually There.",
     description:
-      "Replace paper punch cards with a digital loyalty program. QR code check-ins, real-time analytics, push notifications.",
+      "Discover real places near you, see what they're actually like from people who went, and share verified visits. Free for customers.",
   },
   robots: {
     index: true,

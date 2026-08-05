@@ -66,6 +66,13 @@ export async function getOrCreateProfile(
         email: e,
         display_name: seed?.display_name ?? null,
         avatar_url: seed?.avatar_url ?? null,
+        // Public by default. is_creator is the switch that makes a profile
+        // findable in search, suggestable, followable and linkable — a new
+        // user who stays private is invisible to the friends they signed up
+        // to find. Opting out (settings) still works; this only sets the
+        // default on CREATE, the existing-profile branch above never rewrites
+        // a deliberate choice back on.
+        is_creator: true,
       },
       { onConflict: "email" }
     )

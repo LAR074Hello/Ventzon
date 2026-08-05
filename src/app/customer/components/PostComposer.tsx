@@ -230,6 +230,10 @@ export default function PostComposer({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             display_name: chosen,
+            // First post = the go-public moment. is_creator is the switch that
+            // makes the profile findable and followable, so the user becomes
+            // public in the same breath they get a name.
+            is_creator: true,
             ...(newAvatarUrl ? { avatar_url: newAvatarUrl } : {}),
           }),
         });
@@ -433,7 +437,7 @@ export default function PostComposer({
         <div className="mt-3 rounded-ctl bg-surface-sunken p-3.5">
           <p className="text-sm font-medium text-primary">What should people call you?</p>
           <p className="mt-0.5 text-xs text-secondary">
-            This is how you&apos;ll appear on your posts.
+            This is how you&apos;ll appear on your posts &mdash; friends can find you by this name.
           </p>
           <div className="mt-3 flex items-center gap-3">
             <button

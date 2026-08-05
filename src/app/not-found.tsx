@@ -22,10 +22,10 @@ export default function NotFound() {
             Go home
           </Link>
           <Link
-            href="/merchant/dashboard"
+            href="/customer/explore"
             className="rounded-full border border-[#333] px-6 py-2.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
           >
-            Dashboard
+            Open the app
           </Link>
         </div>
       </div>

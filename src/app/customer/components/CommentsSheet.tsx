@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { X, Send, AlertCircle, RotateCw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { X, Send, AlertCircle, RotateCw, Trash2 } from "lucide-react";
 import Avatar from "./Avatar";
+import SafetyMenu from "./SafetyMenu";
 
 export type SheetComment = {
   id: string;
@@ -68,14 +70,17 @@ function useViewportHeight(): number | null {
 export default function CommentsSheet({
   postId,
   initialComments,
+  isPostAuthor = false,
   onClose,
   onCountChange,
 }: {
   postId: string;
   initialComments: SheetComment[];
+  isPostAuthor?: boolean;
   onClose: () => void;
   onCountChange?: (n: number) => void;
 }) {
+  const router = useRouter();
   const [comments, setComments] = useState<SheetComment[]>(initialComments);
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
@@ -148,6 +153,19 @@ export default function CommentsSheet({
     send(text);
   }
 
+  // Delete a comment — the comment's author, or the post's author (the API
+  // allows both, mirroring the ownership check in the DELETE route).
+  async function deleteComment(id: string) {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      const res = await fetch(
+        `/api/customer/posts/${postId}?comment_id=${encodeURIComponent(id)}`,
+        { method: "DELETE" }
+      );
+      if (res.ok) setComments((prev) => prev.filter((c) => c.id !== id));
+    } catch {}
+  }
+
   const style = viewportHeight ? { height: `${Math.round(viewportHeight * 0.82)}px` } : undefined;
 
   return (
@@ -198,16 +216,40 @@ export default function CommentsSheet({
             <div className="flex flex-col gap-4">
               {comments.map((c) => (
                 <div key={c.id} className="flex gap-2.5">
-                  <Avatar
-                    name={c.author.display_name}
-                    seed={c.author.profile_id ?? c.author.display_name}
-                    url={c.author.avatar_url}
-                    size={28}
+                  <button
+                    onClick={() =>
+                      c.author.linkable &&
+                      c.author.profile_id &&
+                      router.push(`/customer/creator/${c.author.profile_id}`)
+                    }
+                    disabled={!c.author.linkable || !c.author.profile_id}
                     className={c.status === "sending" ? "opacity-60" : ""}
-                  />
+                    aria-label={
+                      c.author.linkable && c.author.profile_id
+                        ? `View ${c.author.display_name}'s profile`
+                        : undefined
+                    }
+                  >
+                    <Avatar
+                      name={c.author.display_name}
+                      seed={c.author.profile_id ?? c.author.display_name}
+                      url={c.author.avatar_url}
+                      size={28}
+                    />
+                  </button>
                   <div className={`min-w-0 flex-1 ${c.status === "sending" ? "opacity-60" : ""}`}>
                     <p className="text-xs text-muted">
-                      <span className="font-medium text-primary">{c.author.display_name}</span>
+                      <button
+                        onClick={() =>
+                          c.author.linkable &&
+                          c.author.profile_id &&
+                          router.push(`/customer/creator/${c.author.profile_id}`)
+                        }
+                        disabled={!c.author.linkable || !c.author.profile_id}
+                        className="font-medium text-primary"
+                      >
+                        {c.author.display_name}
+                      </button>
                       {c.status !== "sending" && c.status !== "failed" && ` · ${timeAgo(c.created_at)}`}
                     </p>
                     <p className="mt-0.5 text-base leading-relaxed text-primary">{c.body}</p>
@@ -226,6 +268,45 @@ export default function CommentsSheet({
                       </button>
                     )}
                   </div>
+
+                  {/* Right-side actions: delete (own comment or post author) and
+                      report/block (everyone else). Failed rows keep only the
+                      retry button, and in-flight rows are left untouched. */}
+                  {c.status !== "failed" && (
+                    <div className="flex shrink-0 items-center gap-0.5 self-start">
+                      {(c.is_own || isPostAuthor) && c.status !== "sending" && (
+                        <button
+                          onClick={() => deleteComment(c.id)}
+                          aria-label="Delete comment"
+                          className="-m-1.5 p-2.5 text-muted active:text-danger"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                      {!c.is_own && c.status !== "sending" && (
+                        <SafetyMenu
+                          compact
+                          targetType="comment"
+                          targetId={c.id}
+                          blockProfileId={c.author.profile_id}
+                          targetName={c.author.display_name}
+                          onDone={(a) => {
+                            // A reported comment is hidden server-side; drop it
+                            // locally so it leaves the sheet now. A blocked
+                            // commenter takes all their comments with them.
+                            if (a === "reported") {
+                              setComments((prev) => prev.filter((x) => x.id !== c.id));
+                            }
+                            if (a === "blocked" && c.author.profile_id) {
+                              setComments((prev) =>
+                                prev.filter((x) => x.author.profile_id !== c.author.profile_id)
+                              );
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

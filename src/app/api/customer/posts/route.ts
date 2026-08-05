@@ -151,12 +151,39 @@ export async function DELETE(req: Request) {
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
     const admin = adminClient();
+
+    // Fetch before delete so the media can be removed from storage too. A
+    // deleted post whose file stays in the PUBLIC bucket is a privacy leak —
+    // the URL keeps resolving after the row is gone. Best-effort: a storage
+    // failure must not block the post delete.
+    const { data: post } = await admin
+      .from("posts")
+      .select("media_url, poster_url")
+      .eq("id", id)
+      .eq("author_email", user.email!.toLowerCase())
+      .maybeSingle();
+
     const { error } = await admin
       .from("posts")
       .delete()
       .eq("id", id)
       .eq("author_email", user.email!.toLowerCase());
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    if (post) {
+      const uid = user.id;
+      const paths = [post.media_url, post.poster_url]
+        .filter((u): u is string => typeof u === "string")
+        .map((u) => u.split("/object/public/posts/")[1])
+        .filter((p): p is string => typeof p === "string" && p.startsWith(`${uid}/`));
+      if (paths.length) {
+        try {
+          await admin.storage.from("posts").remove(paths);
+        } catch (err) {
+          console.error("[delete post] media cleanup failed", err);
+        }
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

@@ -2,43 +2,47 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, MessageCircle, Smartphone, Store, CreditCard, Star, ShieldCheck } from "lucide-react";
+import { ChevronDown, MessageCircle, Smartphone, Store, Star, ShieldCheck } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 
 type FAQ = { q: string; a: string };
 
 const customerFaqs: FAQ[] = [
   {
-    q: "How do I earn stamps?",
-    a: "Visit any participating Ventzon store and ask them to scan your QR code at checkout. Each qualifying visit adds one stamp to your card. You can find your QR code in the Ventzon app under the Scan tab.",
-  },
-  {
-    q: "How do I redeem my reward?",
-    a: "When you've collected enough stamps, you'll see a gold 'Reward ready!' banner on your home screen. Open the card and show it to the cashier at the register — they'll mark it as redeemed and your card will reset for the next round.",
-  },
-  {
-    q: "Can I earn more than one stamp per day?",
-    a: "Each store limits stamps to one per day. This keeps the program fair for everyone and ensures rewards reflect genuine repeat visits.",
-  },
-  {
-    q: "Do my stamps expire?",
-    a: "Stamps are tied to your account and don't expire as long as your account is active. If a merchant closes or leaves Ventzon, any unredeemed stamps on that card will remain visible but cannot be redeemed.",
-  },
-  {
-    q: "How do I join a loyalty program?",
-    a: "You can join two ways: scan the QR code posted in-store with the Ventzon app, or search for the store on the Explore tab and tap 'Join.' Your card will appear instantly in My Cards.",
+    q: "What is Ventzon?",
+    a: "A local social app. Discover real places near you, see what they're actually like from people who went, check in when you're there, and share where you've been.",
   },
   {
     q: "Is Ventzon free for customers?",
-    a: "Yes — the Ventzon app is completely free to download and use. There are no fees, subscriptions, or in-app purchases for customers.",
+    a: "Yes — completely free. There are no fees, subscriptions, or in-app purchases for customers.",
   },
   {
-    q: "What happens if I get a new phone?",
-    a: "Your account and all your stamps are stored in the cloud, not on your device. Just sign in on your new phone and everything will be waiting for you.",
+    q: "How do I find places near me?",
+    a: "Open the app and browse the Explore feed, or tap Map to see real local spots around you — coffee shops, parks, bookshops, and more.",
+  },
+  {
+    q: "What is a verified visit?",
+    a: "When you check in at a place and post about it, your post carries a verified visit badge — proof you were actually there, not a review from someone who wasn't.",
+  },
+  {
+    q: "How do I post?",
+    a: "Tap the + button in the middle of the bottom bar, pick a place, write a caption, and add a photo or video. Your friends see it first.",
+  },
+  {
+    q: "How do I follow friends?",
+    a: "Search for their name on Explore, open their profile, and tap Follow. Once you follow them, their posts show up in your feed.",
+  },
+  {
+    q: "How do I delete a post or comment?",
+    a: "Open your post and tap the trash icon. To delete a comment, open the comments sheet and tap the trash on your own comment — or on any comment on a post you wrote.",
+  },
+  {
+    q: "What are loyalty cards?",
+    a: "Some shops on Ventzon run a loyalty program — check in often enough and you earn a reward. They appear under the Rewards tab. If a shop doesn't run one, there's no card, and that's normal.",
   },
   {
     q: "How do I delete my account?",
-    a: "Go to the Profile tab → scroll to the bottom → tap 'Delete account.' This permanently removes your account and all associated data. This action cannot be undone.",
+    a: "Go to Profile → Settings → Delete account. This permanently removes your account and all associated data. This action cannot be undone.",
   },
 ];
 
@@ -194,9 +198,9 @@ export default function HelpPage() {
       <section className="border-t border-[#111] px-6 py-12">
         <div className="mx-auto grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Pricing", href: "/pricing", icon: CreditCard },
-            { label: "App download", href: "/app", icon: Smartphone },
+            { label: "Open the app", href: "/customer/explore", icon: Smartphone },
             { label: "How it works", href: "/how-it-works", icon: Star },
+            { label: "For shops", href: "/app", icon: Store },
             { label: "Privacy policy", href: "/privacy-policy", icon: ShieldCheck },
           ].map(({ label, href, icon: Icon }) => (
             <Link

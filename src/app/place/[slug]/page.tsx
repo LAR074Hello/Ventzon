@@ -180,8 +180,7 @@ export default async function PlaceSharePage({ params }: { params: Promise<{ slu
 
         {unclaimed && (
           <p className="mt-8 text-center text-sm text-muted">
-            Own this place?{" "}
-            <span className="font-medium text-primary">Claim it</span> {/* PRE-LAUNCH: links to the claim flow in Slice 1.5 */}
+            {/* Claim flow not built yet — the dead control was removed. */}
           </p>
         )}
       </div>

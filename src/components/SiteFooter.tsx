@@ -31,18 +31,6 @@ export default function SiteFooter() {
             How it works
           </Link>
           <Link
-            href="/setup"
-            className="transition-colors duration-300 hover:text-[#999]"
-          >
-            Setup guide
-          </Link>
-          <Link
-            href="/pricing"
-            className="transition-colors duration-300 hover:text-[#999]"
-          >
-            Pricing
-          </Link>
-          <Link
             href="/help"
             className="transition-colors duration-300 hover:text-[#999]"
           >
@@ -54,14 +42,12 @@ export default function SiteFooter() {
           >
             Careers
           </Link>
-          <a
-            href="https://apps.apple.com/app/id6763768638"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/customer/explore"
             className="transition-colors duration-300 hover:text-[#999]"
           >
-            Download
-          </a>
+            Open app
+          </Link>
           <Link
             href="/privacy-policy"
             className="transition-colors duration-300 hover:text-[#999]"

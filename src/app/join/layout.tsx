@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Join Rewards — Ventzon",
-  description: "Join your favorite local shop's rewards program. Earn points with every visit.",
+  title: "Check In — Ventzon",
+  description: "Check in at a local place on Ventzon and start earning toward a reward where the shop runs one.",
   openGraph: {
-    title: "Join Rewards — Ventzon",
-    description: "Scan, check in, and earn rewards at your favorite local businesses.",
+    title: "Check In — Ventzon",
+    description: "Check in at a local place on Ventzon — proof you were really there.",
   },
 };
 

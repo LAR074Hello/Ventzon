@@ -44,7 +44,7 @@ const jsonLd = {
           "name": "How much does Ventzon cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "$25/month or $240/year. Plus $0.85 per reward redeemed. No hardware required, cancel anytime."
+            "text": "Free for customers. Businesses that run a loyalty program pay $25/month or $240/year, plus $0.85 per reward redeemed. No hardware required."
           }
         },
         {
@@ -122,22 +122,22 @@ export default function Home() {
           </h1>
 
           <p className="animate-fade-in anim-delay-600 mt-5 text-[13px] font-light tracking-[0.3em] text-white/70 opacity-0">
-            Know Your Customers
+            Find Real Places. See Who&rsquo;s Actually There.
           </p>
 
           <div className="animate-fade-in-up anim-delay-1000 mt-16 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
             <Link
-              href="/signup"
+              href="/customer/explore"
               className="inline-flex items-center gap-3 rounded-full border border-white/40 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white transition-all duration-500 hover:border-white hover:bg-white hover:text-black"
             >
-              Begin
+              Open the app
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link
-              href="/demo"
+              href="/how-it-works"
               className="text-[12px] font-light tracking-[0.15em] text-white/40 transition-colors duration-500 hover:text-white"
             >
-              See a live demo
+              How it works
             </Link>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
           {[
             { title: "Customer Intelligence", desc: "Understand who your customers are, when they come back, and who's about to stop." },
-            { title: "Delivered as Loyalty", desc: "Customers scan to earn rewards. You get rich behavioral data — without them thinking twice." },
+            { title: "Built on Real Visits", desc: "Every check-in proves someone actually walked in. See who's coming back and who's drifting — without friction at the counter." },
             { title: "Built for Local", desc: "No enterprise contract. No data team required. Just answers." },
           ].map((item) => (
             <div key={item.title} className="text-center">
@@ -182,7 +182,7 @@ export default function Home() {
               HOW IT WORKS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              Get discovered nearby.<br className="hidden sm:block" />Know who actually showed up.
+              See what&rsquo;s actually good nearby.
             </h2>
           </ScrollReveal>
 
@@ -204,13 +204,12 @@ export default function Home() {
                   01
                 </p>
                 <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  Print your QR code
+                  Find places near you
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  Sign up, name your shop, and pick your reward — a classic
-                  stamp card or a points program. Print the QR card and place it
-                  near your register. Takes under five minutes — and from that
-                  moment, every visit becomes a data point.
+                  Browse thousands of real local spots on the Ventzon map &mdash;
+                  coffee shops, parks, bookshops, the corner bar. No ads, no
+                  algorithm, no listings you&rsquo;ve never heard of.
                 </p>
               </ScrollReveal>
             </div>
@@ -231,12 +230,12 @@ export default function Home() {
                   02
                 </p>
                 <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  Customers check in
+                  Check in. Share where you went.
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  They enter their phone or email to earn their next stamp.
-                  To them, it&rsquo;s a punch card. To you, it&rsquo;s a growing
-                  picture of exactly who walks through your door.
+                  Check in once you&rsquo;re there and your post carries a
+                  verified visit &mdash; proof you were really there, not a
+                  review from someone who never showed up.
                 </p>
               </ScrollReveal>
             </div>
@@ -257,13 +256,12 @@ export default function Home() {
                   03
                 </p>
                 <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  They earn rewards via the app
+                  See what&rsquo;s actually good
                 </h3>
                 <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  After enough visits they unlock their reward. Push
-                  notifications bring them back. And your dashboard tells
-                  you who your loyal customers are, who&rsquo;s drifting, and
-                  what&rsquo;s actually working.
+                  Friends and locals post about the places they go, and the feed
+                  fills with what&rsquo;s worth the trip. Where a shop runs a
+                  reward, you earn it just for visiting.
                 </p>
               </ScrollReveal>
             </div>
@@ -294,7 +292,7 @@ export default function Home() {
             <ScrollReveal delay={1}>
               <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8 transition-all duration-500 hover:border-[#333]">
                 <p className="mb-6 text-[10px] font-light tracking-[0.3em] text-[#444]">
-                  CHECK-IN
+                  CHECK-IN · EXAMPLE
                 </p>
 
                 {/* Shop avatar + name */}
@@ -455,7 +453,7 @@ export default function Home() {
               },
               {
                 title: "Stamps or points",
-                desc: "Run a classic punch card, or a points program with your own earn rate and reward goal. Both are self check-in — no cashier, no dollar entry.",
+                desc: "Rewards built on real visits — set a goal and customers earn it by showing up. Self check-in, no cashier step, no dollar entry.",
               },
               {
                 title: "Track everything",
@@ -629,28 +627,27 @@ export default function Home() {
               VOICES
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Be one of the first shops in your neighborhood
+              Made for the places you actually go
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-base font-light leading-[1.8] text-[#888]">
-              Ventzon is launching neighborhood by neighborhood. Early shops
-              shape how discovery works in their area — and their reward is
-              the first thing locals see when they open the map.
+              Ventzon is launching neighborhood by neighborhood. Real places,
+              verified visits &mdash; no reviews from people who were never there.
             </p>
           </ScrollReveal>
 
           <div className="mt-16 grid gap-12 md:grid-cols-3">
             {[
               {
-                title: "Claim your shop",
-                body: "Set one reward and print your QR code. Your shop goes on the Ventzon map the same day.",
+                title: "Thousands of real places",
+                body: "The map is full of actual local spots — coffee, food, parks, bookshops. Places you can walk to, not listings you've never heard of.",
               },
               {
-                title: "Locals discover you",
-                body: "People nearby browse shops and rewards they can walk to — you are in that list from day one.",
+                title: "Check in when you go",
+                body: "One tap proves you were there. Your posts carry a verified visit, so friends trust what you recommend.",
               },
               {
-                title: "The scan proves it",
-                body: "A check-in confirms the visit, so you know who came in and how often. No guessing.",
+                title: "The feed fills from there",
+                body: "Share what a place is really like — the people who follow you see it first, and the neighborhood fills in around you.",
               },
             ].map((t, i) => (
               <ScrollReveal key={t.title} delay={i === 0 ? 1 : i === 1 ? 2 : 3}>
@@ -669,82 +666,38 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          SECTION 6 — PRICING
+          SECTION 6 — FOR SHOPS
           ============================================================ */}
       <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              PRICING
+              FOR SHOPS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Simple pricing.
+              Get discovered by locals who actually show up.
             </h2>
             <p className="mt-5 text-[15px] font-light text-[#666]">
-              $25/month to run your loyalty program — plus $0.85 for every customer who earns their reward.
+              Your shop appears on the Ventzon map and feed. Customers check in
+              and post verified visits &mdash; you build a real customer list.
             </p>
+            <div className="mt-10 flex justify-center">
+              <Link
+                href="/app"
+                className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+              >
+                Learn more
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </ScrollReveal>
-
-          <div className="mt-14 mx-auto max-w-lg">
-            <ScrollReveal>
-              <div className="rounded-lg border border-[#2a2a2a] p-8 transition-colors duration-500 hover:border-[#444]">
-                <div className="flex items-center justify-between">
-                  <p className="text-[12px] font-light tracking-[0.2em] text-[#666]">
-                    VENTZON PRO
-                  </p>
-                  <span className="rounded-full bg-[#ededed] px-3 py-1 text-[10px] font-normal tracking-[0.2em] text-black">
-                    SAVE $60 YEARLY
-                  </span>
-                </div>
-
-                <div className="mt-6 flex items-end gap-6">
-                  <div>
-                    <div className="text-4xl font-extralight tracking-tight text-[#ededed]">
-                      $25
-                      <span className="text-lg font-light text-[#555]">/mo</span>
-                    </div>
-                    <p className="mt-1 text-[12px] font-light text-[#555]">or $240/yr</p>
-                  </div>
-                  <div className="mb-1 h-8 w-[1px] bg-[#1a1a1a]" />
-                  <div>
-                    <div className="text-2xl font-extralight tracking-tight text-[#888]">
-                      + $0.85
-                    </div>
-                    <p className="mt-1 text-[12px] font-light text-[#555]">per reward redeemed</p>
-                  </div>
-                </div>
-
-                <ul className="mt-8 grid grid-cols-2 gap-3 text-[13px] font-light text-[#888]">
-                  {[
-                    "QR code + join page",
-                    "Unlimited check-ins",
-                    "Push notification rewards",
-                    "Analytics dashboard",
-                    "Customer list & CSV export",
-                    "Email campaigns",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ededed]" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/pricing"
-                  className="mt-10 block rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
-                >
-                  Get started
-                </Link>
-              </div>
-            </ScrollReveal>
-          </div>
         </div>
       </section>
 
       {/* ============================================================
-          SECTION 6b — APP STORE DOWNLOAD
+          SECTION 6b — CUSTOMER APP (the web app is the demo surface;
+          the App Store build is stale until the next native release)
           ============================================================ */}
       <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
@@ -753,44 +706,32 @@ export default function Home() {
             CUSTOMER APP
           </p>
           <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-            Download the Ventzon app.
+            See what&rsquo;s near you.
           </h2>
           <p className="mt-5 text-[15px] font-light leading-relaxed text-[#666]">
-            Track stamps, redeem rewards, and discover local businesses —
-            all in one place. Free for customers.
+            Discover local places, share where you&rsquo;ve actually been, and check
+            in to earn rewards. Free for customers — no download required.
           </p>
 
           {/* Feature pills */}
           <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {["Loyalty cards", "Explore map", "Push notifications", "Instant rewards"].map((f) => (
+            {["Explore map", "Verified visits", "Local feed", "Loyalty cards"].map((f) => (
               <span key={f} className="rounded-full border border-[#1f1f1f] px-4 py-1.5 text-[12px] font-light text-[#555]">
                 {f}
               </span>
             ))}
           </div>
 
-          {/* App Store badge */}
+          {/* Open the app */}
           <div className="mt-10 flex justify-center">
-            <a
-              href="https://apps.apple.com/app/id6763768638"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3.5 rounded-2xl border border-[#2a2a2a] bg-[#0a0a0a] px-6 py-4 transition-all duration-300 hover:border-[#444] hover:bg-[#111]"
+            <Link
+              href="/customer/explore"
+              className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-4 text-[13px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
             >
-              {/* Apple logo SVG */}
-              <svg className="h-7 w-7 fill-[#ededed]" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
-                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.3-166.8-117.8C114.5 726 48.1 612.7 48.1 505c0-176 114.8-268.8 227.9-268.8 60.1 0 110.1 39.5 147.7 39.5 36 0 92.2-41.8 160.8-41.8 26.1 0 108.2 2.6 168.4 76.4zm-120.4-198.2c28.3-35.3 49-84.2 49-133.1 0-6.5-.6-13-1.3-19.4-46.1 1.9-101 31.1-133.8 71.2-27.1 32-51.3 80.9-51.3 130.5 0 7.1.6 14.3 1.3 16.5 2.6.5 6.5.9 10.4.9 41.5 0 93.8-28.3 125.7-66.6z" />
-              </svg>
-              <div className="text-left">
-                <p className="text-[10px] font-light tracking-[0.15em] text-[#666]">DOWNLOAD ON THE</p>
-                <p className="text-[18px] font-light tracking-[-0.01em] text-[#ededed]">App Store</p>
-              </div>
-            </a>
+              Open the app
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
-
-          <p className="mt-4 text-[11px] font-light text-[#444]">
-            Available on iPhone &middot; iOS 16+
-          </p>
         </ScrollReveal>
       </section>
 
@@ -800,18 +741,18 @@ export default function Home() {
       <section className="px-4 sm:px-8 py-28 sm:py-36">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-            Ready to begin?
+            See what&rsquo;s near you.
           </h2>
           <p className="mt-6 text-base font-light leading-relaxed text-[#666]">
-            Set up your rewards program in under five minutes.
+            Find places worth going to, and share where you&rsquo;ve been.
             <br className="hidden sm:block" />
-            No credit card required.
+            Free for customers &mdash; no download required.
           </p>
           <Link
-            href="/signup"
+            href="/customer/explore"
             className="mt-14 inline-flex items-center gap-3 rounded-full border border-[#ededed] px-10 py-4 text-[13px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
           >
-            Create your account
+            Open the app
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </ScrollReveal>

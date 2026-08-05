@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 
-const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
-
+// The live App Store build (v1.0, May 2026) predates the permission strings
+// and native-shell fixes, so it is not demo-safe. Until a current build ships,
+// this lands on the web app rather than on a broken store listing.
 export default function DownloadPage() {
-  redirect(APP_STORE_URL);
+  redirect("/customer/explore");
 }

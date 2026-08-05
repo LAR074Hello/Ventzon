@@ -176,12 +176,30 @@ export default function ProfilePage() {
         />
         <h2 className="font-display text-xl font-semibold tracking-tight text-primary mt-4">{name}</h2>
         {profile?.is_creator && (
-          <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">CREATOR</p>
+          <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">PUBLIC PROFILE</p>
         )}
         {profile?.bio && (
           <p className="text-sm text-secondary mt-3 max-w-xs text-center font-normal leading-relaxed">{profile.bio}</p>
         )}
       </div>
+
+      {/* Private profiles are invisible to friends until they go public —
+          the one switch that makes search, suggestions and follow work. */}
+      {profile && !profile.is_creator && (
+        <div className="mx-5 mb-5 rounded-card border border-subtle bg-surface-raised p-4">
+          <p className="text-sm font-medium text-primary">Make your profile public</p>
+          <p className="mt-0.5 text-xs text-secondary leading-relaxed">
+            Friends can find and follow you once your profile is public.
+          </p>
+          <button
+            onClick={becomeCreator}
+            disabled={becomingCreator}
+            className="mt-3 w-full rounded-ctl bg-primary py-3 text-sm font-medium text-inverse transition-colors disabled:opacity-40"
+          >
+            {becomingCreator ? "GOING PUBLIC…" : "GO PUBLIC"}
+          </button>
+        </div>
+      )}
 
       {/* Stats — same component as the public creator page */}
       {stats && profile && (

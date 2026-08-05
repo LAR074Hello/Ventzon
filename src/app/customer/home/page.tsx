@@ -283,7 +283,6 @@ export default function HomePage() {
           </div>
         ) : memberships.length === 0 ? (
           <EmptyState
-            onScan={() => router.push("/customer/scan")}
             onExplore={() => router.push("/customer/explore")}
           />
         ) : (
@@ -457,7 +456,7 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
   );
 }
 
-function EmptyState({ onScan, onExplore }: { onScan: () => void; onExplore: () => void }) {
+function EmptyState({ onExplore }: { onExplore: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-sheet border border-subtle bg-surface-raised">
@@ -465,19 +464,13 @@ function EmptyState({ onScan, onExplore }: { onScan: () => void; onExplore: () =
       </div>
       <p className="font-display text-xl font-semibold tracking-tight text-primary mt-6">No loyalty cards yet</p>
       <p className="text-sm text-secondary mt-2 font-normal leading-relaxed">
-        Scan a QR code at any participating store<br />to start collecting stamps
+        Rewards appear here when a shop you visit runs one.<br />Browse places near you and be the first to check in.
       </p>
       <button
-        onClick={onScan}
+        onClick={onExplore}
         className="text-sm font-medium text-inverse mt-8 w-full rounded-card bg-primary py-4 transition-all duration-200 active:opacity-80"
       >
-        SCAN A QR CODE
-      </button>
-      <button
-        onClick={onExplore}
-        className="text-xs font-semibold uppercase tracking-caps text-muted mt-3 w-full rounded-card border border-subtle py-4 transition-all duration-200 active:bg-surface-raised"
-      >
-        BROWSE STORES
+        BROWSE PLACES
       </button>
     </div>
   );

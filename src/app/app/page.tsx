@@ -46,23 +46,21 @@ export default function CustomerAppPage() {
             THE CUSTOMER APP
           </p>
           <h1 className="mt-6 text-4xl font-extralight tracking-[-0.02em] sm:text-5xl lg:text-6xl">
-            What your customers experience.
+            Find places. Prove you were there.
           </h1>
           <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
-            From scan to reward — a seamless loyalty experience your customers will actually use.
+            Browse real spots near you, post about the ones you&rsquo;ve actually
+            visited, and check in to prove you were really there. Free for
+            customers &mdash; no download required.
           </p>
           <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <a
-              href="https://apps.apple.com/app/id6763768638"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/customer/explore"
               className="inline-flex items-center gap-3 rounded-full border border-[#ededed] bg-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-black transition-all duration-500 hover:bg-white"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              Download on the App Store
-            </a>
+              Open the app
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
             <Link
               href="/signup"
               className="text-[12px] font-light tracking-[0.15em] text-[#555] transition-colors duration-500 hover:text-[#ededed]"
@@ -81,10 +79,10 @@ export default function CustomerAppPage() {
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              THE EXPERIENCE
+              EXAMPLE SCREENS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Three taps. Instant loyalty.
+              Find it. Visit it. Share it.
             </h2>
           </ScrollReveal>
 
@@ -195,9 +193,9 @@ export default function CustomerAppPage() {
               </p>
             </ScrollReveal>
 
-            {/* Phone 3 — Reward */}
+            {/* Phone 3 — Share */}
             <ScrollReveal delay={3} className="flex flex-col items-center gap-4">
-              <div className="w-56 rounded-[2.5rem] border-2 border-emerald-900/60 bg-[#050505] overflow-hidden" style={{ aspectRatio: "9/19", boxShadow: "0 0 40px rgba(16,185,129,0.08)" }}>
+              <div className="w-56 rounded-[2.5rem] border-2 border-[#2a2a2a] bg-[#050505] overflow-hidden" style={{ aspectRatio: "9/19" }}>
                 {/* Status bar */}
                 <div className="flex items-center justify-between px-5 pt-3 pb-1">
                   <span className="text-[9px] font-light text-[#555]">9:41</span>
@@ -208,25 +206,35 @@ export default function CustomerAppPage() {
                   </div>
                 </div>
                 {/* Content */}
-                <div className="flex flex-col items-center px-4 pt-6 pb-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/30">
-                    <Check className="h-7 w-7 text-emerald-400" />
-                  </div>
-                  <p className="mt-4 text-[16px] font-extralight text-emerald-300">
-                    Reward earned!
-                  </p>
-                  <div className="mt-4 w-full rounded-xl border border-emerald-900/40 bg-emerald-950/30 px-3 py-4 text-center">
-                    <p className="text-[11px] font-light text-emerald-300/80">
-                      Free coffee after 8 visits
+                <div className="flex flex-col px-4 pt-4 pb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1a1a]">
+                      <span className="text-[9px] font-light text-[#888]">S</span>
+                    </div>
+                    <p className="text-[9px] font-light tracking-[0.15em] text-[#ededed]">
+                      SUNRISE BAKERY
                     </p>
+                    <span className="ml-auto rounded-full bg-[#ededed] px-2 py-0.5 text-[7px] font-semibold uppercase tracking-[0.15em] text-black">
+                      Verified visit
+                    </span>
                   </div>
-                  <p className="mt-4 text-[9px] font-light tracking-[0.15em] text-emerald-400/50">
-                    SHOW THIS AT THE REGISTER
+                  <img
+                    src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=260&fit=crop&auto=format"
+                    alt=""
+                    className="mt-3 h-36 w-full rounded-lg object-cover"
+                  />
+                  <p className="mt-3 text-[9px] font-light leading-relaxed text-[#888]">
+                    Best sourdough in the neighborhood. Go early — it sells out.
                   </p>
+                  <div className="mt-3 flex items-center gap-2 text-[8px] font-light text-[#555]">
+                    <span>12 likes</span>
+                    <span>·</span>
+                    <span>3 comments</span>
+                  </div>
                 </div>
               </div>
               <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
-                REWARD EARNED
+                SHARED POST
               </p>
             </ScrollReveal>
           </div>
@@ -244,18 +252,18 @@ export default function CustomerAppPage() {
               EXPLORE
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Your shop, discovered.
+              See what&rsquo;s actually good near you.
             </h2>
             <p className="mt-5 max-w-xl mx-auto text-[15px] font-light leading-[1.8] text-[#666]">
-              Customers browsing Ventzon can find your shop, see your deal, and join your loyalty program — all before they even walk in.
+              Places around you, from people who&rsquo;ve actually been there. No ads, no algorithm.
             </p>
           </ScrollReveal>
 
-          {/* Explore page mock — horizontal scroll of shop cards */}
+          {/* Explore page mock — horizontal scroll of place cards */}
           <ScrollReveal delay={2} className="mt-14">
             <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8">
               <p className="mb-6 text-[10px] font-light tracking-[0.3em] text-[#444]">
-                NEARBY SHOPS
+                NEARBY PLACES
               </p>
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                 {shops.map((shop) => (
@@ -272,10 +280,10 @@ export default function CustomerAppPage() {
                       {shop.name}
                     </p>
                     <p className="mt-2 text-[10px] font-light leading-relaxed text-[#666]">
-                      {shop.deal}
+                      Local favorite &middot; nearby
                     </p>
-                    <div className="mt-4 rounded-full border border-[#2a2a2a] py-1.5 text-center text-[9px] font-light tracking-[0.1em] text-[#888]">
-                      JOIN
+                    <div className="mt-4 rounded-full bg-[#ededed] py-1.5 text-center text-[9px] font-semibold tracking-[0.1em] text-black">
+                      VERIFIED VISITS
                     </div>
                   </div>
                 ))}
@@ -288,7 +296,7 @@ export default function CustomerAppPage() {
               href="/customer/explore"
               className="inline-flex items-center gap-3 text-[12px] font-light tracking-[0.15em] text-[#555] transition-colors duration-500 hover:text-[#ededed]"
             >
-              Browse local shops
+              Browse local places
               <ArrowRight className="h-3 w-3" />
             </Link>
           </ScrollReveal>
@@ -308,10 +316,12 @@ export default function CustomerAppPage() {
                 NOTIFICATIONS
               </p>
               <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-                They never forget you.
+                You never miss what&rsquo;s good.
               </h2>
               <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
-                When customers are close to their reward or earn one, they get a push notification. No email newsletter, no social algorithm — direct to their lock screen.
+                When a friend posts from somewhere you&rsquo;ll love, you hear
+                about it. No email newsletter, no social algorithm &mdash;
+                direct to your lock screen.
               </p>
             </ScrollReveal>
 
@@ -334,7 +344,7 @@ export default function CustomerAppPage() {
                         </p>
                       </div>
                       <p className="mt-1 text-[13px] font-light leading-[1.6] text-[#999]">
-                        🏆 Reward earned! Show this at the register at Sunrise Bakery.
+                        Alex posted from Sunrise Bakery &mdash; &ldquo;Best sourdough in town.&rdquo;
                       </p>
                     </div>
                   </div>

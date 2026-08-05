@@ -142,7 +142,7 @@ export default function CreatorProfilePage() {
           className="border-2 border-subtle"
         />
         <h1 className="font-display text-xl font-semibold tracking-tight text-primary mt-4">{name}</h1>
-        <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">CREATOR</p>
+        <p className="text-2xs font-semibold uppercase tracking-caps text-muted mt-1">PUBLIC PROFILE</p>
         {profile.bio && (
           <p className="text-sm text-secondary mt-3 max-w-xs text-center font-normal leading-relaxed">{profile.bio}</p>
         )}

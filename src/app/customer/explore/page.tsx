@@ -109,7 +109,9 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%)" }} />
         <div className="absolute bottom-3 left-4 right-4">
           <p className="font-display text-lg font-semibold tracking-tight text-white leading-tight">{shop.shop_name}</p>
-          <p className="text-sm text-white mt-0.5 /60 truncate">{shop.deal_title}</p>
+          {shop.deal_title && (
+            <p className="text-sm text-white mt-0.5 /60 truncate">{shop.deal_title}</p>
+          )}
         </div>
         {progress && remaining === 0 ? (
           <div className="absolute top-3 right-3 rounded-full bg-primary px-2.5 py-1">
@@ -121,13 +123,13 @@ function FeaturedCard({ shop, onClick, progress }: { shop: Shop; onClick: () => 
               {remaining} TO GO
             </span>
           </div>
-        ) : (
+        ) : shop.deal_title ? (
           <div className="absolute top-3 right-3 rounded-full bg-black/50 px-2.5 py-1">
             <span className="text-2xs font-semibold uppercase tracking-caps text-primary /80">
               {shop.reward_goal}× REWARD
             </span>
           </div>
-        )}
+        ) : null}
       </div>
     </button>
   );
@@ -192,14 +194,14 @@ function StoreCard({ shop, onClick, tag, progress, distanceMi }: {
           <span className="mt-1 inline-flex rounded-full bg-primary px-2.5 py-1 text-2xs font-semibold uppercase tracking-caps text-inverse">
             Reward ready
           </span>
-        ) : (
+        ) : shop.deal_title ? (
           <p className="text-xs text-muted mt-0.5 font-normal">
             {shop.reward_goal ?? 5} visits to reward
             {(shop.member_count ?? 0) > 0 && (
               <span className="ml-2 text-muted">· {shop.member_count} member{shop.member_count !== 1 ? "s" : ""}</span>
             )}
           </p>
-        )}
+        ) : null}
         {distanceMi != null && (
           <p className="text-xs text-muted mt-0.5 font-normal">
             <MapPin className="mr-1 inline h-2.5 w-2.5 align-[-1px] text-muted" />
@@ -273,7 +275,7 @@ function DealCard({ shop, onClick, progress }: { shop: Shop; onClick: () => void
             ? "ready to redeem"
             : progress && remaining !== null
             ? `${remaining} visit${remaining === 1 ? "" : "s"} to go`
-            : `after ${shop.reward_goal} visits`}
+            : `after ${goal} visits`}
         </p>
       </div>
     </button>
@@ -414,7 +416,10 @@ export default function ExplorePage() {
 
   const featured = filtered.slice(0, 8);
   const newArrivals = filtered.filter(isNew).slice(0, 6);
-  const deals = filtered.filter(isLimitedDeal).slice(0, 5);
+  // Only places that actually run a reward get deal cards. A place with no
+  // merchant account has no reward program, and a card claiming "5 visits to
+  // reward" on one would be inventing a loyalty offer that doesn't exist.
+  const dealShops = filtered.filter((s) => s.deal_title != null);
   // "Popular" now means posted-about, not signed-up-to: with no merchants,
   // member counts are zero everywhere and would rank nothing.
   const popular = [...filtered]
@@ -718,21 +723,21 @@ export default function ExplorePage() {
               {/* Featured horizontal scroll */}
               {featured.length > 0 && (
                 <div className="mb-8">
-                  <SectionHeader title="Featured" sub="Top reward programs" />
+                  <SectionHeader title="Featured" sub="Places worth a look" />
                   <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
                     {featured.map((s) => <FeaturedCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                   </div>
                 </div>
               )}
 
-              {/* Today's Deals — explicit reward showcase */}
-              {filtered.length > 0 && (
+              {/* Today's Deals — explicit reward showcase, only where a deal exists */}
+              {dealShops.length > 0 && (
                 <>
                   <Divider />
                   <div className="mb-8">
                     <SectionHeader title="What you'll earn" sub="The actual rewards on offer" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
-                      {filtered.map((s) => <DealCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
+                      {dealShops.map((s) => <DealCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                     </div>
                   </div>
                 </>
@@ -743,7 +748,7 @@ export default function ExplorePage() {
                 <>
                   <Divider />
                   <div className="mb-8">
-                    <SectionHeader title="Popular" sub="Most members on Ventzon" />
+                    <SectionHeader title="Popular" sub="Most posted about" />
                     <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
                       {popular.map((s) => <FeaturedCard key={s.shop_slug} shop={s} progress={progressMap[s.shop_slug]} onClick={() => go(s.shop_slug)} />)}
                     </div>

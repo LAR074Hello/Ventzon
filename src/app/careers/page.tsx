@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Careers — Ventzon",
-  description: "Join the team building the future of local loyalty rewards. View open positions at Ventzon.",
+  description: "Join the team building local discovery with verified visits. View open positions at Ventzon.",
 };
 
 const perks = [

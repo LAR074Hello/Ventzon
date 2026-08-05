@@ -433,7 +433,7 @@ function PricingContent() {
               <div />
               <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#ededed]">VENTZON</p>
               <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">SQUARE</p>
-              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">PUNCH CARD</p>
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">VISIT CARDS</p>
             </div>
 
             {[
@@ -648,9 +648,9 @@ function PricingContent() {
             Ready to grow?
           </h2>
           <p className="mt-6 text-base font-light leading-relaxed text-[#666]">
-            Join hundreds of local businesses using Ventzon
+            Run your loyalty program on Ventzon
             <br className="hidden sm:block" />
-            to turn one-time buyers into loyal regulars.
+            and get discovered by locals who actually show up.
           </p>
           <div className="mt-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link

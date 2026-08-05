@@ -343,6 +343,7 @@ export default function PostPage() {
         <CommentsSheet
           postId={postId}
           initialComments={comments}
+          isPostAuthor={data.viewer.is_own}
           onClose={() => {
             setCommentsOpen(false);
             load();

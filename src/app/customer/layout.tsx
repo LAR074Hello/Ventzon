@@ -80,38 +80,9 @@ async function registerPushNotifications(userId: string) {
   } catch {}
 }
 
-const APP_STORE_URL = "https://apps.apple.com/app/id6763768638";
-
-function AppStoreBanner({ onDismiss }: { onDismiss: () => void }) {
-  return (
-    <div className="flex items-center gap-3 border-b border-subtle bg-surface-raised px-4 py-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ctl bg-surface ring-1 ring-line">
-        <span className="text-xs font-semibold uppercase tracking-caps text-primary">V</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-base text-primary font-medium">Ventzon</p>
-        <p className="text-xs text-muted">Get the app for the best experience</p>
-      </div>
-      <a
-        href={APP_STORE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-sm font-medium text-inverse shrink-0 rounded-full bg-primary px-4 py-1.5 transition-colors duration-200 hover:opacity-80"
-      >
-        GET
-      </a>
-      <button
-        onClick={onDismiss}
-        className="shrink-0 text-muted transition-colors duration-200 hover:text-primary"
-        aria-label="Dismiss"
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-  );
-}
+// The in-app App Store banner was removed: the live App Store build (v1.0,
+// May 2026) predates the permission strings and native-shell fixes, so it is
+// not demo-safe. Restore the banner once a current build ships.
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -120,22 +91,6 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const supabase = createSupabaseBrowserClient();
   const [readyCount, setReadyCount] = useState(0);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
-  const [showBanner, setShowBanner] = useState(false);
-
-  useEffect(() => {
-    // Show app store banner only on non-native (web browser) sessions
-    // and only if not already dismissed this session
-    try {
-      const { Capacitor } = require("@capacitor/core");
-      if (!Capacitor.isNativePlatform()) {
-        const dismissed = sessionStorage.getItem("ventzon_banner_dismissed");
-        if (!dismissed) setShowBanner(true);
-      }
-    } catch {
-      const dismissed = sessionStorage.getItem("ventzon_banner_dismissed");
-      if (!dismissed) setShowBanner(true);
-    }
-  }, []);
 
   // Runs for signed-out users too — the status bar is wrong on every screen,
   // not just authenticated ones.
@@ -171,14 +126,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const isScanPage = pathname === "/customer/scan";
   const hideNav = isAuthPage || isScanPage;
 
-  function dismissBanner() {
-    sessionStorage.setItem("ventzon_banner_dismissed", "1");
-    setShowBanner(false);
-  }
-
   return (
     <div className="customer-app flex flex-col bg-surface" style={{ minHeight: "100dvh" }}>
-      {showBanner && <AppStoreBanner onDismiss={dismissBanner} />}
       {showOnboarding && <Onboarding onFinish={finishOnboarding} />}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: hideNav ? 0 : "80px" }}>
         {children}

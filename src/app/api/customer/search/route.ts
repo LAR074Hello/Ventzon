@@ -54,6 +54,9 @@ export async function GET(req: Request) {
         .select("id, email, display_name, avatar_url")
         .ilike("display_name", `%${safe}%`)
         .not("display_name", "is", null)
+        // Private profiles stay out of search: a result that routes to a 404
+        // (creators/[id] only serves is_creator = true) reads as broken.
+        .eq("is_creator", true)
         .limit(12),
       getBlockedSet(admin, viewerEmail),
     ]);
