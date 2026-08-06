@@ -12,7 +12,7 @@
    Rules enforced by this file:
      · No `dark:` variants anywhere. The utility is theme-aware.
      · Elevation inverts: shadow in light, surface-lightness in dark.
-     · Three separated semantic lanes — accent (green), danger (red),
+     · Three separated semantic lanes — accent (maroon), danger (red),
        stamp (indigo). A verified visit must never read as an error.
    All pairs verified to WCAG AA in both themes.
    ═══════════════════════════════════════════════════════════════════ */
@@ -34,27 +34,28 @@
   --ink-400: #7c838a; /* interactive borders — 3:1 on paper-50 */
   --ink-300: #a8aeb4; /* decorative/disabled only, never body text */
 
-  /* night — dark surfaces. Near-black with a green undertone. */
-  --night-900: #0a0c0b;
-  --night-800: #101211; /* dark page background */
-  --night-700: #191c1a;
-  --night-600: #1e2220;
-  --night-500: #262a27;
-  --night-400: #666e68; /* interactive borders — 3:1 on night-800 */
+  /* night — dark surfaces. Warm near-black, never pure #000. */
+  --night-900: #151110;
+  --night-800: #1a1514; /* dark page background */
+  --night-700: #211b1a;
+  --night-600: #2a2321;
+  --night-500: #332c29;
+  --night-400: #5d534b; /* interactive borders — 3:1 on night-800 */
 
-  /* fog — dark text */
-  --fog-100: #edefea;
-  --fog-300: #b4bab5;
-  --fog-500: #8b928c; /* muted text — AA on night-800 */
+  /* fog — dark text, warm off-white */
+  --fog-100: #efe9e3;
+  --fog-300: #b3a9a0;
+  --fog-500: #8a8078; /* muted text — AA on night-800 */
 
-  /* green — accent. Civic/awning green. */
-  --green-700: #12513f;
-  --green-600: #1a6b53;
-  --green-100: #dcebe4;
-  --green-950: #06120e;
-  --green-900: #1b2e28;
-  --green-400: #3fa88a; /* dark-theme accent — lightened for contrast */
-  --green-300: #56be9f;
+  /* maroon — the signature accent. 230SL oxblood: brown-toned, dark. */
+  --maroon-700: #5a1e24;
+  --maroon-600: #6b232a;
+  --maroon-500: #7a2a32;
+  --maroon-400: #9c4b55; /* dark-theme accent — lightened for contrast */
+  --maroon-300: #b96e77; /* dark-theme hover / links */
+  --maroon-100: #ebd9db;
+  --maroon-900: #3d1418;
+  --maroon-950: #2a0d11;
 
   /* red — danger ONLY. Errors, destructive actions. */
   --red-600: #c63122; /* darkened from D83A2E for AA on paper-50 */
@@ -92,9 +93,9 @@
   --border-strong: var(--ink-400);
   --border-media: transparent; /* light needs no hairline on media */
 
-  --accent: var(--green-700);
-  --accent-hover: var(--green-600);
-  --accent-muted: var(--green-100);
+  --accent: var(--maroon-700);
+  --accent-hover: var(--maroon-600);
+  --accent-muted: var(--maroon-100);
   --on-accent: var(--paper-0);
 
   --danger: var(--red-600);
@@ -108,7 +109,7 @@
   --elevation-2: 0 0 0 1px rgb(22 24 28 / 0.07), 0 2px 6px rgb(22 24 28 / 0.06),
     0 18px 48px rgb(22 24 28 / 0.12);
 
-  --focus-ring: var(--green-600);
+  --focus-ring: var(--maroon-600);
 }
 
 [data-theme="dark"] {
@@ -128,10 +129,10 @@
   --border-strong: var(--night-400);
   --border-media: rgb(255 255 255 / 0.1); /* keeps photos off the bg */
 
-  --accent: var(--green-400);
-  --accent-hover: var(--green-300);
-  --accent-muted: var(--green-900);
-  --on-accent: var(--green-950);
+  --accent: var(--maroon-400);
+  --accent-hover: var(--maroon-300);
+  --accent-muted: var(--maroon-900);
+  --on-accent: var(--fog-100);
 
   --danger: var(--red-400);
   --on-danger: var(--red-950);
@@ -143,7 +144,7 @@
   --elevation-1: 0 0 0 1px rgb(255 255 255 / 0.06);
   --elevation-2: 0 0 0 1px rgb(255 255 255 / 0.09);
 
-  --focus-ring: var(--green-300);
+  --focus-ring: var(--maroon-300);
 }
 
 /* ── Tailwind wiring ────────────────────────────────────────────────

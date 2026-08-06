@@ -51,10 +51,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  // Matches the manifest. Was black, which flashed against the light app.
+  // Matches the manifest. Both resolve dark — the site is dark by default.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F7F7F4" },
-    { media: "(prefers-color-scheme: dark)", color: "#0A0A0A" },
+    { media: "(prefers-color-scheme: dark)", color: "#141010" },
+    { media: "(prefers-color-scheme: light)", color: "#1A1514" },
   ],
 };
 
@@ -123,20 +123,20 @@ export default function RootLayout({
        <html> before hydration by design, so the server and client
        markup differ on that attribute. Required, not optional — without
        it App Router logs a hydration error on every page. */
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body
         className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} antialiased`}
       >
         {/* Theme before paint. First child of <body> so it runs before
             anything renders — no flash of the wrong theme.
             ventzon_theme stores the PREFERENCE (light | dark | system);
-            data-theme holds the RESOLVED value. Light is the default
-            for new accounts, so an absent key means light, not system.
+            data-theme holds the RESOLVED value. Dark is the default,
+            so an absent key means dark, not system.
             Re-reads storage on each apply so the media listener stays
             correct after the user changes the preference at runtime. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var m=matchMedia("(prefers-color-scheme: dark)");function a(){var p=localStorage.getItem("ventzon_theme")||"light";var r=p==="system"?(m.matches?"dark":"light"):(p==="dark"?"dark":"light");document.documentElement.setAttribute("data-theme",r)}a();m.addEventListener("change",a)}catch(e){}})()`,
+            __html: `(function(){try{var m=matchMedia("(prefers-color-scheme: dark)");function a(){var p=localStorage.getItem("ventzon_theme")||"dark";var r=p==="system"?(m.matches?"dark":"light"):(p==="dark"?"dark":"light");document.documentElement.setAttribute("data-theme",r)}a();m.addEventListener("change",a)}catch(e){}})()`,
           }}
         />
         <SiteHeader />

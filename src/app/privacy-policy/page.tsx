@@ -13,11 +13,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-[#1a1a1a] p-8 transition-colors duration-500 hover:border-[#222]">
-      <h2 className="text-[15px] font-normal tracking-[-0.01em] text-[#ededed]">
+    <section className="rounded-2xl border border-night-700 p-8 transition-colors duration-500 hover:border-[#222]">
+      <h2 className="text-[15px] font-normal tracking-[-0.01em] text-fog-100">
         {title}
       </h2>
-      <div className="mt-4 space-y-3 text-[14px] font-light leading-[1.8] text-[#666]">
+      <div className="mt-4 space-y-3 text-[14px] font-light leading-[1.8] text-fog-500">
         {children}
       </div>
     </section>
@@ -26,15 +26,15 @@ function Section({
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-black px-6 pb-20 pt-28 text-[#ededed]">
+    <main className="min-h-screen bg-night-950 px-6 pb-20 pt-28 text-fog-100">
       <div className="mx-auto w-full max-w-3xl">
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+        <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           LEGAL
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
           Privacy Policy
         </h1>
-        <p className="mt-4 text-[14px] font-light text-[#555]">
+        <p className="mt-4 text-[14px] font-light text-fog-500">
           Effective date: May 23, 2026
         </p>
 
@@ -53,7 +53,7 @@ export default function PrivacyPolicyPage() {
             <p>We collect the minimum data needed to operate the service:</p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-normal text-[#ededed]">
+                <span className="font-normal text-fog-100">
                   Email address
                 </span>{" "}
                 — collected when you create an account or sign in via the iOS
@@ -61,26 +61,26 @@ export default function PrivacyPolicyPage() {
                 send account-related notifications.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">
+                <span className="font-normal text-fog-100">
                   Name
                 </span>{" "}
                 — optionally provided when signing in with Google. Used to
                 personalize your experience.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">
+                <span className="font-normal text-fog-100">
                   Visit history
                 </span>{" "}
                 — the number of check-ins per shop and the date of each visit.
                 Used to track progress toward rewards.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">Phone number</span>{" "}
+                <span className="font-normal text-fog-100">Phone number</span>{" "}
                 — optionally provided when checking in at a participating shop
                 via QR code. Used to identify you across visits.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">6-digit PIN</span>{" "}
+                <span className="font-normal text-fog-100">6-digit PIN</span>{" "}
                 — an optional PIN you set for quick re-check-ins on the web
                 platform. Stored as a one-way hash (scrypt); we cannot read
                 your PIN.
@@ -101,7 +101,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-normal text-[#ededed]">
+                <span className="font-normal text-fog-100">
                   Push notifications
                 </span>{" "}
                 — reward milestones and earned rewards delivered via push
@@ -115,7 +115,7 @@ export default function PrivacyPolicyPage() {
               You may delete your account at any time by contacting us at{" "}
               <a
                 href="mailto:support@ventzon.com"
-                className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
+                className="text-fog-100 underline underline-offset-4 transition-colors duration-300 hover:text-white"
               >
                 support@ventzon.com
               </a>
@@ -155,7 +155,7 @@ export default function PrivacyPolicyPage() {
 
           <Section title="Aggregated analytics">
             <p>
-              Ventzon may generate and share <span className="font-normal text-[#ededed]">aggregated, anonymized analytics</span> derived from platform activity — such as visit frequency trends, customer retention rates, foot traffic patterns by business category, and neighborhood-level activity data. This information does not identify any individual customer and cannot be used to do so.
+              Ventzon may generate and share <span className="font-normal text-fog-100">aggregated, anonymized analytics</span> derived from platform activity — such as visit frequency trends, customer retention rates, foot traffic patterns by business category, and neighborhood-level activity data. This information does not identify any individual customer and cannot be used to do so.
             </p>
             <p>
               These aggregated insights may be shared with or licensed to third parties including commercial real estate firms, market research companies, financial institutions, and brands for purposes such as location analysis, market research, and consumer behavior research.
@@ -169,7 +169,7 @@ export default function PrivacyPolicyPage() {
             <p>We use the following services to operate the platform:</p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-normal text-[#ededed]">Google</span> —
+                <span className="font-normal text-fog-100">Google</span> —
                 for optional Sign in with Google authentication. If you choose
                 to sign in with Google, your name and email address are shared
                 with us by Google in accordance with{" "}
@@ -177,25 +177,25 @@ export default function PrivacyPolicyPage() {
                   href="https://policies.google.com/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
+                  className="text-fog-100 underline underline-offset-4 transition-colors duration-300 hover:text-white"
                 >
                   Google&rsquo;s Privacy Policy
                 </a>
                 .
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">Supabase</span> —
+                <span className="font-normal text-fog-100">Supabase</span> —
                 for secure account and data storage. Data is encrypted at rest
                 and in transit.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">OneSignal</span> —
+                <span className="font-normal text-fog-100">OneSignal</span> —
                 for delivering push notifications to the Ventzon app.
                 Device tokens are shared with OneSignal solely for
                 notification delivery.
               </li>
               <li>
-                <span className="font-normal text-[#ededed]">Stripe</span> —
+                <span className="font-normal text-fog-100">Stripe</span> —
                 for processing merchant subscription payments. Ventzon does not
                 handle or store merchant payment card data.
               </li>
@@ -243,7 +243,7 @@ export default function PrivacyPolicyPage() {
               Questions about this policy? Reach us at{" "}
               <a
                 href="mailto:support@ventzon.com"
-                className="text-[#ededed] underline underline-offset-4 transition-colors duration-300 hover:text-white"
+                className="text-fog-100 underline underline-offset-4 transition-colors duration-300 hover:text-white"
               >
                 support@ventzon.com
               </a>
@@ -253,16 +253,16 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Footer links */}
-        <div className="mt-14 flex items-center justify-between border-t border-[#1a1a1a] pt-8">
+        <div className="mt-14 flex items-center justify-between border-t border-night-700 pt-8">
           <Link
             href="/"
-            className="text-[12px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+            className="text-[12px] font-light tracking-[0.1em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
           >
             &larr; Back to home
           </Link>
           <Link
             href="/terms"
-            className="text-[12px] font-light tracking-[0.1em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+            className="text-[12px] font-light tracking-[0.1em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
           >
             Terms of Service
           </Link>

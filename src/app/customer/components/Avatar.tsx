@@ -22,7 +22,7 @@
 
 const TINTS = [
   "var(--paper-200)",
-  "var(--green-100)",
+  "var(--maroon-100)",
   "var(--surface-sunken)",
   "var(--paper-100)",
   "var(--accent-muted)",

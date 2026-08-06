@@ -96,12 +96,12 @@ function StepBlock({
   flip?: boolean;
 }) {
   return (
-    <div className="border-t border-black/10 py-12 lg:py-16">
+    <div className="border-t border-white/10 py-12 lg:py-16">
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <div className={flip ? "lg:order-2" : ""}>
-          <p className="font-mono text-[13px] tracking-[0.2em] text-taupe-faint">{step.number}</p>
-          <h3 className="mt-4 text-2xl font-normal tracking-[0.02em] text-ink-warm">{step.title}</h3>
-          <p className="mt-4 max-w-md text-[15px] font-light leading-[1.8] text-taupe">{step.body}</p>
+          <p className="font-mono text-[13px] tracking-[0.2em] text-fog-500">{step.number}</p>
+          <h3 className="mt-4 text-2xl font-normal tracking-[0.02em] text-fog-100">{step.title}</h3>
+          <p className="mt-4 max-w-md text-[15px] font-light leading-[1.8] text-fog-300">{step.body}</p>
         </div>
         <div className={flip ? "lg:order-1" : ""}>
           <div className="relative mx-auto max-w-sm">
@@ -129,19 +129,19 @@ function StepBlock({
 
 export default function HowItWorksPage() {
   return (
-    <main className="min-h-screen bg-cream text-ink-warm">
+    <main className="min-h-screen bg-night-950 text-fog-100">
       {/* ── HERO — text left, editorial photo with a device frame right ── */}
       <section className="relative overflow-hidden px-4 pb-24 pt-28 sm:px-8 sm:pb-32 sm:pt-36">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(90,30,36,0.06),transparent)]" />
         <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 lg:gap-20">
           <div>
-            <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-taupe opacity-0">
+            <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-fog-300 opacity-0">
               HOW IT WORKS
             </p>
-            <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-ink-warm opacity-0 sm:text-5xl lg:text-6xl">
+            <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
               Find it. Go there. Prove it.
             </h1>
-            <p className="animate-fade-in-up anim-delay-600 mt-8 max-w-xl text-base font-light leading-[1.8] text-taupe opacity-0 sm:text-lg">
+            <p className="animate-fade-in-up anim-delay-600 mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
               Ventzon is a local social app. Discover real places, check in
               when you go, and share what they&rsquo;re actually like &mdash;
               with proof you were there.
@@ -181,7 +181,7 @@ export default function HowItWorksPage() {
         <div className="luxury-divider mx-auto mb-12 max-w-xs" />
         <div className="mx-auto max-w-6xl">
           <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-taupe">
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               FOR CUSTOMERS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
@@ -195,7 +195,7 @@ export default function HowItWorksPage() {
                 <StepBlock step={step} flip={i % 2 === 1} />
               </ScrollReveal>
             ))}
-            <div className="border-t border-black/10" />
+            <div className="border-t border-white/10" />
           </div>
         </div>
       </section>
@@ -219,13 +219,13 @@ export default function HowItWorksPage() {
       <section className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-6xl">
           <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-taupe">
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               FOR SHOPS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
               Get discovered by locals who actually show up.
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-taupe">
+            <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
               Your shop belongs on the map, with a real customer list behind it.
             </p>
           </ScrollReveal>
@@ -234,16 +234,16 @@ export default function HowItWorksPage() {
             <div className="space-y-0">
               {merchantSteps.map((step) => (
                 <ScrollReveal key={step.number}>
-                  <div className="border-t border-black/10 py-8 lg:py-10">
+                  <div className="border-t border-white/10 py-8 lg:py-10">
                     <div className="grid items-start gap-4 lg:grid-cols-[40px_1fr]">
-                      <p className="font-mono text-[13px] tracking-[0.2em] text-ink-warm">
+                      <p className="font-mono text-[13px] tracking-[0.2em] text-fog-100">
                         {step.number}
                       </p>
                       <div>
-                        <h3 className="text-xl font-normal tracking-[0.02em] text-ink-warm">
+                        <h3 className="text-xl font-normal tracking-[0.02em] text-fog-100">
                           {step.title}
                         </h3>
-                        <p className="mt-3 text-[15px] font-light leading-[1.8] text-taupe">
+                        <p className="mt-3 text-[15px] font-light leading-[1.8] text-fog-300">
                           {step.body}
                         </p>
                       </div>
@@ -251,11 +251,11 @@ export default function HowItWorksPage() {
                   </div>
                 </ScrollReveal>
               ))}
-              <div className="border-t border-black/10" />
+              <div className="border-t border-white/10" />
               <ScrollReveal className="mt-12">
                 <Link
                   href="/app"
-                  className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.15em] text-taupe transition-colors duration-500 hover:text-ink-warm"
+                  className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.15em] text-fog-300 transition-colors duration-500 hover:text-fog-100"
                 >
                   For shops &mdash; learn more
                   <ArrowRight className="h-3 w-3" />
@@ -305,7 +305,7 @@ export default function HowItWorksPage() {
               <div className="mt-9">
                 <Link
                   href="/customer/explore"
-                  className="inline-flex items-center gap-3 rounded-full bg-cream px-10 py-4 text-[13px] font-light tracking-[0.15em] text-ink-warm transition-all duration-500 hover:bg-white"
+                  className="inline-flex items-center gap-3 rounded-full bg-white px-10 py-4 text-[13px] font-light tracking-[0.15em] text-black transition-all duration-500 hover:bg-night-950"
                 >
                   Open the app
                   <ArrowRight className="h-3.5 w-3.5" />

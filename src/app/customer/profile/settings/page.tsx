@@ -174,8 +174,8 @@ export default function ProfilePage() {
   }
 
   // ventzon_theme stores the PREFERENCE; <html data-theme> holds the
-  // RESOLVED value. Light is the default for new accounts, so an absent
-  // key means light — "system" is stored explicitly when chosen.
+  // RESOLVED value. Dark is the default, so an absent key means dark —
+  // "system" is stored explicitly when chosen.
   // Kept in sync with the pre-paint script in src/app/layout.tsx.
   //
   // Read through useSyncExternalStore rather than useState + useEffect:

@@ -36,16 +36,16 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+    <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
       <div className="w-full max-w-md animate-fade-in opacity-0 anim-delay-200">
         {/* Header */}
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+        <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           ACCOUNT RECOVERY
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
           Reset password
         </h1>
-        <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
+        <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-500">
           Enter your email and we&rsquo;ll send you a link to reset your
           password.
         </p>
@@ -59,11 +59,11 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={onSubmit} className="mt-10 space-y-5">
             <div>
-              <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+              <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-fog-500">
                 EMAIL
               </label>
               <input
-                className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+                className="w-full rounded-lg border border-night-700 bg-night-900 px-4 py-3.5 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 hover:border-night-600 focus:border-night-600"
                 placeholder="you@example.com"
                 autoComplete="email"
                 type="email"
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
 
             <button
               disabled={loading}
-              className="mt-1 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+              className="mt-1 w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
             >
               {loading ? "Sending…" : "Send reset link"}
             </button>
@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
         <div className="mt-8">
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+            className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
           >
             <ArrowLeft className="h-3 w-3" />
             Back to sign in

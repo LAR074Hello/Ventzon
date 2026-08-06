@@ -10,7 +10,7 @@ export default function SiteFooter() {
           href="/"
           className="flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-70"
         >
-          <div className="h-6 w-6 overflow-hidden rounded-full bg-cream-card ring-1 ring-black/10">
+          <div className="h-6 w-6 overflow-hidden rounded-full bg-night-800 ring-1 ring-white/15">
             <Image
               src="/logo.png"
               alt="Ventzon"
@@ -19,44 +19,44 @@ export default function SiteFooter() {
               className="h-full w-full object-cover"
             />
           </div>
-          <span className="text-[11px] font-medium tracking-[0.4em] text-taupe">
+          <span className="text-[11px] font-medium tracking-[0.4em] text-fog-300">
             VENTZON
           </span>
         </Link>
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[13px] font-medium text-taupe">
+        <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[13px] font-medium text-fog-300">
           <Link
             href="/how-it-works"
-            className="transition-colors duration-300 hover:text-ink-warm"
+            className="transition-colors duration-300 hover:text-fog-100"
           >
             How it works
           </Link>
           <Link
             href="/help"
-            className="transition-colors duration-300 hover:text-ink-warm"
+            className="transition-colors duration-300 hover:text-fog-100"
           >
             Help
           </Link>
           <Link
             href="/careers"
-            className="transition-colors duration-300 hover:text-ink-warm"
+            className="transition-colors duration-300 hover:text-fog-100"
           >
             Careers
           </Link>
           <Link
             href="/customer/explore"
-            className="transition-colors duration-300 hover:text-ink-warm"
+            className="transition-colors duration-300 hover:text-fog-100"
           >
             Open app
           </Link>
           <Link
             href="/privacy-policy"
-            className="transition-colors duration-300 hover:text-ink-warm"
+            className="transition-colors duration-300 hover:text-fog-100"
           >
             Privacy
           </Link>
           <Link
             href="/terms"
-            className="transition-colors duration-300 hover:text-ink-warm"
+            className="transition-colors duration-300 hover:text-fog-100"
           >
             Terms
           </Link>

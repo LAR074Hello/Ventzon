@@ -45,8 +45,8 @@ export default function CustomerJoinPageWrapper() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-black">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+        <main className="flex min-h-screen items-center justify-center bg-night-950">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-night-600 border-t-[#ededed]" />
         </main>
       }
     >
@@ -185,8 +185,8 @@ function CustomerJoinPage() {
   /* ── Loading state ── */
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#333] border-t-[#ededed]" />
+      <main className="flex min-h-screen items-center justify-center bg-night-950">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-night-600 border-t-[#ededed]" />
       </main>
     );
   }
@@ -194,15 +194,15 @@ function CustomerJoinPage() {
   /* ── Token invalid — not accessed via QR code ── */
   if (tokenInvalid) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black px-6">
+      <main className="flex min-h-screen items-center justify-center bg-night-950 px-6">
         <div className="w-full max-w-sm text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-            <span className="text-2xl font-extralight text-[#555]">?</span>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-night-700 bg-night-900">
+            <span className="text-2xl font-extralight text-fog-500">?</span>
           </div>
-          <p className="mt-6 text-[18px] font-extralight text-[#ededed]">
+          <p className="mt-6 text-[18px] font-extralight text-fog-100">
             Scan the QR code
           </p>
-          <p className="mt-3 text-[13px] font-light text-[#555]">
+          <p className="mt-3 text-[13px] font-light text-fog-500">
             Visit the store and scan the QR code near the register to check in and earn rewards.
           </p>
         </div>
@@ -213,9 +213,9 @@ function CustomerJoinPage() {
   /* ── Error state (no settings loaded) ── */
   if (err && !settings) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black px-6">
+      <main className="flex min-h-screen items-center justify-center bg-night-950 px-6">
         <div className="w-full max-w-sm text-center">
-          <p className="text-[18px] font-extralight text-[#ededed]">
+          <p className="text-[18px] font-extralight text-fog-100">
             Couldn&rsquo;t load this shop
           </p>
           <p className="mt-3 text-[13px] font-light text-red-400/70">
@@ -243,8 +243,8 @@ function CustomerJoinPage() {
             key={i}
             className={`flex h-6 w-6 items-center justify-center rounded-full transition-all duration-500 ${
               i < visits
-                ? "bg-[#ededed]"
-                : "border border-[#333] bg-transparent"
+                ? "bg-fog-100"
+                : "border border-night-600 bg-transparent"
             }`}
           >
             {i < visits && <Check className="h-3 w-3 text-black" />}
@@ -255,36 +255,36 @@ function CustomerJoinPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-black">
+    <main className="flex min-h-screen flex-col bg-night-950">
       <div className="flex flex-1 flex-col items-center px-6 pt-20 pb-8">
         {/* Logo / Fallback initial */}
         {settings?.logo_url ? (
           <img
             src={settings.logo_url}
             alt={shopName}
-            className="h-20 w-20 rounded-full border border-[#1a1a1a] object-cover"
+            className="h-20 w-20 rounded-full border border-night-700 object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-            <span className="text-2xl font-extralight text-[#555]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-night-700 bg-night-900">
+            <span className="text-2xl font-extralight text-fog-500">
               {shopName.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
 
         {/* Shop name */}
-        <h1 className="mt-5 text-[13px] font-light tracking-[0.3em] text-[#ededed]">
+        <h1 className="mt-5 text-[13px] font-light tracking-[0.3em] text-fog-100">
           {shopName.toUpperCase()}
         </h1>
 
         {/* Deal info */}
         {settings?.deal_title && !result && (
-          <div className="mt-6 rounded-lg border border-[#1a1a1a] px-5 py-3.5 text-center">
-            <p className="text-[13px] font-light text-[#888]">
+          <div className="mt-6 rounded-lg border border-night-700 px-5 py-3.5 text-center">
+            <p className="text-[13px] font-light text-fog-300">
               {settings.deal_title}
             </p>
             {settings.deal_details && (
-              <p className="mt-1 text-[12px] font-light text-[#555]">
+              <p className="mt-1 text-[12px] font-light text-fog-500">
                 {settings.deal_details}
               </p>
             )}
@@ -294,22 +294,22 @@ function CustomerJoinPage() {
         {/* ── Result state ── */}
         {result ? (
           <div className="mt-10 w-full max-w-sm animate-fade-in opacity-0">
-            <div className="rounded-xl border border-[#1a1a1a] p-8 text-center">
+            <div className="rounded-xl border border-night-700 p-8 text-center">
               {/* Status icon */}
               {result.status === "reward" ? (
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
                   <Check className="h-7 w-7 text-emerald-400" />
                 </div>
               ) : (
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-                  <span className="font-mono text-[18px] font-light text-[#ededed]">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-night-700 bg-night-900">
+                  <span className="font-mono text-[18px] font-light text-fog-100">
                     {result.visits}
                   </span>
                 </div>
               )}
 
               {/* Message */}
-              <p className="mt-5 text-[16px] font-extralight text-[#ededed]">
+              <p className="mt-5 text-[16px] font-extralight text-fog-100">
                 {result.message}
               </p>
 
@@ -324,7 +324,7 @@ function CustomerJoinPage() {
               )}
 
               {/* Stats */}
-              <p className="mt-5 text-[12px] font-light tracking-[0.1em] text-[#555]">
+              <p className="mt-5 text-[12px] font-light tracking-[0.1em] text-fog-500">
                 {result.visits}/{result.goal} visits
                 {result.remaining > 0 && (
                   <span>
@@ -345,7 +345,7 @@ function CustomerJoinPage() {
 
               {/* Info */}
               {result.status !== "reward" && (
-                <p className="mt-4 text-[11px] font-light text-[#444]">
+                <p className="mt-4 text-[11px] font-light text-fog-600">
                   1 check-in per day &middot; Progress resets after redeem
                 </p>
               )}
@@ -357,7 +357,7 @@ function CustomerJoinPage() {
                   setPhoneRaw("");
                   setEmailRaw("");
                 }}
-                className="mt-8 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+                className="mt-8 w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black"
               >
                 Done
               </button>
@@ -370,14 +370,14 @@ function CustomerJoinPage() {
             className="mt-10 w-full max-w-sm animate-fade-in opacity-0 anim-delay-200"
           >
             {/* Contact method toggle */}
-            <div className="mb-6 flex items-center justify-center gap-1 rounded-full border border-[#1a1a1a] p-1">
+            <div className="mb-6 flex items-center justify-center gap-1 rounded-full border border-night-700 p-1">
               <button
                 type="button"
                 onClick={() => setContactMethod("phone")}
                 className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${
                   contactMethod === "phone"
-                    ? "bg-[#ededed] text-black"
-                    : "text-[#555] hover:text-[#ededed]"
+                    ? "bg-fog-100 text-black"
+                    : "text-fog-500 hover:text-fog-100"
                 }`}
               >
                 PHONE
@@ -387,8 +387,8 @@ function CustomerJoinPage() {
                 onClick={() => setContactMethod("email")}
                 className={`flex-1 rounded-full py-2.5 text-[11px] font-light tracking-[0.15em] transition-all duration-300 ${
                   contactMethod === "email"
-                    ? "bg-[#ededed] text-black"
-                    : "text-[#555] hover:text-[#ededed]"
+                    ? "bg-fog-100 text-black"
+                    : "text-fog-500 hover:text-fog-100"
                 }`}
               >
                 EMAIL
@@ -398,7 +398,7 @@ function CustomerJoinPage() {
             <div>
               {contactMethod === "phone" ? (
                 <>
-                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-fog-500">
                     PHONE NUMBER
                   </label>
                   <input
@@ -409,13 +409,13 @@ function CustomerJoinPage() {
                     }
                     placeholder="(555) 123-4567"
                     maxLength={14}
-                    className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+                    className="w-full rounded-lg border border-night-700 bg-night-900 px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 hover:border-night-600 focus:border-night-600"
                     disabled={submitting}
                   />
                 </>
               ) : (
                 <>
-                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+                  <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-fog-500">
                     EMAIL ADDRESS
                   </label>
                   <input
@@ -423,7 +423,7 @@ function CustomerJoinPage() {
                     value={emailRaw}
                     onChange={(e) => setEmailRaw(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+                    className="w-full rounded-lg border border-night-700 bg-night-900 px-4 py-4 text-center text-[18px] font-light tracking-[0.05em] text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 hover:border-night-600 focus:border-night-600"
                     disabled={submitting}
                   />
                 </>
@@ -441,7 +441,7 @@ function CustomerJoinPage() {
             <button
               type="submit"
               disabled={submitting || (contactMethod === "phone" ? !phoneRaw.trim() : !emailRaw.trim())}
-              className="mt-6 w-full rounded-full border border-[#ededed] py-4 text-[12px] font-light tracking-[0.2em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-30"
+              className="mt-6 w-full rounded-full border border-fog-100 py-4 text-[12px] font-light tracking-[0.2em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-30"
             >
               {submitting ? "CHECKING IN\u2026" : "CHECK IN"}
             </button>
@@ -451,7 +451,7 @@ function CustomerJoinPage() {
 
       {/* Footer */}
       <div className="px-8 pb-8 pt-4">
-        <p className="text-center text-[11px] font-light leading-relaxed text-[#444]">
+        <p className="text-center text-[11px] font-light leading-relaxed text-fog-600">
           By checking in you agree to receive reward notifications.
           <br />
           Unsubscribe anytime.

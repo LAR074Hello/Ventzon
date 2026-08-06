@@ -10,14 +10,14 @@ export const metadata: Metadata = {
 
 export default function SummerSalesInternPage() {
   return (
-    <main className="min-h-screen bg-black text-[#ededed]">
+    <main className="min-h-screen bg-night-950 text-fog-100">
 
       {/* Hero */}
       <section className="px-8 pb-12 pt-40">
         <div className="mx-auto max-w-3xl">
           <Link
             href="/careers"
-            className="text-[11px] font-light tracking-[0.3em] text-[#777] transition-colors hover:text-[#aaa]"
+            className="text-[11px] font-light tracking-[0.3em] text-[#777] transition-colors hover:text-fog-300"
           >
             ← CAREERS
           </Link>
@@ -29,25 +29,25 @@ export default function SummerSalesInternPage() {
             <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">INTERNSHIP</span>
           </div>
 
-          <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
             Summer Sales Intern
           </h1>
 
           <div className="mt-5 flex flex-wrap items-center gap-5">
-            <span className="flex items-center gap-1.5 text-[13px] font-light text-[#aaa]">
+            <span className="flex items-center gap-1.5 text-[13px] font-light text-fog-300">
               <MapPin className="h-3.5 w-3.5" /> Your city (field-based)
             </span>
-            <span className="flex items-center gap-1.5 text-[13px] font-light text-[#aaa]">
+            <span className="flex items-center gap-1.5 text-[13px] font-light text-fog-300">
               <Clock className="h-3.5 w-3.5" /> Summer 2025
             </span>
-            <span className="flex items-center gap-1.5 text-[13px] font-light text-[#aaa]">
+            <span className="flex items-center gap-1.5 text-[13px] font-light text-fog-300">
               <DollarSign className="h-3.5 w-3.5" /> $50–100/merchant + bonuses
             </span>
           </div>
 
           <Link
             href="/careers/summer-sales-intern/apply"
-            className="mt-8 inline-flex items-center gap-2.5 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black"
+            className="mt-8 inline-flex items-center gap-2.5 rounded-full border border-fog-100 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-300 hover:bg-fog-100 hover:text-black"
           >
             Apply now <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -61,20 +61,20 @@ export default function SummerSalesInternPage() {
         <div className="mx-auto max-w-3xl space-y-14">
 
           <div>
-            <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">ABOUT THE ROLE</p>
-            <p className="mt-5 text-[15px] font-light leading-relaxed text-[#bbb]">
+            <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">ABOUT THE ROLE</p>
+            <p className="mt-5 text-[15px] font-light leading-relaxed text-fog-200">
               Ventzon is building the loyalty layer for local businesses — the tech that turns one-time customers into regulars. We're growing fast and need boots on the ground to bring merchants onto the platform.
             </p>
-            <p className="mt-4 text-[15px] font-light leading-relaxed text-[#bbb]">
+            <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-200">
               As a Summer Sales Intern, you'll own merchant acquisition in your city. You'll walk into coffee shops, restaurants, salons, and retail stores, pitch the product, and sign them up on the spot. No cold calling — this is real, in-person relationship selling.
             </p>
-            <p className="mt-4 text-[15px] font-light leading-relaxed text-[#bbb]">
+            <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-200">
               This is a ground-floor opportunity. You'll have a direct line to the founders, your feedback shapes the product, and top performers have a path to a full-time role.
             </p>
           </div>
 
           <div>
-            <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">WHAT YOU'LL DO</p>
+            <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">WHAT YOU'LL DO</p>
             <ul className="mt-5 space-y-3">
               {[
                 "Walk into local businesses and pitch Ventzon's loyalty program face-to-face",
@@ -84,7 +84,7 @@ export default function SummerSalesInternPage() {
                 "Identify objections and work with the team to refine the pitch",
                 "Help grow Ventzon's presence in your market from the ground up",
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[14px] font-light leading-relaxed text-[#bbb]">
+                <li key={item} className="flex items-start gap-3 text-[14px] font-light leading-relaxed text-fog-200">
                   <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#666]" />
                   {item}
                 </li>
@@ -93,7 +93,7 @@ export default function SummerSalesInternPage() {
           </div>
 
           <div>
-            <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">WHO YOU ARE</p>
+            <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">WHO YOU ARE</p>
             <ul className="mt-5 space-y-3">
               {[
                 "Outgoing and confident — you enjoy talking to people you've never met",
@@ -103,7 +103,7 @@ export default function SummerSalesInternPage() {
                 "Hungry to grow and motivated by results, not just showing up",
                 "Sales, retail, or customer-facing experience is a plus but not required",
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[14px] font-light leading-relaxed text-[#bbb]">
+                <li key={item} className="flex items-start gap-3 text-[14px] font-light leading-relaxed text-fog-200">
                   <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#666]" />
                   {item}
                 </li>
@@ -112,15 +112,15 @@ export default function SummerSalesInternPage() {
           </div>
 
           <div>
-            <p className="text-[11px] font-light tracking-[0.3em] text-[#888]">COMPENSATION</p>
+            <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">COMPENSATION</p>
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 { label: "$50–100", detail: "Per merchant signed up and active" },
                 { label: "Uncapped", detail: "No ceiling on your earnings" },
                 { label: "Bonus", detail: "Paid for top performers each month" },
               ].map(({ label, detail }) => (
-                <div key={label} className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5">
-                  <p className="text-[20px] font-extralight text-[#ededed]">{label}</p>
+                <div key={label} className="rounded-xl border border-[#222] bg-night-900 p-5">
+                  <p className="text-[20px] font-extralight text-fog-100">{label}</p>
                   <p className="mt-1 text-[12px] font-light text-[#999]">{detail}</p>
                 </div>
               ))}
@@ -128,14 +128,14 @@ export default function SummerSalesInternPage() {
           </div>
 
           {/* CTA */}
-          <div className="rounded-2xl border border-[#2a2a2a] bg-[#060606] p-8 text-center">
-            <p className="text-[18px] font-extralight text-[#ededed]">Sound like you?</p>
+          <div className="rounded-2xl border border-night-600 bg-[#060606] p-8 text-center">
+            <p className="text-[18px] font-extralight text-fog-100">Sound like you?</p>
             <p className="mt-2 text-[13px] font-light text-[#999]">
               Applications take about 5 minutes. No cover letter required to get started.
             </p>
             <Link
               href="/careers/summer-sales-intern/apply"
-              className="mt-6 inline-flex items-center gap-2.5 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:bg-[#ededed] hover:text-black"
+              className="mt-6 inline-flex items-center gap-2.5 rounded-full border border-fog-100 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-300 hover:bg-fog-100 hover:text-black"
             >
               Start application <ArrowRight className="h-3.5 w-3.5" />
             </Link>

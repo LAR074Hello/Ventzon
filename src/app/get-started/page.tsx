@@ -72,8 +72,8 @@ export default function GetStartedPage() {
   /* ── Loading state ── */
   if (checkingAuth) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
-        <p className="text-[14px] font-light text-[#444] animate-pulse">
+      <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
+        <p className="text-[14px] font-light text-fog-600 animate-pulse">
           Loading…
         </p>
       </main>
@@ -82,41 +82,41 @@ export default function GetStartedPage() {
 
   /* ── Page ── */
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+    <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
       <div className="w-full max-w-lg animate-fade-in opacity-0 anim-delay-200">
         {/* Step indicator */}
         <div className="flex items-center gap-3 mb-8">
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ededed]">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-fog-100">
               <span className="text-[11px] font-normal text-black">1</span>
             </div>
-            <span className="text-[11px] font-light tracking-[0.1em] text-[#ededed]">Name your shop</span>
+            <span className="text-[11px] font-light tracking-[0.1em] text-fog-100">Name your shop</span>
           </div>
           <div className="h-[1px] w-6 bg-[#333]" />
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#333]">
-              <span className="text-[11px] font-light text-[#555]">2</span>
+            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-night-600">
+              <span className="text-[11px] font-light text-fog-500">2</span>
             </div>
-            <span className="text-[11px] font-light tracking-[0.1em] text-[#555]">Choose a plan</span>
+            <span className="text-[11px] font-light tracking-[0.1em] text-fog-500">Choose a plan</span>
           </div>
         </div>
 
         {/* Header */}
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+        <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           ONBOARDING
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
           Name your shop
         </h1>
-        <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
+        <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-500">
           This is the name your customers will see when they check in.
           You&rsquo;ll set your reward offer and goal in the dashboard after subscribing.
         </p>
 
         {/* Card */}
-        <div className="mt-10 rounded-xl border border-[#1a1a1a] p-6 transition-colors duration-500 hover:border-[#222]">
+        <div className="mt-10 rounded-xl border border-night-700 p-6 transition-colors duration-500 hover:border-[#222]">
           <form onSubmit={onSubmit}>
-            <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+            <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-fog-500">
               SHOP NAME
             </label>
             <input
@@ -125,19 +125,19 @@ export default function GetStartedPage() {
               placeholder="e.g. Sunrise Bakery"
               required
               maxLength={60}
-              className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+              className="w-full rounded-lg border border-night-700 bg-night-900 px-4 py-3.5 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 hover:border-night-600 focus:border-night-600"
             />
 
             {/* Slug preview */}
             {shopName.length > 0 && (
-              <p className="mt-3 text-[12px] font-light text-[#444]">
+              <p className="mt-3 text-[12px] font-light text-fog-600">
                 ventzon.com/join/
-                <span className="text-[#666]">{slugPreview || "…"}</span>
+                <span className="text-fog-500">{slugPreview || "…"}</span>
               </p>
             )}
 
             {/* Character count */}
-            <p className="mt-2 text-right text-[11px] font-light text-[#333]">
+            <p className="mt-2 text-right text-[11px] font-light text-fog-600">
               {shopName.length}/60
             </p>
 
@@ -151,7 +151,7 @@ export default function GetStartedPage() {
             {/* Submit */}
             <button
               disabled={loading}
-              className="mt-6 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+              className="mt-6 w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
             >
               <span className="inline-flex items-center gap-2">
                 {loading ? "Creating shop…" : "Continue to plans"}
@@ -161,10 +161,10 @@ export default function GetStartedPage() {
           </form>
 
           {/* Dashboard link */}
-          <div className="mt-5 border-t border-[#1a1a1a] pt-5">
+          <div className="mt-5 border-t border-night-700 pt-5">
             <Link
               href="/merchant/dashboard"
-              className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+              className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
             >
               Already have a shop? Go to dashboard
               <ArrowRight className="h-3 w-3" />

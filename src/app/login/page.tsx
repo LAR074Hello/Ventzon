@@ -57,11 +57,11 @@ function LoginForm() {
     <form onSubmit={onSubmit} className="space-y-5">
       {/* Email */}
       <div>
-        <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+        <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-fog-500">
           EMAIL
         </label>
         <input
-          className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+          className="w-full rounded-lg border border-night-700 bg-night-900 px-4 py-3.5 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 hover:border-night-600 focus:border-night-600"
           placeholder="you@example.com"
           autoComplete="email"
           type="email"
@@ -73,12 +73,12 @@ function LoginForm() {
 
       {/* Password */}
       <div>
-        <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-[#555]">
+        <label className="mb-2 block text-[11px] font-light tracking-[0.2em] text-fog-500">
           PASSWORD
         </label>
         <div className="relative">
           <input
-            className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 pr-12 text-[14px] font-light text-[#ededed] outline-none transition-colors duration-300 placeholder:text-[#333] hover:border-[#333] focus:border-[#444]"
+            className="w-full rounded-lg border border-night-700 bg-night-900 px-4 py-3.5 pr-12 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 hover:border-night-600 focus:border-night-600"
             placeholder="••••••••"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
@@ -89,7 +89,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444] transition-colors duration-300 hover:text-[#888]"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-fog-600 transition-colors duration-300 hover:text-fog-300"
           >
             {showPassword ? (
               <EyeOff className="h-4 w-4" />
@@ -110,7 +110,7 @@ function LoginForm() {
       {/* Submit */}
       <button
         disabled={loading}
-        className="mt-1 w-full rounded-full border border-[#ededed] py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+        className="mt-1 w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
       >
         {loading ? "Signing in…" : "Sign in"}
       </button>
@@ -121,16 +121,16 @@ function LoginForm() {
 /* ── Page ── */
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 pt-24 pb-12">
+    <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
       <div className="w-full max-w-md animate-fade-in opacity-0 anim-delay-200">
         {/* Header */}
-        <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+        <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           SIGN IN
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-[#ededed] sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
           Welcome back
         </h1>
-        <p className="mt-4 text-[15px] font-light leading-relaxed text-[#555]">
+        <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-500">
           Sign in to your merchant account to manage your loyalty program.
         </p>
 
@@ -146,13 +146,13 @@ export default function LoginPage() {
         <div className="mt-8 flex items-center justify-between">
           <Link
             href="/forgot-password"
-            className="text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+            className="text-[12px] font-light tracking-[0.05em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
           >
             Forgot password?
           </Link>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-[#444] transition-colors duration-300 hover:text-[#ededed]"
+            className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.05em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
           >
             Create account
             <ArrowRight className="h-3 w-3" />

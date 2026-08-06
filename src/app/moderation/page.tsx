@@ -84,10 +84,10 @@ export default function ModerationPage() {
 
   if (denied) {
     return (
-      <main className="min-h-screen bg-black px-6 pt-24 text-center text-[#ededed]">
-        <p className="text-[11px] font-light tracking-[0.5em] text-[#555]">403</p>
+      <main className="min-h-screen bg-night-950 px-6 pt-24 text-center text-fog-100">
+        <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">403</p>
         <h1 className="mt-4 text-2xl font-extralight">Not authorized</h1>
-        <p className="mt-3 text-sm font-light text-[#666]">This page is only for Ventzon admins.</p>
+        <p className="mt-3 text-sm font-light text-fog-500">This page is only for Ventzon admins.</p>
         <Link href="/" className="mt-8 inline-block text-sm font-light text-[#999] underline underline-offset-4">
           &larr; Back
         </Link>
@@ -96,17 +96,17 @@ export default function ModerationPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 sm:px-8 py-20 text-[#ededed]">
+    <main className="min-h-screen bg-night-950 px-4 sm:px-8 py-20 text-fog-100">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-light tracking-[0.4em] text-[#888]">MODERATION</p>
+            <p className="text-[11px] font-light tracking-[0.4em] text-fog-300">MODERATION</p>
             <h1 className="mt-3 text-3xl font-extralight">Report queue</h1>
           </div>
           <button
             onClick={load}
             disabled={loading}
-            className="rounded-full border border-[#333] px-5 py-2 text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors hover:border-[#666] disabled:opacity-40"
+            className="rounded-full border border-night-600 px-5 py-2 text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors hover:border-[#666] disabled:opacity-40"
           >
             {loading ? "…" : "REFRESH"}
           </button>
@@ -120,30 +120,30 @@ export default function ModerationPage() {
 
         {/* Open reports */}
         <section className="mt-10">
-          <p className="text-[11px] font-light tracking-[0.4em] text-[#555]">
+          <p className="text-[11px] font-light tracking-[0.4em] text-fog-500">
             OPEN REPORTS &middot; {reports.length}
           </p>
           {!loading && reports.length === 0 ? (
-            <p className="mt-6 text-sm font-light text-[#555]">Nothing open. Good.</p>
+            <p className="mt-6 text-sm font-light text-fog-500">Nothing open. Good.</p>
           ) : (
             <div className="mt-6 space-y-3">
               {reports.map((r) => (
-                <div key={r.id} className="rounded-xl border border-[#1a1a1a] bg-[#080808] p-4">
+                <div key={r.id} className="rounded-xl border border-night-700 bg-night-950 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-[11px] font-light uppercase tracking-[0.15em] text-[#555]">
+                    <p className="text-[11px] font-light uppercase tracking-[0.15em] text-fog-500">
                       {r.target_type} &middot; {r.reason} &middot; {timeAgo(r.created_at)}
                     </p>
-                    <p className="text-[11px] font-light text-[#444]">by {r.reporter_email}</p>
+                    <p className="text-[11px] font-light text-fog-600">by {r.reporter_email}</p>
                   </div>
                   <div className="mt-3 rounded-lg bg-[#0f0f0f] p-3">
                     {r.preview.gone ? (
-                      <p className="text-sm font-light text-[#555]">Content already gone.</p>
+                      <p className="text-sm font-light text-fog-500">Content already gone.</p>
                     ) : (
                       <>
-                        <p className="text-sm font-light text-[#ededed]">
+                        <p className="text-sm font-light text-fog-100">
                           {r.preview.text ?? `[${r.target_type} with media]`}
                         </p>
-                        <p className="mt-1 text-xs font-light text-[#666]">
+                        <p className="mt-1 text-xs font-light text-fog-500">
                           author: {r.preview.author_display_name ?? r.preview.author_email ?? "unknown"}
                         </p>
                       </>
@@ -153,7 +153,7 @@ export default function ModerationPage() {
                     <button
                       onClick={() => act(`dismiss-${r.id}`, { action: "dismiss", report_id: r.id })}
                       disabled={busy !== null}
-                      className="rounded-full border border-[#333] px-4 py-1.5 text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors hover:border-[#666] disabled:opacity-40"
+                      className="rounded-full border border-night-600 px-4 py-1.5 text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors hover:border-[#666] disabled:opacity-40"
                     >
                       DISMISS
                     </button>
@@ -194,28 +194,28 @@ export default function ModerationPage() {
 
         {/* Banned users */}
         <section className="mt-14">
-          <p className="text-[11px] font-light tracking-[0.4em] text-[#555]">
+          <p className="text-[11px] font-light tracking-[0.4em] text-fog-500">
             BANNED &middot; {banned.length}
           </p>
           {!loading && banned.length === 0 ? (
-            <p className="mt-6 text-sm font-light text-[#555]">No one banned.</p>
+            <p className="mt-6 text-sm font-light text-fog-500">No one banned.</p>
           ) : (
             <div className="mt-6 space-y-2">
               {banned.map((b) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between rounded-xl border border-[#1a1a1a] bg-[#080808] px-4 py-3"
+                  className="flex items-center justify-between rounded-xl border border-night-700 bg-night-950 px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-light text-[#ededed]">{b.display_name ?? b.email}</p>
-                    <p className="text-xs font-light text-[#666]">
+                    <p className="text-sm font-light text-fog-100">{b.display_name ?? b.email}</p>
+                    <p className="text-xs font-light text-fog-500">
                       {b.email} &middot; banned {timeAgo(b.banned_at)}
                     </p>
                   </div>
                   <button
                     onClick={() => act(`unban-${b.id}`, { action: "unban", profile_id: b.id })}
                     disabled={busy !== null}
-                    className="rounded-full border border-[#333] px-4 py-1.5 text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors hover:border-[#666] disabled:opacity-40"
+                    className="rounded-full border border-night-600 px-4 py-1.5 text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors hover:border-[#666] disabled:opacity-40"
                   >
                     UNBAN
                   </button>
@@ -225,7 +225,7 @@ export default function ModerationPage() {
           )}
         </section>
 
-        <p className="mt-16 text-center text-[11px] font-light text-[#444]">
+        <p className="mt-16 text-center text-[11px] font-light text-fog-600">
           Removing content is immediate and permanent. Banning hides all of a
           user&rsquo;s content until they are unbanned.
         </p>
