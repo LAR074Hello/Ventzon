@@ -88,27 +88,39 @@ export default function HeroScroll() {
           </div>
         </section>
 
-        {/* ── STATEMENT — same centered copy, slides over the pinned video ── */}
+        {/* ── STORY BRIDGE — the promise, slides over the pinned video ── */}
         <section className="relative z-10 flex min-h-[85svh] items-center justify-center overflow-hidden bg-night-950 px-6 py-28">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_0%,rgba(90,30,36,0.16),transparent)]" />
           <div className="relative text-center">
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[11px] font-medium uppercase tracking-[0.22em] text-maroon-300"
+            >
+              Ventzon
+            </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-[clamp(3rem,7vw,5.25rem)] font-light leading-[1.08] tracking-[0.02em] text-white"
+              className="mx-auto mt-8 max-w-4xl font-display text-[clamp(2rem,4.5vw,3.5rem)] font-light leading-[1.12] tracking-[0.02em] text-white"
             >
-              Unleash Unbridled Loyalty
+              Real places. Verified visits. Posts you can trust.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.6 }}
-              transition={{ duration: 0.9, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto mt-6 max-w-xl text-lg font-light leading-[1.7] text-fog-300"
+              transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="mx-auto mt-8 max-w-xl text-[17px] font-light leading-[1.75] text-fog-300"
             >
-              Find real places. See who&rsquo;s actually there.
+              Ventzon is a local social app for people who care where they go.
+              Discover what&rsquo;s actually worth the trip, check in when you&rsquo;re
+              there, and share it with proof &mdash; so the places worth going to
+              get found by the people who&rsquo;ll love them.
             </motion.p>
           </div>
         </section>

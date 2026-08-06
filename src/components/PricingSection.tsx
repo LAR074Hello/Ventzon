@@ -57,7 +57,7 @@ export default function PricingSection() {
               <div className="mt-10 pt-2">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2.5 rounded-full border border-fog-100/20 px-8 py-3.5 text-[13px] font-medium tracking-[0.12em] text-fog-100 transition-all duration-300 hover:border-fog-100/50"
+                  className="inline-flex items-center gap-2.5 rounded-full border border-fog-100/20 px-8 py-3.5 text-[13px] font-medium tracking-[0.15em] text-fog-100 transition-all duration-300 hover:border-fog-100/50"
                 >
                   Start with monthly
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -93,7 +93,7 @@ export default function PricingSection() {
               <div className="mt-10 pt-2">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-[13px] font-medium tracking-[0.12em] text-black transition-all duration-300 hover:bg-cream"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-[13px] font-medium tracking-[0.15em] text-black transition-all duration-300 hover:bg-cream"
                 >
                   Start with yearly
                   <ArrowRight className="h-3.5 w-3.5" />

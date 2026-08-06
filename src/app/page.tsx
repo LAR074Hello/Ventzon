@@ -153,7 +153,7 @@ export default function HomePage() {
         <ScrollReveal>
           <Link
             href="/customer/explore"
-            className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
+            className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
           >
             Open the app
             <ArrowRight className="h-4 w-4" />
@@ -212,7 +212,7 @@ export default function HomePage() {
           <ScrollReveal className="mt-12 text-center">
             <Link
               href="/app"
-              className="inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium text-white shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-maroon-hover"
+              className="inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-maroon-hover"
             >
               See how it works for your shop
               <ArrowRight className="h-4 w-4" />
@@ -242,7 +242,7 @@ export default function HomePage() {
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href="/customer/explore"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
                 >
                   Open the app
                   <ArrowRight className="h-4 w-4" />

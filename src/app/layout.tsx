@@ -1,6 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import type { Metadata, Viewport } from "next";
-import { Archivo, Public_Sans, DM_Mono, Cormorant_Garamond, Karla } from "next/font/google";
+import { DM_Mono, Fraunces, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 
 // Three type roles. next/font self-hosts these at build time — the
@@ -8,38 +8,19 @@ import "./globals.css";
 // preloaded, so there is no runtime CDN dependency.
 // See globals.css for the token system that consumes them.
 
-// Display — headlines, place names, section titles. Variable, with the
-// width axis exposed so display type can condense without a second file.
-const displayFont = Archivo({
-  variable: "--font-archivo",
+// Display — Fraunces, a variable serif with optical sizing: delicate and
+// editorial at large sizes, firm enough for UI labels at small sizes.
+const displayFont = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  axes: ["wdth"],
+  axes: ["opsz"],
   display: "swap",
 });
 
-// Body / UI — the workhorse. Variable weight, no axes needed.
-const bodyFont = Public_Sans({
-  variable: "--font-public-sans",
+// Body / UI — Hanken Grotesk, a refined neo-grotesque.
+const bodyFont = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
-  display: "swap",
-});
-
-// Marketing display — an elegant light serif, the aman.com register.
-// Used only inside .marketing surfaces; the app keeps Archivo for dense
-// UI legibility.
-const serifDisplay = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-// Marketing body — a clean humanist sans.
-const sansBody = Karla({
-  variable: "--font-karla",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
   display: "swap",
 });
 
@@ -144,7 +125,7 @@ export default function RootLayout({
        it App Router logs a hydration error on every page. */
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body
-        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} ${serifDisplay.variable} ${sansBody.variable} antialiased`}
+        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} antialiased`}
       >
         {/* Theme before paint. First child of <body> so it runs before
             anything renders — no flash of the wrong theme.

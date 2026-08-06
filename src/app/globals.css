@@ -267,12 +267,12 @@
   --radius-sheet: 28px; /* sheets and heroes */
 
   /* ── Type families ─────────────────────────────────────────────
-     Archivo (display, width axis available), Public Sans (body/UI),
+     Fraunces (display, optical sizing), Hanken Grotesk (body/UI),
      DM Mono (data/receipt voice). Self-hosted via next/font. */
-  --font-display: var(--font-archivo), "Archivo", system-ui, sans-serif;
-  --font-body: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
+  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-body: var(--font-hanken), "Hanken Grotesk", system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), "DM Mono", ui-monospace, monospace;
-  --font-sans: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
+  --font-sans: var(--font-hanken), "Hanken Grotesk", system-ui, sans-serif;
 }
 
 /* ═══ Base ═══════════════════════════════════════════════════════ */
@@ -285,8 +285,8 @@ body {
      they can actually see them — and inherit to everything below, including
      SVG (which is how Postmark gets its receipt voice). Without this, body
      text silently falls back to the system sans stack. */
-  --font-display: var(--font-archivo), "Archivo", system-ui, sans-serif;
-  --font-body: var(--font-public-sans), "Public Sans", system-ui, sans-serif;
+  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-body: var(--font-hanken), "Hanken Grotesk", system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), "DM Mono", ui-monospace, monospace;
 
   background: var(--surface);
@@ -605,18 +605,4 @@ body {
 
   --shadow-warm: 0 24px 60px -24px rgb(60 50 30 / 0.18);
   --shadow-warm-lg: 0 32px 80px -24px rgb(60 50 30 / 0.24);
-}
-
-/* ── Marketing type scope ─────────────────────────────────────────────
-   Cormorant Garamond (display) + Karla (body), the aman.com register.
-   Scoped to `.marketing` surfaces so the customer app keeps Archivo /
-   Public Sans for dense UI legibility. Tailwind's `@theme inline`
-   bakes `var(--font-archivo)` / `var(--font-public-sans)` into the
-   font-display / font-body utilities directly, so the override targets
-   those runtime variables (not the --font-display alias). */
-.marketing {
-  --font-archivo: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  --font-public-sans: var(--font-karla), "Karla", system-ui, sans-serif;
-  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  font-family: var(--font-karla), "Karla", system-ui, sans-serif;
 }
