@@ -13,12 +13,12 @@ import SiteFooter from "@/components/SiteFooter";
 /* Render comparison cells: true/false become lucide Check/X icons, strings render as text. */
 function YesNoCell({ value, dim = false }: { value: string | boolean; dim?: boolean }) {
   if (value === true) {
-    return <Check className={`mx-auto h-4 w-4 ${dim ? "text-[#444]" : "text-[#ededed]"}`} strokeWidth={2} />;
+    return <Check className={`mx-auto h-4 w-4 ${dim ? "text-fog-600" : "text-fog-100"}`} strokeWidth={2} />;
   }
   if (value === false) {
-    return <X className="mx-auto h-4 w-4 text-[#444]" strokeWidth={2} />;
+    return <X className="mx-auto h-4 w-4 text-fog-600" strokeWidth={2} />;
   }
-  return <span className={`text-[13px] font-light ${dim ? "text-[#444]" : "text-[#ededed]"}`}>{value}</span>;
+  return <span className={`text-[13px] font-light ${dim ? "text-fog-600" : "text-fog-100"}`}>{value}</span>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -154,7 +154,7 @@ function PricingContent() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-[#ededed]">
+    <main className="min-h-screen bg-night-950 text-fog-100">
 
       {/* ============================================================
           HERO
@@ -164,7 +164,7 @@ function PricingContent() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.04),transparent)]" />
 
         <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-[#666] opacity-0">
+          <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-fog-500 opacity-0">
             PRICING
           </p>
 
@@ -174,7 +174,7 @@ function PricingContent() {
             One flat rate.
           </h1>
 
-          <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
+          <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
             $25/month, flat &mdash; everything included.
             <br className="hidden sm:block" />
             No per-redemption fees, no surprises.
@@ -189,17 +189,17 @@ function PricingContent() {
         <section className="px-4 sm:px-8 pb-4">
           <div className="mx-auto flex max-w-4xl items-center justify-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#333]">
-                <span className="text-[11px] font-light text-[#555]">1</span>
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-night-600">
+                <span className="text-[11px] font-light text-fog-500">1</span>
               </div>
-              <span className="text-[11px] font-light tracking-[0.1em] text-[#555]">Name your shop</span>
+              <span className="text-[11px] font-light tracking-[0.1em] text-fog-500">Name your shop</span>
             </div>
-            <div className="h-[1px] w-6 bg-[#555]" />
+            <div className="h-[1px] w-6 bg-fog-500" />
             <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ededed]">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-fog-100">
                 <span className="text-[11px] font-normal text-black">2</span>
               </div>
-              <span className="text-[11px] font-light tracking-[0.1em] text-[#ededed]">Choose a plan</span>
+              <span className="text-[11px] font-light tracking-[0.1em] text-fog-100">Choose a plan</span>
             </div>
           </div>
         </section>
@@ -211,19 +211,19 @@ function PricingContent() {
       <section className="px-8">
         <div className="mx-auto max-w-lg">
           {loadingShop ? (
-            <div className="animate-fade-in rounded-2xl border border-[#1a1a1a] px-6 py-4 text-center text-[13px] font-light text-[#555]">
+            <div className="animate-fade-in rounded-2xl border border-night-700 px-6 py-4 text-center text-[13px] font-light text-fog-500">
               Finding your shop&hellip;
             </div>
           ) : hasShop ? (
-            <div className="animate-fade-in rounded-2xl border border-[#1a1a1a] px-6 py-4 text-center">
-              <span className="text-[13px] font-light text-[#555]">Subscribing for </span>
-              <span className="text-[13px] font-normal tracking-[0.05em] text-[#ededed]">
+            <div className="animate-fade-in rounded-2xl border border-night-700 px-6 py-4 text-center">
+              <span className="text-[13px] font-light text-fog-500">Subscribing for </span>
+              <span className="text-[13px] font-normal tracking-[0.05em] text-fog-100">
                 {shopName || shop}
               </span>
             </div>
           ) : (
-            <div className="animate-fade-in rounded-2xl border border-[#1a1a1a] px-8 py-8 text-center">
-              <p className="text-[15px] font-light text-[#888]">
+            <div className="animate-fade-in rounded-2xl border border-night-700 px-8 py-8 text-center">
+              <p className="text-[15px] font-light text-fog-300">
                 No shop found. Create your shop first, then come back to pick a plan.
               </p>
               <a
@@ -244,20 +244,20 @@ function PricingContent() {
       <section className="px-8 py-20 sm:py-28">
         <div className="mx-auto max-w-lg">
           <ScrollReveal>
-            <div className="flex flex-col rounded-2xl border border-[#2a2a2a] p-8 transition-all duration-500 hover:border-[#444] sm:p-10">
+            <div className="flex flex-col rounded-2xl border border-night-600 p-8 transition-all duration-500 hover:border-night-600 sm:p-10">
 
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+                <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
                   VENTZON PRO
                 </p>
                 {/* Billing period toggle */}
-                <div className="flex items-center rounded-full border border-[#2a2a2a] p-0.5">
+                <div className="flex items-center rounded-full border border-night-600 p-0.5">
                   <button
                     onClick={() => setBillingPeriod("monthly")}
                     className={`rounded-full px-3 py-1 text-[10px] font-light tracking-[0.1em] transition-all duration-300 ${
                       billingPeriod === "monthly"
-                        ? "bg-[#ededed] text-black"
-                        : "text-[#555] hover:text-[#888]"
+                        ? "bg-fog-100 text-black"
+                        : "text-fog-500 hover:text-fog-300"
                     }`}
                   >
                     MONTHLY
@@ -266,8 +266,8 @@ function PricingContent() {
                     onClick={() => setBillingPeriod("yearly")}
                     className={`rounded-full px-3 py-1 text-[10px] font-light tracking-[0.1em] transition-all duration-300 ${
                       billingPeriod === "yearly"
-                        ? "bg-[#ededed] text-black"
-                        : "text-[#555] hover:text-[#888]"
+                        ? "bg-fog-100 text-black"
+                        : "text-fog-500 hover:text-fog-300"
                     }`}
                   >
                     YEARLY
@@ -276,10 +276,10 @@ function PricingContent() {
               </div>
 
               <div className="mt-6">
-                <span className="text-5xl font-extralight tracking-tight text-[#ededed]">
+                <span className="text-5xl font-extralight tracking-tight text-fog-100">
                   {billingPeriod === "yearly" ? "$240" : "$25"}
                 </span>
-                <span className="ml-1 text-lg font-light text-[#444]">
+                <span className="ml-1 text-lg font-light text-fog-600">
                   {billingPeriod === "yearly" ? "/yr" : "/mo"}
                 </span>
               </div>
@@ -289,26 +289,26 @@ function PricingContent() {
                   Save $60 vs monthly &mdash; that&apos;s 2 months free
                 </p>
               ) : (
-                <p className="mt-2 text-[11px] font-light text-[#555]">
+                <p className="mt-2 text-[11px] font-light text-fog-500">
                   or $240/yr and save $60
                 </p>
               )}
 
-              <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
+              <p className="mt-4 text-[14px] font-light leading-[1.7] text-fog-500">
                 Everything included &mdash; no per-redemption fees
               </p>
 
               {/* Divider */}
-              <div className="my-8 h-[1px] bg-[#1a1a1a]" />
+              <div className="my-8 h-[1px] bg-night-700" />
 
               {/* Features */}
               <ul className="flex-1 space-y-4">
                 {proFeatures.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-3 text-[14px] font-light text-[#888]"
+                    className="flex items-start gap-3 text-[14px] font-light text-fog-300"
                   >
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ededed]" />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-fog-100" />
                     {item}
                   </li>
                 ))}
@@ -319,14 +319,14 @@ function PricingContent() {
                 <button
                   onClick={() => startCheckout(billingPeriod)}
                   disabled={loading !== null || loadingShop}
-                  className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-8 block w-full rounded-full border border-fog-100 py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {loading === billingPeriod ? "Redirecting…" : "Get started"}
                 </button>
               ) : (
                 <Link
                   href="/signup"
-                  className="mt-8 block w-full rounded-full border border-[#ededed] py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+                  className="mt-8 block w-full rounded-full border border-fog-100 py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black"
                 >
                   Create an account
                 </Link>
@@ -355,9 +355,9 @@ function PricingContent() {
               { stat: "Any device", label: "works everywhere" },
               { stat: "Cancel", label: "anytime, no hassle" },
             ].map(({ stat, label }) => (
-              <div key={label} className="rounded-xl border border-[#1a1a1a] px-4 py-4 text-center">
-                <p className="text-lg font-extralight tracking-tight text-[#ededed]">{stat}</p>
-                <p className="mt-1 text-[11px] font-light text-[#555]">{label}</p>
+              <div key={label} className="rounded-xl border border-night-700 px-4 py-4 text-center">
+                <p className="text-lg font-extralight tracking-tight text-fog-100">{stat}</p>
+                <p className="mt-1 text-[11px] font-light text-fog-500">{label}</p>
               </div>
             ))}
           </div>
@@ -371,24 +371,24 @@ function PricingContent() {
         <div className="luxury-divider mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">THE MATH</p>
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">THE MATH</p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
               One flat rate. No fine print.
             </h2>
-            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
+            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
               Everything is in the $25/month &mdash; rewards, analytics, the customer list. Here&rsquo;s what that looks like when a customer comes back.
             </p>
           </ScrollReveal>
 
           <ScrollReveal>
-            <div className="mt-14 rounded-2xl border border-[#1a1a1a] bg-[#050505] p-8 sm:p-10">
+            <div className="mt-14 rounded-2xl border border-night-700 bg-night-950 p-8 sm:p-10">
               {/* Stamp card visual */}
-              <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">EXAMPLE — 8 VISIT REWARD</p>
+              <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">EXAMPLE — 8 VISIT REWARD</p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#ededed] text-[13px] text-[#ededed]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-fog-100 text-[13px] text-fog-100"
                   >
                     <Check className="h-4 w-4" strokeWidth={1.5} />
                   </div>
@@ -397,24 +397,24 @@ function PricingContent() {
 
               {/* Breakdown */}
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">RETURN VISITS DRIVEN</p>
+                <div className="rounded-xl border border-night-700 p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">RETURN VISITS DRIVEN</p>
                   <p className="mt-2 text-3xl font-extralight text-white">8</p>
-                  <p className="mt-1 text-[12px] font-light text-[#555]">customers came back</p>
+                  <p className="mt-1 text-[12px] font-light text-fog-500">customers came back</p>
                 </div>
-                <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">YOU PAY VENTZON</p>
+                <div className="rounded-xl border border-night-700 p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">YOU PAY VENTZON</p>
                   <p className="mt-2 text-3xl font-extralight text-white">$25</p>
-                  <p className="mt-1 text-[12px] font-light text-[#555]">per month, flat</p>
+                  <p className="mt-1 text-[12px] font-light text-fog-500">per month, flat</p>
                 </div>
-                <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">PER REDEMPTION</p>
+                <div className="rounded-xl border border-night-700 p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">PER REDEMPTION</p>
                   <p className="mt-2 text-3xl font-extralight text-emerald-400">$0</p>
-                  <p className="mt-1 text-[12px] font-light text-[#555]">no per-redemption fees</p>
+                  <p className="mt-1 text-[12px] font-light text-fog-500">no per-redemption fees</p>
                 </div>
               </div>
 
-              <p className="mt-8 text-[13px] font-light leading-[1.8] text-[#555]">
+              <p className="mt-8 text-[13px] font-light leading-[1.8] text-fog-500">
                 Whether a customer redeems one reward or fifty, the price doesn&rsquo;t move. Paid ads and flyers can&rsquo;t say that.
               </p>
             </div>
@@ -429,18 +429,18 @@ function PricingContent() {
         <div className="luxury-divider mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">COMPARE</p>
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">COMPARE</p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
               How Ventzon stacks up.
             </h2>
           </ScrollReveal>
 
           <div className="mt-16">
-            <div className="grid grid-cols-[1fr_80px_80px_80px] items-end border-b border-[#1a1a1a] pb-4 sm:grid-cols-[1fr_100px_100px_100px]">
+            <div className="grid grid-cols-[1fr_80px_80px_80px] items-end border-b border-night-700 pb-4 sm:grid-cols-[1fr_100px_100px_100px]">
               <div />
-              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#ededed]">VENTZON</p>
-              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">SQUARE</p>
-              <p className="text-center text-[11px] font-light tracking-[0.1em] text-[#555]">VISIT CARDS</p>
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-fog-100">VENTZON</p>
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-fog-500">SQUARE</p>
+              <p className="text-center text-[11px] font-light tracking-[0.1em] text-fog-500">VISIT CARDS</p>
             </div>
 
             {[
@@ -453,8 +453,8 @@ function PricingContent() {
               { feature: "Fraud-proof stamps", ventzon: true, square: true, punch: false },
             ].map((row) => (
               <ScrollReveal key={row.feature}>
-                <div className="grid grid-cols-[1fr_80px_80px_80px] items-center border-b border-[#111] py-4 sm:grid-cols-[1fr_100px_100px_100px]">
-                  <p className="text-[13px] font-light text-[#888]">{row.feature}</p>
+                <div className="grid grid-cols-[1fr_80px_80px_80px] items-center border-b border-night-800 py-4 sm:grid-cols-[1fr_100px_100px_100px]">
+                  <p className="text-[13px] font-light text-fog-300">{row.feature}</p>
                   <p className="text-center"><YesNoCell value={row.ventzon} /></p>
                   <p className="text-center"><YesNoCell value={row.square} dim /></p>
                   <p className="text-center"><YesNoCell value={row.punch} dim /></p>
@@ -472,22 +472,22 @@ function PricingContent() {
         <div className="luxury-divider mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               DASHBOARD
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
               See what you get.
             </h2>
-            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
+            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
               Real-time stats and analytics charts &mdash; all in one place.
             </p>
           </ScrollReveal>
 
           <ScrollReveal>
-            <div className="mt-14 rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8">
-              <div className="flex items-center justify-between border-b border-[#1a1a1a] pb-5">
+            <div className="mt-14 rounded-2xl border border-night-700 bg-night-950 p-6 sm:p-8">
+              <div className="flex items-center justify-between border-b border-night-700 pb-5">
                 <div>
-                  <p className="text-[11px] font-light tracking-[0.5em] text-[#555]">MERCHANT DASHBOARD</p>
+                  <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">MERCHANT DASHBOARD</p>
                   <p className="mt-2 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">Sunrise Bakery</p>
                 </div>
                 <span className="rounded-full border border-emerald-800/50 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-emerald-400">
@@ -496,32 +496,32 @@ function PricingContent() {
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-[#1a1a1a] px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">TOTAL SIGNUPS</p>
+                <div className="rounded-xl border border-night-700 px-5 py-4">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">TOTAL SIGNUPS</p>
                   <p className="mt-2 text-3xl font-extralight tracking-tight text-white">1,247</p>
                 </div>
-                <div className="rounded-xl border border-[#1a1a1a] px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">TODAY</p>
+                <div className="rounded-xl border border-night-700 px-5 py-4">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">TODAY</p>
                   <p className="mt-2 text-3xl font-extralight tracking-tight text-white">23</p>
                 </div>
-                <div className="rounded-xl border border-[#1a1a1a] px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">REWARD GOAL</p>
+                <div className="rounded-xl border border-night-700 px-5 py-4">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">REWARD GOAL</p>
                   <p className="mt-2 text-3xl font-extralight tracking-tight text-white">8</p>
                 </div>
               </div>
 
               <div className="mt-6">
-                <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">ANALYTICS</p>
+                <p className="text-[11px] font-light tracking-[0.2em] text-fog-500">ANALYTICS</p>
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                  <div className="rounded-xl border border-[#1a1a1a] p-5">
+                  <div className="rounded-xl border border-night-700 p-5">
                     <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-light tracking-[0.15em] text-[#555]">CUSTOMER CHECK-INS</p>
+                      <p className="text-[10px] font-light tracking-[0.15em] text-fog-500">CUSTOMER CHECK-INS</p>
                       <div className="flex gap-1">
                         {["7d", "30d", "60d"].map((p) => (
                           <span
                             key={p}
                             className={`rounded-full px-2 py-0.5 text-[9px] font-light ${
-                              p === "30d" ? "bg-[#ededed] text-black" : "text-[#444]"
+                              p === "30d" ? "bg-fog-100 text-black" : "text-fog-600"
                             }`}
                           >
                             {p}
@@ -556,8 +556,8 @@ function PricingContent() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-[#1a1a1a] p-5">
-                    <p className="text-[10px] font-light tracking-[0.15em] text-[#555]">REWARDS REDEEMED</p>
+                  <div className="rounded-xl border border-night-700 p-5">
+                    <p className="text-[10px] font-light tracking-[0.15em] text-fog-500">REWARDS REDEEMED</p>
                     <div className="mt-3 h-[120px]">
                       <svg viewBox="0 0 400 100" className="h-full w-full" preserveAspectRatio="none">
                         {[0, 25, 50, 75, 100].map((y) => (
@@ -587,20 +587,20 @@ function PricingContent() {
               </div>
 
               <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">CUSTOMER LIST</p>
-                  <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
-                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">SAMPLE</p>
-                    <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
+                <div className="rounded-xl border border-night-700 p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">CUSTOMER LIST</p>
+                  <div className="mt-3 rounded-lg border border-night-800 bg-night-900 px-4 py-3">
+                    <p className="text-[10px] font-light tracking-[0.2em] text-fog-600">SAMPLE</p>
+                    <p className="mt-1.5 font-mono text-[11px] font-light text-fog-300">
                       customer@example.com &middot; 7 stamps &middot; Last visit: today
                     </p>
                   </div>
                 </div>
-                <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">PUSH NOTIFICATION</p>
-                  <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
-                    <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
-                    <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
+                <div className="rounded-xl border border-night-700 p-5">
+                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">PUSH NOTIFICATION</p>
+                  <div className="mt-3 rounded-lg border border-night-800 bg-night-900 px-4 py-3">
+                    <p className="text-[10px] font-light tracking-[0.2em] text-fog-600">PREVIEW</p>
+                    <p className="mt-1.5 font-mono text-[11px] font-light text-fog-300">
                       <Trophy className="mr-1.5 inline h-3 w-3 -translate-y-px" />
                       Reward earned! You&apos;ve earned your reward at Sunrise Bakery. Show the app at the register.
                     </p>
@@ -619,7 +619,7 @@ function PricingContent() {
         <div className="luxury-divider mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               QUESTIONS
             </p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
@@ -630,19 +630,19 @@ function PricingContent() {
           <div className="mt-16 space-y-0">
             {faqs.map((faq, i) => (
               <ScrollReveal key={i}>
-                <div className="border-t border-[#161616] py-8 lg:py-10">
+                <div className="border-t border-night-900 py-8 lg:py-10">
                   <div className="grid gap-3 lg:grid-cols-[1fr_1.5fr] lg:gap-12">
-                    <h3 className="text-[15px] font-normal tracking-[0.02em] text-[#ededed]">
+                    <h3 className="text-[15px] font-normal tracking-[0.02em] text-fog-100">
                       {faq.q}
                     </h3>
-                    <p className="text-[14px] font-light leading-[1.8] text-[#666]">
+                    <p className="text-[14px] font-light leading-[1.8] text-fog-500">
                       {faq.a}
                     </p>
                   </div>
                 </div>
               </ScrollReveal>
             ))}
-            <div className="border-t border-[#161616]" />
+            <div className="border-t border-night-900" />
           </div>
         </div>
       </section>
@@ -655,7 +655,7 @@ function PricingContent() {
           <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
             Ready to grow?
           </h2>
-          <p className="mt-6 text-base font-light leading-relaxed text-[#666]">
+          <p className="mt-6 text-base font-light leading-relaxed text-fog-500">
             Run your loyalty program on Ventzon
             <br className="hidden sm:block" />
             and get discovered by locals who actually show up.
@@ -663,7 +663,7 @@ function PricingContent() {
           <div className="mt-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-10 py-4 text-[13px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
+              className="inline-flex items-center gap-3 rounded-full border border-fog-100 px-10 py-4 text-[13px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black"
             >
               Create your account
               <ArrowRight className="h-3.5 w-3.5" />

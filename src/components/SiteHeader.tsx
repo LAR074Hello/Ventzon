@@ -94,7 +94,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               href="/customer/explore"
-              className="hidden rounded-full bg-sage px-6 py-2.5 text-[13px] font-medium text-white transition-all duration-300 hover:bg-sage-hover sm:inline-flex"
+              className="hidden rounded-full bg-maroon px-6 py-2.5 text-[13px] font-medium text-white transition-all duration-300 hover:bg-maroon-hover sm:inline-flex"
             >
               Open the app
             </Link>
@@ -170,7 +170,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               href="/customer/explore"
-              className="rounded-full bg-sage px-6 py-2.5 text-[14px] font-medium text-white transition-all duration-300 hover:bg-sage-hover"
+              className="rounded-full bg-maroon px-6 py-2.5 text-[14px] font-medium text-white transition-all duration-300 hover:bg-maroon-hover"
             >
               Open the app
             </Link>

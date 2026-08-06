@@ -40,21 +40,21 @@ const steps = [
 
 export default function SetupPage() {
   return (
-    <main className="min-h-screen bg-black text-[#ededed]">
+    <main className="min-h-screen bg-night-950 text-fog-100">
       {/* ── Hero ── */}
       <section className="px-4 sm:px-8 pt-36 pb-16 sm:pt-44">
         <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               MERCHANT GUIDE
             </p>
             <h1 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
               Get your loyalty program running
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-[#666]">
+            <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-500">
               From creating your account to a printed QR code sitting on your counter &mdash; about five minutes, no hardware, and no tech skills required.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[12px] font-light text-[#555]">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[12px] font-light text-fog-500">
               <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-emerald-500" /> About 5 minutes</span>
               <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-emerald-500" /> Phone or computer</span>
               <span className="inline-flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-emerald-500" /> You'll print one QR code</span>
@@ -67,10 +67,10 @@ export default function SetupPage() {
       <section className="px-4 sm:px-8 pb-4">
         <div className="mx-auto max-w-2xl">
           <ScrollReveal>
-            <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-7">
-              <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">BEFORE YOU BEGIN</p>
-              <p className="mt-3 text-[14px] font-light leading-relaxed text-[#888]">
-                Have three things handy: an <span className="text-[#ededed]">email address</span> (this becomes your login), a <span className="text-[#ededed]">card</span> for your subscription, and a way to <span className="text-[#ededed]">print one page</span> &mdash; your home printer is fine, or any print shop.
+            <div className="rounded-2xl border border-night-700 bg-night-950 p-6 sm:p-7">
+              <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">BEFORE YOU BEGIN</p>
+              <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-300">
+                Have three things handy: an <span className="text-fog-100">email address</span> (this becomes your login), a <span className="text-fog-100">card</span> for your subscription, and a way to <span className="text-fog-100">print one page</span> &mdash; your home printer is fine, or any print shop.
               </p>
             </div>
           </ScrollReveal>
@@ -85,18 +85,18 @@ export default function SetupPage() {
             {steps.map((step, i) => (
               <ScrollReveal key={step.number} delay={i % 2 === 0 ? 1 : 2}>
                 <div className="grid grid-cols-[auto_1fr] gap-6 sm:gap-8">
-                  <p className="font-mono text-[13px] font-light tracking-[0.2em] text-[#444]">
+                  <p className="font-mono text-[13px] font-light tracking-[0.2em] text-fog-600">
                     {step.number}
                   </p>
                   <div>
                     <h2 className="text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
                       {step.title}
                     </h2>
-                    <p className="mt-4 text-[15px] font-light leading-[1.8] text-[#888]">
+                    <p className="mt-4 text-[15px] font-light leading-[1.8] text-fog-300">
                       {step.body}
                     </p>
                     {step.number === "06" && (
-                      <p className="mt-4 border-l border-emerald-900/40 pl-4 text-[13px] font-light leading-relaxed text-[#666]">
+                      <p className="mt-4 border-l border-emerald-900/40 pl-4 text-[13px] font-light leading-relaxed text-fog-500">
                         <span className="text-[#999]">Optional:</span> customers who want reminders can download the free Ventzon app to get nudged when they're close to a reward and see all their cards in one place. It's never required to join or earn &mdash; the QR works on its own.
                       </p>
                     )}
@@ -123,12 +123,12 @@ export default function SetupPage() {
               <div className="mt-6 flex flex-wrap items-center gap-3 text-[13px] font-light">
                 {["Scan the code", "Enter phone or email", "They're in"].map((t, i) => (
                   <span key={t} className="inline-flex items-center gap-3">
-                    <span className="rounded-full border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-2 text-[#ededed]">{t}</span>
+                    <span className="rounded-full border border-night-700 bg-night-900 px-4 py-2 text-fog-100">{t}</span>
                     {i < 2 && <span className="text-emerald-500">&rarr;</span>}
                   </span>
                 ))}
               </div>
-              <p className="mt-6 text-[14px] font-light leading-relaxed text-[#888]">
+              <p className="mt-6 text-[14px] font-light leading-relaxed text-fog-300">
                 Each visit adds a stamp (or points). When they reach your goal, the screen shows their reward to display at the register. Simple enough that nobody needs help using it.
               </p>
             </div>
@@ -140,17 +140,17 @@ export default function SetupPage() {
       <section className="px-4 sm:px-8 pb-4">
         <div className="mx-auto max-w-3xl grid gap-6 sm:grid-cols-2">
           <ScrollReveal delay={1}>
-            <div className="h-full rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
-              <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">RUNNING IT DAY TO DAY</p>
-              <p className="mt-3 text-[14px] font-light leading-relaxed text-[#888]">
+            <div className="h-full rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
+              <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">RUNNING IT DAY TO DAY</p>
+              <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-300">
                 Your dashboard shows check-ins, your best customers, busiest days, and who's drifting away. You can email your regulars, add a stamp by hand at the counter, and manage billing any time.
               </p>
             </div>
           </ScrollReveal>
           <ScrollReveal delay={2}>
-            <div className="h-full rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
-              <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">NEED A HAND?</p>
-              <p className="mt-3 text-[14px] font-light leading-relaxed text-[#888]">
+            <div className="h-full rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
+              <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">NEED A HAND?</p>
+              <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-300">
                 We're happy to help you get set up. Email{" "}
                 <a href="mailto:support@ventzon.com" className="text-emerald-400/80 transition-colors hover:text-emerald-300">support@ventzon.com</a>{" "}
                 and we'll walk you through anything.
@@ -177,7 +177,7 @@ export default function SetupPage() {
               </Link>
               <Link
                 href="/pricing"
-                className="text-[12px] font-light tracking-[0.15em] text-[#555] transition-colors duration-500 hover:text-[#ededed]"
+                className="text-[12px] font-light tracking-[0.15em] text-fog-500 transition-colors duration-500 hover:text-fog-100"
               >
                 See pricing
               </Link>

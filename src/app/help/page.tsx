@@ -95,17 +95,17 @@ function FAQItem({ faq }: { faq: FAQ }) {
   return (
     <button
       onClick={() => setOpen((o) => !o)}
-      className="w-full text-left border-b border-[#1a1a1a] last:border-0"
+      className="w-full text-left border-b border-night-700 last:border-0"
     >
       <div className="flex items-start justify-between gap-4 py-5">
         <span className="text-[15px] font-medium text-[#e5e5e5] leading-snug">{faq.q}</span>
         <ChevronDown
-          className="mt-0.5 h-4 w-4 shrink-0 text-[#555] transition-transform duration-200"
+          className="mt-0.5 h-4 w-4 shrink-0 text-fog-500 transition-transform duration-200"
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
       </div>
       {open && (
-        <p className="pb-5 text-[14px] font-normal leading-relaxed text-[#888]">{faq.a}</p>
+        <p className="pb-5 text-[14px] font-normal leading-relaxed text-fog-300">{faq.a}</p>
       )}
     </button>
   );
@@ -117,24 +117,24 @@ export default function HelpPage() {
   const activeCat = categories.find((c) => c.id === active)!;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-night-950 text-white">
       {/* Hero */}
-      <section className="border-b border-[#111] px-6 py-20 text-center">
+      <section className="border-b border-night-800 px-6 py-20 text-center">
         <div className="mx-auto max-w-xl">
           <div className="mb-5 inline-flex items-center justify-center rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-4">
-            <MessageCircle className="h-7 w-7 text-[#ededed]" />
+            <MessageCircle className="h-7 w-7 text-fog-100" />
           </div>
           <h1 className="text-[40px] font-semibold tracking-[-0.03em] text-[#f5f5f5]">
             Help &amp; FAQ
           </h1>
-          <p className="mt-3 text-[16px] font-normal leading-relaxed text-[#666]">
+          <p className="mt-3 text-[16px] font-normal leading-relaxed text-fog-500">
             Everything you need to know about Ventzon — for customers and merchants.
           </p>
         </div>
       </section>
 
       {/* Category tabs */}
-      <div className="sticky top-0 z-10 border-b border-[#111] bg-black/90 backdrop-blur-md">
+      <div className="sticky top-0 z-10 border-b border-night-800 bg-night-950/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl gap-1 px-6 py-3">
           {categories.map((cat) => {
             const Icon = cat.icon;
@@ -144,8 +144,8 @@ export default function HelpPage() {
                 onClick={() => setActive(cat.id as any)}
                 className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium transition-colors ${
                   active === cat.id
-                    ? "bg-[#ededed] text-black"
-                    : "text-[#666] hover:text-[#aaa]"
+                    ? "bg-fog-100 text-black"
+                    : "text-fog-500 hover:text-fog-300"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -158,7 +158,7 @@ export default function HelpPage() {
 
       {/* FAQ list */}
       <section className="mx-auto max-w-2xl px-6 py-10">
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] px-6">
+        <div className="rounded-2xl border border-night-700 bg-night-950 px-6">
           {activeCat.faqs.map((faq, i) => (
             <FAQItem key={i} faq={faq} />
           ))}
@@ -167,17 +167,17 @@ export default function HelpPage() {
 
       {/* Contact section */}
       <section className="mx-auto max-w-2xl px-6 pb-20">
-        <div className="rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] px-6 py-8 text-center">
-          <div className="mb-4 inline-flex items-center justify-center rounded-xl border border-[#1f1f1f] bg-[#111] p-3">
-            <MessageCircle className="h-5 w-5 text-[#888]" />
+        <div className="rounded-2xl border border-night-700 bg-night-900 px-6 py-8 text-center">
+          <div className="mb-4 inline-flex items-center justify-center rounded-xl border border-[#1f1f1f] bg-night-800 p-3">
+            <MessageCircle className="h-5 w-5 text-fog-300" />
           </div>
           <h2 className="text-[18px] font-semibold text-[#f0f0f0]">Still have questions?</h2>
-          <p className="mt-2 text-[14px] text-[#666]">
+          <p className="mt-2 text-[14px] text-fog-500">
             We're here to help. Send us a message and we'll get back to you within one business day.
           </p>
           <a
             href="mailto:support@ventzon.com"
-            className="mt-5 inline-block rounded-xl bg-[#ededed] px-6 py-3 text-[13px] font-semibold tracking-wide text-black transition-colors hover:bg-white"
+            className="mt-5 inline-block rounded-xl bg-fog-100 px-6 py-3 text-[13px] font-semibold tracking-wide text-black transition-colors hover:bg-white"
           >
             Email support
           </a>
@@ -185,7 +185,7 @@ export default function HelpPage() {
             <div className="mt-4">
               <Link
                 href="/get-started"
-                className="text-[13px] font-medium text-[#555] underline-offset-2 hover:text-[#888] hover:underline"
+                className="text-[13px] font-medium text-fog-500 underline-offset-2 hover:text-fog-300 hover:underline"
               >
                 Ready to get started? Set up your loyalty program →
               </Link>
@@ -195,7 +195,7 @@ export default function HelpPage() {
       </section>
 
       {/* Quick links */}
-      <section className="border-t border-[#111] px-6 py-12">
+      <section className="border-t border-night-800 px-6 py-12">
         <div className="mx-auto grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             { label: "Open the app", href: "/customer/explore", icon: Smartphone },
@@ -206,10 +206,10 @@ export default function HelpPage() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-[#1a1a1a] bg-[#080808] py-5 text-center transition-colors hover:border-[#2a2a2a]"
+              className="flex flex-col items-center gap-2 rounded-2xl border border-night-700 bg-night-950 py-5 text-center transition-colors hover:border-night-600"
             >
-              <Icon className="h-5 w-5 text-[#444]" />
-              <span className="text-[12px] font-medium text-[#666]">{label}</span>
+              <Icon className="h-5 w-5 text-fog-600" />
+              <span className="text-[12px] font-medium text-fog-500">{label}</span>
             </Link>
           ))}
         </div>

@@ -24,7 +24,7 @@ function ExploreMock() {
           key={p.name}
           className={`mt-3 flex items-center gap-3 rounded-2xl bg-cream-sunken p-3 ${i === 0 ? "shadow-warm" : ""}`}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-soft text-[13px] font-semibold text-sage">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-maroon-soft text-[13px] font-semibold text-maroon">
             {p.name.charAt(0)}
           </div>
           <div className="min-w-0 flex-1">
@@ -32,14 +32,14 @@ function ExploreMock() {
             <p className="text-[11px] text-taupe">{p.sub}</p>
           </div>
           {p.tag && (
-            <span className="rounded-full bg-sage px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white">
+            <span className="rounded-full bg-maroon px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white">
               {p.tag}
             </span>
           )}
         </div>
       ))}
-      <div className="mt-4 rounded-2xl bg-sage-soft p-3 text-center">
-        <p className="text-[11px] font-medium text-sage">Tap a place to see what it&rsquo;s like</p>
+      <div className="mt-4 rounded-2xl bg-maroon-soft p-3 text-center">
+        <p className="text-[11px] font-medium text-maroon">Tap a place to see what it&rsquo;s like</p>
       </div>
     </div>
   );
@@ -56,9 +56,9 @@ function MapMock() {
       <div className="absolute left-0 top-1/2 h-[3px] w-full -rotate-6 bg-white/60" />
       <div className="absolute left-1/2 top-0 h-full w-[3px] rotate-12 bg-white/60" />
       {/* Pins */}
-      <div className="absolute left-14 top-16 h-3 w-3 rounded-full bg-sage shadow-warm" />
-      <div className="absolute right-10 top-28 h-3 w-3 rounded-full bg-sage shadow-warm" />
-      <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sage ring-4 ring-white/70" />
+      <div className="absolute left-14 top-16 h-3 w-3 rounded-full bg-maroon shadow-warm" />
+      <div className="absolute right-10 top-28 h-3 w-3 rounded-full bg-maroon shadow-warm" />
+      <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-maroon ring-4 ring-white/70" />
       {/* Bottom sheet */}
       <div className="absolute inset-x-2 bottom-2 rounded-2xl bg-cream-card p-3 shadow-warm">
         <p className="text-[13px] font-semibold text-ink-warm">Near you now</p>
@@ -72,12 +72,12 @@ function PostMock() {
   return (
     <div className="flex h-full flex-col p-4">
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-soft text-[12px] font-semibold text-sage">A</div>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-maroon-soft text-[12px] font-semibold text-maroon">A</div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[12px] font-semibold text-ink-warm">Alex · Maple &amp; Pine</p>
           <p className="text-[10px] text-taupe">2h ago</p>
         </div>
-        <span className="rounded-full bg-sage px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white">
+        <span className="rounded-full bg-maroon px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white">
           Verified visit
         </span>
       </div>
@@ -286,8 +286,8 @@ export default function HomePage() {
           </div>
 
           {/* Early-shop line — honest, works in any city */}
-          <ScrollReveal delay={2} className="mx-auto mt-16 max-w-2xl rounded-[2rem] bg-sage-soft p-8 text-center">
-            <p className="text-[15px] leading-[1.7] text-sage">
+          <ScrollReveal delay={2} className="mx-auto mt-16 max-w-2xl rounded-[2rem] bg-maroon-soft p-8 text-center">
+            <p className="text-[15px] leading-[1.7] text-maroon">
               <span className="font-semibold">Metro by metro.</span> The first
               shops in your neighborhood shape how discovery works there &mdash;
               and they&rsquo;re the first thing locals see when they open the map.
@@ -297,7 +297,7 @@ export default function HomePage() {
           <ScrollReveal className="mt-12 text-center">
             <Link
               href="/app"
-              className="inline-flex items-center gap-2.5 rounded-full bg-sage px-9 py-4 text-[15px] font-medium text-white shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-sage-hover"
+              className="inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium text-white shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-maroon-hover"
             >
               See how it works for your shop
               <ArrowRight className="h-4 w-4" />

@@ -555,11 +555,13 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MARKETING SITE — warm editorial palette (GlossGenius sensibility)
-   Light theme is primary. A literal-value @theme so the utilities emit
-   the hexes directly (bg-cream, text-ink-warm, shadow-warm, …). Used by
-   the marketing pages only — the customer app's cool-paper tokens above
-   are untouched.
+   MARKETING SITE — warm editorial palette, maroon signature
+   Maroon (230SL oxblood: brown-toned, dark) is the single accent, used
+   sparingly. `night-*` are warm near-black dark surfaces (never pure
+   black); `fog-*` are warm off-white text on dark. A literal-value
+   @theme so utilities emit the hexes directly (bg-maroon, bg-night-900,
+   text-fog-100, …). Used by the marketing pages only — the customer
+   app's cool-paper tokens above are untouched.
    ═══════════════════════════════════════════════════════════════════ */
 @theme {
   --color-cream: #faf6ef;         /* page background — warm ivory */
@@ -568,9 +570,38 @@ body {
   --color-ink-warm: #221e1a;      /* headlines + strong text */
   --color-taupe: #6e6559;         /* muted text — AA on cream */
   --color-taupe-faint: #a49a8a;   /* eyebrows + decorative only */
-  --color-sage: #4e5d43;          /* primary actions — deep green */
-  --color-sage-hover: #3f4c36;
-  --color-sage-soft: #e8ece3;     /* soft sage tint for chips */
+
+  /* maroon — the signature accent. 230SL oxblood: brown-toned, dark,
+     almost black in shadow. Used sparingly so it reads as expensive. */
+  --color-maroon: #5a1e24;        /* primary actions */
+  --color-maroon-hover: #7a2a32;  /* hover / pressed */
+  --color-maroon-soft: #f6edee;   /* soft tint for chips (maroon-50) */
+  --color-maroon-50: #f6edee;
+  --color-maroon-100: #ebd9db;
+  --color-maroon-200: #d9b3b7;
+  --color-maroon-300: #b96e77;    /* links / accent text on dark (AA) */
+  --color-maroon-400: #9c4b55;    /* icons + large fills on dark only */
+  --color-maroon-500: #7a2a32;
+  --color-maroon-600: #6b232a;
+  --color-maroon-700: #5a1e24;
+  --color-maroon-800: #48171d;
+  --color-maroon-900: #3d1418;    /* deep fill — logo plate, dark bands */
+  --color-maroon-950: #2a0d11;
+
+  /* night — warm near-black dark surfaces. Never pure #000. */
+  --color-night-950: #141010;
+  --color-night-900: #1a1514;
+  --color-night-800: #211b1a;
+  --color-night-700: #2a2321;
+  --color-night-600: #352d2a;
+
+  /* fog — warm off-white text on dark. */
+  --color-fog-100: #efe9e3;
+  --color-fog-200: #d8d0c8;
+  --color-fog-300: #b3a9a0;
+  --color-fog-500: #8a8078;
+  --color-fog-600: #6e655d;
+
   --shadow-warm: 0 24px 60px -24px rgb(60 50 30 / 0.18);
   --shadow-warm-lg: 0 32px 80px -24px rgb(60 50 30 / 0.24);
 }

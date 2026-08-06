@@ -32,7 +32,7 @@ export default function Coverage() {
       {(cities ?? []).map((c) => (
         <span
           key={c.name}
-          className="inline-flex items-center rounded-full bg-sage-soft px-5 py-2.5 text-[15px] font-medium text-sage"
+          className="inline-flex items-center rounded-full bg-maroon-soft px-5 py-2.5 text-[15px] font-medium text-maroon"
         >
           {c.name}
           <span className="ml-2 text-xs font-normal text-taupe">
