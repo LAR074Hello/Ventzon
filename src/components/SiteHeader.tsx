@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
@@ -27,6 +27,30 @@ export default function SiteHeader() {
     pathname?.startsWith("/p/") ||
     pathname?.startsWith("/place/");
 
+  const isLanding = pathname === "/";
+
+  // On the landing page the header starts off-screen so the hero opens with
+  // nothing but the film. It slides in from the top once the user starts
+  // scrolling (within the first ~6% of the viewport) and then stays.
+  const [revealed, setRevealed] = useState(false);
+  const revealedRef = useRef(false);
+  useEffect(() => {
+    if (!isLanding) return;
+    const onScroll = () => {
+      if (revealedRef.current) return;
+      if (window.scrollY > window.innerHeight * 0.06) {
+        revealedRef.current = true;
+        setRevealed(true);
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isLanding]);
+
+  const headerHidden = isLanding && !revealed;
+
   // Close menu on route change
   useEffect(() => {
     setOpen(false);
@@ -50,7 +74,11 @@ export default function SiteHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-night-950/85 backdrop-blur-md">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 bg-night-950/85 backdrop-blur-md transition-all duration-700 ease-out ${
+          headerHidden ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
+        }`}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-8 py-5">
           {/* Logo */}
           <Link
