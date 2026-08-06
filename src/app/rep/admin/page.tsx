@@ -105,7 +105,7 @@ export default function RepAdminPage() {
       <div className="flex items-start justify-between px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 20px)" }}>
         <div>
           <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">ADMIN</p>
-          <h1 className="mt-1 text-[22px] font-extralight text-[#ededed]">Rep Management</h1>
+          <h1 className="mt-1 text-[22px] font-light text-[#ededed]">Rep Management</h1>
         </div>
         <a
           href="/api/rep/admin/export"
@@ -121,12 +121,12 @@ export default function RepAdminPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-[#1a1a1a] bg-[#080808] p-4">
             <Users className="h-4 w-4 text-[#444]" />
-            <p className="mt-3 text-[26px] font-extralight text-[#ededed]">{reps.length}</p>
+            <p className="mt-3 text-[26px] font-light text-[#ededed]">{reps.length}</p>
             <p className="mt-0.5 text-[11px] font-light text-[#444]">active reps</p>
           </div>
           <div className="rounded-xl border border-[#1a1a1a] bg-[#080808] p-4">
             <DollarSign className="h-4 w-4 text-[#444]" />
-            <p className="mt-3 text-[26px] font-extralight text-[#ededed]">${totalCommission.toFixed(0)}</p>
+            <p className="mt-3 text-[26px] font-light text-[#ededed]">${totalCommission.toFixed(0)}</p>
             <p className="mt-0.5 text-[11px] font-light text-[#444]">owed this month</p>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function RepAdminPage() {
                       {rep.city && <p className="mt-0.5 text-[12px] font-light text-[#333]">{rep.city}</p>}
                     </div>
                     <div className="text-right">
-                      <p className="text-[16px] font-extralight text-[#ededed]">${rep.commissionThisMonth.toFixed(2)}</p>
+                      <p className="text-[16px] font-light text-[#ededed]">${rep.commissionThisMonth.toFixed(2)}</p>
                       <p className="mt-0.5 text-[11px] font-light text-[#444]">this month</p>
                     </div>
                   </div>

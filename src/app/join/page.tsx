@@ -15,12 +15,12 @@ export default async function JoinIndexPage({
   if (cleaned) redirect(`/join/${encodeURIComponent(cleaned)}`);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
+    <main className="marketing flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
       <div className="w-full max-w-md text-center">
         <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           VENTZON REWARDS
         </p>
-        <h1 className="mt-4 text-3xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-4xl">
+        <h1 className="mt-4 text-3xl font-light tracking-[0.02em] text-fog-100 sm:text-4xl">
           Missing shop
         </h1>
         <p className="mt-5 text-[14px] font-light leading-relaxed text-fog-500">

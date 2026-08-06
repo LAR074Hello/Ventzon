@@ -45,7 +45,7 @@ export default function CustomerJoinPageWrapper() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-night-950">
+        <main className="marketing flex min-h-screen items-center justify-center bg-night-950">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-night-600 border-t-[#ededed]" />
         </main>
       }
@@ -185,7 +185,7 @@ function CustomerJoinPage() {
   /* ── Loading state ── */
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-night-950">
+      <main className="marketing flex min-h-screen items-center justify-center bg-night-950">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-night-600 border-t-[#ededed]" />
       </main>
     );
@@ -194,12 +194,12 @@ function CustomerJoinPage() {
   /* ── Token invalid — not accessed via QR code ── */
   if (tokenInvalid) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-night-950 px-6">
+      <main className="marketing flex min-h-screen items-center justify-center bg-night-950 px-6">
         <div className="w-full max-w-sm text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-night-700 bg-night-900">
-            <span className="text-2xl font-extralight text-fog-500">?</span>
+            <span className="text-2xl font-light text-fog-500">?</span>
           </div>
-          <p className="mt-6 text-[18px] font-extralight text-fog-100">
+          <p className="mt-6 text-[18px] font-light text-fog-100">
             Scan the QR code
           </p>
           <p className="mt-3 text-[13px] font-light text-fog-500">
@@ -213,9 +213,9 @@ function CustomerJoinPage() {
   /* ── Error state (no settings loaded) ── */
   if (err && !settings) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-night-950 px-6">
+      <main className="marketing flex min-h-screen items-center justify-center bg-night-950 px-6">
         <div className="w-full max-w-sm text-center">
-          <p className="text-[18px] font-extralight text-fog-100">
+          <p className="text-[18px] font-light text-fog-100">
             Couldn&rsquo;t load this shop
           </p>
           <p className="mt-3 text-[13px] font-light text-red-400/70">
@@ -255,7 +255,7 @@ function CustomerJoinPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-night-950">
+    <main className="marketing flex min-h-screen flex-col bg-night-950">
       <div className="flex flex-1 flex-col items-center px-6 pt-20 pb-8">
         {/* Logo / Fallback initial */}
         {settings?.logo_url ? (
@@ -266,7 +266,7 @@ function CustomerJoinPage() {
           />
         ) : (
           <div className="flex h-20 w-20 items-center justify-center rounded-full border border-night-700 bg-night-900">
-            <span className="text-2xl font-extralight text-fog-500">
+            <span className="text-2xl font-light text-fog-500">
               {shopName.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -309,7 +309,7 @@ function CustomerJoinPage() {
               )}
 
               {/* Message */}
-              <p className="mt-5 text-[16px] font-extralight text-fog-100">
+              <p className="mt-5 text-[16px] font-light text-fog-100">
                 {result.message}
               </p>
 

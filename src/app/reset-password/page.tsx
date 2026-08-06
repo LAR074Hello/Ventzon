@@ -77,13 +77,13 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
+    <main className="marketing flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
       <div className="w-full max-w-md animate-fade-in opacity-0 anim-delay-200">
         {/* Header */}
         <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           ACCOUNT RECOVERY
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-light tracking-[0.02em] text-fog-100 sm:text-5xl">
           New password
         </h1>
 

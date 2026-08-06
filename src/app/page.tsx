@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import DeviceFrame from "@/components/DeviceFrame";
-import Coverage from "@/components/Coverage";
+import PricingSection from "@/components/PricingSection";
 import SiteFooter from "@/components/SiteFooter";
 import HeroScroll from "@/components/HeroScroll";
 
@@ -38,7 +38,7 @@ function ProductBlock({
       <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 lg:gap-20">
         <ScrollReveal className={flip ? "lg:order-2" : ""}>
           <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">{number}</p>
-          <h2 className="mt-5 font-display text-[clamp(2rem,4.5vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.02em] text-fog-100">
+          <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em] text-fog-100">
             {title}
           </h2>
           <p className="mt-6 max-w-md text-[17px] leading-[1.7] text-fog-300">{body}</p>
@@ -87,9 +87,21 @@ const SHOP_BENEFITS = [
 
 export default function HomePage() {
   return (
-    <main className="bg-night-950 text-fog-100">
+    <main className="marketing bg-night-950 text-fog-100">
       {/* ══ HERO — pinned video, cinematic scroll into the statement ══ */}
       <HeroScroll />
+
+      {/* ══ ACT 1 — for the people who go ══ */}
+      <section className="px-6 pb-4 pt-24 sm:pt-32">
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-fog-500">
+            For the people who go
+          </p>
+          <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em]">
+            A better way to find good places.
+          </h2>
+        </ScrollReveal>
+      </section>
 
       {/* ══ PRODUCT — 01 / 02 / 03, alternating ══ */}
       <ProductBlock
@@ -136,12 +148,39 @@ export default function HomePage() {
       </ProductBlock>
 
 
-      {/* ══ FOR SHOPS — the merchant argument, design-led, no invented stats ══ */}
+      {/* Download CTA — end of Act 1 */}
+      <section className="px-6 pb-24 pt-6 text-center sm:pb-32">
+        <ScrollReveal>
+          <Link
+            href="/customer/explore"
+            className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
+          >
+            Open the app
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <p className="mt-6 text-sm text-fog-500">Free for customers · no download required</p>
+        </ScrollReveal>
+      </section>
+
+      {/* ══ PIVOT — from the person to the place ══ */}
+      <section className="relative overflow-hidden px-6 py-28 sm:py-36">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(90,30,36,0.14),transparent)]" />
+        <ScrollReveal className="relative mx-auto max-w-2xl text-center">
+          <p className="font-display text-[clamp(1.5rem,3vw,2.25rem)] font-normal leading-[1.3] tracking-[0.02em] text-fog-100">
+            And if you&rsquo;re the one behind the counter &mdash;
+          </p>
+          <p className="mt-6 text-[16px] font-light leading-[1.8] text-fog-300">
+            Ventzon turns the people who already walk in into customers who come back.
+          </p>
+        </ScrollReveal>
+      </section>
+
+      {/* ══ ACT 2 — FOR SHOPS ══ */}
       <section className="px-6 py-24 sm:py-36">
         <div className="mx-auto max-w-6xl">
           <ScrollReveal className="mx-auto max-w-3xl text-center">
-            <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">For shops</p>
-            <h2 className="mt-5 font-display text-[clamp(2rem,4.5vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.02em] text-fog-100">
+            <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-fog-500">For shop owners</p>
+            <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em] text-fog-100">
               Your shop, discovered by people who actually show up.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.7] text-fog-300">
@@ -154,7 +193,7 @@ export default function HomePage() {
             {SHOP_BENEFITS.map((b, i) => (
               <ScrollReveal key={b.title} delay={(i % 2) === 1 ? 2 : 1}>
                 <div className="h-full rounded-[2rem] bg-night-800 p-8 shadow-warm transition-all duration-300 hover:-translate-y-1">
-                  <h3 className="font-display text-xl font-semibold tracking-[-0.01em] text-fog-100">{b.title}</h3>
+                  <h3 className="font-display text-[22px] font-medium tracking-[0.01em] text-fog-100">{b.title}</h3>
                   <p className="mt-3 text-[15px] leading-[1.7] text-fog-300">{b.body}</p>
                 </div>
               </ScrollReveal>
@@ -182,22 +221,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ COVERAGE — data-driven, city-agnostic ══ */}
-      <section className="px-6 pb-24 sm:pb-32">
-        <ScrollReveal className="mx-auto max-w-3xl text-center">
-          <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">Where we are</p>
-          <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-fog-100">
-            Real places, neighborhood by neighborhood
-          </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[16px] leading-[1.7] text-fog-300">
-            The map fills in as we launch. These counts come straight from the
-            places we import &mdash; so the day a new metro lands, it appears here.
-          </p>
-        </ScrollReveal>
-        <ScrollReveal delay={2}>
-          <Coverage />
-        </ScrollReveal>
-      </section>
+      {/* ══ PRICING — the shop owner's decision ══ */}
+      <PricingSection />
 
       {/* ══ FINAL CTA — editorial photo band ══ */}
       <section className="px-6 pb-8">
@@ -211,7 +236,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-night-950/85 via-night-950/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
-              <h2 className="font-display text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-white">
+              <h2 className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-normal leading-[1.15] tracking-[0.02em] text-white">
                 See what&rsquo;s near you.
               </h2>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">

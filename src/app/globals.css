@@ -606,3 +606,17 @@ body {
   --shadow-warm: 0 24px 60px -24px rgb(60 50 30 / 0.18);
   --shadow-warm-lg: 0 32px 80px -24px rgb(60 50 30 / 0.24);
 }
+
+/* ── Marketing type scope ─────────────────────────────────────────────
+   Cormorant Garamond (display) + Karla (body), the aman.com register.
+   Scoped to `.marketing` surfaces so the customer app keeps Archivo /
+   Public Sans for dense UI legibility. Tailwind's `@theme inline`
+   bakes `var(--font-archivo)` / `var(--font-public-sans)` into the
+   font-display / font-body utilities directly, so the override targets
+   those runtime variables (not the --font-display alias). */
+.marketing {
+  --font-archivo: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-public-sans: var(--font-karla), "Karla", system-ui, sans-serif;
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-karla), "Karla", system-ui, sans-serif;
+}

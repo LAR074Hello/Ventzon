@@ -55,7 +55,7 @@ function JoinForm() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black">
+      <main className="marketing flex min-h-screen items-center justify-center bg-black">
         <div className="h-5 w-5 animate-spin rounded-full border border-[#333] border-t-[#ededed]" />
       </main>
     );
@@ -63,7 +63,7 @@ function JoinForm() {
 
   if (inviteError) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
+      <main className="marketing flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
         <p className="text-[13px] font-light text-red-400">{inviteError}</p>
         <p className="mt-3 text-[12px] font-light text-[#555]">Contact your Ventzon manager for a new invite link.</p>
       </main>
@@ -72,20 +72,20 @@ function JoinForm() {
 
   if (done) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
+      <main className="marketing flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
         <CheckCircle className="h-10 w-10 text-emerald-400" />
-        <h1 className="mt-5 text-[22px] font-extralight text-[#ededed]">You're in.</h1>
+        <h1 className="mt-5 text-[22px] font-light text-[#ededed]">You're in.</h1>
         <p className="mt-2 text-[13px] font-light text-[#555]">Taking you to your dashboard…</p>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-black px-6">
+    <main className="marketing flex min-h-screen flex-col items-center justify-center bg-black px-6">
       <div className="w-full max-w-sm">
         <div className="mb-10 text-center">
           <p className="text-[11px] font-light tracking-[0.4em] text-[#555]">VENTZON REP PORTAL</p>
-          <h1 className="mt-3 text-[28px] font-extralight text-[#ededed]">Welcome, {invite?.full_name.split(" ")[0]}</h1>
+          <h1 className="mt-3 text-[28px] font-light text-[#ededed]">Welcome, {invite?.full_name.split(" ")[0]}</h1>
           <p className="mt-2 text-[13px] font-light text-[#555]">Set your password to activate your account</p>
         </div>
 
@@ -136,7 +136,7 @@ function JoinForm() {
 export default function JoinPage() {
   return (
     <Suspense fallback={
-      <main className="flex min-h-screen items-center justify-center bg-black">
+      <main className="marketing flex min-h-screen items-center justify-center bg-black">
         <div className="h-5 w-5 animate-spin rounded-full border border-[#333] border-t-[#ededed]" />
       </main>
     }>

@@ -36,7 +36,7 @@ const shops = [
 
 export default function CustomerAppPage() {
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
       {/* ============================================================
           HERO
           ============================================================ */}
@@ -45,7 +45,7 @@ export default function CustomerAppPage() {
           <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
             THE CUSTOMER APP
           </p>
-          <h1 className="mt-6 text-4xl font-extralight tracking-[-0.02em] sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-light tracking-[0.02em] sm:text-5xl lg:text-6xl">
             Find places. Prove you were there.
           </h1>
           <p className="mt-6 text-[15px] font-light leading-[1.8] text-fog-300">
@@ -81,7 +81,7 @@ export default function CustomerAppPage() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               EXAMPLE SCREENS
             </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               Find it. Visit it. Share it.
             </h2>
           </ScrollReveal>
@@ -160,7 +160,7 @@ export default function CustomerAppPage() {
                 </div>
                 {/* Content */}
                 <div className="flex flex-col items-center px-4 pt-6 pb-4">
-                  <p className="text-[16px] font-extralight text-fog-100">
+                  <p className="text-[16px] font-light text-fog-100">
                     Checked in!
                   </p>
                   {/* Progress dots */}
@@ -251,7 +251,7 @@ export default function CustomerAppPage() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               EXPLORE
             </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               See what&rsquo;s actually good near you.
             </h2>
             <p className="mt-5 max-w-xl mx-auto text-[15px] font-light leading-[1.8] text-fog-300">
@@ -315,7 +315,7 @@ export default function CustomerAppPage() {
               <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
                 NOTIFICATIONS
               </p>
-              <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+              <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
                 You never miss what&rsquo;s good.
               </h2>
               <p className="mt-6 text-[15px] font-light leading-[1.8] text-fog-300">
@@ -361,7 +361,7 @@ export default function CustomerAppPage() {
       <section className="px-8 py-28 sm:py-36">
         <div className="luxury-divider mx-auto mb-16 max-w-xs" />
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+          <h2 className="text-3xl font-light tracking-[0.02em] sm:text-4xl lg:text-5xl">
             Give your customers this.
           </h2>
           <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

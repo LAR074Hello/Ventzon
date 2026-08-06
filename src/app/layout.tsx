@@ -1,6 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import type { Metadata, Viewport } from "next";
-import { Archivo, Public_Sans, DM_Mono } from "next/font/google";
+import { Archivo, Public_Sans, DM_Mono, Cormorant_Garamond, Karla } from "next/font/google";
 import "./globals.css";
 
 // Three type roles. next/font self-hosts these at build time — the
@@ -21,6 +21,25 @@ const displayFont = Archivo({
 const bodyFont = Public_Sans({
   variable: "--font-public-sans",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Marketing display — an elegant light serif, the aman.com register.
+// Used only inside .marketing surfaces; the app keeps Archivo for dense
+// UI legibility.
+const serifDisplay = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+// Marketing body — a clean humanist sans.
+const sansBody = Karla({
+  variable: "--font-karla",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
   display: "swap",
 });
 
@@ -125,7 +144,7 @@ export default function RootLayout({
        it App Router logs a hydration error on every page. */
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body
-        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} antialiased`}
+        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} ${serifDisplay.variable} ${sansBody.variable} antialiased`}
       >
         {/* Theme before paint. First child of <body> so it runs before
             anything renders — no flash of the wrong theme.

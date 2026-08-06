@@ -129,7 +129,7 @@ function StepBlock({
 
 export default function HowItWorksPage() {
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
       {/* ── HERO — text left, editorial photo with a device frame right ── */}
       <section className="relative overflow-hidden px-4 pb-24 pt-28 sm:px-8 sm:pb-32 sm:pt-36">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(90,30,36,0.06),transparent)]" />
@@ -138,7 +138,7 @@ export default function HowItWorksPage() {
             <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-fog-300 opacity-0">
               HOW IT WORKS
             </p>
-            <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
+            <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-light tracking-[0.02em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
               Find it. Go there. Prove it.
             </h1>
             <p className="animate-fade-in-up anim-delay-600 mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
@@ -184,7 +184,7 @@ export default function HowItWorksPage() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               FOR CUSTOMERS
             </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               A better way to find good places.
             </h2>
           </ScrollReveal>
@@ -222,7 +222,7 @@ export default function HowItWorksPage() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               FOR SHOPS
             </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               Get discovered by locals who actually show up.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
@@ -296,7 +296,7 @@ export default function HowItWorksPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink-warm/70 via-ink-warm/20 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
-              <h2 className="text-3xl font-extralight tracking-[-0.02em] text-white sm:text-4xl">
+              <h2 className="text-3xl font-light tracking-[0.02em] text-white sm:text-4xl">
                 See what&rsquo;s near you.
               </h2>
               <p className="mt-5 text-base font-light text-white/85">

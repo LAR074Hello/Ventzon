@@ -167,9 +167,9 @@ export default function ApplyPage() {
 
   if (submitted) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-night-950 px-8 text-center">
+      <main className="marketing flex min-h-screen flex-col items-center justify-center bg-night-950 px-8 text-center">
         <CheckCircle className="h-12 w-12 text-emerald-400" />
-        <h1 className="mt-6 text-[28px] font-extralight text-fog-100">Application received</h1>
+        <h1 className="mt-6 text-[28px] font-light text-fog-100">Application received</h1>
         <p className="mt-3 max-w-sm text-[14px] font-light leading-relaxed text-[#999]">
           Thanks for applying to Ventzon. We review every application and will be in touch shortly.
         </p>
@@ -184,14 +184,14 @@ export default function ApplyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
       <div className="mx-auto max-w-2xl px-8 pb-24 pt-36">
 
         {/* Header */}
         <Link href="/careers/summer-sales-intern" className="text-[11px] font-light tracking-[0.3em] text-[#777] transition-colors hover:text-fog-200">
           ← JOB LISTING
         </Link>
-        <h1 className="mt-6 text-[32px] font-extralight tracking-[-0.01em] text-fog-100">
+        <h1 className="mt-6 text-[32px] font-light tracking-[-0.01em] text-fog-100">
           Apply
         </h1>
         <p className="mt-2 text-[14px] font-light text-[#999]">Summer Sales Intern · Ventzon</p>

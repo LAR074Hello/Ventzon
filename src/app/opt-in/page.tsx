@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function OptInPage() {
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
       <div className="mx-auto max-w-2xl px-8 py-20 sm:py-28">
         <Link
           href="/"
@@ -17,7 +17,7 @@ export default function OptInPage() {
           &larr; VENTZON
         </Link>
 
-        <h1 className="mt-10 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+        <h1 className="mt-10 text-3xl font-light tracking-[0.02em] sm:text-4xl">
           Notification Consent
         </h1>
         <p className="mt-4 text-[13px] font-light text-fog-500">

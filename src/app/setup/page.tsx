@@ -19,7 +19,7 @@ const steps = [
   {
     number: "03",
     title: "Choose a plan and subscribe",
-    body: "Pick monthly ($25/month) or yearly ($240/year — two months free) and enter your card. It's a flat $25/month — no per-redemption fees, no surprise charges.",
+    body: "Pick monthly ($25/month) or yearly ($250/year — two months free) and enter your card. It's a flat $25/month — no per-redemption fees, no surprise charges.",
   },
   {
     number: "04",
@@ -40,7 +40,7 @@ const steps = [
 
 export default function SetupPage() {
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
       {/* ── Hero ── */}
       <section className="px-4 sm:px-8 pt-36 pb-16 sm:pt-44">
         <div className="mx-auto max-w-3xl text-center">
@@ -48,7 +48,7 @@ export default function SetupPage() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               MERCHANT GUIDE
             </p>
-            <h1 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+            <h1 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl lg:text-5xl">
               Get your loyalty program running
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-500">
@@ -89,7 +89,7 @@ export default function SetupPage() {
                     {step.number}
                   </p>
                   <div>
-                    <h2 className="text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
+                    <h2 className="text-xl font-light tracking-[-0.01em] text-white sm:text-2xl">
                       {step.title}
                     </h2>
                     <p className="mt-4 text-[15px] font-light leading-[1.8] text-fog-300">
@@ -117,7 +117,7 @@ export default function SetupPage() {
               <p className="text-[11px] font-light tracking-[0.3em] text-emerald-400/70">
                 WHAT YOUR CUSTOMERS EXPERIENCE
               </p>
-              <h2 className="mt-4 text-2xl font-extralight tracking-[-0.01em] text-white">
+              <h2 className="mt-4 text-2xl font-light tracking-[-0.01em] text-white">
                 Three taps, no download
               </h2>
               <div className="mt-6 flex flex-wrap items-center gap-3 text-[13px] font-light">
@@ -164,7 +164,7 @@ export default function SetupPage() {
       <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <ScrollReveal>
-            <h2 className="text-2xl font-extralight tracking-[-0.02em] sm:text-3xl">
+            <h2 className="text-2xl font-light tracking-[0.02em] sm:text-3xl">
               Ready to set yours up?
             </h2>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

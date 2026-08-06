@@ -49,7 +49,7 @@ const customerFaqs: FAQ[] = [
 const merchantFaqs: FAQ[] = [
   {
     q: "How does billing work?",
-    a: "Ventzon Pro is $25/month or $240/year (save $60), flat — no per-redemption fees, no setup fees. Cancel anytime.",
+    a: "Ventzon Pro is $25/month or $250/year (save $50), flat — no per-redemption fees, no setup fees. Cancel anytime.",
   },
   {
     q: "Do I need any hardware or a POS system?",
@@ -124,7 +124,7 @@ export default function HelpPage() {
           <div className="mb-5 inline-flex items-center justify-center rounded-2xl border border-[#1f1f1f] bg-[#0d0d0d] p-4">
             <MessageCircle className="h-7 w-7 text-fog-100" />
           </div>
-          <h1 className="text-[40px] font-semibold tracking-[-0.03em] text-[#f5f5f5]">
+          <h1 className="text-[40px] font-semibold tracking-[0.02em] text-[#f5f5f5]">
             Help &amp; FAQ
           </h1>
           <p className="mt-3 text-[16px] font-normal leading-relaxed text-fog-500">

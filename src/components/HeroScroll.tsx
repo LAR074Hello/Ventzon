@@ -41,18 +41,19 @@ export default function HeroScroll() {
   // Readability veil: invisible at rest, strengthens as the copy appears.
   const veilOpacity = useTransform(progress, [0.06, 0.4], [0, 0.5]);
 
-  // Centered copy: fades in just after the header reveals, stays through the
-  // transition, then crossfades as the statement takes over.
-  const headlineOpacity = useTransform(progress, [0.06, 0.2, 0.78, 0.94], [0, 1, 1, 0]);
-  const headlineY = useTransform(progress, [0.06, 0.2], [24, 0]);
-  const subOpacity = useTransform(progress, [0.12, 0.26, 0.8, 0.95], [0, 1, 1, 0]);
-  const subY = useTransform(progress, [0.12, 0.26], [20, 0]);
+  // Centered copy: arrives partially transparent and settles to full opacity,
+  // slow and restrained; stays through the transition, then crossfades as the
+  // statement takes over.
+  const headlineOpacity = useTransform(progress, [0.06, 0.5, 0.78, 0.94], [0, 1, 1, 0]);
+  const headlineY = useTransform(progress, [0.06, 0.5], [14, 0]);
+  const subOpacity = useTransform(progress, [0.14, 0.55, 0.8, 0.95], [0, 1, 1, 0]);
+  const subY = useTransform(progress, [0.14, 0.55], [12, 0]);
 
   return (
     <MotionConfig reducedMotion="user">
       <div ref={wrapRef} className="relative">
         {/* ── PINNED HERO — nothing but the film at rest ── */}
-        <section className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden">
+        <section className="sticky top-0 flex h-[115svh] items-center justify-center overflow-hidden">
           <motion.video
             autoPlay
             muted
@@ -74,13 +75,13 @@ export default function HeroScroll() {
           <div className="relative z-10 px-6 text-center">
             <motion.h1
               style={{ opacity: headlineOpacity, y: headlineY }}
-              className="font-display text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-white"
+              className="font-display text-[clamp(3rem,7vw,5.25rem)] font-light leading-[1.08] tracking-[0.02em] text-white"
             >
               Unleash Unbridled Loyalty
             </motion.h1>
             <motion.p
               style={{ opacity: subOpacity, y: subY }}
-              className="mx-auto mt-6 max-w-xl text-lg font-light leading-[1.7] text-white/85"
+              className="mx-auto mt-7 max-w-xl text-lg font-light leading-[1.7] tracking-[0.01em] text-white/85"
             >
               Find real places. See who&rsquo;s actually there.
             </motion.p>
@@ -95,8 +96,8 @@ export default function HeroScroll() {
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-white"
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+              className="font-display text-[clamp(3rem,7vw,5.25rem)] font-light leading-[1.08] tracking-[0.02em] text-white"
             >
               Unleash Unbridled Loyalty
             </motion.h2>

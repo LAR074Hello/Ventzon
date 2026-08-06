@@ -17,12 +17,12 @@ const perks = [
 
 export default function CareersPage() {
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
       {/* Hero */}
       <section className="px-8 pb-20 pt-40">
         <div className="mx-auto max-w-3xl">
           <p className="text-[11px] font-light tracking-[0.4em] text-fog-300">CAREERS</p>
-          <h1 className="mt-5 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
+          <h1 className="mt-5 text-4xl font-light tracking-[0.02em] text-fog-100 sm:text-5xl">
             Build something<br />that matters.
           </h1>
           <p className="mt-6 max-w-xl text-[15px] font-light leading-relaxed text-fog-300">
@@ -38,7 +38,7 @@ export default function CareersPage() {
       <section className="px-8 py-20">
         <div className="mx-auto max-w-3xl">
           <p className="text-[11px] font-light tracking-[0.4em] text-fog-300">OPEN POSITIONS</p>
-          <h2 className="mt-4 text-[22px] font-extralight text-fog-100">1 opening right now</h2>
+          <h2 className="mt-4 text-[22px] font-light text-fog-100">1 opening right now</h2>
 
           {/* Job card */}
           <div className="mt-10 rounded-2xl border border-night-600 bg-night-900 p-8">
@@ -50,7 +50,7 @@ export default function CareersPage() {
                   </span>
                   <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 CONTRACTOR</span>
                 </div>
-                <h3 className="mt-3 text-[24px] font-extralight text-fog-100">Business Development Representative</h3>
+                <h3 className="mt-3 text-[24px] font-light text-fog-100">Business Development Representative</h3>
                 <div className="mt-2 flex flex-wrap items-center gap-4">
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
                     <MapPin className="h-3 w-3" /> Your city (field-based)
@@ -110,7 +110,7 @@ export default function CareersPage() {
                     { label: "Uncapped", detail: "Your book of business grows over time" },
                   ].map(({ label, detail }) => (
                     <div key={label} className="rounded-xl border border-[#222] p-4">
-                      <p className="text-[18px] font-extralight text-fog-100">{label}</p>
+                      <p className="text-[18px] font-light text-fog-100">{label}</p>
                       <p className="mt-1 text-[12px] font-light text-[#999]">{detail}</p>
                     </div>
                   ))}
@@ -118,7 +118,7 @@ export default function CareersPage() {
               </div>
 
               <div className="rounded-xl border border-night-600 bg-[#060606] p-6 text-center">
-                <p className="text-[15px] font-extralight text-fog-100">Ready to apply?</p>
+                <p className="text-[15px] font-light text-fog-100">Ready to apply?</p>
                 <p className="mt-2 text-[13px] font-light text-[#999]">
                   Takes about 5 minutes. No resume required to get started.
                 </p>
@@ -139,7 +139,7 @@ export default function CareersPage() {
         <div className="mx-auto max-w-3xl">
           <div className="border-t border-[#222] pt-16">
             <p className="text-[11px] font-light tracking-[0.4em] text-fog-300">WHY VENTZON</p>
-            <h2 className="mt-4 text-[22px] font-extralight text-fog-100">More than a side hustle</h2>
+            <h2 className="mt-4 text-[22px] font-light text-fog-100">More than a side hustle</h2>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {perks.map(({ icon: Icon, label, detail }) => (
                 <div key={label} className="flex items-start gap-4 rounded-xl border border-[#222] p-5">

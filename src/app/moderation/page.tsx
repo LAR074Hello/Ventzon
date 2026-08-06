@@ -84,9 +84,9 @@ export default function ModerationPage() {
 
   if (denied) {
     return (
-      <main className="min-h-screen bg-night-950 px-6 pt-24 text-center text-fog-100">
+      <main className="marketing min-h-screen bg-night-950 px-6 pt-24 text-center text-fog-100">
         <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">403</p>
-        <h1 className="mt-4 text-2xl font-extralight">Not authorized</h1>
+        <h1 className="mt-4 text-2xl font-light">Not authorized</h1>
         <p className="mt-3 text-sm font-light text-fog-500">This page is only for Ventzon admins.</p>
         <Link href="/" className="mt-8 inline-block text-sm font-light text-[#999] underline underline-offset-4">
           &larr; Back
@@ -96,12 +96,12 @@ export default function ModerationPage() {
   }
 
   return (
-    <main className="min-h-screen bg-night-950 px-4 sm:px-8 py-20 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 px-4 sm:px-8 py-20 text-fog-100">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[11px] font-light tracking-[0.4em] text-fog-300">MODERATION</p>
-            <h1 className="mt-3 text-3xl font-extralight">Report queue</h1>
+            <h1 className="mt-3 text-3xl font-light">Report queue</h1>
           </div>
           <button
             onClick={load}

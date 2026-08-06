@@ -56,7 +56,7 @@ export default function MerchantsPage() {
   return (
     <div className="min-h-full bg-black">
       <div className="px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 20px)" }}>
-        <h1 className="text-[22px] font-extralight text-[#ededed]">My Merchants</h1>
+        <h1 className="text-[22px] font-light text-[#ededed]">My Merchants</h1>
         <p className="mt-1 text-[13px] font-light text-[#444]">
           {merchants.length} merchant{merchants.length !== 1 ? "s" : ""} · ${totalCommission.toFixed(2)}/mo this month
         </p>
@@ -74,7 +74,7 @@ export default function MerchantsPage() {
             <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-[#1a1a1a] bg-[#080808]">
               <Store className="h-7 w-7 text-[#333]" />
             </div>
-            <p className="mt-5 text-[17px] font-extralight text-[#ededed]">No merchants yet</p>
+            <p className="mt-5 text-[17px] font-light text-[#ededed]">No merchants yet</p>
             <p className="mt-2 text-[13px] font-light text-[#555]">
               Sign up a business and log them here to start earning
             </p>
@@ -98,7 +98,7 @@ export default function MerchantsPage() {
                     <p className="mt-0.5 text-[12px] font-light text-[#444]">/{m.slug}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[16px] font-extralight text-[#ededed]">${m.monthlyCommission.toFixed(2)}</p>
+                    <p className="text-[16px] font-light text-[#ededed]">${m.monthlyCommission.toFixed(2)}</p>
                     <p className="mt-0.5 text-[11px] font-light text-[#444]">this month</p>
                   </div>
                 </div>

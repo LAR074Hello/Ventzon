@@ -47,11 +47,11 @@ export default function RepAuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-black px-6">
+    <main className="marketing flex min-h-screen flex-col items-center justify-center bg-black px-6">
       <div className="w-full max-w-sm">
         <div className="mb-10 text-center">
           <p className="text-[11px] font-light tracking-[0.4em] text-[#555]">VENTZON</p>
-          <h1 className="mt-3 text-[28px] font-extralight text-[#ededed]">Rep Portal</h1>
+          <h1 className="mt-3 text-[28px] font-light text-[#ededed]">Rep Portal</h1>
           <p className="mt-2 text-[13px] font-light text-[#555]">Sign in to your account</p>
         </div>
 

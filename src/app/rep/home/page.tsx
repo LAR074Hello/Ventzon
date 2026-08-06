@@ -139,7 +139,7 @@ export default function RepHomePage() {
       <div className="flex items-start justify-between px-5 pb-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 20px) + 20px)" }}>
         <div>
           <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">REP PORTAL</p>
-          <h1 className="mt-1 text-[22px] font-extralight text-[#ededed]">
+          <h1 className="mt-1 text-[22px] font-light text-[#ededed]">
             {firstName ? `Hey, ${firstName}` : "Dashboard"}
           </h1>
           {profile?.city && (
@@ -155,7 +155,7 @@ export default function RepHomePage() {
         {/* Commission this month */}
         <div className="rounded-2xl border border-[#1a1a1a] bg-[#080808] p-6">
           <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">{monthName.toUpperCase()} COMMISSION</p>
-          <p className="mt-3 text-[42px] font-extralight tracking-[-0.02em] text-[#ededed]">
+          <p className="mt-3 text-[42px] font-light tracking-[0.02em] text-[#ededed]">
             ${(( stats?.commissionThisMonth ?? 0) + logMonthTotal).toFixed(2)}
           </p>
           <div className="mt-2 space-y-0.5">
@@ -186,7 +186,7 @@ export default function RepHomePage() {
           ].map(({ label, value, sub }) => (
             <div key={label} className="rounded-xl border border-[#1a1a1a] bg-[#080808] p-4">
               <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">{label.toUpperCase()}</p>
-              <p className="mt-2 text-[26px] font-extralight text-[#ededed]">{value}</p>
+              <p className="mt-2 text-[26px] font-light text-[#ededed]">{value}</p>
               <p className="mt-0.5 text-[11px] font-light text-[#444]">{sub}</p>
             </div>
           ))}
@@ -247,7 +247,7 @@ export default function RepHomePage() {
                     <p className="text-[11px] font-light text-[#444]">{formatDate(log.logged_at)}</p>
                   </div>
                   <div className="flex items-center gap-3 ml-3">
-                    <p className="text-[15px] font-extralight text-emerald-400">+${Number(log.amount).toFixed(2)}</p>
+                    <p className="text-[15px] font-light text-emerald-400">+${Number(log.amount).toFixed(2)}</p>
                     <button
                       onClick={() => handleDelete(log.id)}
                       disabled={deletingId === log.id}
@@ -276,7 +276,7 @@ export default function RepHomePage() {
                   <p className="text-[13px] font-light text-[#bbb]">{label}</p>
                   <p className="text-[11px] font-light text-[#444]">{detail}</p>
                 </div>
-                <p className="text-[15px] font-extralight text-[#ededed]">{value}</p>
+                <p className="text-[15px] font-light text-[#ededed]">{value}</p>
               </div>
             ))}
           </div>
@@ -313,7 +313,7 @@ export default function RepHomePage() {
                     value={logAmount}
                     onChange={e => setLogAmount(e.target.value)}
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] pl-8 pr-4 py-3.5 text-[20px] font-extralight text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
+                    className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] pl-8 pr-4 py-3.5 text-[20px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
                   />
                 </div>
               </div>

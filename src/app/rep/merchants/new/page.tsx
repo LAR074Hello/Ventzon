@@ -56,7 +56,7 @@ export default function NewMerchantPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
         <CheckCircle className="h-10 w-10 text-emerald-400" />
-        <h1 className="mt-5 text-[22px] font-extralight text-[#ededed]">Merchant claimed</h1>
+        <h1 className="mt-5 text-[22px] font-light text-[#ededed]">Merchant claimed</h1>
         <p className="mt-2 text-[14px] font-light text-[#999]">
           <span className="text-[#ededed]">{success}</span> is now in your book of business.
         </p>
@@ -85,7 +85,7 @@ export default function NewMerchantPage() {
         <button onClick={() => router.back()} className="mb-5 flex items-center gap-2 text-[11px] font-light tracking-[0.2em] text-[#555]">
           <ArrowLeft className="h-3.5 w-3.5" /> BACK
         </button>
-        <h1 className="text-[22px] font-extralight text-[#ededed]">Log a Merchant</h1>
+        <h1 className="text-[22px] font-light text-[#ededed]">Log a Merchant</h1>
         <p className="mt-1 text-[13px] font-light text-[#555]">
           Help the owner sign up first, then search for their business name here.
         </p>

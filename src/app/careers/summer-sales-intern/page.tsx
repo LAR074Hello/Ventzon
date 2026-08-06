@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function SummerSalesInternPage() {
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
 
       {/* Hero */}
       <section className="px-8 pb-12 pt-40">
@@ -29,7 +29,7 @@ export default function SummerSalesInternPage() {
             <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">INTERNSHIP</span>
           </div>
 
-          <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-light tracking-[0.02em] text-fog-100 sm:text-5xl">
             Summer Sales Intern
           </h1>
 
@@ -120,7 +120,7 @@ export default function SummerSalesInternPage() {
                 { label: "Bonus", detail: "Paid for top performers each month" },
               ].map(({ label, detail }) => (
                 <div key={label} className="rounded-xl border border-[#222] bg-night-900 p-5">
-                  <p className="text-[20px] font-extralight text-fog-100">{label}</p>
+                  <p className="text-[20px] font-light text-fog-100">{label}</p>
                   <p className="mt-1 text-[12px] font-light text-[#999]">{detail}</p>
                 </div>
               ))}
@@ -129,7 +129,7 @@ export default function SummerSalesInternPage() {
 
           {/* CTA */}
           <div className="rounded-2xl border border-night-600 bg-[#060606] p-8 text-center">
-            <p className="text-[18px] font-extralight text-fog-100">Sound like you?</p>
+            <p className="text-[18px] font-light text-fog-100">Sound like you?</p>
             <p className="mt-2 text-[13px] font-light text-[#999]">
               Applications take about 5 minutes. No cover letter required to get started.
             </p>

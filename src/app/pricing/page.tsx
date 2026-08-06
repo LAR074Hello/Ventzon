@@ -51,7 +51,7 @@ const faqs = [
   },
   {
     q: "Is yearly billing worth it?",
-    a: "At $240/year vs $300 billed monthly, you save $60 — that's 2 months free.",
+    a: "At $250/year vs $300 billed monthly, you save $50 — that's 2 months free.",
   },
 ];
 
@@ -154,7 +154,7 @@ function PricingContent() {
   }
 
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 text-fog-100">
 
       {/* ============================================================
           HERO
@@ -168,7 +168,7 @@ function PricingContent() {
             PRICING
           </p>
 
-          <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-white opacity-0 sm:text-5xl lg:text-6xl">
+          <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-light tracking-[0.02em] text-white opacity-0 sm:text-5xl lg:text-6xl">
             Simple pricing.{" "}
             <br className="hidden sm:block" />
             One flat rate.
@@ -276,8 +276,8 @@ function PricingContent() {
               </div>
 
               <div className="mt-6">
-                <span className="text-5xl font-extralight tracking-tight text-fog-100">
-                  {billingPeriod === "yearly" ? "$240" : "$25"}
+                <span className="text-5xl font-light tracking-tight text-fog-100">
+                  {billingPeriod === "yearly" ? "$250" : "$25"}
                 </span>
                 <span className="ml-1 text-lg font-light text-fog-600">
                   {billingPeriod === "yearly" ? "/yr" : "/mo"}
@@ -290,7 +290,7 @@ function PricingContent() {
                 </p>
               ) : (
                 <p className="mt-2 text-[11px] font-light text-fog-500">
-                  or $240/yr and save $60
+                  or $250/yr and save $50
                 </p>
               )}
 
@@ -356,7 +356,7 @@ function PricingContent() {
               { stat: "Cancel", label: "anytime, no hassle" },
             ].map(({ stat, label }) => (
               <div key={label} className="rounded-xl border border-night-700 px-4 py-4 text-center">
-                <p className="text-lg font-extralight tracking-tight text-fog-100">{stat}</p>
+                <p className="text-lg font-light tracking-tight text-fog-100">{stat}</p>
                 <p className="mt-1 text-[11px] font-light text-fog-500">{label}</p>
               </div>
             ))}
@@ -372,7 +372,7 @@ function PricingContent() {
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">THE MATH</p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               One flat rate. No fine print.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
@@ -399,17 +399,17 @@ function PricingContent() {
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-night-700 p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">RETURN VISITS DRIVEN</p>
-                  <p className="mt-2 text-3xl font-extralight text-white">8</p>
+                  <p className="mt-2 text-3xl font-light text-white">8</p>
                   <p className="mt-1 text-[12px] font-light text-fog-500">customers came back</p>
                 </div>
                 <div className="rounded-xl border border-night-700 p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">YOU PAY VENTZON</p>
-                  <p className="mt-2 text-3xl font-extralight text-white">$25</p>
+                  <p className="mt-2 text-3xl font-light text-white">$25</p>
                   <p className="mt-1 text-[12px] font-light text-fog-500">per month, flat</p>
                 </div>
                 <div className="rounded-xl border border-night-700 p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">PER REDEMPTION</p>
-                  <p className="mt-2 text-3xl font-extralight text-emerald-400">$0</p>
+                  <p className="mt-2 text-3xl font-light text-emerald-400">$0</p>
                   <p className="mt-1 text-[12px] font-light text-fog-500">no per-redemption fees</p>
                 </div>
               </div>
@@ -430,7 +430,7 @@ function PricingContent() {
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">COMPARE</p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               How Ventzon stacks up.
             </h2>
           </ScrollReveal>
@@ -475,7 +475,7 @@ function PricingContent() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               DASHBOARD
             </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               See what you get.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
@@ -488,7 +488,7 @@ function PricingContent() {
               <div className="flex items-center justify-between border-b border-night-700 pb-5">
                 <div>
                   <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">MERCHANT DASHBOARD</p>
-                  <p className="mt-2 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">Sunrise Bakery</p>
+                  <p className="mt-2 text-xl font-light tracking-[-0.01em] text-white sm:text-2xl">Sunrise Bakery</p>
                 </div>
                 <span className="rounded-full border border-emerald-800/50 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-emerald-400">
                   Active
@@ -498,15 +498,15 @@ function PricingContent() {
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-night-700 px-5 py-4">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">TOTAL SIGNUPS</p>
-                  <p className="mt-2 text-3xl font-extralight tracking-tight text-white">1,247</p>
+                  <p className="mt-2 text-3xl font-light tracking-tight text-white">1,247</p>
                 </div>
                 <div className="rounded-xl border border-night-700 px-5 py-4">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">TODAY</p>
-                  <p className="mt-2 text-3xl font-extralight tracking-tight text-white">23</p>
+                  <p className="mt-2 text-3xl font-light tracking-tight text-white">23</p>
                 </div>
                 <div className="rounded-xl border border-night-700 px-5 py-4">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">REWARD GOAL</p>
-                  <p className="mt-2 text-3xl font-extralight tracking-tight text-white">8</p>
+                  <p className="mt-2 text-3xl font-light tracking-tight text-white">8</p>
                 </div>
               </div>
 
@@ -622,7 +622,7 @@ function PricingContent() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               QUESTIONS
             </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
               Frequently asked
             </h2>
           </ScrollReveal>
@@ -652,7 +652,7 @@ function PricingContent() {
           ============================================================ */}
       <section className="px-8 py-28 sm:py-36">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
+          <h2 className="text-3xl font-light tracking-[0.02em] sm:text-4xl lg:text-5xl">
             Ready to grow?
           </h2>
           <p className="mt-6 text-base font-light leading-relaxed text-fog-500">

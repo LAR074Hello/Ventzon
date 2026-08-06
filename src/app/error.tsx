@@ -8,12 +8,12 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
+    <main className="marketing flex min-h-screen items-center justify-center bg-night-950 px-6 pt-24 pb-12">
       <div className="w-full max-w-md text-center animate-fade-in opacity-0 anim-delay-200">
-        <p className="font-mono text-[64px] font-extralight text-[#1a1a1a]">
+        <p className="font-mono text-[64px] font-light text-[#1a1a1a]">
           500
         </p>
-        <h1 className="mt-2 text-2xl font-extralight tracking-[-0.02em] text-fog-100">
+        <h1 className="mt-2 text-2xl font-light tracking-[0.02em] text-fog-100">
           Something went wrong
         </h1>
         <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-500">

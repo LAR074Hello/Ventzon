@@ -2,12 +2,12 @@ import Link from "next/link";
 
 export default function PricingCancelPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-night-950 px-8 text-fog-100">
+    <main className="marketing flex min-h-screen items-center justify-center bg-night-950 px-8 text-fog-100">
       <div className="w-full max-w-md text-center">
         <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
           CANCELED
         </p>
-        <h1 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
+        <h1 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
           Subscription canceled.
         </h1>
         <p className="mt-5 text-[15px] font-light leading-[1.8] text-fog-500">

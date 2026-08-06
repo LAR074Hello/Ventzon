@@ -45,9 +45,9 @@ function A({ href, children }: { href: string; children: React.ReactNode }) {
  */
 export default function DataAttributionPage() {
   return (
-    <main className="mx-auto min-h-screen max-w-2xl bg-bg px-6 pb-16 pt-28">
+    <main className="marketing mx-auto min-h-screen max-w-2xl bg-bg px-6 pb-16 pt-28">
       <p className="text-[10px] font-semibold tracking-[0.14em] text-muted">VENTZON</p>
-      <h1 className="mt-3 text-[32px] font-semibold tracking-[-0.02em] text-ink">
+      <h1 className="mt-3 text-[32px] font-semibold tracking-[0.02em] text-ink">
         Data &amp; Licences
       </h1>
       <p className="mt-3 text-[14px] text-muted">Last updated {UPDATED}</p>

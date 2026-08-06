@@ -27,12 +27,12 @@ function Section({
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-night-950 px-6 pb-20 pt-28 text-fog-100">
+    <main className="marketing min-h-screen bg-night-950 px-6 pb-20 pt-28 text-fog-100">
       <div className="mx-auto w-full max-w-3xl">
         <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
           LEGAL
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-light tracking-[0.02em] text-fog-100 sm:text-5xl">
           Terms of Service
         </h1>
         <p className="mt-4 text-[14px] font-light text-fog-500">

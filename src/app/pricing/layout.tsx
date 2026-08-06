@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pricing — Ventzon Loyalty App",
     description:
-      "$25/month or $240/year. No hardware, no setup fees. Cancel anytime.",
+      "$25/month or $250/year. No hardware, no setup fees. Cancel anytime.",
   },
 };
 
