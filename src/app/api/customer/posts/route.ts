@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getOrCreateProfile } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,12 @@ export async function POST(req: Request) {
   try {
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    // Banned accounts cannot create content.
+    const banned = await publiclyExcludedAuthors(adminClient());
+    if (banned.has(user.email!.toLowerCase())) {
+      return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
+    }
 
     const payload = await req.json().catch(() => ({}));
     const text = String(payload?.body ?? "").trim().slice(0, 1000);

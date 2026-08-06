@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,11 @@ export async function POST(req: Request) {
     const email = await getSessionEmail();
     if (!email) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    // Banned accounts cannot follow shops either.
+    const banned = await publiclyExcludedAuthors(adminClient());
+    if (banned.has(email)) {
+      return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));

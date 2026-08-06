@@ -75,7 +75,7 @@ function buildDay1Email(opts: { firstName: string; shopName: string; shopSlug: s
   const printUrl = `${BASE_URL}/merchant/${shopSlug}/print-card`;
 
   return {
-    subject: "You're live on Ventzon 🎉",
+    subject: "You're live on Ventzon",
     html: emailShell(
       `You're live, ${escHtml(firstName)}.`,
       `<p style="margin:0 0 14px">

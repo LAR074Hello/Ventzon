@@ -134,6 +134,7 @@ export default function ProfilePage() {
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [emailNotif, setEmailNotif] = useState(true);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -344,11 +345,9 @@ export default function ProfilePage() {
     }
   }
 
+  // Called from the confirmation sheet — window.confirm is unreliable in the
+  // Capacitor WKWebView, so the two-tap gate lives in the sheet instead.
   async function deleteAccount() {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This will permanently remove all your loyalty cards and rewards. This cannot be undone."
-    );
-    if (!confirmed) return;
     setDeletingAccount(true);
     try {
       const res = await fetch("/api/customer/delete-account", { method: "DELETE" });
@@ -595,7 +594,7 @@ export default function ProfilePage() {
             disabled={savingBirthday || birthMonth === "" || birthDay === ""}
             className="text-base text-primary mt-4 w-full rounded-ctl border border-subtle py-3 font-medium transition-colors active:bg-black/20 disabled:opacity-40"
           >
-            {savingBirthday ? "Saving…" : birthdaySaved ? "Saved ✓" : "Save birthday"}
+            {savingBirthday ? "Saving…" : birthdaySaved ? "Saved" : "Save birthday"}
           </button>
         </div>
       </div>
@@ -998,11 +997,62 @@ export default function ProfilePage() {
           <SettingsRow
             icon={Trash2}
             label={deletingAccount ? "Deleting account…" : "Delete account"}
-            onClick={deleteAccount}
+            onClick={() => setConfirmingDelete(true)}
             destructive
           />
         </div>
       </div>
+
+      {/* Delete-account confirmation — two-tap gate. window.confirm is
+          unreliable in the native webview, so the sheet is the confirm. */}
+      {confirmingDelete && (
+        <div
+          className="fixed inset-0 z-[300] flex items-end justify-center bg-black/60"
+          onClick={() => setConfirmingDelete(false)}
+        >
+          <div
+            className="elevation-2 w-full max-w-md rounded-t-sheet bg-surface px-5 pb-10 pt-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-caps text-muted">
+                Delete account
+              </p>
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                className="-mr-2.5 p-2.5 text-muted"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="font-display text-lg font-semibold tracking-tight text-primary mt-4">
+              This can&apos;t be undone.
+            </p>
+            <p className="text-sm text-secondary mt-2 leading-relaxed">
+              Deleting your account permanently removes your posts, comments,
+              likes, saved places, followers, check-ins, and rewards. This
+              cannot be undone.
+            </p>
+
+            <button
+              onClick={deleteAccount}
+              disabled={deletingAccount}
+              className="mt-6 w-full rounded-ctl bg-danger py-3.5 text-sm font-medium text-on-danger disabled:opacity-40"
+            >
+              {deletingAccount ? "DELETING…" : "DELETE ACCOUNT"}
+            </button>
+            <button
+              onClick={() => setConfirmingDelete(false)}
+              disabled={deletingAccount}
+              className="text-xs font-semibold uppercase tracking-caps text-muted mt-3 w-full py-2"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-caps text-subtle">VENTZON</p>

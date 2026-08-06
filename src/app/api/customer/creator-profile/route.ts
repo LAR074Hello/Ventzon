@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { getOrCreateProfile, creatorStats, computeBadges } from "@/lib/social";
+import { getOrCreateProfile, creatorStats, computeBadgeTier } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export async function GET() {
       avatar_url: user.user_metadata?.avatar_url ?? null,
     });
     const stats = await creatorStats(admin, user.email!);
-    const badges = computeBadges(stats);
+    const badges = await computeBadgeTier(admin, user.email!);
 
     return NextResponse.json({ profile, stats, badges });
   } catch (err: any) {

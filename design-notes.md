@@ -120,7 +120,7 @@ Phase C it returns as `text-row`, not `text-md`.
   every-card devalued the signature. Its earn-pill idea survives in the map pin.
 - **Floating Visit & Earn chip detached below the caption** — read as an ad
   unit. Fused into the media card as a footer instead.
-- **Emoji glyph action row (♥ 💬)** — cheapened the editorial register;
+- **Emoji glyph action row** — cheapened the editorial register;
   replaced with a muted "12 likes · 3 comments" text line.
 - ~~**Inter/Inter Tight for display** — default-looking; display moved to
   Bricolage Grotesque.~~ **Superseded 2026-07-24.** Display is now Archivo
@@ -1337,7 +1337,7 @@ record that says "production wins, except where I disagreed" is not one.
 ### A skipped check is now a failure
 
 The schema check exits **non-zero** when production credentials are absent, and
-prints `✗ NOT CLEAN — the production schema check DID NOT RUN` instead of a
+prints `NOT CLEAN — the production schema check DID NOT RUN` instead of a
 quiet SKIP under a green summary. Opting out is possible but must be said out
 loud: `SCHEMA_DIFF_OPTIONAL=true npm run verify:dev`. A check that silently
 does nothing looks like coverage, which is worse than no check at all.

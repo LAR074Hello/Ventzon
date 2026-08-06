@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { calcMerchantCommission } from "@/lib/rep-utils";
+import { calcMerchantCommission, isInFirstMonth } from "@/lib/rep-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +66,7 @@ export async function GET() {
         status: shop.subscription_status,
         claimedAt: shop.rep_claimed_at ?? shop.created_at,
         rewardsThisMonth: rewardCount,
-        monthlyCommission: calcMerchantCommission(isPro, rewardCount),
+        monthlyCommission: calcMerchantCommission(isPro, isInFirstMonth(shop.rep_claimed_at ?? shop.created_at)),
       };
     });
 

@@ -2,12 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { calcMerchantCommission } from "@/lib/rep-utils";
+import { calcMerchantCommission, isInFirstMonth, SIGNUP_BOUNTY, RECURRING_COMMISSION } from "@/lib/rep-utils";
 
 export const dynamic = "force-dynamic";
-
-const MONTHLY_FLAT = 25;
-const COMMISSION_RATE = 0.50;
 
 export async function GET() {
   try {
@@ -41,30 +38,20 @@ export async function GET() {
     const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active");
     const activeFree = myShops.filter(s => s.plan_type !== "pro" && s.subscription_status === "active");
 
-    // Commission this month from flat subscriptions
-    const flatCommission = activePro.length * MONTHLY_FLAT * COMMISSION_RATE;
+    // Commission this month — signup-bounty model: $25 in month one, then $5/mo.
+    const commissionThisMonth = activePro.reduce(
+      (sum, s) => sum + calcMerchantCommission(true, isInFirstMonth(s.rep_claimed_at ?? s.created_at)),
+      0
+    );
 
-    // Commission from reward redemptions this month
+    // All-time commission estimate — month one pays the $25 bounty, then $5/mo
+    // recurring. Use rep_claimed_at, fall back to shop created_at.
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const slugs = myShops.map(s => s.slug);
-
-    let rewardCommission = 0;
-    if (slugs.length > 0) {
-      const { count } = await admin
-        .from("reward_events")
-        .select("id", { count: "exact", head: true })
-        .in("shop_slug", slugs)
-        .gte("reward_date", monthStart);
-      rewardCommission = calcMerchantCommission(false, count ?? 0);
-    }
-
-    // All-time commission estimate — use rep_claimed_at, fall back to shop created_at
     let allTimeCommission = 0;
     for (const shop of activePro) {
       const claimedAt = new Date(shop.rep_claimed_at ?? shop.created_at ?? now);
       const monthsActive = Math.max(1, Math.floor((Date.now() - claimedAt.getTime()) / (1000 * 60 * 60 * 24 * 30)));
-      allTimeCommission += monthsActive * MONTHLY_FLAT * COMMISSION_RATE;
+      allTimeCommission += monthsActive === 1 ? SIGNUP_BOUNTY : SIGNUP_BOUNTY + (monthsActive - 1) * RECURRING_COMMISSION;
     }
 
     return NextResponse.json({
@@ -73,7 +60,7 @@ export async function GET() {
         totalMerchants: myShops.length,
         activePro: activePro.length,
         activeFree: activeFree.length,
-        commissionThisMonth: Math.round((flatCommission + rewardCommission) * 100) / 100,
+        commissionThisMonth: Math.round(commissionThisMonth * 100) / 100,
         allTimeCommission: Math.round(allTimeCommission * 100) / 100,
       },
     });

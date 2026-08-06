@@ -49,7 +49,7 @@ const customerFaqs: FAQ[] = [
 const merchantFaqs: FAQ[] = [
   {
     q: "How does billing work?",
-    a: "Ventzon Pro is $25/month or $240/year (save $60). You're also charged $0.85 per reward redemption — meaning you only pay when a customer actually earns their reward. There are no setup fees and you can cancel anytime.",
+    a: "Ventzon Pro is $25/month or $240/year (save $60), flat — no per-redemption fees, no setup fees. Cancel anytime.",
   },
   {
     q: "Do I need any hardware or a POS system?",

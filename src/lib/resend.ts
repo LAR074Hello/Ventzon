@@ -254,7 +254,6 @@ export function buildBirthdayEmail(opts: {
     </div>
 
     <div style="padding:36px 32px 24px;text-align:center">
-      <div style="font-size:34px;line-height:1;margin:0 0 14px">🎂</div>
       <h1 style="font-size:26px;font-weight:200;letter-spacing:-0.01em;color:#fff;margin:0 0 8px">Happy birthday!</h1>
       <p style="font-size:13px;font-weight:300;letter-spacing:0.05em;color:#888;margin:0">A gift from ${safeName.toUpperCase()}</p>
     </div>

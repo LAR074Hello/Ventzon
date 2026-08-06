@@ -122,7 +122,7 @@ export async function POST(req: Request) {
       if (userEmail) {
         await sendEmail(
           userEmail,
-          `Welcome to Ventzon — ${shopName} is live 🎉`,
+          `Welcome to Ventzon — ${shopName} is live`,
           `Hi there,
 
 Your shop "${shopName}" is set up on Ventzon. Here's what to do next to start building customer loyalty:

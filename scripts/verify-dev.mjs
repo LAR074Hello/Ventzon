@@ -199,7 +199,7 @@ const skipTolerated = String(env.SCHEMA_DIFF_OPTIONAL ?? "") === "true";
 
 if (schemaDiff.status === "skipped" && !skipTolerated) {
   console.log(`\n${failed === 0 ? `${results.length} checks passed` : failed + " FAILED"}`);
-  console.log("\n  ✗ NOT CLEAN — the production schema check DID NOT RUN.");
+  console.log("\n  NOT CLEAN — the production schema check DID NOT RUN.");
   console.log("    " + schemaDiff.message.split("\n").join("\n    "));
   console.log("\n    Twice production has drifted from its own migrations and both");
   console.log("    times it was found by accident. A check that silently does nothing");

@@ -63,9 +63,9 @@ async function main() {
     const outputPath = join(PUBLIC, name);
     try {
       await generateCircularIcon(LOGO_PATH, outputPath, size);
-      console.log(`  ✓ ${name} (${size}×${size})`);
+      console.log(`  OK ${name} (${size}×${size})`);
     } catch (err) {
-      console.error(`  ✗ ${name}: ${err.message}`);
+      console.error(`  ERROR ${name}: ${err.message}`);
     }
   }
 

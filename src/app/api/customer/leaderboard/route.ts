@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getBlockedSet } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,8 @@ export async function GET() {
       .eq("is_creator", true)
       .eq("show_on_leaderboard", true);
     const blocked = await getBlockedSet(admin, viewerEmail);
-    const profiles = (optedIn ?? []).filter((p) => !blocked.has(p.email));
+    const banned = await publiclyExcludedAuthors(admin);
+    const profiles = (optedIn ?? []).filter((p) => !blocked.has(p.email) && !banned.has(p.email));
     if (profiles.length === 0) return NextResponse.json({ leaders: [] });
 
     const { data: memberRows } = await admin

@@ -19,7 +19,7 @@ const steps = [
   {
     number: "03",
     title: "Choose a plan and subscribe",
-    body: "Pick monthly ($25/month) or yearly ($240/year — two months free) and enter your card. On top of the flat fee, you pay just $0.85 each time a customer actually earns a reward. You pay more only when it's working.",
+    body: "Pick monthly ($25/month) or yearly ($240/year — two months free) and enter your card. It's a flat $25/month — no per-redemption fees, no surprise charges.",
   },
   {
     number: "04",

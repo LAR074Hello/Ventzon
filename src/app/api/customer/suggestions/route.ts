@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { haversineMiles } from "@/lib/geo";
 import { getBlockedSet } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -52,8 +53,9 @@ export async function GET(req: Request) {
       .limit(200);
 
     const blocked = await getBlockedSet(admin, viewerEmail);
+    const banned = await publiclyExcludedAuthors(admin);
     const candidates = (creators ?? []).filter(
-      (c) => c.email !== viewerEmail && !followedCreators.has(c.email) && !blocked.has(c.email)
+      (c) => c.email !== viewerEmail && !followedCreators.has(c.email) && !blocked.has(c.email) && !banned.has(c.email)
     );
 
     const since = new Date(Date.now() - 30 * DAY_MS).toISOString();

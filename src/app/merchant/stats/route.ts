@@ -103,7 +103,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // ✅ New York local midnight → UTC ISO string
+    // New York local midnight → UTC ISO string
     const startOfTodayNYUTC = getStartOfTodayNYAsUTCISOString();
 
     // Total customers for this shop

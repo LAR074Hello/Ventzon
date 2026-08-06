@@ -24,10 +24,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 type Admin = SupabaseClient;
 
 /**
- * Set this to the column name the moment banning lands, and add it to the
- * filters below. verify:dev fails while the column exists and this is null.
+ * Set to the ban column name once the safety migration lands, and add it to
+ * the filters below. verify:dev fails while the column exists and this is null.
  */
-export const BANNED_COLUMN: string | null = null;
+export const BANNED_COLUMN: string | null = "banned_at";
 
 export const PUBLIC_POST_COLUMNS =
   "id, body, media_url, media_type, created_at, author_email, shop_slug, place_id";
@@ -43,11 +43,17 @@ export async function publiclyExcludedAuthors(admin: Admin): Promise<Set<string>
   // a one-line change rather than a new query in two page files.
   // The ban column is filtered on, not selected — a template-literal select
   // defeats supabase-js's typed parser and forces an unsafe cast.
-  const { data } = await admin
-    .from("customer_profiles")
-    .select("email")
-    .not(BANNED_COLUMN, "is", null);
-  for (const row of data ?? []) excluded.add(row.email as string);
+  try {
+    const { data } = await admin
+      .from("customer_profiles")
+      .select("email")
+      .not(BANNED_COLUMN, "is", null);
+    for (const row of data ?? []) excluded.add(row.email as string);
+  } catch (e) {
+    // Column may not exist yet if the safety migration has not landed on this
+    // project — fail open (nobody banned) but say so loudly.
+    console.error("[public-visibility] ban column unavailable — run the safety migration", e);
+  }
   return excluded;
 }
 

@@ -6,7 +6,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import Link from "next/link";
-import { LogOut, Sparkles, RefreshCw } from "lucide-react";
+import { LogOut, Sparkles, RefreshCw, Check, Medal, GraduationCap, Siren, HeartHandshake } from "lucide-react";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
 
 // Community Rewards (Veterans/Students/Seniors/etc boost multipliers) is
@@ -1119,7 +1119,7 @@ function MerchantShopPage() {
                   {steps.map((step, i) => (
                     <li key={i} className="flex items-center gap-3">
                       <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${step.done ? "border-emerald-700 bg-emerald-950" : "border-[#2a2a2a]"}`}>
-                        {step.done && <span className="text-[10px] text-emerald-400">✓</span>}
+                        {step.done && <Check className="h-3 w-3 text-emerald-400" strokeWidth={2.5} />}
                       </div>
                       <span className={`text-[13px] font-light ${step.done ? "text-[#444] line-through" : "text-[#bbb]"}`}>
                         {step.label}
@@ -1613,7 +1613,7 @@ function MerchantShopPage() {
                           onClick={() => { setShowAIModal(true); setAiOptions([]); setAiError(""); }}
                           className="inline-flex items-center gap-1.5 rounded-full border border-[#2a2a2a] px-3.5 py-1.5 text-[11px] font-light tracking-[0.1em] text-[#888] transition-all duration-300 hover:border-[#ededed] hover:text-[#ededed]"
                         >
-                          <span>✦</span> Write with AI
+                          <Sparkles className="h-3.5 w-3.5" /> Write with AI
                         </button>
                       </div>
                       <textarea
@@ -2456,11 +2456,11 @@ function MerchantShopPage() {
                     <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5">
                       <p className="text-[11px] font-light tracking-[0.3em] text-[#555] mb-3">HOW IT WORKS</p>
                       <div className="space-y-2 text-[12px] font-light text-[#444] leading-relaxed">
-                        <p>🎖 <strong className="text-[#666] font-light">Veterans</strong> — verified via VA Lighthouse API (global badge, works at all merchants)</p>
-                        <p>🎓 <strong className="text-[#666] font-light">Students</strong> — verified via .edu email link (global badge)</p>
-                        <p>👴 <strong className="text-[#666] font-light">Seniors</strong> — derived from date of birth at scan time, no badge stored</p>
-                        <p>🚒 <strong className="text-[#666] font-light">First Responders</strong> — merchant grant only (use &quot;Grant a perk&quot; below)</p>
-                        <p>💙 <strong className="text-[#666] font-light">Care Community</strong> — merchant grant only, cancer patients &amp; family</p>
+                        <p><Medal className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-[#666] font-light">Veterans</strong> — verified via VA Lighthouse API (global badge, works at all merchants)</p>
+                        <p><GraduationCap className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-[#666] font-light">Students</strong> — verified via .edu email link (global badge)</p>
+                        <p><strong className="text-[#666] font-light">Seniors</strong> — derived from date of birth at scan time, no badge stored</p>
+                        <p><Siren className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-[#666] font-light">First Responders</strong> — merchant grant only (use &quot;Grant a perk&quot; below)</p>
+                        <p><HeartHandshake className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-[#666] font-light">Care Community</strong> — merchant grant only, cancer patients &amp; family</p>
                         <p className="mt-2 text-[#333]">Boosts resolve as max, not stack. A customer who qualifies for multiple groups gets the highest boost only.</p>
                       </div>
                     </div>
@@ -2560,8 +2560,8 @@ function MerchantShopPage() {
                       </span>
                       <span className="text-[13px] font-light text-[#666]">
                         {billingData.plan_type === "pro"
-                          ? "$25/mo \u00b7 + $0.85 per reward redeemed"
-                          : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month \u2192 ${billingData.estimated_charge}`}
+                          ? "$25/mo flat — no per-redemption fees"
+                          : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month → ${billingData.estimated_charge}`}
                       </span>
                     </div>
                     <button
@@ -2782,10 +2782,10 @@ function MerchantShopPage() {
                   onChange={(e) => setGrantGroup(e.target.value)}
                   className="w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none transition-colors focus:border-[#333]"
                 >
-                  <option value="care">💙 Care Community (cancer patients &amp; family)</option>
-                  <option value="first_responder">🚒 First Responder</option>
-                  <option value="veteran">🎖 Veteran</option>
-                  <option value="student">🎓 Student</option>
+                  <option value="care">Care Community (cancer patients &amp; family)</option>
+                  <option value="first_responder">First Responder</option>
+                  <option value="veteran">Veteran</option>
+                  <option value="student">Student</option>
                 </select>
               </div>
 

@@ -1,767 +1,366 @@
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, MapPin, Heart, MessageCircle } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import DeviceFrame from "@/components/DeviceFrame";
+import Coverage from "@/components/Coverage";
 import SiteFooter from "@/components/SiteFooter";
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "SoftwareApplication",
-      "name": "Ventzon",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "iOS, Web",
-      "url": "https://www.ventzon.com",
-      "description": "Local discovery for independent businesses. People find nearby shops in the Ventzon feed and map, and a QR check-in confirms the visit — so posts about your shop come from customers who actually walked in.",
-      "offers": {
-        "@type": "Offer",
-        "price": "25.00",
-        "priceCurrency": "USD",
-        "priceSpecification": {
-          "@type": "UnitPriceSpecification",
-          "price": "25.00",
-          "priceCurrency": "USD",
-          "unitText": "MONTH"
-        }
-      }
-    },
-    {
-      "@type": "Organization",
-      "name": "Ventzon",
-      "url": "https://www.ventzon.com",
-      "logo": "https://www.ventzon.com/ventzoncompanylogo.png",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "support@ventzon.com",
-        "contactType": "customer support"
-      }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How much does Ventzon cost?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Free for customers. Businesses that run a loyalty program pay $25/month or $240/year, plus $0.85 per reward redeemed. No hardware required."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Do customers need the app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Checking in is always frictionless — scan the QR code and enter a phone number or email. The app is where discovery happens: customers browse nearby shops, see rewards they are close to earning, and post about places they have actually visited."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What kind of businesses use Ventzon?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Independent restaurants, coffee shops, cafes, salons, barbershops, and retail stores. Ventzon is launching neighborhood by neighborhood, so early shops are founding businesses in their area."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How do I set up Ventzon for my business?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sign up at ventzon.com, create your shop, choose a stamp card or a points program, set your reward goal, and print your QR code. Your shop then appears on the Ventzon map and in local discovery. The whole process takes about 5 minutes."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does Ventzon do stamp cards or points?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Both. You can run a classic stamp card (a reward after N visits) or a points program where each visit earns points toward a larger reward goal — with your own earn rate. Either way, customers check themselves in by scanning a QR code and entering their phone or email. There's no cashier step and no dollar amount to enter."
-          }
-        }
-      ]
-    }
-  ]
-};
+/* ═══════════════════════════════════════════════════════════════════
+   In-frame UI mockups — rendered from the page's own tokens rather than
+   static images, so the "screenshots" always match the real product's
+   palette. City-agnostic invented place names on purpose.
+   ═══════════════════════════════════════════════════════════════════ */
 
-export default function Home() {
+function ExploreMock() {
   return (
-    <main className="min-h-screen bg-black text-[#ededed]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      {/* ============================================================
-          SECTION 1 — HERO (full-screen video)
-          ============================================================
-          VIDEO SETUP:
-          1. Place your video at  /public/hero.mp4  (or hero.webm)
-          2. Place a fallback poster image at  /public/hero-poster.jpg
-          3. The video plays on all devices (poster shown while loading)
-          ============================================================ */}
-      <section className="relative flex h-screen items-center justify-center overflow-hidden">
-        {/* Background video (all devices including mobile) */}
+    <div className="flex h-full flex-col p-4">
+      <p className="text-[13px] font-semibold tracking-[0.02em] text-ink-warm">Near you</p>
+      {[
+        { name: "Maple & Pine", sub: "Coffee · 0.4 mi", tag: "Deal" },
+        { name: "Second Shelf Books", sub: "Bookshop · 0.6 mi", tag: "" },
+        { name: "Golden Hour Diner", sub: "Food · 0.8 mi", tag: "" },
+      ].map((p, i) => (
+        <div
+          key={p.name}
+          className={`mt-3 flex items-center gap-3 rounded-2xl bg-cream-sunken p-3 ${i === 0 ? "shadow-warm" : ""}`}
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-soft text-[13px] font-semibold text-sage">
+            {p.name.charAt(0)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-medium text-ink-warm">{p.name}</p>
+            <p className="text-[11px] text-taupe">{p.sub}</p>
+          </div>
+          {p.tag && (
+            <span className="rounded-full bg-sage px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-white">
+              {p.tag}
+            </span>
+          )}
+        </div>
+      ))}
+      <div className="mt-4 rounded-2xl bg-sage-soft p-3 text-center">
+        <p className="text-[11px] font-medium text-sage">Tap a place to see what it&rsquo;s like</p>
+      </div>
+    </div>
+  );
+}
+
+function MapMock() {
+  return (
+    <div className="relative h-full w-full bg-[#ece5d6]">
+      {/* Abstract map — soft landmasses, no real city */}
+      <div className="absolute left-4 top-12 h-24 w-28 rounded-full bg-[#ddd4c0] blur-md" />
+      <div className="absolute right-6 top-24 h-20 w-24 rounded-full bg-[#ddd4c0] blur-md" />
+      <div className="absolute bottom-24 left-10 h-16 w-20 rounded-full bg-[#ddd4c0] blur-md" />
+      {/* Roads */}
+      <div className="absolute left-0 top-1/2 h-[3px] w-full -rotate-6 bg-white/60" />
+      <div className="absolute left-1/2 top-0 h-full w-[3px] rotate-12 bg-white/60" />
+      {/* Pins */}
+      <div className="absolute left-14 top-16 h-3 w-3 rounded-full bg-sage shadow-warm" />
+      <div className="absolute right-10 top-28 h-3 w-3 rounded-full bg-sage shadow-warm" />
+      <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sage ring-4 ring-white/70" />
+      {/* Bottom sheet */}
+      <div className="absolute inset-x-2 bottom-2 rounded-2xl bg-cream-card p-3 shadow-warm">
+        <p className="text-[13px] font-semibold text-ink-warm">Near you now</p>
+        <p className="mt-0.5 text-[11px] text-taupe">8 places within a mile</p>
+      </div>
+    </div>
+  );
+}
+
+function PostMock() {
+  return (
+    <div className="flex h-full flex-col p-4">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-soft text-[12px] font-semibold text-sage">A</div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[12px] font-semibold text-ink-warm">Alex · Maple &amp; Pine</p>
+          <p className="text-[10px] text-taupe">2h ago</p>
+        </div>
+        <span className="rounded-full bg-sage px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white">
+          Verified visit
+        </span>
+      </div>
+      <div className="mt-3 flex-1 rounded-2xl bg-gradient-to-br from-[#e5dcc8] to-[#cbbfa4]" />
+      <p className="mt-3 text-[12px] leading-relaxed text-ink-warm">
+        Best sourdough in the neighborhood — go early, it sells out.
+      </p>
+      <div className="mt-2.5 flex items-center gap-3 text-[11px] text-taupe">
+        <span className="inline-flex items-center gap-1"><Heart className="h-3 w-3" /> 24</span>
+        <span className="inline-flex items-center gap-1"><MessageCircle className="h-3 w-3" /> 6</span>
+        <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Maple &amp; Pine</span>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ProductBlock — the GlossGenius alternating rhythm: numbered eyebrow +
+   big headline on one side, editorial photo with a device frame
+   overlapping its bottom corner on the other.
+   ═══════════════════════════════════════════════════════════════════ */
+function ProductBlock({
+  number,
+  title,
+  body,
+  photo,
+  photoAlt,
+  flip = false,
+  children,
+}: {
+  number: string;
+  title: React.ReactNode;
+  body: string;
+  photo: string;
+  photoAlt: string;
+  flip?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="px-6 py-24 sm:py-32">
+      <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 lg:gap-20">
+        <ScrollReveal className={flip ? "lg:order-2" : ""}>
+          <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-taupe-faint">{number}</p>
+          <h2 className="mt-5 font-display text-[clamp(2rem,4.5vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.02em] text-ink-warm">
+            {title}
+          </h2>
+          <p className="mt-6 max-w-md text-[17px] leading-[1.7] text-taupe">{body}</p>
+        </ScrollReveal>
+        <ScrollReveal delay={2} className={flip ? "lg:order-1" : ""}>
+          <div className="relative mx-auto max-w-md">
+            <img
+              src={photo}
+              alt={photoAlt}
+              loading="lazy"
+              className="aspect-[4/5] w-full rounded-[2.6rem] object-cover"
+            />
+            <div className={`absolute -bottom-14 ${flip ? "right-2" : "left-2"}`}>
+              <DeviceFrame className={flip ? "-rotate-3" : "rotate-3"}>{children}</DeviceFrame>
+            </div>
+          </div>
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Merchant benefits — soft rounded cards, no hard borders, warm shadows.
+   The four arguments for a shop, made in plain words.
+   ═══════════════════════════════════════════════════════════════════ */
+const SHOP_BENEFITS = [
+  {
+    title: "On the map from day one",
+    body: "Your shop is listed the moment you create it — on the map, in search, and in the feed. No hardware, no counter space, no setup fee.",
+  },
+  {
+    title: "Verified visits, not guesses",
+    body: "A check-in means a real person walked in. A post carrying a verified visit is the strongest recommendation a local can make — and it names your shop.",
+  },
+  {
+    title: "A customer list that builds itself",
+    body: "Every check-in becomes a name, an email, a visit count. You own the list; it grows while you run your business.",
+  },
+  {
+    title: "Rewards at one flat price",
+    body: "Set a visit goal and a reward in minutes. $25/month flat — no per-redemption fees, no surprises.",
+  },
+];
+
+
+export default function HomePage() {
+  return (
+    <main className="bg-cream text-ink-warm">
+      {/* ══ HERO — the video, kept. Warm cream scrim instead of black. ══ */}
+      <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
         <video
           autoPlay
           loop
           muted
           playsInline
           poster="/hero-poster.jpg"
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        >
-          <source src="/hero.mp4" type="video/mp4" />
-        </video>
-
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/55" />
-
-        {/* Hero content */}
-        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-8 text-center">
-          <h1 className="animate-fade-in anim-delay-200 text-5xl font-extralight tracking-[0.35em] text-white opacity-0 sm:text-6xl lg:text-7xl">
-            VENTZON
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {/* Warm scrim: dark enough for text at the top, melts to cream at the seam */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#221e1a]/55 via-[#221e1a]/30 to-[#faf6ef]" />
+        <div className="relative z-10 mx-auto max-w-4xl px-6 py-24 text-center">
+          <p className="animate-fade-in anim-delay-200 text-[12px] font-medium uppercase tracking-[0.25em] text-white/85 opacity-0">
+            Local discovery, with proof
+          </p>
+          <h1 className="animate-fade-in anim-delay-400 mt-8 font-display text-[clamp(2.75rem,7vw,5.5rem)] font-medium leading-[1.05] tracking-[-0.03em] text-white opacity-0">
+            Find real places.
+            <br />
+            See who&rsquo;s actually there.
           </h1>
-
-          <p className="animate-fade-in anim-delay-600 mt-5 text-[13px] font-light tracking-[0.3em] text-white/70 opacity-0">
-            Find Real Places. See Who&rsquo;s Actually There.
+          <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-lg leading-[1.7] text-white/90 opacity-0">
+            Ventzon is a local social app. Browse real spots near you, check in
+            when you go, and share what they&rsquo;re actually like &mdash; with
+            proof you were there.
           </p>
-
-          <div className="animate-fade-in-up anim-delay-1000 mt-16 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
+          <div className="animate-fade-in-up anim-delay-800 mt-12 flex flex-col items-center gap-5 opacity-0 sm:flex-row sm:justify-center">
             <Link
               href="/customer/explore"
-              className="inline-flex items-center gap-3 rounded-full border border-white/40 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white transition-all duration-500 hover:border-white hover:bg-white hover:text-black"
+              className="inline-flex items-center gap-2.5 rounded-full bg-cream px-9 py-4 text-[15px] font-medium text-ink-warm shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white"
             >
               Open the app
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/how-it-works"
-              className="text-[12px] font-light tracking-[0.15em] text-white/40 transition-colors duration-500 hover:text-white"
+              href="/app"
+              className="text-[15px] font-medium text-white/85 underline decoration-white/40 underline-offset-8 transition-colors duration-300 hover:text-white"
             >
-              How it works
+              For shops
             </Link>
           </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="animate-fade-in anim-delay-1200 absolute bottom-10 left-1/2 -translate-x-1/2 opacity-0">
-          <div className="h-10 w-[1px] bg-gradient-to-b from-transparent via-[#444] to-transparent" />
+          <p className="animate-fade-in anim-delay-1000 mt-10 text-sm text-white/70 opacity-0">
+            Free for customers &middot; no download
+          </p>
         </div>
       </section>
 
-      {/* ============================================================
-          SECTION 2 — VALUE PROPS
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-12 sm:grid-cols-3">
-          {[
-            { title: "Customer Intelligence", desc: "Understand who your customers are, when they come back, and who's about to stop." },
-            { title: "Built on Real Visits", desc: "Every check-in proves someone actually walked in. See who's coming back and who's drifting — without friction at the counter." },
-            { title: "Built for Local", desc: "No enterprise contract. No data team required. Just answers." },
-          ].map((item) => (
-            <div key={item.title} className="text-center">
-              <h3 className="text-lg font-extralight tracking-[0.15em] text-[#ededed]">
-                {item.title}
-              </h3>
-              <p className="mt-3 text-[13px] font-light leading-relaxed text-[#666]">
-                {item.desc}
-              </p>
-            </div>
-          ))}
-        </div>
+      {/* ══ SIGNAL STRIP — the promise, in one quiet line ══ */}
+      <section className="px-6 py-20 sm:py-24">
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <p className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-medium leading-[1.4] tracking-[-0.01em] text-taupe">
+            Real places. Verified visits. Posts you can trust.
+          </p>
+        </ScrollReveal>
       </section>
 
-      {/* ============================================================
-          SECTION 3 — HOW IT WORKS
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
+      {/* ══ PRODUCT — 01 / 02 / 03, alternating ══ */}
+      <ProductBlock
+        number="01"
+        title="Find places worth going to"
+        body="Browse thousands of real local spots — coffee shops, parks, bookshops, the corner bar. No ads, no algorithm, no listings you’ve never heard of."
+        photo="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&q=80"
+        photoAlt="A warm cafe interior with people"
+      >
+        <ExploreMock />
+      </ProductBlock>
+
+      <ProductBlock
+        number="02"
+        title="Check in. Prove you were there."
+        body="Check in once you’re there and your post carries a verified visit badge — proof you were really there, not a review from someone who never showed up."
+        photo="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80"
+        photoAlt="A barista at a coffee counter"
+        flip
+      >
+        <MapMock />
+      </ProductBlock>
+
+      <ProductBlock
+        number="03"
+        title="The feed fills with what’s actually good"
+        body="Friends and locals post about the places they go. Over time the feed fills with what’s worth the trip — and where a shop runs a reward, you earn it just for visiting."
+        photo="https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1200&q=80"
+        photoAlt="Two people at a cafe table"
+      >
+        <PostMock />
+      </ProductBlock>
+
+
+      {/* ══ FOR SHOPS — the merchant argument, design-led, no invented stats ══ */}
+      <section className="px-6 py-24 sm:py-36">
         <div className="mx-auto max-w-6xl">
-          {/* Section header */}
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              HOW IT WORKS
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              See what&rsquo;s actually good nearby.
+          <ScrollReveal className="mx-auto max-w-3xl text-center">
+            <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-taupe-faint">For shops</p>
+            <h2 className="mt-5 font-display text-[clamp(2rem,4.5vw,3.5rem)] font-medium leading-[1.1] tracking-[-0.02em] text-ink-warm">
+              Your shop, discovered by people who actually show up.
             </h2>
-          </ScrollReveal>
-
-          {/* Steps */}
-          <div className="mt-20 space-y-24 lg:space-y-32">
-            {/* ── Step 1 ── */}
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
-              <ScrollReveal>
-                <div className="overflow-hidden rounded-lg">
-                  <img
-                    src="/site-images/mykonos.jpg"
-                    alt="Seaside restaurant terrace with a view over the water"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
-                  />
-                </div>
-              </ScrollReveal>
-              <ScrollReveal delay={2}>
-                <p className="font-mono text-[12px] tracking-[0.3em] text-[#555]">
-                  01
-                </p>
-                <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  Find places near you
-                </h3>
-                <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  Browse thousands of real local spots on the Ventzon map &mdash;
-                  coffee shops, parks, bookshops, the corner bar. No ads, no
-                  algorithm, no listings you&rsquo;ve never heard of.
-                </p>
-              </ScrollReveal>
-            </div>
-
-            {/* ── Step 2 ── */}
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
-              <ScrollReveal className="order-1 lg:order-2">
-                <div className="overflow-hidden rounded-lg">
-                  <img
-                    src="/site-images/japanese-room.jpg"
-                    alt="Minimalist wood-panelled restaurant dining counter"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
-                  />
-                </div>
-              </ScrollReveal>
-              <ScrollReveal delay={2} className="order-2 lg:order-1">
-                <p className="font-mono text-[12px] tracking-[0.3em] text-[#555]">
-                  02
-                </p>
-                <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  Check in. Share where you went.
-                </h3>
-                <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  Check in once you&rsquo;re there and your post carries a
-                  verified visit &mdash; proof you were really there, not a
-                  review from someone who never showed up.
-                </p>
-              </ScrollReveal>
-            </div>
-
-            {/* ── Step 3 ── */}
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
-              <ScrollReveal>
-                <div className="overflow-hidden rounded-lg">
-                  <img
-                    src="/site-images/seaside-toast.jpg"
-                    alt="Friends raising a toast at a seaside restaurant at sunset"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-1000 hover:scale-[1.03]"
-                  />
-                </div>
-              </ScrollReveal>
-              <ScrollReveal delay={2}>
-                <p className="font-mono text-[12px] tracking-[0.3em] text-[#555]">
-                  03
-                </p>
-                <h3 className="mt-5 text-2xl font-extralight tracking-[-0.01em] sm:text-3xl">
-                  See what&rsquo;s actually good
-                </h3>
-                <p className="mt-5 text-base font-light leading-[1.8] text-[#888]">
-                  Friends and locals post about the places they go, and the feed
-                  fills with what&rsquo;s worth the trip. Where a shop runs a
-                  reward, you earn it just for visiting.
-                </p>
-              </ScrollReveal>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          SECTION 3b — CUSTOMER EXPERIENCE (Join page mock)
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              CUSTOMER EXPERIENCE
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              What your customers see.
-            </h2>
-            <p className="mt-5 text-[15px] font-light text-[#666]">
-              A simple check-in page that works on any phone. Scanning takes seconds &mdash; phone or email is all it needs.
+            <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.7] text-taupe">
+              Ventzon is where a local place gets found, visited, and talked
+              about — by the people in its own neighborhood.
             </p>
           </ScrollReveal>
 
-          <div className="mt-14 grid gap-8 sm:grid-cols-2">
-            {/* ── Check-in form mock ── */}
-            <ScrollReveal delay={1}>
-              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8 transition-all duration-500 hover:border-[#333]">
-                <p className="mb-6 text-[10px] font-light tracking-[0.3em] text-[#444]">
-                  CHECK-IN · EXAMPLE
-                </p>
-
-                {/* Shop avatar + name */}
-                <div className="flex flex-col items-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-                    <span className="text-xl font-extralight text-[#555]">S</span>
-                  </div>
-                  <p className="mt-4 text-[12px] font-light tracking-[0.3em] text-[#ededed]">
-                    SUNRISE BAKERY
-                  </p>
-
-                  {/* Deal card */}
-                  <div className="mt-5 rounded-lg border border-[#1a1a1a] px-5 py-3 text-center">
-                    <p className="text-[13px] font-light text-[#888]">
-                      Free pastry after 8 visits
-                    </p>
-                    <p className="mt-1 text-[11px] font-light text-[#555]">
-                      Any pastry up to $6
-                    </p>
-                  </div>
-
-                  {/* Contact method toggle mock */}
-                  <div className="mt-8 w-full">
-                    <div className="mb-4 flex items-center justify-center gap-1 rounded-full border border-[#1a1a1a] p-1">
-                      <div className="flex-1 rounded-full bg-[#ededed] py-2 text-center text-[10px] font-light tracking-[0.15em] text-black">
-                        PHONE
-                      </div>
-                      <div className="flex-1 rounded-full py-2 text-center text-[10px] font-light tracking-[0.15em] text-[#555]">
-                        EMAIL
-                      </div>
-                    </div>
-                    <p className="mb-2 text-[10px] font-light tracking-[0.2em] text-[#555]">
-                      PHONE NUMBER
-                    </p>
-                    <div className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3.5 text-center">
-                      <span className="text-[16px] font-light tracking-[0.05em] text-[#ededed]">
-                        (555) 123-4567
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Check in button */}
-                  <div className="mt-5 w-full rounded-full border border-[#ededed] py-3.5 text-center text-[11px] font-light tracking-[0.2em] text-[#ededed]">
-                    CHECK IN
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            {/* ── Progress / reward result mock ── */}
-            <ScrollReveal delay={2}>
-              <div className="rounded-2xl border border-[#1a1a1a] bg-[#050505] p-6 sm:p-8 transition-all duration-500 hover:border-[#333]">
-                <p className="mb-6 text-[10px] font-light tracking-[0.3em] text-[#444]">
-                  AFTER CHECK-IN
-                </p>
-
-                <div className="flex flex-col items-center">
-                  {/* Visit counter circle */}
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#0a0a0a]">
-                    <span className="font-mono text-[18px] font-light text-[#ededed]">
-                      6
-                    </span>
-                  </div>
-
-                  {/* Message */}
-                  <p className="mt-5 text-[15px] font-extralight text-[#ededed]">
-                    Checked in! 2 more to go.
-                  </p>
-
-                  {/* Progress dots */}
-                  <div className="mt-6 flex items-center gap-2">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`flex h-5 w-5 items-center justify-center rounded-full ${
-                          i < 6
-                            ? "bg-[#ededed]"
-                            : "border border-[#333] bg-transparent"
-                        }`}
-                      >
-                        {i < 6 && (
-                          <Check className="h-2.5 w-2.5 text-black" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Stats */}
-                  <p className="mt-4 text-[11px] font-light tracking-[0.1em] text-[#555]">
-                    6/8 visits &middot; 2 to go
-                  </p>
-
-                  {/* Info */}
-                  <p className="mt-3 text-[10px] font-light text-[#444]">
-                    1 check-in per day &middot; Progress resets after redeem
-                  </p>
-
-                  {/* Divider */}
-                  <div className="luxury-divider mx-auto my-6 max-w-[60px]" />
-
-                  {/* Reward state preview */}
-                  <div className="w-full rounded-xl border border-emerald-900/30 bg-emerald-950/20 p-4 text-center">
-                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-                      <Check className="h-5 w-5 text-emerald-400" />
-                    </div>
-                    <p className="text-[13px] font-extralight text-emerald-300/80">
-                      You earned your reward!
-                    </p>
-                    <p className="mt-2 text-[10px] font-light tracking-[0.15em] text-emerald-400/50">
-                      SHOW THIS TO THE CASHIER
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
-
-          <div className="mt-12 text-center">
-            <Link
-              href="/customer/explore"
-              className="inline-flex items-center gap-3 text-[12px] font-light tracking-[0.15em] text-[#555] transition-colors duration-500 hover:text-[#ededed]"
-            >
-              Browse local shops
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          SECTION 4 — FEATURES (Why Ventzon)
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              WHY VENTZON
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-              Built to learn.<br className="hidden sm:block" />Designed to look simple.
-            </h2>
-          </ScrollReveal>
-
-          <div className="mt-16 grid gap-px sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "No paper cards",
-                desc: "Works with any phone camera. Customers track rewards in the app. Zero friction.",
-              },
-              {
-                title: "Ready in five minutes",
-                desc: "Sign up, name your shop, set your reward, print the QR. You\u2019re live.",
-              },
-              {
-                title: "Push notifications",
-                desc: "Rewards and milestones are delivered instantly via push. No algorithm, no noise.",
-              },
-              {
-                title: "Stamps or points",
-                desc: "Rewards built on real visits — set a goal and customers earn it by showing up. Self check-in, no cashier step, no dollar entry.",
-              },
-              {
-                title: "Track everything",
-                desc: "Busiest days, peak hours, new vs. returning, customer lifetime, redemption rate, and who's at risk of churning — all in one dashboard.",
-              },
-              {
-                title: "Simple pricing",
-                desc: "One plan: $25/month + $0.85 per reward redeemed. Pay only when your loyalty program works.",
-              },
-            ].map((feature, i) => (
-              <ScrollReveal key={feature.title} delay={i < 3 ? 1 : 2}>
-                <div className="border-b border-[#161616] px-2 py-10 lg:px-6">
-                  <h3 className="text-[15px] font-normal tracking-[0.05em] text-[#ededed]">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-3 text-[14px] font-light leading-[1.8] text-[#666]">
-                    {feature.desc}
-                  </p>
+          <div className="mt-16 grid gap-6 sm:grid-cols-2">
+            {SHOP_BENEFITS.map((b, i) => (
+              <ScrollReveal key={b.title} delay={(i % 2) === 1 ? 2 : 1}>
+                <div className="h-full rounded-[2rem] bg-cream-card p-8 shadow-warm transition-all duration-300 hover:-translate-y-1">
+                  <h3 className="font-display text-xl font-semibold tracking-[-0.01em] text-ink-warm">{b.title}</h3>
+                  <p className="mt-3 text-[15px] leading-[1.7] text-taupe">{b.body}</p>
                 </div>
               </ScrollReveal>
             ))}
           </div>
+
+          {/* Early-shop line — honest, works in any city */}
+          <ScrollReveal delay={2} className="mx-auto mt-16 max-w-2xl rounded-[2rem] bg-sage-soft p-8 text-center">
+            <p className="text-[15px] leading-[1.7] text-sage">
+              <span className="font-semibold">Metro by metro.</span> The first
+              shops in your neighborhood shape how discovery works there &mdash;
+              and they&rsquo;re the first thing locals see when they open the map.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal className="mt-12 text-center">
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-2.5 rounded-full bg-sage px-9 py-4 text-[15px] font-medium text-white shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-sage-hover"
+            >
+              See how it works for your shop
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* ============================================================
-          SECTION 4b — ANALYTICS DASHBOARD FEATURE
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-5xl">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            {/* Left — Text */}
+      {/* ══ COVERAGE — data-driven, city-agnostic ══ */}
+      <section className="px-6 pb-24 sm:pb-32">
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-taupe-faint">Where we are</p>
+          <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-ink-warm">
+            Real places, neighborhood by neighborhood
+          </h2>
+          <p className="mx-auto mt-5 max-w-xl text-[16px] leading-[1.7] text-taupe">
+            The map fills in as we launch. These counts come straight from the
+            places we import &mdash; so the day a new metro lands, it appears here.
+          </p>
+        </ScrollReveal>
+        <ScrollReveal delay={2}>
+          <Coverage />
+        </ScrollReveal>
+      </section>
+
+      {/* ══ FINAL CTA — editorial photo band ══ */}
+      <section className="px-6 pb-8">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
+          <img
+            src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=2000&q=80"
+            alt="A neighborhood street at golden hour"
+            loading="lazy"
+            className="h-[480px] w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#221e1a]/70 via-[#221e1a]/20 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
-              <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-                CUSTOMER INTELLIGENCE
-              </p>
-              <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-                The loyalty card is the door.<br />The analytics is the point.
+              <h2 className="font-display text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-white">
+                See what&rsquo;s near you.
               </h2>
-              <p className="mt-6 text-[15px] font-light leading-[1.8] text-[#666]">
-                Every check-in builds a clearer picture of your customer base. Who comes back, who&rsquo;s fading, how this month compares to last. Ventzon turns foot traffic into intelligence &mdash; automatically, in the background, every day.
-              </p>
-              <ul className="mt-8 space-y-3">
-                {[
-                  "Period-over-period comparison — ↑18% vs last month",
-                  "Customer lifecycle: new → returning → loyal",
-                  "At-risk, lapsed, and churned customer breakdown",
-                  "Avg customer lifetime and redemption rate",
-                  "Busiest days and peak hours of the day",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-[13px] font-light text-[#888]">
-                    <span className="h-1 w-1 shrink-0 rounded-full bg-[#444]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/signup"
-                className="mt-10 inline-flex items-center gap-3 rounded-full border border-[#333] px-6 py-3 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:border-[#666] hover:bg-white/5"
-              >
-                See your dashboard
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </ScrollReveal>
-
-            {/* Right — Visual mock of the analytics dashboard */}
-            <ScrollReveal delay={2}>
-              <div className="rounded-2xl border border-[#1a1a1a] bg-[#0a0a0a] p-6 sm:p-7 space-y-5">
-
-                {/* Period tabs */}
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">ANALYTICS</p>
-                  <div className="flex gap-1.5">
-                    {["7d", "30d", "60d"].map((p) => (
-                      <span key={p} className={`rounded-full px-2.5 py-1 text-[10px] font-light ${p === "30d" ? "bg-[#ededed] text-black" : "text-[#444]"}`}>
-                        {p}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Stat cards row */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: "CHECK-INS", value: "227", change: "↑18%", up: true },
-                    { label: "RETENTION", value: "70%", change: null, up: true },
-                    { label: "REDEMPTION", value: "13%", change: null, up: true },
-                  ].map(({ label, value, change, up }) => (
-                    <div key={label} className="rounded-xl border border-[#1a1a1a] px-3 py-3">
-                      <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">{label}</p>
-                      <p className="mt-1.5 text-xl font-extralight text-white">
-                        {value}
-                        {change && <span className="ml-1 text-[10px] text-emerald-500">{change}</span>}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Customer lifecycle */}
-                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
-                  <p className="mb-3 text-[9px] font-light tracking-[0.15em] text-[#444]">CUSTOMER LIFECYCLE</p>
-                  <div className="space-y-2">
-                    {[
-                      { label: "Loyal", count: 30, pct: 64, color: "#ededed" },
-                      { label: "Returning", count: 11, pct: 23, color: "#888" },
-                      { label: "New", count: 6, pct: 13, color: "#555" },
-                    ].map(({ label, count, pct, color }) => (
-                      <div key={label} className="flex items-center gap-2">
-                        <span className="w-14 text-[9px] font-light" style={{ color }}>{label}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-[#1a1a1a] overflow-hidden">
-                          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
-                        </div>
-                        <span className="text-[9px] font-light text-[#444]">{count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Customer health */}
-                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
-                  <p className="mb-3 text-[9px] font-light tracking-[0.15em] text-[#444]">CUSTOMER HEALTH</p>
-                  <div className="space-y-2">
-                    {[
-                      { label: "Active", value: "27", color: "#ededed" },
-                      { label: "At risk", value: "7", color: "#eab308" },
-                      { label: "Lapsed", value: "7", color: "#f97316" },
-                      { label: "Churned", value: "6", color: "#ef4444" },
-                    ].map(({ label, value, color }) => (
-                      <div key={label} className="flex items-center justify-between">
-                        <span className="text-[9px] font-light" style={{ color }}>{label}</span>
-                        <span className="text-[9px] font-light" style={{ color }}>{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Busiest days mini bar chart */}
-                <div className="rounded-xl border border-[#1a1a1a] px-4 py-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[9px] font-light tracking-[0.15em] text-[#444]">BUSIEST DAYS</p>
-                    <span className="rounded-full border border-[#222] px-2 py-0.5 text-[9px] font-light text-[#666]">Peak: Fri</span>
-                  </div>
-                  <div className="flex items-end gap-1.5 h-10">
-                    {[
-                      { d: "M", h: 45 }, { d: "T", h: 60 }, { d: "W", h: 55 },
-                      { d: "T", h: 70 }, { d: "F", h: 100 }, { d: "S", h: 85 }, { d: "S", h: 35 },
-                    ].map(({ d, h }, i) => (
-                      <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                        <div className={`w-full rounded-sm ${h === 100 ? "bg-[#ededed]" : "bg-[#2a2a2a]"}`} style={{ height: `${h}%` }} />
-                        <span className="text-[8px] font-light text-[#444]">{d}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
+              <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Link
+                  href="/customer/explore"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-cream px-9 py-4 text-[15px] font-medium text-ink-warm shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white"
+                >
+                  Open the app
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/app"
+                  className="text-[15px] font-medium text-white/90 underline decoration-white/40 underline-offset-8 transition-colors duration-300 hover:text-white"
+                >
+                  For shops
+                </Link>
               </div>
+              <p className="mt-8 text-sm text-white/70">Free for customers &middot; no download</p>
             </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* ============================================================
-          SECTION 5 — TESTIMONIALS
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              VOICES
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Made for the places you actually go
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-base font-light leading-[1.8] text-[#888]">
-              Ventzon is launching neighborhood by neighborhood. Real places,
-              verified visits &mdash; no reviews from people who were never there.
-            </p>
-          </ScrollReveal>
-
-          <div className="mt-16 grid gap-12 md:grid-cols-3">
-            {[
-              {
-                title: "Thousands of real places",
-                body: "The map is full of actual local spots — coffee, food, parks, bookshops. Places you can walk to, not listings you've never heard of.",
-              },
-              {
-                title: "Check in when you go",
-                body: "One tap proves you were there. Your posts carry a verified visit, so friends trust what you recommend.",
-              },
-              {
-                title: "The feed fills from there",
-                body: "Share what a place is really like — the people who follow you see it first, and the neighborhood fills in around you.",
-              },
-            ].map((t, i) => (
-              <ScrollReveal key={t.title} delay={i === 0 ? 1 : i === 1 ? 2 : 3}>
-                <div>
-                  <div className="text-[13px] font-normal tracking-[0.05em] text-[#ededed]">
-                    {t.title}
-                  </div>
-                  <p className="mt-4 text-[15px] font-light leading-[1.9] text-[#999]">
-                    {t.body}
-                  </p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          SECTION 6 — FOR SHOPS
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-              FOR SHOPS
-            </p>
-            <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              Get discovered by locals who actually show up.
-            </h2>
-            <p className="mt-5 text-[15px] font-light text-[#666]">
-              Your shop appears on the Ventzon map and feed. Customers check in
-              and post verified visits &mdash; you build a real customer list.
-            </p>
-            <div className="mt-10 flex justify-center">
-              <Link
-                href="/app"
-                className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
-              >
-                Learn more
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ============================================================
-          SECTION 6b — CUSTOMER APP (the web app is the demo surface;
-          the App Store build is stale until the next native release)
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
-        <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">
-            CUSTOMER APP
-          </p>
-          <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-            See what&rsquo;s near you.
-          </h2>
-          <p className="mt-5 text-[15px] font-light leading-relaxed text-[#666]">
-            Discover local places, share where you&rsquo;ve actually been, and check
-            in to earn rewards. Free for customers — no download required.
-          </p>
-
-          {/* Feature pills */}
-          <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {["Explore map", "Verified visits", "Local feed", "Loyalty cards"].map((f) => (
-              <span key={f} className="rounded-full border border-[#1f1f1f] px-4 py-1.5 text-[12px] font-light text-[#555]">
-                {f}
-              </span>
-            ))}
-          </div>
-
-          {/* Open the app */}
-          <div className="mt-10 flex justify-center">
-            <Link
-              href="/customer/explore"
-              className="inline-flex items-center gap-3 rounded-full border border-[#ededed] px-8 py-4 text-[13px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
-            >
-              Open the app
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* ============================================================
-          SECTION 7 — FINAL CTA
-          ============================================================ */}
-      <section className="px-4 sm:px-8 py-28 sm:py-36">
-        <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-extralight tracking-[-0.02em] sm:text-4xl lg:text-5xl">
-            See what&rsquo;s near you.
-          </h2>
-          <p className="mt-6 text-base font-light leading-relaxed text-[#666]">
-            Find places worth going to, and share where you&rsquo;ve been.
-            <br className="hidden sm:block" />
-            Free for customers &mdash; no download required.
-          </p>
-          <Link
-            href="/customer/explore"
-            className="mt-14 inline-flex items-center gap-3 rounded-full border border-[#ededed] px-10 py-4 text-[13px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-500 hover:bg-[#ededed] hover:text-black"
-          >
-            Open the app
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </ScrollReveal>
-      </section>
-
-      {/* ============================================================
-          SECTION 8 — FOOTER
-          ============================================================ */}
       <SiteFooter />
     </main>
   );
 }
+

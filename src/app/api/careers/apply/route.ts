@@ -110,7 +110,7 @@ export async function POST(req: Request) {
         <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:24px 0 12px">WHY VENTZON</p>
         <p style="font-size:14px;font-weight:300;color:#888;line-height:1.7;white-space:pre-wrap">${application.why_ventzon}</p>
 
-        ${resumeAttachment ? `<p style="font-size:12px;color:#555;margin-top:24px">📎 Resume attached: ${resumeAttachment.filename}</p>` : ""}
+        ${resumeAttachment ? `<p style="font-size:12px;color:#555;margin-top:24px">Resume attached: ${resumeAttachment.filename}</p>` : ""}
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
         <p style="font-size:11px;color:#333;margin:0">Ventzon Careers · ventzon.com/careers</p>

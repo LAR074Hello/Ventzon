@@ -5,10 +5,21 @@ import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, X, Trophy, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import SiteFooter from "@/components/SiteFooter";
+
+/* Render comparison cells: true/false become lucide Check/X icons, strings render as text. */
+function YesNoCell({ value, dim = false }: { value: string | boolean; dim?: boolean }) {
+  if (value === true) {
+    return <Check className={`mx-auto h-4 w-4 ${dim ? "text-[#444]" : "text-[#ededed]"}`} strokeWidth={2} />;
+  }
+  if (value === false) {
+    return <X className="mx-auto h-4 w-4 text-[#444]" strokeWidth={2} />;
+  }
+  return <span className={`text-[13px] font-light ${dim ? "text-[#444]" : "text-[#ededed]"}`}>{value}</span>;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -31,10 +42,6 @@ const faqs = [
     a: "The $25 operational fee covers everything — your shop listing, QR code, stamp tracking, analytics, customer list, CSV export, manual stamp tool, and email campaigns.",
   },
   {
-    q: "What is the $0.85 per redemption charge?",
-    a: "When a customer completes their stamp card and earns their reward, you're charged $0.85. You only pay when the loyalty program actually works.",
-  },
-  {
     q: "How do customers get notified?",
     a: "Customers who install the Ventzon app receive push notifications when they earn rewards or are close to earning one.",
   },
@@ -44,7 +51,7 @@ const faqs = [
   },
   {
     q: "Is yearly billing worth it?",
-    a: "At $240/year vs $300 billed monthly, you save $60 — that's 2 months free. The $0.85 per redemption applies either way.",
+    a: "At $240/year vs $300 billed monthly, you save $60 — that's 2 months free.",
   },
 ];
 
@@ -164,13 +171,13 @@ function PricingContent() {
           <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-extralight tracking-[-0.02em] text-white opacity-0 sm:text-5xl lg:text-6xl">
             Simple pricing.{" "}
             <br className="hidden sm:block" />
-            Pay for what works.
+            One flat rate.
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-[#888] opacity-0 sm:text-lg">
-            $25/month to run your loyalty program &mdash; plus $0.85
+            $25/month, flat &mdash; everything included.
             <br className="hidden sm:block" />
-            for every customer who earns their reward.
+            No per-redemption fees, no surprises.
           </p>
         </div>
       </section>
@@ -288,7 +295,7 @@ function PricingContent() {
               )}
 
               <p className="mt-4 text-[14px] font-light leading-[1.7] text-[#555]">
-                + $0.85 per reward redeemed
+                Everything included &mdash; no per-redemption fees
               </p>
 
               {/* Divider */}
@@ -366,10 +373,10 @@ function PricingContent() {
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-[#666]">THE MATH</p>
             <h2 className="mt-6 text-3xl font-extralight tracking-[-0.02em] sm:text-4xl">
-              You pay when it works.
+              One flat rate. No fine print.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-[#666]">
-              Every $0.85 charge means a customer just visited your shop enough times to earn a reward. Here&rsquo;s what that looks like.
+              Everything is in the $25/month &mdash; rewards, analytics, the customer list. Here&rsquo;s what that looks like when a customer comes back.
             </p>
           </ScrollReveal>
 
@@ -383,7 +390,7 @@ function PricingContent() {
                     key={i}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-[#ededed] text-[13px] text-[#ededed]"
                   >
-                    ✓
+                    <Check className="h-4 w-4" strokeWidth={1.5} />
                   </div>
                 ))}
               </div>
@@ -397,18 +404,18 @@ function PricingContent() {
                 </div>
                 <div className="rounded-xl border border-[#1a1a1a] p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">YOU PAY VENTZON</p>
-                  <p className="mt-2 text-3xl font-extralight text-white">$0.85</p>
-                  <p className="mt-1 text-[12px] font-light text-[#555]">on redemption</p>
+                  <p className="mt-2 text-3xl font-extralight text-white">$25</p>
+                  <p className="mt-1 text-[12px] font-light text-[#555]">per month, flat</p>
                 </div>
                 <div className="rounded-xl border border-[#1a1a1a] p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">COST PER RETURN VISIT</p>
-                  <p className="mt-2 text-3xl font-extralight text-emerald-400">$0.11</p>
-                  <p className="mt-1 text-[12px] font-light text-[#555]">driven by Ventzon</p>
+                  <p className="text-[10px] font-light tracking-[0.2em] text-[#555]">PER REDEMPTION</p>
+                  <p className="mt-2 text-3xl font-extralight text-emerald-400">$0</p>
+                  <p className="mt-1 text-[12px] font-light text-[#555]">no per-redemption fees</p>
                 </div>
               </div>
 
               <p className="mt-8 text-[13px] font-light leading-[1.8] text-[#555]">
-                Compare that to paid ads, flyers, or any other channel driving repeat foot traffic &mdash; $0.11 per proven return visit is hard to beat.
+                Whether a customer redeems one reward or fifty, the price doesn&rsquo;t move. Paid ads and flyers can&rsquo;t say that.
               </p>
             </div>
           </ScrollReveal>
@@ -438,19 +445,19 @@ function PricingContent() {
 
             {[
               { feature: "Monthly fee", ventzon: "$25", square: "$45–$105", punch: "$0" },
-              { feature: "Per redemption", ventzon: "$0.85", square: "included", punch: "$0" },
-              { feature: "Customer data & analytics", ventzon: "✓", square: "✓", punch: "✗" },
-              { feature: "Digital stamp tracking", ventzon: "✓", square: "✓", punch: "✗" },
-              { feature: "Push notifications", ventzon: "✓", square: "✗", punch: "✗" },
-              { feature: "Works without a POS system", ventzon: "✓", square: "✗", punch: "✓" },
-              { feature: "Fraud-proof stamps", ventzon: "✓", square: "✓", punch: "✗" },
+              { feature: "Per-redemption fees", ventzon: "$0", square: "included", punch: "$0" },
+              { feature: "Customer data & analytics", ventzon: true, square: true, punch: false },
+              { feature: "Digital stamp tracking", ventzon: true, square: true, punch: false },
+              { feature: "Push notifications", ventzon: true, square: false, punch: false },
+              { feature: "Works without a POS system", ventzon: true, square: false, punch: true },
+              { feature: "Fraud-proof stamps", ventzon: true, square: true, punch: false },
             ].map((row) => (
               <ScrollReveal key={row.feature}>
                 <div className="grid grid-cols-[1fr_80px_80px_80px] items-center border-b border-[#111] py-4 sm:grid-cols-[1fr_100px_100px_100px]">
                   <p className="text-[13px] font-light text-[#888]">{row.feature}</p>
-                  <p className="text-center text-[13px] font-light text-[#ededed]">{row.ventzon}</p>
-                  <p className="text-center text-[13px] font-light text-[#444]">{row.square}</p>
-                  <p className="text-center text-[13px] font-light text-[#444]">{row.punch}</p>
+                  <p className="text-center"><YesNoCell value={row.ventzon} /></p>
+                  <p className="text-center"><YesNoCell value={row.square} dim /></p>
+                  <p className="text-center"><YesNoCell value={row.punch} dim /></p>
                 </div>
               </ScrollReveal>
             ))}
@@ -594,7 +601,8 @@ function PricingContent() {
                   <div className="mt-3 rounded-lg border border-[#111] bg-[#0a0a0a] px-4 py-3">
                     <p className="text-[10px] font-light tracking-[0.2em] text-[#444]">PREVIEW</p>
                     <p className="mt-1.5 font-mono text-[11px] font-light text-[#888]">
-                      🏆 Reward earned! You&apos;ve earned your reward at Sunrise Bakery. Show the app at the register.
+                      <Trophy className="mr-1.5 inline h-3 w-3 -translate-y-px" />
+                      Reward earned! You&apos;ve earned your reward at Sunrise Bakery. Show the app at the register.
                     </p>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { haversineMiles } from "@/lib/geo";
 import { getBlockedSet, getVerifiedVisitSet } from "@/lib/social";
 import { getPlacesBySlugs } from "@/lib/places";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,10 @@ export async function GET(req: Request) {
     const { data: rawPosts, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const blocked = await getBlockedSet(admin, viewerEmail);
-    const postRows = (rawPosts ?? []).filter((p) => !blocked.has(p.author_email));
+    const banned = await publiclyExcludedAuthors(admin);
+    const postRows = (rawPosts ?? []).filter(
+      (p) => !blocked.has(p.author_email) && !banned.has(p.author_email)
+    );
     if (postRows.length === 0) return NextResponse.json({ posts: [] });
 
     // Authors must be public creators — a profile that turned the creator

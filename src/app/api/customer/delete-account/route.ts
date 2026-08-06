@@ -91,6 +91,9 @@ export async function DELETE() {
         ["referrals", "referred_email", email],
         ["customer_notification_log", "email", email],
         ["customer_notification_prefs", "email", email],
+        ["user_blocks", "blocker_email", email],
+        ["user_blocks", "blocked_email", email],
+        ["reports", "reporter_email", email],
         ["customer_profiles", "email", email],
         ["customers", "email", email],
       ];

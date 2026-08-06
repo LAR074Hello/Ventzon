@@ -58,15 +58,13 @@ export async function GET(req: Request) {
 
     const rewardsThisMonth = count ?? 0;
 
-    // Estimated charge. PER_REWARD must match the live Stripe metered price
-    // and the advertised rate ($0.85/redemption).
-    const PER_REWARD = 0.85;
+    // Flat-only pricing: Pro is $25/month, Free is $0. No per-redemption
+    // fees. rewards_this_month is kept as an analytics count only.
     let estimatedCharge: string;
     if (planType === "pro") {
-      const rewardCharge = rewardsThisMonth * PER_REWARD;
-      estimatedCharge = `$${(25 + rewardCharge).toFixed(2)} ($25.00 base + $${rewardCharge.toFixed(2)} in rewards)`;
+      estimatedCharge = "$25.00 flat monthly";
     } else {
-      estimatedCharge = `$${(rewardsThisMonth * PER_REWARD).toFixed(2)}`;
+      estimatedCharge = "$0.00 (free plan)";
     }
 
     return Response.json({

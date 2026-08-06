@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getBlockedSet, getOrCreateProfile, getVerifiedVisitSet } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 import { buildTokenMap, pushOrEmail } from "@/lib/notify";
 import { canNotify, claimNotification } from "@/lib/retention";
 
@@ -80,9 +81,10 @@ export async function GET(
     if (post.hidden && !isOwn) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    // Blocks are mutual invisibility.
+    // Blocks are mutual invisibility; bans are one-way invisibility.
     const blocked = await getBlockedSet(admin, viewerEmail);
-    if (!isOwn && blocked.has(post.author_email)) {
+    const banned = await publiclyExcludedAuthors(admin);
+    if (!isOwn && (blocked.has(post.author_email) || banned.has(post.author_email))) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
@@ -143,7 +145,7 @@ export async function GET(
     ]);
 
     // Resolve commenter names via profiles; never expose raw emails.
-    const visibleComments = (comments ?? []).filter((c) => !blocked.has(c.email));
+    const visibleComments = (comments ?? []).filter((c) => !blocked.has(c.email) && !banned.has(c.email));
     const commenterEmails = [...new Set(visibleComments.map((c) => c.email))];
     const { data: commenterProfiles } = commenterEmails.length
       ? await admin
@@ -263,6 +265,12 @@ export async function POST(
     const action = String(payload?.action ?? "");
     const admin = adminClient();
 
+    // Banned accounts cannot engage (like, save, comment) with content.
+    const banned = await publiclyExcludedAuthors(admin);
+    if (banned.has(viewerEmail)) {
+      return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
+    }
+
     const { data: post } = await admin
       .from("posts")
       .select("id, author_email")
@@ -381,6 +389,10 @@ export async function PATCH(
     }
 
     const admin = adminClient();
+    const banned = await publiclyExcludedAuthors(admin);
+    if (banned.has(viewerEmail)) {
+      return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
+    }
     const { data: post } = await admin
       .from("posts")
       .select("id, author_email")

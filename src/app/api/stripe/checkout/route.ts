@@ -30,40 +30,21 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_SITE_URL ||
       "https://www.ventzon.com";
 
-    // Both plans charge $0.85/redemption (metered).
-    // Pro additionally has a $25/month flat operational fee.
-    const meteredPriceId = process.env.STRIPE_PRICE_FREE_METERED; // $0.85/redemption
-
-    if (!meteredPriceId) {
+    // POST-BETA: the $0.85/redemption metered fee is removed. Pro is flat
+    // ($25/mo or $240/yr); free shops have no Stripe subscription at all.
+    // That also means the ad-campaigns metered item (attached to a shop's
+    // subscription) isn't available to free shops — ads are Pro-only until a
+    // free-shop path exists. TODO(beta): decide how free shops get ads.
+    if (planRaw === "free") {
+      // No checkout needed — free is "no subscription". Guard so a stray
+      // plan=free request can't silently create a Pro session.
       return Response.json(
-        { error: "Missing STRIPE_PRICE_FREE_METERED env var" },
-        { status: 500 }
+        { error: "Free shops don't need a subscription." },
+        { status: 400 }
       );
     }
 
-    // ── Free plan: metered-only ($0.85/reward, no monthly fee) ──
-    if (planRaw === "free") {
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price: meteredPriceId,
-            // No quantity for metered — usage is reported via API
-          },
-        ],
-        success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}?checkout=success`,
-        cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(shop_slug)}&canceled=1`,
-        metadata: { shop_slug, plan_type: "free" },
-        subscription_data: {
-          metadata: { shop_slug, plan_type: "free" },
-        },
-      });
-
-      return Response.json({ url: session.url });
-    }
-
-    // ── Pro plan: $25/month flat + $0.85/redemption metered ──
+    // ── Pro plan: flat only ──
     const plan = planRaw === "yearly" ? "yearly" : "monthly";
     const flatPriceId =
       plan === "yearly"
@@ -81,8 +62,7 @@ export async function POST(req: Request) {
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
-        { price: flatPriceId, quantity: 1 },   // $25/month operational fee
-        { price: meteredPriceId },              // $0.85/redemption (metered)
+        { price: flatPriceId, quantity: 1 },   // $25/month flat — no metered usage
       ],
       success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { haversineMiles } from "@/lib/geo";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -129,18 +130,22 @@ export async function GET(req: Request) {
       slugs.length
         ? supabase
             .from("posts")
-            .select("shop_slug, place_id")
+            .select("shop_slug, place_id, author_email")
             .eq("hidden", false)
             .limit(5000)
-        : Promise.resolve({ data: [] as { shop_slug: string | null; place_id: string | null }[] }),
+        : Promise.resolve({ data: [] as { shop_slug: string | null; place_id: string | null; author_email: string | null }[] }),
     ]);
 
     const settingsMap = new Map((settings ?? []).map((s) => [s.shop_slug, s]));
     const shopMap = new Map((shopRows ?? []).map((s) => [s.slug, s]));
 
+    // A banned author's posts must not inflate a place's activity rank.
+    const banned = await publiclyExcludedAuthors(supabase);
+    const countablePosts = (postRows ?? []).filter((p) => !banned.has(p.author_email));
+
     const postCountByPlaceId = new Map<string, number>();
     const postCountBySlug = new Map<string, number>();
-    for (const p of postRows ?? []) {
+    for (const p of countablePosts) {
       if (p.place_id) postCountByPlaceId.set(p.place_id, (postCountByPlaceId.get(p.place_id) ?? 0) + 1);
       else if (p.shop_slug) postCountBySlug.set(p.shop_slug, (postCountBySlug.get(p.shop_slug) ?? 0) + 1);
     }

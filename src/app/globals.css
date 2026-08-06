@@ -376,10 +376,10 @@ body {
 /* Scroll-triggered fade-in (Intersection Observer, ScrollReveal.tsx) */
 .scroll-fade-in {
   opacity: 0;
-  transform: translateY(32px);
+  transform: translateY(18px);
   transition:
-    opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .scroll-fade-in.is-visible { opacity: 1; transform: translateY(0); }
 .scroll-fade-in.delay-1 { transition-delay: 200ms; }
@@ -552,4 +552,25 @@ body {
 @keyframes scrim-in {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MARKETING SITE — warm editorial palette (GlossGenius sensibility)
+   Light theme is primary. A literal-value @theme so the utilities emit
+   the hexes directly (bg-cream, text-ink-warm, shadow-warm, …). Used by
+   the marketing pages only — the customer app's cool-paper tokens above
+   are untouched.
+   ═══════════════════════════════════════════════════════════════════ */
+@theme {
+  --color-cream: #faf6ef;         /* page background — warm ivory */
+  --color-cream-card: #fffdf8;    /* card surface — warm white */
+  --color-cream-sunken: #f1eadd;  /* pressed / inset surface */
+  --color-ink-warm: #221e1a;      /* headlines + strong text */
+  --color-taupe: #6e6559;         /* muted text — AA on cream */
+  --color-taupe-faint: #a49a8a;   /* eyebrows + decorative only */
+  --color-sage: #4e5d43;          /* primary actions — deep green */
+  --color-sage-hover: #3f4c36;
+  --color-sage-soft: #e8ece3;     /* soft sage tint for chips */
+  --shadow-warm: 0 24px 60px -24px rgb(60 50 30 / 0.18);
+  --shadow-warm-lg: 0 32px 80px -24px rgb(60 50 30 / 0.24);
 }

@@ -6,15 +6,16 @@
  * be thrown away. The strip is the expensive step, so the cheap checks run
  * first.
  *
- * Two limits, because either alone lets the other through: 60 seconds of 4K
- * clears 50 MB comfortably, and 50 MB of low-bitrate footage runs far past a
- * minute. Whichever is exceeded first rejects, and the message says WHICH —
+ * Two limits, because either alone lets the other through: 30 seconds of 4K
+ * clears 50 MB comfortably, and 50 MB of low-bitrate footage runs far past
+ * half a minute. Whichever is exceeded first rejects, and the message says
+ * WHICH —
  * "too big" when the real problem is length sends someone off to compress a
  * video that will still be too long.
  */
 
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
-export const MAX_VIDEO_SECONDS = 60;
+export const MAX_VIDEO_SECONDS = 30;
 
 const mb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1).replace(/\.0$/, "");
 

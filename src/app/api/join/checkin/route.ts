@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
 import crypto from "crypto";
 import { sendEmail, buildRewardEmail, buildAlmostThereEmail } from "@/lib/resend";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
@@ -314,7 +313,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // ── Record reward event + report Stripe metered usage ──
+    // ── Record reward event (tracking only; no Stripe usage) ──
     if (hitGoal) {
       // Insert reward_events row
       await supabase.from("reward_events").insert({
@@ -322,37 +321,6 @@ export async function POST(req: Request) {
         customer_id: customer.id,
         reward_date: today,
       });
-
-      // Report metered usage to Stripe for all subscribed shops ($0.85/redemption)
-      try {
-        const { data: shopRow } = await supabase
-          .from("shops")
-          .select("plan_type, stripe_customer_id")
-          .eq("slug", shop_slug)
-          .maybeSingle();
-
-        if (
-          shopRow &&
-          ["free", "pro"].includes((shopRow as any).plan_type) &&
-          (shopRow as any).stripe_customer_id
-        ) {
-          const stripeKey = process.env.STRIPE_SECRET_KEY;
-          if (stripeKey) {
-            const stripe = new Stripe(stripeKey);
-            // Report a meter event — Stripe aggregates and invoices monthly
-            await stripe.billing.meterEvents.create({
-              event_name: "reward_redeemed",
-              payload: {
-                stripe_customer_id: (shopRow as any).stripe_customer_id,
-                value: "1",
-              },
-            });
-          }
-        }
-      } catch (usageErr: any) {
-        // Non-fatal: log but don't block the customer's reward
-        console.error("[checkin] Stripe usage reporting failed:", usageErr?.message);
-      }
     }
 
     // Balance to surface: stamps show a full card on reward (goal); points

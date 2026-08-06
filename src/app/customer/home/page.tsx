@@ -420,7 +420,8 @@ function LoyaltyCard({ membership, checkedInToday, onClick }: {
             className="text-xs ml-3 shrink-0 rounded-full px-2.5 py-1 font-semibold"
             style={{ background: "var(--surface-raised)", color: "var(--text-primary)" }}
           >
-            ✓ TODAY
+            <Check className="mr-1 inline h-3 w-3" />
+            TODAY
           </span>
         ) : null}
       </div>

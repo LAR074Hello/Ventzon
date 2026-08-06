@@ -140,6 +140,6 @@ if (errors === 0 && warnings === 0) {
 
 console.log(lines.join("\n"));
 console.log(
-  `\n✖ ${errors + warnings} problem(s) on changed lines (${errors} error(s), ${warnings} warning(s)) across ${scanned} file(s) scanned.`
+  `\n${errors + warnings} problem(s) on changed lines (${errors} error(s), ${warnings} warning(s)) across ${scanned} file(s) scanned.`
 );
 process.exit(errors > 0 ? 1 : 0);

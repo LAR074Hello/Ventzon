@@ -16,6 +16,7 @@ type OwnProfile = {
   avatar_url: string | null;
   bio: string | null;
   is_creator: boolean;
+  banned_at: string | null;
 };
 
 export default function ProfilePage() {
@@ -182,6 +183,17 @@ export default function ProfilePage() {
           <p className="text-sm text-secondary mt-3 max-w-xs text-center font-normal leading-relaxed">{profile.bio}</p>
         )}
       </div>
+
+      {/* Suspended accounts can still view their own content but cannot write. */}
+      {profile?.banned_at && (
+        <div className="mx-5 mb-5 rounded-card border border-danger/30 bg-danger/10 p-4">
+          <p className="text-sm font-semibold text-danger">Your account has been suspended</p>
+          <p className="mt-1 text-xs text-secondary leading-relaxed">
+            You can still see your content, but posting, commenting, and
+            following are disabled. Contact support if you think this is a mistake.
+          </p>
+        </div>
+      )}
 
       {/* Private profiles are invisible to friends until they go public —
           the one switch that makes search, suggestions and follow work. */}

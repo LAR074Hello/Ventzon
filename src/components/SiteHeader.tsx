@@ -50,14 +50,14 @@ export default function SiteHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-cream/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-8 py-5">
           {/* Logo */}
           <Link
             href="/"
             className="flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-70"
           >
-            <div className="h-7 w-7 overflow-hidden rounded-full bg-black ring-1 ring-[#333]">
+            <div className="h-7 w-7 overflow-hidden rounded-full bg-cream-card ring-1 ring-black/10">
               <Image
                 src="/logo.png"
                 alt="Ventzon"
@@ -66,7 +66,7 @@ export default function SiteHeader() {
                 className="h-full w-full object-cover"
               />
             </div>
-            <span className="text-[11px] font-light tracking-[0.45em] text-[#ededed]">
+            <span className="text-[11px] font-medium tracking-[0.45em] text-ink-warm">
               VENTZON
             </span>
           </Link>
@@ -77,7 +77,7 @@ export default function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors duration-300 hover:text-[#ededed]"
+                className="text-[13px] font-medium text-taupe transition-colors duration-300 hover:text-ink-warm"
               >
                 {link.label}
               </Link>
@@ -88,13 +88,13 @@ export default function SiteHeader() {
           <div className="flex items-center gap-5">
             <Link
               href="/login"
-              className="hidden text-[11px] font-light tracking-[0.15em] text-[#999] transition-colors duration-300 hover:text-[#ededed] sm:block"
+              className="hidden text-[13px] font-medium text-taupe transition-colors duration-300 hover:text-ink-warm sm:block"
             >
               Sign in
             </Link>
             <Link
               href="/customer/explore"
-              className="hidden rounded-full border border-[#333] px-5 py-2 text-[11px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:border-[#666] hover:bg-white/5 sm:inline-flex"
+              className="hidden rounded-full bg-sage px-6 py-2.5 text-[13px] font-medium text-white transition-all duration-300 hover:bg-sage-hover sm:inline-flex"
             >
               Open the app
             </Link>
@@ -107,13 +107,13 @@ export default function SiteHeader() {
             >
               <div className="flex w-[18px] flex-col items-end gap-[5px]">
                 <span
-                  className={`block h-[1px] bg-[#ededed] transition-all duration-300 ease-out ${
-                    open ? "w-[18px] translate-y-[3px] rotate-45" : "w-[18px]"
+                  className={`block h-[2px] rounded-full bg-ink-warm transition-all duration-300 ease-out ${
+                    open ? "w-[18px] translate-y-[3.5px] rotate-45" : "w-[18px]"
                   }`}
                 />
                 <span
-                  className={`block h-[1px] bg-[#ededed] transition-all duration-300 ease-out ${
-                    open ? "w-[18px] -translate-y-[3px] -rotate-45" : "w-[12px]"
+                  className={`block h-[2px] rounded-full bg-ink-warm transition-all duration-300 ease-out ${
+                    open ? "w-[18px] -translate-y-[3.5px] -rotate-45" : "w-[12px]"
                   }`}
                 />
               </div>
@@ -124,7 +124,7 @@ export default function SiteHeader() {
 
       {/* Mobile menu overlay */}
       <div
-        className={`fixed inset-0 z-40 bg-black transition-opacity duration-500 md:hidden ${
+        className={`fixed inset-0 z-40 bg-cream transition-opacity duration-500 md:hidden ${
           open
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -136,7 +136,7 @@ export default function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`block border-t border-[#161616] py-6 text-2xl font-extralight tracking-[-0.01em] text-white transition-all duration-500 hover:text-[#888] ${
+                className={`block border-t border-black/5 py-6 text-2xl font-extralight tracking-[-0.01em] text-ink-warm transition-all duration-500 hover:text-taupe ${
                   open
                     ? "translate-y-0 opacity-100"
                     : "translate-y-4 opacity-0"
@@ -148,7 +148,7 @@ export default function SiteHeader() {
                 {link.label}
               </Link>
             ))}
-            <div className="border-t border-[#161616]" />
+            <div className="border-t border-black/5" />
           </nav>
 
           {/* Mobile auth links */}
@@ -164,13 +164,13 @@ export default function SiteHeader() {
           >
             <Link
               href="/login"
-              className="text-[12px] font-light tracking-[0.15em] text-[#555] transition-colors duration-300 hover:text-white"
+              className="text-[14px] font-medium text-taupe transition-colors duration-300 hover:text-ink-warm"
             >
               Sign in
             </Link>
             <Link
               href="/customer/explore"
-              className="rounded-full border border-[#333] px-6 py-2.5 text-[12px] font-light tracking-[0.15em] text-[#ededed] transition-all duration-300 hover:border-[#666] hover:bg-white/5"
+              className="rounded-full bg-sage px-6 py-2.5 text-[14px] font-medium text-white transition-all duration-300 hover:bg-sage-hover"
             >
               Open the app
             </Link>
@@ -180,3 +180,4 @@ export default function SiteHeader() {
     </>
   );
 }
+

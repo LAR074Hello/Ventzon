@@ -1,6 +1,6 @@
-// Shared helpers for the social layer: creator profiles, stats, and
-// milestone badges. Badges are computed live from real visit data —
-// there is no badges table to drift out of sync.
+// Shared helpers for the social layer: creator profiles, stats, and the
+// badge tier. Badges are computed live from real check-in data — there is
+// no badges table to drift out of sync.
 
 export type CreatorStats = {
   followers: number;
@@ -156,21 +156,176 @@ export async function creatorStats(admin: any, email: string): Promise<CreatorSt
   };
 }
 
-/** Milestone badges — pure progress framing, no streaks, no loss. */
-export function computeBadges(stats: {
-  checkins: number;
-  businesses_visited: number;
-  rewards_earned: number;
-  referrals: number;
-}): Badge[] {
-  // Four tiers, all reachable in weeks rather than years. Unreachable
-  // badges (100 check-ins) advertise how far you are from earning
-  // anything, which is the opposite of the point.
+/**
+ * Founding Member cutoff — freeze at the public-launch date. Anyone whose
+ * earliest Ventzon touch is at or before this instant earns the badge;
+ * everyone after it does not. Date-based rather than "first 100 per metro"
+ * because the schema has no user-location field to anchor a metro on (and a
+ * rank query over all users per request is both heavy and fuzzy). Revisit
+ * only if a location column ever lands.
+ */
+export const FOUNDING_MEMBER_CUTOFF = new Date("2026-09-30T23:59:59.999Z");
+
+/**
+ * The badge tier — four badges, all computed live at request time, no
+ * badges table to drift out of sync.
+ *
+ * The old milestone badges counted membership check-ins only, so they were
+ * structurally unreachable at the imported places beta users actually check
+ * in. This tier reads BOTH check-in lanes (membership `customer_id` and
+ * place `customer_email`) deduplicated on the visit identity — the same rule
+ * `getVerifiedVisitSet` uses — so every badge can be earned at any place a
+ * user can see.
+ */
+export async function computeBadgeTier(admin: any, email: string): Promise<Badge[]> {
+  const e = email.toLowerCase().trim();
+
+  // ── Founding Member ─────────────────────────────────────────────────
+  // Earliest touch is whichever came first: the social profile (created on
+  // first authenticated touch) or the earliest membership row (first QR
+  // check-in). Comparing both means a QR-only user still counts.
+  const [{ data: profile }, { data: memberships }] = await Promise.all([
+    admin.from("customer_profiles").select("created_at").eq("email", e).maybeSingle(),
+    admin
+      .from("customers")
+      .select("first_seen_at")
+      .eq("email", e)
+      .order("first_seen_at", { ascending: true })
+      .limit(1),
+  ]);
+  const joinedAt =
+    [profile?.created_at, memberships?.[0]?.first_seen_at]
+      .filter(Boolean)
+      .map((t: string) => new Date(t).getTime())
+      .sort((a, b) => a - b)[0] ?? null;
+  const foundingMember = joinedAt != null && joinedAt <= FOUNDING_MEMBER_CUTOFF.getTime();
+
+  // ── Visits across both lanes, deduplicated on the visit ────────────
+  // After a merchant claims a place, one person can legitimately hold both a
+  // membership and a place check-in for the same visit — counting rows would
+  // report one visit as two. Dedupe on (place-anchor, checkin_date); the
+  // anchor is place_id, with the slug fallback for rows written before the
+  // place link existed.
+  type VisitRow = {
+    customer_id?: string | null;
+    customer_email?: string | null;
+    place_id: string | null;
+    shop_slug: string | null;
+    checkin_date: string;
+    created_at: string;
+  };
+
+  const { data: customerRows } = await admin.from("customers").select("id").eq("email", e);
+  const customerIds = (customerRows ?? []).map((m: any) => m.id);
+
+  const laneQueries: Promise<{ data: any[] | null }>[] = [];
+  if (customerIds.length > 0) {
+    laneQueries.push(
+      admin
+        .from("checkins")
+        .select("customer_id, place_id, shop_slug, checkin_date, created_at")
+        .in("customer_id", customerIds)
+    );
+  }
+  laneQueries.push(
+    admin
+      .from("checkins")
+      .select("customer_email, place_id, shop_slug, checkin_date, created_at")
+      .eq("customer_email", e)
+  );
+
+  const laneResults = await Promise.all(laneQueries);
+  const seen = new Set<string>();
+  const visits: { placeId: string | null; anchor: string; at: number }[] = [];
+  for (const row of laneResults.flatMap((r) => r.data ?? []) as VisitRow[]) {
+    const placeId = row.place_id;
+    const anchor = placeId ?? (row.shop_slug ? `slug:${row.shop_slug}` : "none");
+    const key = `${anchor}|${row.checkin_date}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    visits.push({ placeId, anchor, at: new Date(row.created_at).getTime() });
+  }
+
+  // ── Neighborhoods: one join for all visited place ids ───────────────
+  const placeIds = [...new Set(visits.map((v) => v.placeId).filter(Boolean))] as string[];
+  const neighborhoodByPlace = new Map<string, string>();
+  if (placeIds.length > 0) {
+    const { data: places } = await admin
+      .from("places")
+      .select("id, neighborhood")
+      .in("id", placeIds);
+    for (const p of places ?? []) {
+      if (p.neighborhood) neighborhoodByPlace.set(p.id, p.neighborhood);
+    }
+  }
+  const neighborhoodCounts = new Map<string, number>();
+  for (const v of visits) {
+    const hood = v.placeId ? neighborhoodByPlace.get(v.placeId) : undefined;
+    if (!hood) continue;
+    neighborhoodCounts.set(hood, (neighborhoodCounts.get(hood) ?? 0) + 1);
+  }
+  const bestNeighborhood = Math.max(0, ...neighborhoodCounts.values());
+
+  // ── Pioneer: the user's earliest check-in at a place is also the
+  // globally earliest there. Permanent by construction — the comparison is
+  // against the whole check-ins table, so it can only be revoked by a row
+  // forged with an earlier timestamp.
+  let pioneer = false;
+  if (placeIds.length > 0) {
+    const userEarliest = new Map<string, number>();
+    for (const v of visits) {
+      if (!v.placeId) continue;
+      const prev = userEarliest.get(v.placeId);
+      if (prev == null || v.at < prev) userEarliest.set(v.placeId, v.at);
+    }
+
+    const { data: earliestRows } = await admin
+      .from("checkins")
+      .select("place_id, created_at")
+      .in("place_id", placeIds)
+      .order("created_at", { ascending: true });
+    const globalEarliest = new Map<string, number>();
+    for (const row of earliestRows ?? []) {
+      if (!row.place_id || globalEarliest.has(row.place_id)) continue;
+      globalEarliest.set(row.place_id, new Date(row.created_at).getTime());
+    }
+
+    for (const [placeId, at] of userEarliest) {
+      const g = globalEarliest.get(placeId);
+      if (g == null || at <= g) {
+        pioneer = true;
+        break;
+      }
+    }
+  }
+
+  const distinctPlaces = visits.filter((v) => v.anchor !== "none").length;
+
   return [
-    { id: "first-steps", label: "First Steps", description: "First check-in", earned: stats.checkins >= 1 },
-    { id: "first-reward", label: "First Reward", description: "Earned a reward", earned: stats.rewards_earned >= 1 },
-    { id: "explorer", label: "Explorer", description: "5 businesses visited", earned: stats.businesses_visited >= 5 },
-    { id: "regular", label: "Regular", description: "25 check-ins", earned: stats.checkins >= 25 },
+    {
+      id: "founding-member",
+      label: "Founding Member",
+      description: "On Ventzon before the public launch",
+      earned: foundingMember,
+    },
+    {
+      id: "pioneer",
+      label: "Pioneer",
+      description: "First person ever to check in at a place",
+      earned: pioneer,
+    },
+    {
+      id: "explorer",
+      label: "Explorer",
+      description: "5 places checked in",
+      earned: distinctPlaces >= 5,
+    },
+    {
+      id: "neighborhood-regular",
+      label: "Neighborhood Regular",
+      description: "5 check-ins in one neighborhood",
+      earned: bestNeighborhood >= 5,
+    },
   ];
 }
 

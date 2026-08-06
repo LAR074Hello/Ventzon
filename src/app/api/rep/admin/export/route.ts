@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { isAdmin, calcMerchantCommission, MONTHLY_FLAT, COMMISSION_RATE } from "@/lib/rep-utils";
+import { isAdmin, calcMerchantCommission, isInFirstMonth } from "@/lib/rep-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +66,7 @@ export async function GET() {
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
       const commission = myShops.reduce((sum, s) => {
         const isPro = s.plan_type === "pro" && s.subscription_status === "active";
-        return sum + calcMerchantCommission(isPro, rewardCounts[s.slug] ?? 0);
+        return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at));
       }, 0);
 
       rows.push([
@@ -90,7 +90,7 @@ export async function GET() {
       const rep = shop.rep_id ? repMap[shop.rep_id] : null;
       const isPro = shop.plan_type === "pro" && shop.subscription_status === "active";
       const rewards = rewardCounts[shop.slug] ?? 0;
-      const commission = calcMerchantCommission(isPro, rewards);
+      const commission = calcMerchantCommission(isPro, isInFirstMonth(shop.rep_claimed_at ?? shop.created_at));
       const claimedDate = shop.rep_claimed_at ?? shop.created_at;
 
       rows.push([

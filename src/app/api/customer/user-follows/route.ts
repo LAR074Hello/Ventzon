@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { buildTokenMap, pushOrEmail } from "@/lib/notify";
 import { canNotify, claimNotification } from "@/lib/retention";
 import { getOrCreateProfile, getBlockedSet } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,11 @@ export async function POST(req: Request) {
     const blocked = await getBlockedSet(admin, email);
     if (blocked.has(target.email)) {
       return NextResponse.json({ error: "You can't follow this account" }, { status: 403 });
+    }
+    // Banned users cannot follow; banned targets cannot be followed.
+    const banned = await publiclyExcludedAuthors(admin);
+    if (banned.has(email) || banned.has(target.email)) {
+      return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
     }
 
     if (follow) {

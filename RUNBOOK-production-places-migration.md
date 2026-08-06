@@ -49,7 +49,7 @@ at risk except what the site looks like.
 > user immediately, with no review and no update prompt. Rollback is equally
 > immediate. Do this when you can watch it for 20 minutes, not at midnight.
 
-> ### 🚨 CORRECTED 2026-07-27 — do NOT promote the preview
+> ### IMPORTANT — CORRECTED 2026-07-27 — do NOT promote the preview
 >
 > The original A7 said "⋯ → Promote to Production" on the `deploy-visual`
 > preview. **That is now unsafe and must not be used.**
@@ -117,7 +117,7 @@ Phase C complete: last four screens, chrome, and deferred decisions
 20260726 migrations. If it is anything other than `0`, you have the wrong
 commit — **stop**, this whole phase-separation is void.
 
-### A3. Confirm the deploy branch — ✅ ALREADY DONE 2026-07-27
+### A3. Confirm the deploy branch — ALREADY DONE 2026-07-27
 
 ```bash
 cd ~/ventzon && GIT_TERMINAL_PROMPT=0 /usr/bin/git ls-remote --heads origin deploy-visual
@@ -130,7 +130,7 @@ a sha is now the **correct** result — as long as it is `af8d550`. Any other sh
 means something else was pushed over it: stop and decide deliberately, and do
 not force-push.
 
-### A4. Push the commit to a deploy branch — ✅ ALREADY DONE 2026-07-27
+### A4. Push the commit to a deploy branch — ALREADY DONE 2026-07-27
 
 ```bash
 cd ~/ventzon && /usr/bin/git push origin af8d550:refs/heads/deploy-visual
@@ -248,7 +248,7 @@ installed iOS app. The iOS app should show the new design without any update.
 **Wrong looks like:** 500, a blank screen, or the old design still showing
 after 2 minutes.
 
-### 🛑 PHASE A ROLLBACK TRIGGER
+### PHASE A ROLLBACK TRIGGER
 
 **Roll back if:** production returns 5xx, the customer app renders blank or
 unstyled, the iOS app fails to load content, **or the A8 bundle check reports a
@@ -497,7 +497,7 @@ curl -sI https://www.ventzon.com/customer | head -1
 **You should see:** `HTTP/2 200`. Nothing in Phase B should have touched the
 running app — this is confirming exactly that.
 
-### 🛑 PHASE B ROLLBACK TRIGGER
+### PHASE B ROLLBACK TRIGGER
 
 **Roll back if any of these:**
 - any migration errored partway through
@@ -519,7 +519,7 @@ Nothing is lost: every `places` row derived from `shops`, and every
 `place_id` derived from `shop_slug` — which is still present and still
 authoritative.
 
-> **⚠️ Order matters after Phase C.** Once the places code is deployed,
+> **Order matters after Phase C.** Once the places code is deployed,
 > rolling back means **promoting the previous Vercel build FIRST, then** running
 > the rollback SQL. Reversing that order takes the live app down.
 

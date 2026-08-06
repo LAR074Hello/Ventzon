@@ -42,6 +42,9 @@ export default function PostComposer({
   const [posting, setPosting] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
+  // Inline, pick-time limit feedback ("30s / 50MB") — set by checkMediaLimits
+  // the moment a file is chosen, so a too-long clip is rejected before Post.
+  const [limitError, setLimitError] = useState<string | null>(null);
   const uploadRef = useRef<RunningUpload | null>(null);
   // A ref, not state: the submit path reads this between awaits, and a state
   // value captured in that closure would still be the pre-cancel one.
@@ -52,6 +55,17 @@ export default function PostComposer({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const avatarRef = useRef<HTMLInputElement>(null);
+
+  // Leaving the screen mid-upload must STOP the upload. The submit path reads
+  // canceledRef between awaits; aborting the XHR resolves the upload promise
+  // with canceled:true and the catch discards the partial object, so no ghost
+  // post appears after the user navigated away.
+  useEffect(() => {
+    return () => {
+      canceledRef.current = true;
+      uploadRef.current?.cancel();
+    };
+  }, []);
 
   /**
    * Cancel means the bytes stop AND nothing is left behind.
@@ -71,6 +85,9 @@ export default function PostComposer({
   }
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  // Real first frame for the preview box, so a picked video is never a black
+  // rectangle. Local blob only — never uploaded.
+  const [previewPoster, setPreviewPoster] = useState<string | null>(null);
   const [tagShop, setTagShop] = useState(defaultShopSlug ?? "");
   const [myShops, setMyShops] = useState<{ shop_slug: string; shop_name: string }[]>([]);
   const [nearby, setNearby] = useState<{ shop_slug: string; shop_name: string }[]>([]);
@@ -183,8 +200,27 @@ export default function PostComposer({
 
   function pickMedia(file: File | null) {
     setMediaFile(file);
+    setLimitError(null);
     if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+    if (previewPoster) {
+      URL.revokeObjectURL(previewPoster);
+      setPreviewPoster(null);
+    }
     setMediaPreview(file ? URL.createObjectURL(file) : null);
+    if (!file) return;
+    // Limits at pick time, not submit: reject the clip BEFORE the user writes
+    // a caption. Async so picking is never blocked.
+    checkMediaLimits(file).then((r) => {
+      if (!r.ok) setLimitError(r.reason);
+    });
+    if (file.type.startsWith("video/")) {
+      // A real first frame for the preview, from the ORIGINAL file (local
+      // only — the strip rule applies to what leaves the device). Fire and
+      // forget; the box fills in when the frame is decoded.
+      capturePosterFrame(file).then((p) => {
+        if (p) setPreviewPoster(URL.createObjectURL(p.blob));
+      });
+    }
   }
 
   async function submitPost() {
@@ -294,6 +330,14 @@ export default function PostComposer({
         }
         if (canceledRef.current) throw new CanceledError();
 
+        // Poster capture starts NOW, in parallel with the upload. Decoding the
+        // clip overlaps the seconds-to-minutes the file takes to leave the
+        // device, so by the time the upload finishes the frame is usually
+        // already in hand — the bar never pins at 100% while a second file is
+        // made. Captured from the ALREADY-STRIPPED file (the rule below).
+        const posterPromise =
+          mediaType === "video" ? capturePosterFrame(uploadFile) : null;
+
         const ext = uploadFile.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
         const path = `${uid}/${Date.now()}.${ext}`;
 
@@ -324,11 +368,10 @@ export default function PostComposer({
         const { data: urlData } = supabase.storage.from("posts").getPublicUrl(path);
         mediaUrl = urlData.publicUrl;
 
-        // Poster frame: captured from the ALREADY-STRIPPED file, so it cannot
-        // reintroduce the metadata the strip just removed. Best effort by
-        // design — a null poster costs a thumbnail, never the post.
-        if (mediaType === "video") {
-          const poster = await capturePosterFrame(uploadFile);
+        // Await the parallel capture (started before the upload). Still best
+        // effort by design — a null poster costs a thumbnail, never the post.
+        if (mediaType === "video" && posterPromise) {
+          const poster = await posterPromise;
           if (poster && !canceledRef.current) {
             const posterPath = `${uid}/${Date.now()}-poster.jpg`;
             const { error: posterErr } = await supabase.storage
@@ -410,7 +453,15 @@ export default function PostComposer({
       {mediaPreview && (
         <div className="relative mt-2 overflow-hidden rounded-ctl">
           {mediaFile?.type.startsWith("video/") ? (
-            <video src={mediaPreview} muted playsInline className="max-h-48 w-full object-cover" />
+            <video
+              src={mediaPreview}
+              poster={previewPoster ?? undefined}
+              controls
+              muted
+              playsInline
+              preload="metadata"
+              className="max-h-48 w-full object-cover"
+            />
           ) : (
             <img src={mediaPreview} alt="" className="max-h-48 w-full object-cover" />
           )}
@@ -624,11 +675,19 @@ export default function PostComposer({
           </div>
         )}
 
+        {limitError && (
+          <p className="mt-2 text-2xs font-medium text-danger">{limitError}</p>
+        )}
+        <p className="mt-1 text-2xs font-normal text-muted">
+          Photos, or videos up to 30s &middot; 50&nbsp;MB
+        </p>
+
         <button
           onClick={submitPost}
           disabled={
             (!composer.trim() && !mediaFile) ||
             (!lockShop && !tagShop) ||
+            !!limitError ||
             // A name is required to publish, but it is asked for INLINE above
             // rather than blocking the composer — you write first, then say
             // who you are, and both go together.

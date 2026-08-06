@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { creatorStats, computeBadges, getBlockedSet } from "@/lib/social";
+import { creatorStats, computeBadgeTier, getBlockedSet } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -25,12 +26,13 @@ export async function GET(
       .eq("id", id)
       .maybeSingle();
 
-    if (!profile || !profile.is_creator) {
+    const banned = await publiclyExcludedAuthors(admin);
+    if (!profile || !profile.is_creator || banned.has(profile.email)) {
       return NextResponse.json({ error: "Creator not found" }, { status: 404 });
     }
 
     const stats = await creatorStats(admin, profile.email);
-    const badges = computeBadges(stats);
+    const badges = await computeBadgeTier(admin, profile.email);
 
     const { data: posts } = await admin
       .from("posts")

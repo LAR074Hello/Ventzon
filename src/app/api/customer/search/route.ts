@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getBlockedSet } from "@/lib/social";
+import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -72,9 +73,10 @@ export async function GET(req: Request) {
     });
 
     // Blocking is mutual invisibility, and search is a place that quietly
-    // undoes it if you forget.
+    // undoes it if you forget. Banned accounts are invisible too.
+    const banned = await publiclyExcludedAuthors(admin);
     const people = (peopleRows ?? [])
-      .filter((p) => !blocked.has(p.email))
+      .filter((p) => !blocked.has(p.email) && !banned.has(p.email))
       .map((p) => ({
         profile_id: p.id,
         display_name: p.display_name as string,
