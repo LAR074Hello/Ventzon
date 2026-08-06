@@ -111,7 +111,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               href="/customer/explore"
-              className="hidden rounded-full bg-maroon px-6 py-2.5 text-[13px] font-medium tracking-[0.12em] text-white transition-all duration-300 hover:bg-maroon-hover sm:inline-flex"
+              className="hidden rounded-full bg-maroon px-6 py-2.5 text-[13px] font-medium tracking-[0.12em] text-white transition-all duration-300 ease-luxe hover:bg-maroon-hover active:scale-[0.97] sm:inline-flex"
             >
               Open the app
             </Link>

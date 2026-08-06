@@ -267,9 +267,9 @@
   --radius-sheet: 28px; /* sheets and heroes */
 
   /* ── Type families ─────────────────────────────────────────────
-     Fraunces (display, optical sizing), Hanken Grotesk (body/UI),
+     Newsreader (display, optical sizing), Hanken Grotesk (body/UI),
      DM Mono (data/receipt voice). Self-hosted via next/font. */
-  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-display: var(--font-newsreader), "Newsreader", Georgia, serif;
   --font-body: var(--font-hanken), "Hanken Grotesk", system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), "DM Mono", ui-monospace, monospace;
   --font-sans: var(--font-hanken), "Hanken Grotesk", system-ui, sans-serif;
@@ -285,7 +285,7 @@ body {
      they can actually see them — and inherit to everything below, including
      SVG (which is how Postmark gets its receipt voice). Without this, body
      text silently falls back to the system sans stack. */
-  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-display: var(--font-newsreader), "Newsreader", Georgia, serif;
   --font-body: var(--font-hanken), "Hanken Grotesk", system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), "DM Mono", ui-monospace, monospace;
 
@@ -355,8 +355,8 @@ body {
   50% { transform: translateY(-12px); }
 }
 
-.animate-fade-in { animation: fade-in 1.2s ease-out both; }
-.animate-fade-in-up { animation: fade-in-up 1s ease-out both; }
+.animate-fade-in { animation: fade-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-in-up { animation: fade-in-up 1.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
 /* Onboarding slides need to feel like paging, not like a hero reveal. At 1s
    the fade was still visibly running after a tap — the dot indicator had
    already moved while the text was mid-opacity. */
@@ -374,15 +374,17 @@ body {
 .anim-delay-1000 { animation-delay: 1000ms; }
 .anim-delay-1200 { animation-delay: 1200ms; }
 
-/* Scroll-triggered fade-in (Intersection Observer, ScrollReveal.tsx) */
+/* Scroll-triggered fade-in (Intersection Observer, ScrollReveal.tsx).
+   Slow and almost invisible: a gentle rise with a barely-there scale,
+   on a long, expensive ease. */
 .scroll-fade-in {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(26px) scale(0.985);
   transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.scroll-fade-in.is-visible { opacity: 1; transform: translateY(0); }
+.scroll-fade-in.is-visible { opacity: 1; transform: translateY(0) scale(1); }
 .scroll-fade-in.delay-1 { transition-delay: 200ms; }
 .scroll-fade-in.delay-2 { transition-delay: 400ms; }
 .scroll-fade-in.delay-3 { transition-delay: 600ms; }
@@ -491,6 +493,97 @@ body {
     var(--border-subtle) 50%,
     transparent
   );
+}
+
+/* ═══ Marketing: micro-interactions ════════════════════════════════
+   Small, composable behaviors that make the site feel considered —
+   one curve (the long, expensive ease) everywhere, nothing that pops.
+   · ease-luxe     — the site's motion curve as a utility
+   · fade-image    — image load: opacity + a barely-there zoom settle
+   · scroll-line   — luxury dividers drawing in as they enter
+   · device-float  — phone frames settling after their column reveals
+   · btn-pill      — pill buttons: lift, press, focus ring
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ease-luxe {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fade-image {
+  opacity: 0;
+  transform: scale(1.02);
+  /* Warm night placeholder — the frame reads before the photo does. */
+  background: #211b1a;
+  transition:
+    opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fade-image.is-loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scroll-line {
+  opacity: 0;
+  transform: scaleX(0.55);
+  transition:
+    opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-line.is-visible {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@keyframes device-settle {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* Base: settle on load — used where a phone frame sits outside a
+   reveal wrapper (e.g. the how-it-works hero). */
+.device-float {
+  animation: device-settle 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+/* Inside a reveal wrapper, wait for the parent instead of running
+   unseen below the fold — the screenshot lands just after its column. */
+.scroll-fade-in .device-float {
+  animation: none;
+  opacity: 0;
+  transform: translateY(30px) scale(0.96);
+  transition:
+    opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s,
+    transform 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+}
+.scroll-fade-in.is-visible .device-float {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Pill buttons — lift on hover, press on active, a maroon focus ring.
+   Colours and shadows stay in Tailwind; this owns the motion. */
+.btn-pill {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-pill:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.btn-pill:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+.btn-pill:focus-visible {
+  outline: 2px solid rgb(185 110 119 / 0.5);
+  outline-offset: 3px;
 }
 
 /* ═══ Map attribution — an ODbL requirement, not decoration ══════ */

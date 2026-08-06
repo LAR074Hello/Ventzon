@@ -1,6 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import type { Metadata, Viewport } from "next";
-import { DM_Mono, Fraunces, Hanken_Grotesk } from "next/font/google";
+import { DM_Mono, Newsreader, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 
 // Three type roles. next/font self-hosts these at build time — the
@@ -8,10 +8,10 @@ import "./globals.css";
 // preloaded, so there is no runtime CDN dependency.
 // See globals.css for the token system that consumes them.
 
-// Display — Fraunces, a variable serif with optical sizing: delicate and
-// editorial at large sizes, firm enough for UI labels at small sizes.
-const displayFont = Fraunces({
-  variable: "--font-fraunces",
+// Display — Newsreader, a variable serif with optical sizing: literary,
+// editorial, and quiet at every size. This is the primary brand face.
+const displayFont = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
   axes: ["opsz"],
   display: "swap",

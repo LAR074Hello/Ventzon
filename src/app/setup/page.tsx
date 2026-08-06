@@ -48,7 +48,7 @@ export default function SetupPage() {
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               MERCHANT GUIDE
             </p>
-            <h1 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl lg:text-5xl">
+            <h1 className="mt-6 text-3xl font-light tracking-[0.01em] sm:text-4xl lg:text-5xl">
               Get your loyalty program running
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-500">
@@ -164,7 +164,7 @@ export default function SetupPage() {
       <section className="px-4 sm:px-8 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <ScrollReveal>
-            <h2 className="text-2xl font-light tracking-[0.02em] sm:text-3xl">
+            <h2 className="text-2xl font-light tracking-[0.01em] sm:text-3xl">
               Ready to set yours up?
             </h2>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

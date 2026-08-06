@@ -19,13 +19,13 @@ const INCLUDED = [
  */
 export default function PricingSection() {
   return (
-    <section className="px-6 py-24 sm:py-32">
+    <section className="px-6 py-32 sm:py-44">
       <div className="mx-auto max-w-5xl">
         <ScrollReveal className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-fog-500">
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">
             For shop owners
           </p>
-          <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em]">
+          <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em]">
             One flat price.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[17px] font-light leading-[1.75] text-fog-300">
@@ -37,8 +37,8 @@ export default function PricingSection() {
         <div className="mt-16 grid gap-6 md:grid-cols-2">
           {/* Monthly */}
           <ScrollReveal>
-            <div className="flex h-full flex-col rounded-[2rem] bg-night-800 p-10">
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-fog-500">Monthly</p>
+            <div className="flex h-full flex-col rounded-[2rem] bg-night-800 p-12 shadow-warm transition-all duration-700 ease-luxe hover:-translate-y-1 hover:shadow-warm-lg hover:ring-1 hover:ring-white/10">
+              <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">Monthly</p>
               <p className="mt-7 font-display text-[2.5rem] font-normal leading-none tracking-[0.02em] text-fog-100">
                 $25<span className="text-[1rem] text-fog-300">/month</span>
               </p>
@@ -57,10 +57,10 @@ export default function PricingSection() {
               <div className="mt-10 pt-2">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2.5 rounded-full border border-fog-100/20 px-8 py-3.5 text-[13px] font-medium tracking-[0.15em] text-fog-100 transition-all duration-300 hover:border-fog-100/50"
+                  className="group btn-pill inline-flex items-center gap-2.5 rounded-full border border-fog-100/20 px-8 py-3.5 text-[13px] font-medium tracking-[0.15em] text-fog-100 hover:border-fog-100/50"
                 >
                   Start with monthly
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
@@ -68,9 +68,9 @@ export default function PricingSection() {
 
           {/* Yearly */}
           <ScrollReveal delay={1}>
-            <div className="flex h-full flex-col rounded-[2rem] bg-maroon-900 p-10 ring-1 ring-maroon-800">
+            <div className="flex h-full flex-col rounded-[2rem] bg-maroon-900 p-12 ring-1 ring-maroon-800 shadow-warm transition-all duration-700 ease-luxe hover:-translate-y-1 hover:shadow-warm-lg">
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-maroon-300">Yearly</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-maroon-300">Yearly</p>
                 <span className="rounded-full bg-maroon-950/60 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-maroon-300">
                   Two months free
                 </span>
@@ -93,10 +93,10 @@ export default function PricingSection() {
               <div className="mt-10 pt-2">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-[13px] font-medium tracking-[0.15em] text-black transition-all duration-300 hover:bg-cream"
+                  className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-[13px] font-medium tracking-[0.15em] text-black hover:bg-cream"
                 >
                   Start with yearly
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
@@ -114,10 +114,10 @@ export default function PricingSection() {
           </p>
           <Link
             href="/pricing"
-            className="mt-8 inline-flex items-center gap-2 text-[13px] font-medium tracking-[0.12em] text-maroon-300 transition-colors duration-300 hover:text-maroon-200"
+            className="group mt-8 inline-flex items-center gap-2 text-[13px] font-medium tracking-[0.12em] text-maroon-300 transition-colors duration-300 ease-luxe hover:text-maroon-200"
           >
             See full pricing
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
           </Link>
         </ScrollReveal>
       </div>

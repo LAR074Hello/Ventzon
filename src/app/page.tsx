@@ -2,6 +2,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import DeviceFrame from "@/components/DeviceFrame";
+import Divider from "@/components/Divider";
+import FadeImage from "@/components/FadeImage";
+import Parallax from "@/components/Parallax";
 import PricingSection from "@/components/PricingSection";
 import SiteFooter from "@/components/SiteFooter";
 import HeroScroll from "@/components/HeroScroll";
@@ -34,23 +37,25 @@ function ProductBlock({
   children: React.ReactNode;
 }) {
   return (
-    <section className="px-6 py-24 sm:py-32">
-      <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 lg:gap-20">
+    <section className="px-6 py-28 sm:py-40">
+      <div className="mx-auto grid max-w-7xl items-center gap-20 lg:grid-cols-2 lg:gap-28">
         <ScrollReveal className={flip ? "lg:order-2" : ""}>
           <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">{number}</p>
-          <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em] text-fog-100">
+          <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em] text-fog-100">
             {title}
           </h2>
           <p className="mt-6 max-w-md text-[17px] leading-[1.7] text-fog-300">{body}</p>
         </ScrollReveal>
         <ScrollReveal delay={2} className={flip ? "lg:order-1" : ""}>
           <div className="relative mx-auto max-w-md">
-            <img
-              src={photo}
-              alt={photoAlt}
-              loading="lazy"
-              className="aspect-[4/5] w-full rounded-[2.6rem] object-cover"
-            />
+            <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
+              <FadeImage
+                src={photo}
+                alt={photoAlt}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            </Parallax>
             <div className={`absolute -bottom-14 ${flip ? "right-2" : "left-2"}`}>
               <DeviceFrame className={flip ? "-rotate-3" : "rotate-3"}>{children}</DeviceFrame>
             </div>
@@ -92,12 +97,12 @@ export default function HomePage() {
       <HeroScroll />
 
       {/* ══ ACT 1 — for the people who go ══ */}
-      <section className="px-6 pb-4 pt-24 sm:pt-32">
+      <section className="px-6 pb-8 pt-28 sm:pt-40">
         <ScrollReveal className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-fog-500">
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">
             For the people who go
           </p>
-          <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em]">
+          <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em]">
             A better way to find good places.
           </h2>
         </ScrollReveal>
@@ -111,7 +116,7 @@ export default function HomePage() {
         photo="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&q=80"
         photoAlt="A warm cafe interior with people"
       >
-        <img
+        <FadeImage
           src="/site-images/app-explore.png"
           alt="The Ventzon explore map showing places nearby"
           className="h-full w-full object-cover object-top"
@@ -126,7 +131,7 @@ export default function HomePage() {
         photoAlt="A barista at a coffee counter"
         flip
       >
-        <img
+        <FadeImage
           src="/site-images/app-checkin.png"
           alt="The check-in confirmation in the Ventzon app"
           className="h-full w-full object-cover object-top"
@@ -140,7 +145,7 @@ export default function HomePage() {
         photo="https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1200&q=80"
         photoAlt="Two people at a cafe table"
       >
-        <img
+        <FadeImage
           src="/site-images/app-feed.png"
           alt="The Ventzon home feed"
           className="h-full w-full object-cover object-top"
@@ -149,24 +154,25 @@ export default function HomePage() {
 
 
       {/* Download CTA — end of Act 1 */}
-      <section className="px-6 pb-24 pt-6 text-center sm:pb-32">
+      <section className="px-6 pb-28 pt-10 text-center sm:pb-40">
         <ScrollReveal>
           <Link
             href="/customer/explore"
-            className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
+            className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm hover:bg-cream"
           >
             Open the app
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
           </Link>
           <p className="mt-6 text-sm text-fog-500">Free for customers · no download required</p>
         </ScrollReveal>
       </section>
 
       {/* ══ PIVOT — from the person to the place ══ */}
-      <section className="relative overflow-hidden px-6 py-28 sm:py-36">
+      <section className="relative overflow-hidden px-6 py-36 sm:py-48">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(90,30,36,0.14),transparent)]" />
+        <Divider className="relative mx-auto mb-16 max-w-xs" />
         <ScrollReveal className="relative mx-auto max-w-2xl text-center">
-          <p className="font-display text-[clamp(1.5rem,3vw,2.25rem)] font-normal leading-[1.3] tracking-[0.02em] text-fog-100">
+          <p className="font-display text-[clamp(1.5rem,3vw,2.25rem)] font-normal leading-[1.3] tracking-[0.01em] text-fog-100">
             And if you&rsquo;re the one behind the counter &mdash;
           </p>
           <p className="mt-6 text-[16px] font-light leading-[1.8] text-fog-300">
@@ -176,11 +182,12 @@ export default function HomePage() {
       </section>
 
       {/* ══ ACT 2 — FOR SHOPS ══ */}
-      <section className="px-6 py-24 sm:py-36">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-6 py-32 sm:py-44">
+        <Divider className="mx-auto mb-16 max-w-xs" />
+        <div className="mx-auto max-w-7xl">
           <ScrollReveal className="mx-auto max-w-3xl text-center">
-            <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-fog-500">For shop owners</p>
-            <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.15] tracking-[0.02em] text-fog-100">
+            <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">For shop owners</p>
+            <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em] text-fog-100">
               Your shop, discovered by people who actually show up.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.7] text-fog-300">
@@ -192,8 +199,8 @@ export default function HomePage() {
           <div className="mt-16 grid gap-6 sm:grid-cols-2">
             {SHOP_BENEFITS.map((b, i) => (
               <ScrollReveal key={b.title} delay={(i % 2) === 1 ? 2 : 1}>
-                <div className="h-full rounded-[2rem] bg-night-800 p-8 shadow-warm transition-all duration-300 hover:-translate-y-1">
-                  <h3 className="font-display text-[22px] font-medium tracking-[0.01em] text-fog-100">{b.title}</h3>
+                <div className="h-full rounded-[2rem] bg-night-800 p-8 shadow-warm transition-all duration-700 ease-luxe hover:-translate-y-1 hover:shadow-warm-lg hover:ring-1 hover:ring-white/10">
+                  <h3 className="font-display text-[22px] font-medium tracking-[0em] text-fog-100">{b.title}</h3>
                   <p className="mt-3 text-[15px] leading-[1.7] text-fog-300">{b.body}</p>
                 </div>
               </ScrollReveal>
@@ -212,10 +219,10 @@ export default function HomePage() {
           <ScrollReveal className="mt-12 text-center">
             <Link
               href="/app"
-              className="inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-maroon-hover"
+              className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm hover:bg-maroon-hover"
             >
               See how it works for your shop
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
           </ScrollReveal>
         </div>
@@ -227,7 +234,7 @@ export default function HomePage() {
       {/* ══ FINAL CTA — editorial photo band ══ */}
       <section className="px-6 pb-8">
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
-          <img
+          <FadeImage
             src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=2000&q=80"
             alt="A neighborhood street at golden hour"
             loading="lazy"
@@ -236,16 +243,16 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-night-950/85 via-night-950/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
-              <h2 className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-normal leading-[1.15] tracking-[0.02em] text-white">
+              <h2 className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-normal leading-[1.12] tracking-[0.01em] text-white">
                 See what&rsquo;s near you.
               </h2>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href="/customer/explore"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm transition-all duration-300 hover:-translate-y-0.5 hover:bg-cream"
+                  className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm hover:bg-cream"
                 >
                   Open the app
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
                 </Link>
                 <Link
                   href="/app"

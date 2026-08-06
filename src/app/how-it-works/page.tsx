@@ -5,6 +5,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import DeviceFrame from "@/components/DeviceFrame";
+import Divider from "@/components/Divider";
+import FadeImage from "@/components/FadeImage";
+import Parallax from "@/components/Parallax";
 import SiteFooter from "@/components/SiteFooter";
 
 /* Editorial photos — Unsplash placeholders, city-agnostic subjects,
@@ -96,24 +99,26 @@ function StepBlock({
   flip?: boolean;
 }) {
   return (
-    <div className="border-t border-white/10 py-12 lg:py-16">
-      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+    <div className="border-t border-white/10 py-16 lg:py-24">
+      <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
         <div className={flip ? "lg:order-2" : ""}>
           <p className="font-mono text-[13px] tracking-[0.2em] text-fog-500">{step.number}</p>
-          <h3 className="mt-4 text-2xl font-normal tracking-[0.02em] text-fog-100">{step.title}</h3>
+          <h3 className="mt-4 text-2xl font-normal tracking-[0.01em] text-fog-100">{step.title}</h3>
           <p className="mt-4 max-w-md text-[15px] font-light leading-[1.8] text-fog-300">{step.body}</p>
         </div>
         <div className={flip ? "lg:order-1" : ""}>
           <div className="relative mx-auto max-w-sm">
-            <img
-              src={step.photo}
-              alt={step.photoAlt}
-              loading="lazy"
-              className="aspect-[4/5] w-full rounded-[2.6rem] object-cover"
-            />
+            <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
+              <FadeImage
+                src={step.photo}
+                alt={step.photoAlt}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            </Parallax>
             <div className={`absolute -bottom-12 ${flip ? "right-2" : "left-2"}`}>
               <DeviceFrame className={flip ? "-rotate-3" : "rotate-3"}>
-                <img
+                <FadeImage
                   src={step.screen}
                   alt={step.screenAlt}
                   className="h-full w-full object-cover object-top"
@@ -138,7 +143,7 @@ export default function HowItWorksPage() {
             <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-fog-300 opacity-0">
               HOW IT WORKS
             </p>
-            <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-light tracking-[0.02em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
+            <h1 className="animate-fade-in anim-delay-400 mt-8 font-display text-4xl font-light tracking-[0.01em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
               Find it. Go there. Prove it.
             </h1>
             <p className="animate-fade-in-up anim-delay-600 mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
@@ -149,23 +154,25 @@ export default function HowItWorksPage() {
             <div className="animate-fade-in-up anim-delay-800 mt-14 flex flex-col items-start gap-4 opacity-0 sm:flex-row sm:items-center">
               <Link
                 href="/customer/explore"
-                className="inline-flex items-center gap-3 rounded-full bg-maroon px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white transition-all duration-500 hover:bg-maroon-hover"
+                className="group btn-pill inline-flex items-center gap-3 rounded-full bg-maroon px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white hover:bg-maroon-hover"
               >
                 Open the app
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
           <div className="relative mx-auto max-w-md">
-            <img
-              src={PHOTOS.hero}
-              alt="A warm cafe interior with people"
-              loading="lazy"
-              className="aspect-[4/5] w-full rounded-[2.6rem] object-cover"
-            />
+            <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
+              <FadeImage
+                src={PHOTOS.hero}
+                alt="A warm cafe interior with people"
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            </Parallax>
             <div className="absolute -bottom-12 left-2 rotate-3">
               <DeviceFrame>
-                <img
+                <FadeImage
                   src={SCREENS.explore}
                   alt="The Ventzon explore map showing places nearby"
                   className="h-full w-full object-cover object-top"
@@ -177,19 +184,19 @@ export default function HowItWorksPage() {
       </section>
 
       {/* ── FOR CUSTOMERS — alternating steps with photos + app frames ── */}
-      <section className="px-4 pb-24 sm:px-8 sm:pb-32">
-        <div className="luxury-divider mx-auto mb-12 max-w-xs" />
+      <section className="px-4 pb-28 sm:px-8 sm:pb-40">
+        <Divider className="mx-auto mb-12 max-w-xs" />
         <div className="mx-auto max-w-6xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               FOR CUSTOMERS
             </p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               A better way to find good places.
             </h2>
           </ScrollReveal>
 
-          <div className="mt-16">
+          <div className="mt-20">
             {customerSteps.map((step, i) => (
               <ScrollReveal key={step.number}>
                 <StepBlock step={step} flip={i % 2 === 1} />
@@ -202,7 +209,7 @@ export default function HowItWorksPage() {
 
       {/* ── DIVIDER BAND — full-bleed photo, quiet statement ── */}
       <section className="relative overflow-hidden">
-        <img
+        <FadeImage
           src={PHOTOS.dusk}
           alt="A quiet street at dusk"
           loading="lazy"
@@ -216,13 +223,13 @@ export default function HowItWorksPage() {
         </div>
       </section>
       {/* ── FOR SHOPS — steps beside a counter photo with the join frame ── */}
-      <section className="px-4 py-20 sm:px-8 sm:py-28">
+      <section className="px-4 py-28 sm:px-8 sm:py-36">
         <div className="mx-auto max-w-6xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               FOR SHOPS
             </p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               Get discovered by locals who actually show up.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
@@ -240,7 +247,7 @@ export default function HowItWorksPage() {
                         {step.number}
                       </p>
                       <div>
-                        <h3 className="text-xl font-normal tracking-[0.02em] text-fog-100">
+                        <h3 className="text-xl font-normal tracking-[0.01em] text-fog-100">
                           {step.title}
                         </h3>
                         <p className="mt-3 text-[15px] font-light leading-[1.8] text-fog-300">
@@ -255,31 +262,33 @@ export default function HowItWorksPage() {
               <ScrollReveal className="mt-12">
                 <Link
                   href="/app"
-                  className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.15em] text-fog-300 transition-colors duration-500 hover:text-fog-100"
+                  className="group inline-flex items-center gap-2 text-[12px] font-light tracking-[0.15em] text-fog-300 transition-colors duration-500 ease-luxe hover:text-fog-100"
                 >
                   For shops &mdash; learn more
-                  <ArrowRight className="h-3 w-3" />
+                  <ArrowRight className="h-3 w-3 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
                 </Link>
               </ScrollReveal>
             </div>
 
-            <div className="relative mx-auto max-w-sm">
-              <img
-                src={PHOTOS.counter}
-                alt="A customer's hand at a counter"
-                loading="lazy"
-                className="aspect-[4/5] w-full rounded-[2.6rem] object-cover"
-              />
+            <ScrollReveal delay={2} className="relative mx-auto max-w-sm">
+              <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
+                <FadeImage
+                  src={PHOTOS.counter}
+                  alt="A customer's hand at a counter"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </Parallax>
               <div className="absolute -bottom-12 left-2 rotate-3">
                 <DeviceFrame>
-                  <img
+                  <FadeImage
                     src={SCREENS.join}
                     alt="The join page a customer sees when they scan"
                     className="h-full w-full object-cover object-top"
                   />
                 </DeviceFrame>
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -287,7 +296,7 @@ export default function HowItWorksPage() {
       {/* ── FINAL CTA — photo band ── */}
       <section className="px-4 pb-8 sm:px-8">
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
-          <img
+          <FadeImage
             src={PHOTOS.goldenHour}
             alt="A neighborhood street at golden hour"
             loading="lazy"
@@ -296,7 +305,7 @@ export default function HowItWorksPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink-warm/70 via-ink-warm/20 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
-              <h2 className="text-3xl font-light tracking-[0.02em] text-white sm:text-4xl">
+              <h2 className="font-display text-3xl font-light tracking-[0.01em] text-white sm:text-4xl">
                 See what&rsquo;s near you.
               </h2>
               <p className="mt-5 text-base font-light text-white/85">
@@ -305,10 +314,10 @@ export default function HowItWorksPage() {
               <div className="mt-9">
                 <Link
                   href="/customer/explore"
-                  className="inline-flex items-center gap-3 rounded-full bg-white px-10 py-4 text-[13px] font-light tracking-[0.15em] text-black transition-all duration-500 hover:bg-night-950"
+                  className="group btn-pill inline-flex items-center gap-3 rounded-full bg-white px-10 py-4 text-[13px] font-light tracking-[0.15em] text-black hover:bg-night-950"
                 >
                   Open the app
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
                 </Link>
               </div>
             </ScrollReveal>

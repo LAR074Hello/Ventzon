@@ -13,7 +13,7 @@ export default function DeviceFrame({
   className?: string;
 }) {
   return (
-    <div className={`relative w-[280px] rounded-[2.6rem] bg-night-900 p-2.5 shadow-warm-lg sm:w-[300px] ${className}`}>
+    <div className={`device-float relative w-[280px] rounded-[2.6rem] bg-night-900 p-2.5 shadow-warm-lg sm:w-[300px] ${className}`}>
       {/* Dynamic island */}
       <div className="absolute left-1/2 top-5 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-black/90" />
       {/* Screen */}

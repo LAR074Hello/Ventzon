@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import Divider from "@/components/Divider";
+import FadeImage from "@/components/FadeImage";
 import SiteFooter from "@/components/SiteFooter";
 
 const shops = [
@@ -45,7 +47,7 @@ export default function CustomerAppPage() {
           <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
             THE CUSTOMER APP
           </p>
-          <h1 className="mt-6 text-4xl font-light tracking-[0.02em] sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 font-display text-4xl font-light tracking-[0.01em] sm:text-5xl lg:text-6xl">
             Find places. Prove you were there.
           </h1>
           <p className="mt-6 text-[15px] font-light leading-[1.8] text-fog-300">
@@ -56,10 +58,10 @@ export default function CustomerAppPage() {
           <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/customer/explore"
-              className="inline-flex items-center gap-3 rounded-full border border-ink-warm/20 bg-fog-100 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-black transition-all duration-500 hover:bg-white"
+              className="group btn-pill inline-flex items-center gap-3 rounded-full border border-ink-warm/20 bg-fog-100 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-black hover:bg-white"
             >
               Open the app
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
             <Link
               href="/signup"
@@ -74,14 +76,14 @@ export default function CustomerAppPage() {
       {/* ============================================================
           THREE SCREENS
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               EXAMPLE SCREENS
             </p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               Find it. Visit it. Share it.
             </h2>
           </ScrollReveal>
@@ -89,7 +91,7 @@ export default function CustomerAppPage() {
           <div className="mt-16 flex flex-col items-center gap-10 sm:flex-row sm:items-start sm:justify-center">
             {/* Phone 1 — Join */}
             <ScrollReveal delay={1} className="flex flex-col items-center gap-4">
-              <div className="w-56 rounded-[2.5rem] border-2 border-white/10 bg-night-800 overflow-hidden" style={{ aspectRatio: "9/19" }}>
+              <div className="device-float w-56 rounded-[2.5rem] border-2 border-white/10 bg-night-800 overflow-hidden" style={{ aspectRatio: "9/19" }}>
                 {/* Status bar */}
                 <div className="flex items-center justify-between px-5 pt-3 pb-1">
                   <span className="text-[9px] font-light text-fog-300">9:41</span>
@@ -102,7 +104,7 @@ export default function CustomerAppPage() {
                 {/* Content */}
                 <div className="flex flex-col items-center px-4 pt-4 pb-4">
                   {/* Shop avatar */}
-                  <img
+                  <FadeImage
                     src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=96&h=96&fit=crop&auto=format"
                     alt="Sunrise Bakery"
                     className="h-12 w-12 rounded-full object-cover border border-white/10"
@@ -148,7 +150,7 @@ export default function CustomerAppPage() {
 
             {/* Phone 2 — Progress */}
             <ScrollReveal delay={2} className="flex flex-col items-center gap-4">
-              <div className="w-56 rounded-[2.5rem] border-2 border-white/10 bg-night-800 overflow-hidden" style={{ aspectRatio: "9/19" }}>
+              <div className="device-float w-56 rounded-[2.5rem] border-2 border-white/10 bg-night-800 overflow-hidden" style={{ aspectRatio: "9/19" }}>
                 {/* Status bar */}
                 <div className="flex items-center justify-between px-5 pt-3 pb-1">
                   <span className="text-[9px] font-light text-fog-300">9:41</span>
@@ -195,7 +197,7 @@ export default function CustomerAppPage() {
 
             {/* Phone 3 — Share */}
             <ScrollReveal delay={3} className="flex flex-col items-center gap-4">
-              <div className="w-56 rounded-[2.5rem] border-2 border-white/10 bg-night-800 overflow-hidden" style={{ aspectRatio: "9/19" }}>
+              <div className="device-float w-56 rounded-[2.5rem] border-2 border-white/10 bg-night-800 overflow-hidden" style={{ aspectRatio: "9/19" }}>
                 {/* Status bar */}
                 <div className="flex items-center justify-between px-5 pt-3 pb-1">
                   <span className="text-[9px] font-light text-fog-300">9:41</span>
@@ -218,7 +220,7 @@ export default function CustomerAppPage() {
                       Verified visit
                     </span>
                   </div>
-                  <img
+                  <FadeImage
                     src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=260&fit=crop&auto=format"
                     alt=""
                     className="mt-3 h-36 w-full rounded-lg object-cover"
@@ -244,14 +246,14 @@ export default function CustomerAppPage() {
       {/* ============================================================
           EXPLORE
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
               EXPLORE
             </p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               See what&rsquo;s actually good near you.
             </h2>
             <p className="mt-5 max-w-xl mx-auto text-[15px] font-light leading-[1.8] text-fog-300">
@@ -269,9 +271,9 @@ export default function CustomerAppPage() {
                 {shops.map((shop) => (
                   <div
                     key={shop.name}
-                    className={`flex-shrink-0 w-44 rounded-xl border border-white/10 bg-gradient-to-br ${shop.from} ${shop.to} p-4 transition-colors duration-500 hover:border-white/10`}
+                    className={`flex-shrink-0 w-44 rounded-xl border border-white/10 bg-gradient-to-br ${shop.from} ${shop.to} p-4 transition-all duration-500 ease-luxe hover:-translate-y-1 hover:shadow-warm-lg hover:border-white/20`}
                   >
-                    <img
+                    <FadeImage
                       src={shop.img}
                       alt={shop.name}
                       className="h-8 w-8 rounded-full object-cover border border-white/10"
@@ -294,10 +296,10 @@ export default function CustomerAppPage() {
           <ScrollReveal className="mt-10 text-center">
             <Link
               href="/customer/explore"
-              className="inline-flex items-center gap-3 text-[12px] font-light tracking-[0.15em] text-fog-300 transition-colors duration-500 hover:text-fog-100"
+              className="group inline-flex items-center gap-3 text-[12px] font-light tracking-[0.15em] text-fog-300 transition-colors duration-500 ease-luxe hover:text-fog-100"
             >
               Browse local places
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-3 w-3 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
           </ScrollReveal>
         </div>
@@ -306,8 +308,8 @@ export default function CustomerAppPage() {
       {/* ============================================================
           PUSH NOTIFICATIONS
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-16 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             {/* Left — Text */}
@@ -315,7 +317,7 @@ export default function CustomerAppPage() {
               <p className="text-[11px] font-light tracking-[0.5em] text-fog-300">
                 NOTIFICATIONS
               </p>
-              <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+              <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
                 You never miss what&rsquo;s good.
               </h2>
               <p className="mt-6 text-[15px] font-light leading-[1.8] text-fog-300">
@@ -359,18 +361,18 @@ export default function CustomerAppPage() {
           FINAL CTA
           ============================================================ */}
       <section className="px-8 py-28 sm:py-36">
-        <div className="luxury-divider mx-auto mb-16 max-w-xs" />
+        <Divider className="mx-auto mb-16 max-w-xs" />
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-light tracking-[0.02em] sm:text-4xl lg:text-5xl">
+          <h2 className="font-display text-3xl font-light tracking-[0.01em] sm:text-4xl lg:text-5xl">
             Give your customers this.
           </h2>
           <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-3 rounded-full border border-ink-warm/20 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black"
+              className="group btn-pill inline-flex items-center gap-3 rounded-full border border-ink-warm/20 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 hover:bg-fog-100 hover:text-black"
             >
               Set up your shop
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
             <Link
               href="/how-it-works"

@@ -8,6 +8,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, X, Trophy, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
+import Divider from "@/components/Divider";
 import SiteFooter from "@/components/SiteFooter";
 
 /* Render comparison cells: true/false become lucide Check/X icons, strings render as text. */
@@ -168,7 +169,7 @@ function PricingContent() {
             PRICING
           </p>
 
-          <h1 className="animate-fade-in anim-delay-400 mt-8 text-4xl font-light tracking-[0.02em] text-white opacity-0 sm:text-5xl lg:text-6xl">
+          <h1 className="animate-fade-in anim-delay-400 mt-8 font-display text-4xl font-light tracking-[0.01em] text-white opacity-0 sm:text-5xl lg:text-6xl">
             Simple pricing.{" "}
             <br className="hidden sm:block" />
             One flat rate.
@@ -228,10 +229,10 @@ function PricingContent() {
               </p>
               <a
                 href="/get-started"
-                className="mt-6 inline-flex items-center gap-3 rounded-full border border-white/40 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white transition-all duration-500 hover:border-white hover:bg-white hover:text-black"
+                className="group btn-pill mt-6 inline-flex items-center gap-3 rounded-full border border-white/40 px-8 py-3.5 text-[12px] font-light tracking-[0.15em] text-white hover:border-white hover:bg-white hover:text-black"
               >
                 Create a shop
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
               </a>
             </div>
           )}
@@ -241,10 +242,10 @@ function PricingContent() {
       {/* ============================================================
           PLAN CARD
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
+      <section className="px-8 py-24 sm:py-32">
         <div className="mx-auto max-w-lg">
           <ScrollReveal>
-            <div className="flex flex-col rounded-2xl border border-night-600 p-8 transition-all duration-500 hover:border-night-600 sm:p-10">
+            <div className="flex flex-col rounded-2xl border border-night-600 p-8 shadow-warm transition-all duration-500 ease-luxe hover:-translate-y-1 hover:border-white/20 hover:shadow-warm-lg sm:p-10">
 
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
@@ -319,14 +320,14 @@ function PricingContent() {
                 <button
                   onClick={() => startCheckout(billingPeriod)}
                   disabled={loading !== null || loadingShop}
-                  className="mt-8 block w-full rounded-full border border-fog-100 py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                  className="btn-pill mt-8 block w-full rounded-full border border-fog-100 py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-fog-100 hover:bg-fog-100 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {loading === billingPeriod ? "Redirecting…" : "Get started"}
                 </button>
               ) : (
                 <Link
                   href="/signup"
-                  className="mt-8 block w-full rounded-full border border-fog-100 py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black"
+                  className="btn-pill group mt-8 block w-full rounded-full border border-fog-100 py-3.5 text-center text-[12px] font-light tracking-[0.15em] text-fog-100 hover:bg-fog-100 hover:text-black"
                 >
                   Create an account
                 </Link>
@@ -367,12 +368,12 @@ function PricingContent() {
       {/* ============================================================
           THE ECONOMICS
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">THE MATH</p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               One flat rate. No fine print.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
@@ -425,12 +426,12 @@ function PricingContent() {
       {/* ============================================================
           COMPARISON
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">COMPARE</p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               How Ventzon stacks up.
             </h2>
           </ScrollReveal>
@@ -468,14 +469,14 @@ function PricingContent() {
       {/* ============================================================
           DASHBOARD PREVIEW
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-5xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               DASHBOARD
             </p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               See what you get.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
@@ -615,14 +616,14 @@ function PricingContent() {
       {/* ============================================================
           FAQ
           ============================================================ */}
-      <section className="px-8 py-20 sm:py-28">
-        <div className="luxury-divider mx-auto mb-20 max-w-xs" />
+      <section className="px-8 py-24 sm:py-32">
+        <Divider className="mx-auto mb-20 max-w-xs" />
         <div className="mx-auto max-w-3xl">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
               QUESTIONS
             </p>
-            <h2 className="mt-6 text-3xl font-light tracking-[0.02em] sm:text-4xl">
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
               Frequently asked
             </h2>
           </ScrollReveal>
@@ -652,7 +653,7 @@ function PricingContent() {
           ============================================================ */}
       <section className="px-8 py-28 sm:py-36">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-light tracking-[0.02em] sm:text-4xl lg:text-5xl">
+          <h2 className="font-display text-3xl font-light tracking-[0.01em] sm:text-4xl lg:text-5xl">
             Ready to grow?
           </h2>
           <p className="mt-6 text-base font-light leading-relaxed text-fog-500">
@@ -663,10 +664,10 @@ function PricingContent() {
           <div className="mt-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-3 rounded-full border border-fog-100 px-10 py-4 text-[13px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black"
+              className="group btn-pill inline-flex items-center gap-3 rounded-full border border-fog-100 px-10 py-4 text-[13px] font-light tracking-[0.15em] text-fog-100 hover:bg-fog-100 hover:text-black"
             >
               Create your account
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
             <Link
               href="/how-it-works"
