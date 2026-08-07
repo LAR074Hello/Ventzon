@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Suspense } from "react";
 import { Capacitor } from "@capacitor/core";
@@ -225,8 +226,14 @@ function AuthForm() {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pt-12 pb-8">
         {/* Logo mark */}
         <div className="mb-8 flex flex-col items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-card border border-subtle bg-surface-raised">
-            <span className="text-2xl font-extralight tracking-tight text-primary">V</span>
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-card border border-subtle bg-surface-raised">
+            <Image
+              src="/logo.png"
+              alt="Ventzon"
+              width={64}
+              height={64}
+              className="h-full w-full object-cover"
+            />
           </div>
           <p className="text-xs font-semibold uppercase tracking-caps text-primary mt-4">VENTZON</p>
           {/* No rewards language on the signup path. Someone arrives here

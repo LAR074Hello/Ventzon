@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Check } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import Divider from "@/components/Divider";
@@ -333,8 +334,14 @@ export default function CustomerAppPage() {
                 <div className="w-full max-w-sm rounded-2xl bg-night-800 p-4 shadow-warm">
                   <div className="flex items-start gap-3">
                     {/* App icon */}
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-night-950 ring-1 ring-white/15">
-                      <span className="text-[10px] font-light tracking-[0.2em] text-fog-100">V</span>
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-night-950 ring-1 ring-white/15">
+                      <Image
+                        src="/logo.png"
+                        alt="Ventzon"
+                        width={40}
+                        height={40}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">

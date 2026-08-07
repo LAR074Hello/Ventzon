@@ -1,11 +1,24 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-export const runtime = "edge";
 export const alt = "Ventzon — Find Real Places. See Who's Actually There.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// Renders the actual logo mark (read from public/logo.png), so the
+// share card always carries the current brand. Uses the Node runtime
+// because node:fs is not available on the edge runtime.
 export default async function Image() {
+  const logoPath = join(process.cwd(), "public", "logo.png");
+  let logoBase64 = "";
+  try {
+    const logoBuffer = await readFile(logoPath);
+    logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+  } catch {
+    // Fallback: letter V if the logo file is missing.
+  }
+
   return new ImageResponse(
     (
       <div
@@ -47,9 +60,20 @@ export default async function Image() {
             alignItems: "center",
             justifyContent: "center",
             marginBottom: 28,
+            overflow: "hidden",
           }}
         >
-          <span style={{ fontSize: 36, fontWeight: 200, color: "#ededed", letterSpacing: "-0.02em" }}>V</span>
+          {logoBase64 ? (
+            <img
+              src={logoBase64}
+              alt=""
+              width={80}
+              height={80}
+              style={{ objectFit: "cover" }}
+            />
+          ) : (
+            <span style={{ fontSize: 36, fontWeight: 200, color: "#ededed", letterSpacing: "-0.02em" }}>V</span>
+          )}
         </div>
 
         {/* Wordmark */}
@@ -68,6 +92,9 @@ export default async function Image() {
         {/* Tagline */}
         <div
           style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             fontSize: 26,
             fontWeight: 300,
             color: "#888888",
