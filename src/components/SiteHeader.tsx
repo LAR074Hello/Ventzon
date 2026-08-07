@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/app", label: "Customer app" },
+  { href: "/merchant-dashboard", label: "For shops" },
 ];
 
 export default function SiteHeader() {

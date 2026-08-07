@@ -33,6 +33,12 @@ export default function SiteFooter() {
             How it works
           </Link>
           <Link
+            href="/merchant-dashboard"
+            className="transition-colors duration-300 ease-luxe hover:text-fog-100"
+          >
+            For shops
+          </Link>
+          <Link
             href="/help"
             className="transition-colors duration-300 ease-luxe hover:text-fog-100"
           >

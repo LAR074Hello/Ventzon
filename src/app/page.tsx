@@ -218,10 +218,10 @@ export default function HomePage() {
 
           <ScrollReveal className="mt-12 text-center">
             <Link
-              href="/app"
+              href="/merchant-dashboard"
               className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm hover:bg-maroon-hover"
             >
-              See how it works for your shop
+              See the merchant dashboard
               <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
           </ScrollReveal>
