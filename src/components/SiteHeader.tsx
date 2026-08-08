@@ -17,11 +17,14 @@ export default function SiteHeader() {
 
   // Hide the marketing header on app surfaces (customer, rep, merchant)
   // and on the /dev reference surfaces, which must render the token
-  // system unobstructed by marketing chrome.
+  // system unobstructed by marketing chrome. Note: /merchant-dashboard is
+  // a MARKETING page (the merchant showcase) and must keep the header —
+  // only /merchant and /merchant/* are app surfaces.
   const hidden =
     pathname?.startsWith("/customer") ||
     pathname?.startsWith("/rep") ||
-    pathname?.startsWith("/merchant") ||
+    pathname === "/merchant" ||
+    pathname?.startsWith("/merchant/") ||
     pathname?.startsWith("/dev") ||
     // Share surfaces carry their own minimal header; the marketing chrome
     // is still un-retokenized and would land inconsistently on them.
