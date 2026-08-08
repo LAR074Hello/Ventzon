@@ -116,20 +116,20 @@ export default function AdsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-10 text-[#ededed] sm:px-8">
+    <main className="min-h-screen bg-night-950 px-4 py-10 text-fog-100 sm:px-8">
       <div className="mx-auto max-w-3xl">
         <Link
           href={`/merchant/${shopSlug}`}
-          className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.1em] text-[#555] transition-colors hover:text-[#ededed]"
+          className="inline-flex items-center gap-2 text-[12px] font-light tracking-[0.1em] text-fog-500 transition-colors hover:text-fog-100"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to dashboard
         </Link>
 
         <div className="mt-8">
-          <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">ADVERTISING</p>
-          <h1 className="mt-3 text-2xl font-extralight tracking-[-0.01em] text-white">Reach new customers</h1>
-          <p className="mt-3 max-w-xl text-[13px] font-light leading-relaxed text-[#666]">
+          <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">ADVERTISING</p>
+          <h1 className="mt-3 text-2xl font-extralight tracking-[-0.01em] text-fog-100">Reach new customers</h1>
+          <p className="mt-3 max-w-xl text-[13px] font-light leading-relaxed text-fog-500">
             Bid to send a push notification to customers who frequent shops near you but aren&rsquo;t your
             customers yet. Each customer sees at most 6 ad notifications a day across all merchants &mdash;
             the highest bidders win those slots. You&rsquo;re billed only when a notification is actually sent.
@@ -149,44 +149,44 @@ export default function AdsPage() {
         )}
 
         <div className="mt-8 flex items-center justify-between">
-          <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">CAMPAIGNS</p>
+          <p className="text-[11px] font-light tracking-[0.2em] text-fog-500">CAMPAIGNS</p>
           <button
             onClick={() => setShowCreate((v) => !v)}
             disabled={!hasLocation}
-            className="rounded-full border border-[#ededed] px-5 py-2 text-[11px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+            className="rounded-full border border-fog-100 px-5 py-2 text-[11px] font-light tracking-[0.1em] text-fog-100 transition-all hover:bg-fog-100 hover:text-black disabled:opacity-40"
           >
             {showCreate ? "Cancel" : "New campaign"}
           </button>
         </div>
 
         {showCreate && (
-          <form onSubmit={handleCreate} className="mt-4 space-y-4 rounded-2xl border border-[#1a1a1a] p-6">
+          <form onSubmit={handleCreate} className="mt-4 space-y-4 rounded-2xl border border-night-700 p-6">
             <div>
-              <label className="text-[11px] font-light tracking-[0.15em] text-[#555]">HEADLINE</label>
+              <label className="text-[11px] font-light tracking-[0.15em] text-fog-500">HEADLINE</label>
               <input
                 value={headline}
                 onChange={(e) => setHeadline(e.target.value)}
                 maxLength={80}
                 placeholder="Free coffee for new customers"
-                className="mt-2 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
+                className="mt-2 w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none placeholder:text-fog-600 focus:border-night-600"
               />
             </div>
             <div>
-              <label className="text-[11px] font-light tracking-[0.15em] text-[#555]">MESSAGE</label>
+              <label className="text-[11px] font-light tracking-[0.15em] text-fog-500">MESSAGE</label>
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 maxLength={200}
                 rows={3}
                 placeholder="Show this notification for 20% off your first visit."
-                className="mt-2 w-full resize-none rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none placeholder:text-[#333] focus:border-[#333]"
+                className="mt-2 w-full resize-none rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none placeholder:text-fog-600 focus:border-night-600"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[11px] font-light tracking-[0.15em] text-[#555]">BID PER SEND</label>
-                <div className="mt-2 flex items-center gap-2 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 focus-within:border-[#333]">
-                  <span className="text-[14px] font-light text-[#555]">$</span>
+                <label className="text-[11px] font-light tracking-[0.15em] text-fog-500">BID PER SEND</label>
+                <div className="mt-2 flex items-center gap-2 rounded-xl border border-night-700 bg-night-900 px-4 focus-within:border-night-600">
+                  <span className="text-[14px] font-light text-fog-500">$</span>
                   <input
                     type="number"
                     min={0.05}
@@ -194,12 +194,12 @@ export default function AdsPage() {
                     step={0.05}
                     value={bidDollars}
                     onChange={(e) => setBidDollars(e.target.value)}
-                    className="w-full bg-transparent py-3 text-[14px] font-light text-[#ededed] outline-none"
+                    className="w-full bg-transparent py-3 text-[14px] font-light text-fog-100 outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[11px] font-light tracking-[0.15em] text-[#555]">RADIUS (MILES)</label>
+                <label className="text-[11px] font-light tracking-[0.15em] text-fog-500">RADIUS (MILES)</label>
                 <input
                   type="number"
                   min={1}
@@ -207,18 +207,18 @@ export default function AdsPage() {
                   step={1}
                   value={radiusMiles}
                   onChange={(e) => setRadiusMiles(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-[14px] font-light text-[#ededed] outline-none focus:border-[#333]"
+                  className="mt-2 w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none focus:border-night-600"
                 />
               </div>
             </div>
-            <p className="text-[11px] font-light text-[#444]">
+            <p className="text-[11px] font-light text-fog-600">
               Higher bids win more of the 6 daily slots when multiple merchants target the same customer.
             </p>
             {createError && <p className="text-[12px] font-light text-red-400">{createError}</p>}
             <button
               type="submit"
               disabled={createLoading || !headline.trim() || !body.trim()}
-              className="w-full rounded-xl border border-[#ededed] py-3 text-[12px] font-light tracking-[0.1em] text-[#ededed] transition-all hover:bg-[#ededed] hover:text-black disabled:opacity-40"
+              className="w-full rounded-xl border border-fog-100 py-3 text-[12px] font-light tracking-[0.1em] text-fog-100 transition-all hover:bg-fog-100 hover:text-black disabled:opacity-40"
             >
               {createLoading ? "Creating…" : "Launch campaign"}
             </button>
@@ -227,17 +227,17 @@ export default function AdsPage() {
 
         <div className="mt-6 space-y-3">
           {loading ? (
-            <p className="text-[13px] font-light text-[#444]">Loading…</p>
+            <p className="text-[13px] font-light text-fog-600">Loading…</p>
           ) : campaigns.length === 0 ? (
-            <p className="text-[13px] font-light text-[#444]">No campaigns yet.</p>
+            <p className="text-[13px] font-light text-fog-600">No campaigns yet.</p>
           ) : (
             campaigns.map((c) => (
-              <div key={c.id} className="rounded-2xl border border-[#1a1a1a] p-5">
+              <div key={c.id} className="rounded-2xl border border-night-700 p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-[14px] font-light text-[#ededed]">{c.headline}</p>
-                    <p className="mt-1 text-[12px] font-light text-[#666]">{c.body}</p>
-                    <p className="mt-2 text-[11px] font-light text-[#444]">
+                    <p className="text-[14px] font-light text-fog-100">{c.headline}</p>
+                    <p className="mt-1 text-[12px] font-light text-fog-500">{c.body}</p>
+                    <p className="mt-2 text-[11px] font-light text-fog-600">
                       {money(c.bid_cents)}/send &middot; {c.radius_miles}mi radius &middot; {c.sends_30d} sends
                       (30d) &middot; {money(c.spend_cents_30d)} spent
                     </p>
@@ -247,7 +247,7 @@ export default function AdsPage() {
                       className={`rounded-full border px-2.5 py-1 text-[10px] font-light tracking-[0.1em] ${
                         c.status === "active"
                           ? "border-emerald-900/40 text-emerald-400"
-                          : "border-[#2a2a2a] text-[#666]"
+                          : "border-night-600 text-fog-500"
                       }`}
                     >
                       {c.status === "active" ? "ACTIVE" : "PAUSED"}
@@ -255,13 +255,13 @@ export default function AdsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => toggleStatus(c)}
-                        className="text-[11px] font-light text-[#555] hover:text-[#ededed]"
+                        className="text-[11px] font-light text-fog-500 hover:text-fog-100"
                       >
                         {c.status === "active" ? "Pause" : "Resume"}
                       </button>
                       <button
                         onClick={() => deleteCampaign(c.id)}
-                        className="text-[11px] font-light text-[#555] hover:text-red-400"
+                        className="text-[11px] font-light text-fog-500 hover:text-red-400"
                       >
                         Delete
                       </button>

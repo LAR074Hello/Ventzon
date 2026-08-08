@@ -92,20 +92,22 @@ export const previewOverview = {
     "Tuesday evenings are your quietest window. A two-visit bonus could fill them.",
 };
 
-/** Customer list rows for the "regulars" act. */
+/** Customer list rows for the "regulars" act — statuses match the real
+ *  product's vocabulary (ACTIVE / REWARD READY / OPTED OUT). */
 export const previewCustomers = [
-  { id: "1", contact: "(555) 214-9902", visits: 12, lastVisit: "2d ago", status: "Loyal" },
-  { id: "2", contact: "(555) 042-7781", visits: 9, lastVisit: "3d ago", status: "Loyal" },
-  { id: "3", contact: "(555) 903-4418", visits: 8, lastVisit: "4d ago", status: "Regular" },
-  { id: "4", contact: "(555) 702-1134", visits: 6, lastVisit: "1d ago", status: "Regular" },
-  { id: "5", contact: "(555) 377-2955", visits: 2, lastVisit: "12d ago", status: "Lapsing" },
-  { id: "6", contact: "(555) 861-4073", visits: 1, lastVisit: "Today", status: "New" },
+  { id: "1", contact: "(555) 214-9902", visits: 8, lastVisit: "2d ago", status: "REWARD READY" },
+  { id: "2", contact: "(555) 042-7781", visits: 5, lastVisit: "3d ago", status: "ACTIVE" },
+  { id: "3", contact: "(555) 903-4418", visits: 4, lastVisit: "4d ago", status: "ACTIVE" },
+  { id: "4", contact: "(555) 702-1134", visits: 6, lastVisit: "1d ago", status: "ACTIVE" },
+  { id: "5", contact: "(555) 377-2955", visits: 1, lastVisit: "12d ago", status: "ACTIVE" },
+  { id: "6", contact: "(555) 861-4073", visits: 3, lastVisit: "Today", status: "OPTED OUT" },
 ] as const;
 
-/** Email campaign shown in the growth act. */
+/** The email campaign composer, as built — subject, message, and the
+ *  send action. No campaign performance exists in the product yet, so
+ *  the showcase does not claim any. */
 export const previewCampaign = {
-  name: "Tuesday-evening bonus",
-  sentTo: "428 returning customers",
-  opens: "41% open rate",
-  status: "Sent",
+  subject: "Double stamps this weekend",
+  message:
+    "Bring a friend this Saturday and both of you earn an extra stamp toward your reward.",
 };

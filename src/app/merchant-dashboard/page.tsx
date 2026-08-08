@@ -63,12 +63,11 @@ function statusChip(status: string) {
   const base =
     "rounded-full border px-2.5 py-0.5 text-[10px] font-light tracking-[0.12em]";
   const tones: Record<string, string> = {
-    Loyal: "border-white/20 text-fog-100",
-    Returning: "border-white/10 text-fog-300",
-    "At risk": "border-amber-700/40 text-amber-400/90",
-    New: "border-emerald-700/40 text-emerald-400",
+    "REWARD READY": "border-amber-700/40 text-amber-400/90",
+    ACTIVE: "border-white/10 text-fog-300",
+    "OPTED OUT": "border-white/5 text-fog-600",
   };
-  return `${base} ${tones[status] ?? tones.Returning}`;
+  return `${base} ${tones[status] ?? tones.ACTIVE}`;
 }
 
 
@@ -267,29 +266,30 @@ function CampaignCard() {
   return (
     <div className="rounded-[2rem] border border-white/5 bg-night-900/70 p-10 shadow-warm sm:p-14">
       <div className="flex items-center justify-between gap-4">
-        <DashEyebrow>Campaign</DashEyebrow>
-        <span className="rounded-full border border-emerald-800/50 px-3 py-1 text-[10px] tracking-[0.15em] text-emerald-400">
-          {previewCampaign.status}
+        <DashEyebrow>Email campaign</DashEyebrow>
+        <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] tracking-[0.15em] text-fog-300">
+          YOUR LIST
         </span>
       </div>
-      <p className="mt-4 font-display text-2xl font-light tracking-[0.01em] text-fog-100">
-        {previewCampaign.name}
-      </p>
-      <div className="mt-8 space-y-4">
-        <div className="flex items-baseline justify-between gap-4 border-b border-white/5 pb-4">
-          <span className="text-[11px] font-light uppercase tracking-[0.2em] text-fog-600">
-            Sent to
-          </span>
-          <span className="text-[13px] font-light text-fog-300">
-            {previewCampaign.sentTo}
-          </span>
+      <div className="mt-8 space-y-6">
+        <div>
+          <FieldLabel>Subject</FieldLabel>
+          <p className="mt-2 font-display text-2xl font-light tracking-[0.01em] text-fog-100">
+            {previewCampaign.subject}
+          </p>
         </div>
-        <div className="flex items-baseline justify-between gap-4">
-          <span className="text-[11px] font-light uppercase tracking-[0.2em] text-fog-600">
-            Opens
+        <div>
+          <FieldLabel>Message</FieldLabel>
+          <p className="mt-2 text-[14px] font-light leading-relaxed text-fog-300">
+            {previewCampaign.message}
+          </p>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-t border-white/5 pt-6">
+          <span className="text-[11px] font-light tracking-[0.15em] text-fog-600">
+            Emails only · No SMS
           </span>
-          <span className="text-[13px] font-light text-fog-300">
-            {previewCampaign.opens}
+          <span className="inline-flex items-center gap-2 rounded-full bg-maroon px-4 py-2 text-[11px] font-light tracking-[0.15em] text-white">
+            Send to your list
           </span>
         </div>
       </div>

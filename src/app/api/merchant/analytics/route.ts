@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     // Verify ownership
     const { data: shopRow } = await supabase
       .from("shops")
-      .select("id, created_at")
+      .select("id, created_at, is_paid")
       .eq("slug", shop)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -59,6 +59,13 @@ export async function GET(req: Request) {
     if (!shopRow) {
       return NextResponse.json(
         { error: "Shop not found or you don't own it" },
+        { status: 403 }
+      );
+    }
+
+    if (!shopRow?.is_paid) {
+      return NextResponse.json(
+        { error: "Subscription required" },
         { status: 403 }
       );
     }

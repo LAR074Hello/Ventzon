@@ -88,9 +88,9 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
   const displayLabel = formatLabel ? formatLabel(String(label)) : String(label);
   return (
-    <div className="rounded-lg border border-[#333] bg-[#111] px-3 py-2 shadow-lg">
-      <p className="text-[11px] font-light text-[#888]">{displayLabel}</p>
-      <p className="mt-0.5 text-[13px] font-light text-white">
+    <div className="rounded-lg border border-night-600 bg-night-800 px-3 py-2 shadow-lg">
+      <p className="text-[11px] font-light text-fog-300">{displayLabel}</p>
+      <p className="mt-0.5 text-[13px] font-light text-fog-100">
         {payload[0].value} {valueLabel}
       </p>
     </div>
@@ -132,7 +132,7 @@ function pickTickInterval(count: number): number {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-light tracking-[0.2em] text-[#555]">
+    <p className="text-[11px] font-light tracking-[0.2em] text-fog-500">
       {children}
     </p>
   );
@@ -228,10 +228,10 @@ export default function MerchantAnalytics({
       {/* Header + period selector */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">
+          <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
             ANALYTICS
           </p>
-          <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-white sm:text-2xl">
+          <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-fog-100 sm:text-2xl">
             Performance
           </h2>
         </div>
@@ -244,8 +244,8 @@ export default function MerchantAnalytics({
               onClick={() => setPeriod(p.value)}
               className={`rounded-full border px-3.5 py-1.5 text-[11px] font-light tracking-[0.05em] transition-all duration-300 ${
                 period === p.value
-                  ? "border-[#ededed] bg-[#ededed] text-black"
-                  : "border-[#1a1a1a] text-[#555] hover:border-[#333] hover:text-[#888]"
+                  ? "border-fog-100 bg-fog-100 text-black"
+                  : "border-night-700 text-fog-500 hover:border-night-600 hover:text-fog-300"
               }`}
             >
               {p.label}
@@ -263,91 +263,91 @@ export default function MerchantAnalytics({
 
       {/* ── Row 1: Summary stats ── */}
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>CHECK-INS</SectionLabel>
-          <p className="mt-2 text-3xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-3xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : totalCheckins.toLocaleString()}
             {!loading && <ChangeBadge pct={periodVsPrevious.checkins_pct_change} />}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">vs previous period</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">vs previous period</p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>REWARDS REDEEMED</SectionLabel>
-          <p className="mt-2 text-3xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-3xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : totalRewards.toLocaleString()}
           </p>
           {!loading && redemptionRate !== null && (
-            <p className="mt-1 text-[11px] font-light text-[#444]">{redemptionRate}% redemption rate</p>
+            <p className="mt-1 text-[11px] font-light text-fog-600">{redemptionRate}% redemption rate</p>
           )}
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>RETENTION RATE</SectionLabel>
-          <p className="mt-2 text-3xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-3xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : retentionRate !== null ? `${retentionRate}%` : "—"}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">Customers who returned</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">Customers who returned</p>
         </div>
       </div>
 
       {/* ── Row 2: Period customer stats ── */}
       <div className="mt-4 grid gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>NEW CUSTOMERS</SectionLabel>
-          <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-2xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : newVsReturning.new.toLocaleString()}
             {!loading && <ChangeBadge pct={periodVsPrevious.customers_pct_change} />}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">First visit in period</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">First visit in period</p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>RETURNING</SectionLabel>
-          <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-2xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : newVsReturning.returning.toLocaleString()}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">Repeat visitors</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">Repeat visitors</p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>AVG VISITS / CUSTOMER</SectionLabel>
-          <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-2xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : avgVisits !== null ? avgVisits : "—"}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">In period</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">In period</p>
         </div>
-        <div className="rounded-2xl border border-[#1a1a1a] px-6 py-5 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 px-6 py-5 transition-all duration-500 hover:border-night-600">
           <SectionLabel>AVG CUSTOMER LIFETIME</SectionLabel>
-          <p className="mt-2 text-2xl font-extralight tracking-tight text-white">
+          <p className="mt-2 text-2xl font-extralight tracking-tight text-fog-100">
             {loading ? "..." : avgLifetimeDays !== null ? `${avgLifetimeDays}d` : "—"}
           </p>
-          <p className="mt-1 text-[11px] font-light text-[#444]">First to last visit</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">First to last visit</p>
         </div>
       </div>
 
       {/* ── Row 3: Customer lifecycle ── */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {/* Lifecycle funnel */}
-        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <SectionLabel>CUSTOMER LIFECYCLE</SectionLabel>
-          <p className="mt-1 text-[11px] font-light text-[#444]">All-time — {totalUniqueCustomers} total customers</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">All-time — {totalUniqueCustomers} total customers</p>
           {loading ? (
-            <p className="mt-4 text-[13px] font-light text-[#333]">Loading...</p>
+            <p className="mt-4 text-[13px] font-light text-fog-600">Loading...</p>
           ) : totalUniqueCustomers === 0 ? (
-            <p className="mt-4 text-[13px] font-light text-[#444]">No data yet</p>
+            <p className="mt-4 text-[13px] font-light text-fog-600">No data yet</p>
           ) : (
             <div className="mt-4 space-y-3">
               {[
-                { label: "New", sub: "1 visit", count: lifecycle.new, color: "#555" },
-                { label: "Returning", sub: "2+ visits", count: lifecycle.returning, color: "#888" },
-                { label: "Loyal", sub: `Earned a reward`, count: loyalCount, color: "#ededed" },
+                { label: "New", sub: "1 visit", count: lifecycle.new, color: "#8a8078" },
+                { label: "Returning", sub: "2+ visits", count: lifecycle.returning, color: "#b3a9a0" },
+                { label: "Loyal", sub: `Earned a reward`, count: loyalCount, color: "#efe9e3" },
               ].map((stage) => (
                 <div key={stage.label}>
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[13px] font-light" style={{ color: stage.color }}>{stage.label}</span>
-                      <span className="ml-2 text-[11px] font-light text-[#444]">{stage.sub}</span>
+                      <span className="ml-2 text-[11px] font-light text-fog-600">{stage.sub}</span>
                     </div>
-                    <span className="text-[12px] font-light text-[#888]">{stage.count}</span>
+                    <span className="text-[12px] font-light text-fog-300">{stage.count}</span>
                   </div>
-                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a1a]">
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-night-700">
                     <div
                       className="h-full rounded-full transition-all duration-700"
                       style={{
@@ -363,40 +363,40 @@ export default function MerchantAnalytics({
         </div>
 
         {/* At-risk breakdown */}
-        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <SectionLabel>CUSTOMER HEALTH</SectionLabel>
-          <p className="mt-1 text-[11px] font-light text-[#444]">By recency of last visit</p>
+          <p className="mt-1 text-[11px] font-light text-fog-600">By recency of last visit</p>
           {loading ? (
-            <p className="mt-4 text-[13px] font-light text-[#333]">Loading...</p>
+            <p className="mt-4 text-[13px] font-light text-fog-600">Loading...</p>
           ) : (
             <div className="mt-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[13px] font-light text-[#ededed]">Active</span>
-                  <span className="ml-2 text-[11px] font-light text-[#444]">visited in last 14 days</span>
+                  <span className="text-[13px] font-light text-fog-100">Active</span>
+                  <span className="ml-2 text-[11px] font-light text-fog-600">visited in last 14 days</span>
                 </div>
-                <span className="text-[13px] font-light text-[#ededed]">
+                <span className="text-[13px] font-light text-fog-100">
                   {(totalUniqueCustomers - atRiskCount - lapsedCount - churnedCount).toLocaleString()}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[13px] font-light text-yellow-500">At risk</span>
-                  <span className="ml-2 text-[11px] font-light text-[#444]">14–29 days ago</span>
+                  <span className="ml-2 text-[11px] font-light text-fog-600">14–29 days ago</span>
                 </div>
                 <span className="text-[13px] font-light text-yellow-500">{atRiskCount.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[13px] font-light text-orange-500">Lapsed</span>
-                  <span className="ml-2 text-[11px] font-light text-[#444]">30–59 days ago</span>
+                  <span className="ml-2 text-[11px] font-light text-fog-600">30–59 days ago</span>
                 </div>
                 <span className="text-[13px] font-light text-orange-500">{lapsedCount.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[13px] font-light text-red-500">Churned</span>
-                  <span className="ml-2 text-[11px] font-light text-[#444]">60+ days ago</span>
+                  <span className="ml-2 text-[11px] font-light text-fog-600">60+ days ago</span>
                 </div>
                 <span className="text-[13px] font-light text-red-500">{churnedCount.toLocaleString()}</span>
               </div>
@@ -409,11 +409,11 @@ export default function MerchantAnalytics({
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
 
         {/* Day of week */}
-        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <div className="flex items-start justify-between">
             <SectionLabel>BUSIEST DAYS</SectionLabel>
             {!loading && peakDay && peakDay.count > 0 && (
-              <span className="rounded-full border border-[#2a2a2a] bg-[#111] px-2.5 py-1 text-[10px] font-light text-[#888]">
+              <span className="rounded-full border border-night-600 bg-night-800 px-2.5 py-1 text-[10px] font-light text-fog-300">
                 Peak: {peakDay.day}
               </span>
             )}
@@ -421,25 +421,25 @@ export default function MerchantAnalytics({
           <div className="mt-4 h-[200px]">
             {loading ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-[13px] font-light text-[#333]">Loading...</p>
+                <p className="text-[13px] font-light text-fog-600">Loading...</p>
               </div>
             ) : dayOfWeek.every((d) => d.count === 0) ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-[13px] font-light text-[#444]">No data yet</p>
+                <p className="text-[13px] font-light text-fog-600">No data yet</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dayOfWeek} barCategoryGap="20%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2321" vertical={false} />
                   <XAxis
                     dataKey="day"
-                    tick={{ fill: "#555", fontSize: 10, fontWeight: 300 }}
-                    axisLine={{ stroke: "#1a1a1a" }}
+                    tick={{ fill: "#8a8078", fontSize: 10, fontWeight: 300 }}
+                    axisLine={{ stroke: "#2a2321" }}
                     tickLine={false}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fill: "#555", fontSize: 10, fontWeight: 300 }}
+                    tick={{ fill: "#8a8078", fontSize: 10, fontWeight: 300 }}
                     axisLine={false}
                     tickLine={false}
                     width={28}
@@ -449,7 +449,7 @@ export default function MerchantAnalytics({
                     {dayOfWeek.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={peakDay && entry.day === peakDay.day && entry.count > 0 ? "#ededed" : "#2a2a2a"}
+                        fill={peakDay && entry.day === peakDay.day && entry.count > 0 ? "#efe9e3" : "#2a2a2a"}
                       />
                     ))}
                   </Bar>
@@ -460,34 +460,34 @@ export default function MerchantAnalytics({
         </div>
 
         {/* Time of day blocks */}
-        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <div className="flex items-start justify-between">
             <SectionLabel>TIME OF DAY</SectionLabel>
             {!loading && peakBlock && peakBlock.count > 0 && (
-              <span className="rounded-full border border-[#2a2a2a] bg-[#111] px-2.5 py-1 text-[10px] font-light text-[#888]">
+              <span className="rounded-full border border-night-600 bg-night-800 px-2.5 py-1 text-[10px] font-light text-fog-300">
                 Peak: {peakBlock.label}
               </span>
             )}
           </div>
           <div className="mt-5 space-y-3">
             {loading ? (
-              <p className="text-[13px] font-light text-[#333]">Loading...</p>
+              <p className="text-[13px] font-light text-fog-600">Loading...</p>
             ) : timeBlocks.every((b) => b.count === 0) ? (
-              <p className="text-[13px] font-light text-[#444]">No data yet</p>
+              <p className="text-[13px] font-light text-fog-600">No data yet</p>
             ) : (() => {
               const maxCount = Math.max(...timeBlocks.map((b) => b.count), 1);
               return timeBlocks.map((block) => (
                 <div key={block.label}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[13px] font-light text-[#ededed]">{block.label}</span>
-                      <span className="ml-2 text-[11px] font-light text-[#444]">{block.sublabel}</span>
+                      <span className="text-[13px] font-light text-fog-100">{block.label}</span>
+                      <span className="ml-2 text-[11px] font-light text-fog-600">{block.sublabel}</span>
                     </div>
-                    <span className="text-[12px] font-light text-[#888]">{block.count}</span>
+                    <span className="text-[12px] font-light text-fog-300">{block.count}</span>
                   </div>
-                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#1a1a1a]">
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-night-700">
                     <div
-                      className="h-full rounded-full bg-[#ededed] transition-all duration-700"
+                      className="h-full rounded-full bg-fog-100 transition-all duration-700"
                       style={{ width: `${Math.round((block.count / maxCount) * 100)}%` }}
                     />
                   </div>
@@ -501,32 +501,32 @@ export default function MerchantAnalytics({
       {/* ── Row 5: Time series charts ── */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* Check-ins line chart */}
-        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <SectionLabel>CUSTOMER CHECK-INS</SectionLabel>
           <div className="mt-4 h-[240px]">
             {loading ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-[13px] font-light text-[#333]">Loading...</p>
+                <p className="text-[13px] font-light text-fog-600">Loading...</p>
               </div>
             ) : checkins.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-[13px] font-light text-[#444]">No data yet</p>
+                <p className="text-[13px] font-light text-fog-600">No data yet</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={checkins}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2321" vertical={false} />
                   <XAxis
                     dataKey="date"
                     tickFormatter={formatTick}
                     interval={tickInterval}
-                    tick={{ fill: "#555", fontSize: 10, fontWeight: 300 }}
-                    axisLine={{ stroke: "#1a1a1a" }}
+                    tick={{ fill: "#8a8078", fontSize: 10, fontWeight: 300 }}
+                    axisLine={{ stroke: "#2a2321" }}
                     tickLine={false}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fill: "#555", fontSize: 10, fontWeight: 300 }}
+                    tick={{ fill: "#8a8078", fontSize: 10, fontWeight: 300 }}
                     axisLine={false}
                     tickLine={false}
                     width={30}
@@ -537,10 +537,10 @@ export default function MerchantAnalytics({
                   <Line
                     type="monotone"
                     dataKey="count"
-                    stroke="#ededed"
+                    stroke="#efe9e3"
                     strokeWidth={1.5}
                     dot={false}
-                    activeDot={{ r: 4, fill: "#ededed", stroke: "#000", strokeWidth: 2 }}
+                    activeDot={{ r: 4, fill: "#efe9e3", stroke: "#000", strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -549,32 +549,32 @@ export default function MerchantAnalytics({
         </div>
 
         {/* Rewards bar chart */}
-        <div className="rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <SectionLabel>REWARDS REDEEMED</SectionLabel>
           <div className="mt-4 h-[240px]">
             {loading ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-[13px] font-light text-[#333]">Loading...</p>
+                <p className="text-[13px] font-light text-fog-600">Loading...</p>
               </div>
             ) : rewards.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-[13px] font-light text-[#444]">No data yet</p>
+                <p className="text-[13px] font-light text-fog-600">No data yet</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rewards}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2321" vertical={false} />
                   <XAxis
                     dataKey="date"
                     tickFormatter={formatTick}
                     interval={tickInterval}
-                    tick={{ fill: "#555", fontSize: 10, fontWeight: 300 }}
-                    axisLine={{ stroke: "#1a1a1a" }}
+                    tick={{ fill: "#8a8078", fontSize: 10, fontWeight: 300 }}
+                    axisLine={{ stroke: "#2a2321" }}
                     tickLine={false}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fill: "#555", fontSize: 10, fontWeight: 300 }}
+                    tick={{ fill: "#8a8078", fontSize: 10, fontWeight: 300 }}
                     axisLine={false}
                     tickLine={false}
                     width={30}
@@ -584,7 +584,7 @@ export default function MerchantAnalytics({
                   />
                   <Bar
                     dataKey="count"
-                    fill="#ededed"
+                    fill="#efe9e3"
                     radius={[3, 3, 0, 0]}
                     maxBarSize={24}
                   />
@@ -597,18 +597,18 @@ export default function MerchantAnalytics({
 
       {/* ── Top customers ── */}
       {!loading && topCustomers.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-[#1a1a1a] p-6 transition-all duration-500 hover:border-[#333]">
+        <div className="mt-6 rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
           <SectionLabel>TOP CUSTOMERS</SectionLabel>
           <div className="mt-4 space-y-2">
             {topCustomers.map((c, i) => (
               <div key={c.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-5 text-[11px] font-light text-[#444]">{i + 1}</span>
-                  <span className="font-mono text-[13px] font-light text-[#888]">
+                  <span className="w-5 text-[11px] font-light text-fog-600">{i + 1}</span>
+                  <span className="font-mono text-[13px] font-light text-fog-300">
                     {c.phone || c.email || "—"}
                   </span>
                 </div>
-                <span className="text-[13px] font-light text-[#ededed]">
+                <span className="text-[13px] font-light text-fog-100">
                   {c.visits} visits
                 </span>
               </div>

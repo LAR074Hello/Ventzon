@@ -19,8 +19,11 @@ export async function GET(req: Request) {
     const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
     // Verify ownership
-    const { data: shop } = await supabase.from("shops").select("slug").eq("slug", shopSlug).eq("user_id", user.id).maybeSingle();
+    const { data: shop } = await supabase.from("shops").select("slug, is_paid").eq("slug", shopSlug).eq("user_id", user.id).maybeSingle();
     if (!shop) return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+    if (!shop?.is_paid) {
+      return NextResponse.json({ error: "Subscription required" }, { status: 403 });
+    }
 
     const format = url.searchParams.get("format"); // "csv" for full export
 
