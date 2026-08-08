@@ -70,6 +70,16 @@ function statusChip(status: string) {
   return `${base} ${tones[status] ?? tones.ACTIVE}`;
 }
 
+/* The small recurring label under each mockup: the numbers on this page
+   are sample data, not a real customer's results. */
+function ExampleNote() {
+  return (
+    <p className="mt-5 text-center text-[10px] font-light tracking-[0.3em] text-fog-600">
+      EXAMPLE SCREEN · SAMPLE DATA
+    </p>
+  );
+}
+
 
 /* ── Hero mockup — the dashboard top ── */
 function HeroDashboard() {
@@ -85,9 +95,8 @@ function HeroDashboard() {
             {previewOverview.meta}
           </p>
         </div>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-800/50 px-3 py-1 text-[10px] tracking-[0.15em] text-emerald-400">
-          <span className="h-1 w-1 rounded-full bg-emerald-400" />
-          LIVE
+        <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-[10px] tracking-[0.15em] text-fog-300">
+          EXAMPLE
         </span>
       </div>
 
@@ -248,7 +257,7 @@ function GrowthBand() {
   return (
     <div className="rounded-[2rem] border border-white/5 bg-night-900/70 p-10 shadow-warm sm:p-14">
       <DashEyebrow>Last 30 days</DashEyebrow>
-      <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid gap-x-12 gap-y-10 sm:grid-cols-2">
         {stats.map((s) => (
           <div key={s.value}>
             <p className="text-4xl font-extralight tracking-tight text-fog-100 sm:text-5xl">
@@ -307,7 +316,7 @@ export default function MerchantDashboardPage() {
 
         <div className="relative z-10 mx-auto max-w-3xl text-center">
           <p className="animate-fade-in anim-delay-200 text-[11px] font-light tracking-[0.5em] text-fog-300 opacity-0">
-            MERCHANT DASHBOARD
+            EXAMPLE SCREENS
           </p>
           <h1 className="animate-fade-in anim-delay-400 mt-8 font-display text-4xl font-light tracking-[0.01em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
             Your shop, in numbers.
@@ -340,8 +349,9 @@ export default function MerchantDashboardPage() {
               <HeroDashboard />
             </LaptopFrame>
           </Parallax>
-          <p className="mt-6 text-center text-[11px] font-light tracking-[0.25em] text-fog-600">
-            NORTHSIDE COFFEE — LIVE
+          <p className="mx-auto mt-6 max-w-xl text-center text-[12px] font-light leading-relaxed text-fog-600">
+            Example screen — sample data shown. Once your shop is live,
+            this dashboard shows your own numbers.
           </p>
         </div>
       </section>
@@ -370,6 +380,7 @@ export default function MerchantDashboardPage() {
                 <AnalyticsScreen />
               </LaptopFrame>
             </Parallax>
+            <ExampleNote />
           </ScrollReveal>
 
           {/* Close-up stats */}
@@ -419,6 +430,7 @@ export default function MerchantDashboardPage() {
             <QRPanel />
           </ScrollReveal>
         </div>
+        <ExampleNote />
       </section>
 
       {/* ══ ACT III — turn visitors into regulars ══ */}
@@ -441,6 +453,7 @@ export default function MerchantDashboardPage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(90,30,36,0.12),transparent)]" />
           <ScrollReveal delay={2} className="relative z-10 mx-auto max-w-4xl">
             <CustomersPanel />
+            <ExampleNote />
           </ScrollReveal>
         </div>
       </section>
@@ -468,6 +481,7 @@ export default function MerchantDashboardPage() {
             <CampaignCard />
           </ScrollReveal>
         </div>
+        <ExampleNote />
       </section>
 
       {/* ══ CTA ══ */}

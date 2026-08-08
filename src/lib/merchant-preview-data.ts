@@ -1,10 +1,11 @@
 /**
- * Realistic showcase data for the merchant-dashboard marketing page.
- *
- * Mirrors the exact shapes used by the real product — MerchantAnalytics
+ * Sample data for the merchant-dashboard marketing page — everything
+ * here is an EXAMPLE SCREEN, clearly labeled as such on the page. The
+ * shapes mirror the real product — MerchantAnalytics
  * (src/components/MerchantAnalytics.tsx) and the shop dashboard
  * (src/app/merchant/[shop]/page.tsx) — so the showcase is the product,
- * not a fictional concept. A busy Brooklyn coffee shop, 30 days.
+ * not a fictional concept. The shop, its numbers, and its metrics are
+ * illustrative; none of them belong to a real business.
  */
 
 export type PreviewPoint = { date: string; count: number };
