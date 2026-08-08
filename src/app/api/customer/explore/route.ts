@@ -6,7 +6,7 @@ import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/customer/explore[?lat=&lng=][&limit=]
+ * GET /api/customer/explore[?lat=&lng=][&city=][&limit=]
  *
  * PLACES ARE THE SUBJECT. This used to start from `shop_settings` filtered to
  * rows with a non-empty `deal_title` — that is, only merchants running a live
@@ -25,6 +25,10 @@ export async function GET(req: Request) {
     const lng = parseFloat(url.searchParams.get("lng") ?? "");
     const hasLoc = Number.isFinite(lat) && Number.isFinite(lng);
     const limit = Math.min(120, Math.max(10, parseInt(url.searchParams.get("limit") ?? "60", 10) || 60));
+    // ?city= — the NEARBY scope. Restricts the result to one imported city so
+    // the tab can lead with places a user can actually walk to rather than the
+    // nearest place in another state.
+    const city = url.searchParams.get("city")?.trim() || null;
 
     const supabase = createClient(
       process.env.SUPABASE_URL!,
@@ -66,7 +70,10 @@ export async function GET(req: Request) {
     const PLACE_COLS =
       "id, slug, name, neighborhood, city, category, latitude, longitude, photos, verification_tier";
 
-    const [{ data: livePlaces }, { data: restPlaces, error }] = await Promise.all([
+    // Seed: the places people actually posted about, so a wall of
+    // never-tagged places is never the first thing anyone sees. City-scoped
+    // when asked.
+    const baseSeed =
       seedIds.length || seedSlugs.length
         ? supabase
             .from("places")
@@ -79,15 +86,26 @@ export async function GET(req: Request) {
                 .filter(Boolean)
                 .join(",")
             )
-            .limit(120)
-        : Promise.resolve({ data: [] as Record<string, unknown>[] }),
-      supabase
+        : null;
+    const seedQuery = baseSeed
+      ? (city ? baseSeed.eq("city", city) : baseSeed).limit(120)
+      : Promise.resolve({ data: [] as Record<string, unknown>[] });
+
+    // The rest of the table (or the whole city), fetched then sorted below —
+    // distance when we know where you are, activity otherwise.
+    const restQuery = (() => {
+      let q = supabase
         .from("places")
         .select(PLACE_COLS)
         .not("name", "is", null)
-        .neq("name", "")
-        .order("slug", { ascending: true })
-        .limit(fetchCount),
+        .neq("name", "");
+      if (city) q = q.eq("city", city);
+      return q.order("slug", { ascending: true }).limit(fetchCount);
+    })();
+
+    const [{ data: livePlaces }, { data: restPlaces, error }] = await Promise.all([
+      seedQuery,
+      restQuery,
     ]);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

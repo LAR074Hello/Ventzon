@@ -169,11 +169,25 @@ function timeAgo(iso: string) {
 }
 
 /**
- * The Explore tab's social feed. Every post is tied to a real business
- * (enforced server-side in /api/customer/feed) so browsing always has a
- * one-tap path to a real visit via the Visit & Earn chip.
+ * The social feed. Every post is tied to a real business (enforced
+ * server-side in /api/customer/feed) so browsing always has a one-tap path
+ * to a real visit via the Visit & Earn chip.
+ *
+ * `city` narrows the feed to one city — the NEARBY scope. Without it the
+ * feed is global (EVERYWHERE). Actions (like, comment, follow) are the same
+ * in either scope; only what is shown changes.
  */
-export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: number } | null }) {
+export default function SocialFeed({
+  userLoc,
+  city,
+  onBrowseEverywhere,
+}: {
+  userLoc: { lat: number; lng: number } | null;
+  /** NEARBY scope — only posts at places in this city. */
+  city?: string | null;
+  /** CTA for the empty state: jump to the EVERYWHERE tab. */
+  onBrowseEverywhere?: () => void;
+}) {
   const router = useRouter();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,6 +203,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
         qs.set("lat", String(userLoc.lat));
         qs.set("lng", String(userLoc.lng));
       }
+      if (city) qs.set("city", city);
       qs.set("offset", String(offset));
       const res = await fetch(`/api/customer/feed?${qs.toString()}`);
       if (!res.ok) return;
@@ -197,7 +212,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
       setHasMore(Boolean(d.has_more));
       offsetRef.current = d.next_offset ?? offset;
     },
-    [userLoc]
+    [userLoc, city]
   );
 
   useEffect(() => {
@@ -264,6 +279,24 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
   }
 
   if (posts.length === 0) {
+    // NEARBY empty = an invitation out, not a dead end. Someone in a city
+    // with no posts yet (or no places at all — Philadelphia, Baltimore) is
+    // pointed at EVERYWHERE, which always has places even when it has almost
+    // no posts.
+    if (city) {
+      return (
+        <div>
+          <EmptyState
+            icon={Compass}
+            eyebrow="Near you"
+            title="No one's posted here yet"
+            body={`Nothing from ${city} yet — be the first, or see what people are sharing in every other city.`}
+            primary={{ label: "See what's everywhere", onClick: onBrowseEverywhere ?? (() => {}) }}
+            secondary={{ label: "Explore the map", onClick: () => router.push("/customer/map") }}
+          />
+        </div>
+      );
+    }
     return (
       <div>
         <SuggestionRow userLoc={userLoc} />
@@ -284,7 +317,7 @@ export default function SocialFeed({ userLoc }: { userLoc: { lat: number; lng: n
     // matching Instagram web). It does not bind at 375px, so mobile stays full-bleed.
     <div className="mx-auto max-w-[510px] space-y-7 px-5 pb-4">
       {/* A sparse feed gets suggestions to follow — the new-user fix. */}
-      {posts.length < 3 && (
+      {posts.length < 3 && !city && (
         <div className="-mx-5">
           <SuggestionRow userLoc={userLoc} />
         </div>

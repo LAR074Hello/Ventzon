@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 // of which exists yet. Do not flip this without both.
 const COMMUNITY_FEED_ENABLED = false;
 
-// GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…][&offset=…&limit=…]
+// GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…][&city=…][&offset=…&limit=…]
 //
 // The single source for post feeds — the Explore social feed, and (via
 // ?shop_slug=) the post grid on a business profile. Only business-tied
@@ -33,6 +33,14 @@ export async function GET(req: Request) {
     // Over-fetch so post-query filtering (blocks, non-creator authors)
     // can't leave a short page that looks like the end of the feed.
     const fetchWindow = offset + limit * 3;
+    // ?city= — the NEARBY scope. The feed is global otherwise; a city filter
+    // narrows posts to places whose imported city matches (place_id anchor)
+    // or whose merchant account resolves there (shop_slug anchor).
+    const city = url.searchParams.get("city")?.trim() || null;
+    // A city filter is applied AFTER the fetch (a post anchors either way, so
+    // it is not a single WHERE clause) — pull the full bounded window so a
+    // sparse city is not starved by the global recency head.
+    const fetchCap = city ? 300 : Math.min(fetchWindow + limit, 300);
 
     const admin = createClient(
       process.env.SUPABASE_URL!,
@@ -57,7 +65,7 @@ export async function GET(req: Request) {
       // Requiring shop_slug here hid every post made at an OSM place.
       .or("shop_slug.not.is.null,place_id.not.is.null")
       .order("created_at", { ascending: false })
-      .limit(Math.min(fetchWindow + limit, 300));
+      .limit(fetchCap);
     if (shopFilter) query = query.eq("shop_slug", shopFilter);
     if (COMMUNITY_FEED_ENABLED) {
       // Intentionally unreachable — see the constant above.
@@ -67,9 +75,32 @@ export async function GET(req: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const blocked = await getBlockedSet(admin, viewerEmail);
     const banned = await publiclyExcludedAuthors(admin);
-    const postRows = (rawPosts ?? []).filter(
+    let postRows = (rawPosts ?? []).filter(
       (p) => !blocked.has(p.author_email) && !banned.has(p.author_email)
     );
+
+    if (city) {
+      // Resolve the city to its place anchors, then keep only posts whose
+      // place is in it. A city with no imported places (e.g. Philadelphia)
+      // is a KNOWN EMPTY state — the NEARBY tab invites browsing elsewhere
+      // rather than silently falling through to the global feed.
+      const { data: cityPlaces } = await admin
+        .from("places")
+        .select("id, slug")
+        .eq("city", city)
+        .limit(2000);
+      if (!cityPlaces || cityPlaces.length === 0) {
+        return NextResponse.json({ posts: [], has_more: false, next_offset: offset });
+      }
+      const cityIds = new Set(cityPlaces.map((p) => p.id));
+      const citySlugs = new Set(cityPlaces.map((p) => p.slug));
+      postRows = postRows.filter(
+        (p) =>
+          (p.place_id && cityIds.has(p.place_id as string)) ||
+          (p.shop_slug && citySlugs.has(p.shop_slug as string))
+      );
+    }
+
     if (postRows.length === 0) return NextResponse.json({ posts: [] });
 
     // Authors must be public creators — a profile that turned the creator
