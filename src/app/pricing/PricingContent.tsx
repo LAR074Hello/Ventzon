@@ -65,6 +65,10 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
   const [shop, setShop] = useState(shopFromQuery);
   const [shopName, setShopName] = useState<string | null>(null);
   const [loadingShop, setLoadingShop] = useState(!shopFromQuery);
+  // A signed-in merchant is the only visitor who gets the shop context
+  // bar (their shop, or a "create a shop" prompt). Anonymous visitors see
+  // neither that bar nor any loading state.
+  const [knownUser, setKnownUser] = useState(false);
   const [loading, setLoading] = useState<"monthly" | "yearly" | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [error, setError] = useState("");
@@ -83,6 +87,8 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
           setLoadingShop(false);
           return;
         }
+
+        setKnownUser(true);
 
         const { data: shops } = await supabase
           .from("shops")
@@ -201,21 +207,21 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
 
       {/* ============================================================
           SHOP CONTEXT BAR
+          Only meaningful for a signed-in merchant (their shop, or a
+          "create a shop" prompt) or a ?shop= slug in the URL. Anonymous
+          visitors get a clean page — no "Finding your shop…" flash, no
+          "no shop found" prompt.
           ============================================================ */}
       <section className="px-8">
         <div className="mx-auto max-w-lg">
-          {loadingShop ? (
-            <div className="animate-fade-in rounded-2xl border border-night-700 px-6 py-4 text-center text-[13px] font-light text-fog-500">
-              Finding your shop&hellip;
-            </div>
-          ) : hasShop ? (
+          {loadingShop ? null : hasShop ? (
             <div className="animate-fade-in rounded-2xl border border-night-700 px-6 py-4 text-center">
               <span className="text-[13px] font-light text-fog-500">Subscribing for </span>
               <span className="text-[13px] font-normal tracking-[0.05em] text-fog-100">
                 {shopName || shop}
               </span>
             </div>
-          ) : (
+          ) : knownUser ? (
             <div className="animate-fade-in rounded-2xl border border-night-700 px-8 py-8 text-center">
               <p className="text-[15px] font-light text-fog-300">
                 No shop found. Create your shop first, then come back to pick a plan.
@@ -228,7 +234,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
                 <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
               </a>
             </div>
-          )}
+          ) : null}
         </div>
       </section>
 
@@ -438,7 +444,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
             </div>
 
             {[
-              { feature: "Monthly fee", ventzon: "$25", square: "$45–$105", punch: "$0" },
+              { feature: "Monthly fee", ventzon: "$25", square: "paid", punch: "$0" },
               { feature: "Per-redemption fees", ventzon: "$0", square: "included", punch: "$0" },
               { feature: "Customer data & analytics", ventzon: true, square: true, punch: false },
               { feature: "Digital stamp tracking", ventzon: true, square: true, punch: false },
@@ -456,6 +462,9 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
               </ScrollReveal>
             ))}
           </div>
+          <p className="mt-6 text-center text-[11px] font-light text-fog-600">
+            Competitor plans and pricing change &mdash; check each vendor&rsquo;s current site.
+          </p>
         </div>
       </section>
 
@@ -475,6 +484,9 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
               Real-time stats and analytics charts &mdash; all in one place.
             </p>
+            <p className="mt-3 text-[11px] font-light tracking-[0.25em] text-fog-600">
+              EXAMPLE SCREEN &middot; SAMPLE DATA
+            </p>
           </ScrollReveal>
 
           <ScrollReveal>
@@ -484,8 +496,8 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
                   <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">MERCHANT DASHBOARD</p>
                   <p className="mt-2 text-xl font-light tracking-[-0.01em] text-white sm:text-2xl">Sunrise Bakery</p>
                 </div>
-                <span className="rounded-full border border-emerald-800/50 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-emerald-400">
-                  Active
+                <span className="rounded-full border border-white/10 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-300">
+                  SAMPLE DATA
                 </span>
               </div>
 

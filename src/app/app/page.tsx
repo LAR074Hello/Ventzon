@@ -292,6 +292,9 @@ export default function CustomerAppPage() {
                 ))}
               </div>
             </div>
+            <p className="mt-4 text-center text-[10px] font-light tracking-[0.3em] text-fog-600">
+              EXAMPLE SCREEN &middot; SAMPLE DATA
+            </p>
           </ScrollReveal>
 
           <ScrollReveal className="mt-10 text-center">
@@ -359,6 +362,9 @@ export default function CustomerAppPage() {
                   </div>
                 </div>
               </div>
+              <p className="mt-4 text-[10px] font-light tracking-[0.3em] text-fog-600">
+                EXAMPLE SCREEN &middot; SAMPLE DATA
+              </p>
             </ScrollReveal>
           </div>
         </div>
