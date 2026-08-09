@@ -2,6 +2,16 @@
 // Set ONESIGNAL_APP_ID and ONESIGNAL_API_KEY in environment variables.
 // Docs: https://documentation.onesignal.com/reference/create-notification
 
+let warnedMissingConfig = false;
+function warnMissingConfig() {
+  if (warnedMissingConfig) return;
+  warnedMissingConfig = true;
+  // One-time, name-only - never log the key values.
+  console.warn(
+    "[push] ONESIGNAL_APP_ID or ONESIGNAL_API_KEY is not set - push delivery is disabled."
+  );
+}
+
 export async function sendPushToUser(
   userId: string, // Supabase auth user id stored as OneSignal external_id
   title: string,
@@ -10,7 +20,10 @@ export async function sendPushToUser(
 ): Promise<void> {
   const appId = process.env.ONESIGNAL_APP_ID;
   const apiKey = process.env.ONESIGNAL_API_KEY;
-  if (!appId || !apiKey) return; // silently skip if not configured
+  if (!appId || !apiKey) {
+    warnMissingConfig();
+    return;
+  }
 
   await fetch("https://onesignal.com/api/v1/notifications", {
     method: "POST",
@@ -45,7 +58,11 @@ export async function sendPushToDeviceTokens(
 ): Promise<{ delivered: number }> {
   const appId = process.env.ONESIGNAL_APP_ID;
   const apiKey = process.env.ONESIGNAL_API_KEY;
-  if (!appId || !apiKey || tokens.length === 0) return { delivered: 0 };
+  if (!appId || !apiKey) {
+    if (tokens.length > 0) warnMissingConfig();
+    return { delivered: 0 };
+  }
+  if (tokens.length === 0) return { delivered: 0 };
 
   // Partition by platform so iOS APNs tokens and Android FCM tokens go
   // to the correct OneSignal field (default legacy tokens to iOS).

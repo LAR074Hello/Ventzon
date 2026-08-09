@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { checkPushPermission, requestPushPermission } from "@/lib/push-client";
 import { stripImageMetadata } from "@/lib/strip-exif";
 import {
   LogOut, User, ChevronRight, Trophy, Share2, Bell,
@@ -131,7 +132,7 @@ export default function ProfilePage() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [notifEnabled, setNotifEnabled] = useState(true);
+  const [notifEnabled, setNotifEnabled] = useState(false);
   const [emailNotif, setEmailNotif] = useState(true);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -373,16 +374,23 @@ export default function ProfilePage() {
     } catch {}
   }
 
+  useEffect(() => {
+    // The toggle reflects the real OS permission state, not an assumption.
+    checkPushPermission().then((p) => setNotifEnabled(p === "granted"));
+  }, []);
+
   async function togglePushNotifications() {
     try {
       const { Capacitor } = await import("@capacitor/core");
       if (!Capacitor.isNativePlatform()) return;
       if (!notifEnabled) {
-        const { PushNotifications } = await import("@capacitor/push-notifications");
-        await PushNotifications.requestPermissions();
-        await PushNotifications.register();
-        setNotifEnabled(true);
+        // Explicit opt-in: request permission, register only on grant. A
+        // prior denial cannot be re-prompted by iOS, so the toggle stays off.
+        const ok = await requestPushPermission();
+        setNotifEnabled(ok);
       } else {
+        // iOS has no programmatic revoke; the toggle reflects the OS state,
+        // which the user changes in Settings.
         setNotifEnabled(false);
       }
     } catch {}

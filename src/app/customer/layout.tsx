@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Home, Trophy, User, ScanLine, Map, Bell, Plus } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { checkPushPermission, registerDevicePush } from "@/lib/push-client";
 
 // Home (Discover) · Map · [scan] · Rewards · Notifications · Profile
 const tabs = [
@@ -61,22 +62,11 @@ async function applyNativeStatusBarStyle() {
   }
 }
 
-async function registerPushNotifications(userId: string) {
+async function registerPushNotifications() {
   try {
-    const { Capacitor } = await import("@capacitor/core");
-    if (!Capacitor.isNativePlatform()) return;
-    const { PushNotifications } = await import("@capacitor/push-notifications");
-    const perm = await PushNotifications.checkPermissions();
-    if (perm.receive !== "granted") return;
-    const platform = Capacitor.getPlatform(); // "ios" | "android"
-    await PushNotifications.register();
-    PushNotifications.addListener("registration", async ({ value: token }) => {
-      await fetch("/api/customer/device-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, platform, user_id: userId }),
-      });
-    });
+    if ((await checkPushPermission()) === "granted") {
+      await registerDevicePush();
+    }
   } catch {}
 }
 
@@ -101,7 +91,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
-        registerPushNotifications(data.session.user.id);
+        registerPushNotifications();
         // Load badge count
         fetch("/api/customer/memberships").then(r => r.json()).then(d => {
           const memberships = d.memberships ?? [];

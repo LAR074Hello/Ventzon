@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { checkPushPermission, registerDevicePush, requestPushPermission } from "@/lib/push-client";
 import { Check, Compass, Trophy, WifiOff, ChevronRight, Stamp, Award, Medal } from "lucide-react";
 
 type Passport = {
@@ -44,6 +45,7 @@ async function requestReview() {
 }
 
 const REVIEW_KEY = "ventzon_review_requested";
+const PUSH_ASKED_KEY = "ventzon_push_asked";
 
 function CardSkeleton() {
   return (
@@ -103,6 +105,18 @@ export default function HomePage() {
       if (hasReward && !localStorage.getItem(REVIEW_KEY)) {
         localStorage.setItem(REVIEW_KEY, "1");
         setTimeout(requestReview, 1500);
+      }
+      // First reward earned is the clearest reason to accept notifications.
+      // Ask once, after the review link has a moment; a prior grant just
+      // registers, and a denial is left alone.
+      if (hasReward && !localStorage.getItem(PUSH_ASKED_KEY)) {
+        localStorage.setItem(PUSH_ASKED_KEY, "1");
+        setTimeout(() => {
+          checkPushPermission().then((p) => {
+            if (p === "prompt" || p === "prompt-with-rationale") requestPushPermission();
+            else if (p === "granted") registerDevicePush();
+          });
+        }, 2500);
       }
       return list;
     } catch {
