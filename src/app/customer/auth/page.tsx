@@ -222,15 +222,20 @@ function AuthForm() {
   }
 
   // Escape hatch: the tab bar is hidden here and this button is the only exit.
-  // Honor the redirect only when it lands on a public surface - Home,
-  // Notifications, and Profile re-loop into auth on mount, so those fall
-  // back to Explore.
+  // Honor the redirect only when it is an internal /customer/ path that lands
+  // on a public surface - Home, Notifications, and Profile re-loop into auth
+  // on mount, so those (and any off-origin value) fall back to Explore.
   function dismiss() {
     const raw = searchParams?.get("redirect") ?? "/customer/explore";
+    // Gate on the path only: profile appends ?compose=1 / ?tab=... to its
+    // redirect, and a query string would slip past the checks below.
+    const path = raw.split("?")[0];
     const gated = ["/customer/home", "/customer/notifications", "/customer/profile"];
-    const target = gated.some((g) => raw === g || raw.startsWith(g + "/"))
-      ? "/customer/explore"
-      : raw;
+    const target =
+      path.startsWith("/customer/") &&
+      !gated.some((g) => path === g || path.startsWith(g + "/"))
+        ? path
+        : "/customer/explore";
     router.push(target);
   }
 
@@ -238,7 +243,7 @@ function AuthForm() {
     <div className="flex min-h-screen flex-col bg-surface" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       {/* Dismiss - top-left, an escape hatch not a co-equal action. Sign-in
           stays the obvious primary. */}
-      <div className="flex items-center justify-between px-4 pt-4">
+      <div className="flex items-center px-4 pt-4">
         <button
           onClick={dismiss}
           aria-label="Close"
