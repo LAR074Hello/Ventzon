@@ -71,7 +71,7 @@ export default function ProfilePage() {
         // Post, signed up, and came back landed on their profile with no
         // composer and no idea what they were meant to do.
         const back = `/customer/profile${window.location.search}`;
-        router.replace(`/customer/auth?redirect=${encodeURIComponent(back)}`);
+        router.push(`/customer/auth?redirect=${encodeURIComponent(back)}`);
         return;
       }
       setUser(data.session.user);

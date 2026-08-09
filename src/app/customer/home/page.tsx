@@ -92,7 +92,7 @@ export default function HomePage() {
     try {
       const res = await fetch("/api/customer/memberships");
       if (res.status === 401) {
-        router.replace("/customer/auth?redirect=/customer/home");
+        router.push("/customer/auth?redirect=/customer/home");
         return [];
       }
       const data = await res.json();
@@ -114,7 +114,7 @@ export default function HomePage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
-        router.replace("/customer/auth?redirect=/customer/home");
+        router.push("/customer/auth?redirect=/customer/home");
         return;
       }
       setUser(data.session.user);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Suspense } from "react";
 import { Capacitor } from "@capacitor/core";
@@ -220,8 +221,33 @@ function AuthForm() {
     }
   }
 
+  // Escape hatch: the tab bar is hidden here and this button is the only exit.
+  // Honor the redirect only when it lands on a public surface - Home,
+  // Notifications, and Profile re-loop into auth on mount, so those fall
+  // back to Explore.
+  function dismiss() {
+    const raw = searchParams?.get("redirect") ?? "/customer/explore";
+    const gated = ["/customer/home", "/customer/notifications", "/customer/profile"];
+    const target = gated.some((g) => raw === g || raw.startsWith(g + "/"))
+      ? "/customer/explore"
+      : raw;
+    router.push(target);
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-surface" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+      {/* Dismiss - top-left, an escape hatch not a co-equal action. Sign-in
+          stays the obvious primary. */}
+      <div className="flex items-center justify-between px-4 pt-4">
+        <button
+          onClick={dismiss}
+          aria-label="Close"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-subtle bg-surface/80"
+        >
+          <X className="h-4 w-4 text-primary" />
+        </button>
+      </div>
+
       {/* Top branding area */}
       <div className="flex flex-1 flex-col items-center justify-center px-6 pt-12 pb-8">
         {/* Logo mark */}

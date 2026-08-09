@@ -968,13 +968,13 @@ export default function ExplorePage() {
           lets a user correct it, or set it where GPS is denied or the city
           isn't imported yet (type "Somewhere else"). */}
       {pickerOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center">
           <button
             aria-label="Close"
             onClick={() => setPickerOpen(false)}
             className="absolute inset-0 bg-black/40"
           />
-          <div className="relative w-full max-w-md rounded-t-sheet bg-surface p-5 pb-9">
+          <div className="relative w-full max-w-md rounded-t-sheet bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+36px)]">
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-subtle" />
             <h2 className="font-display text-xl font-semibold tracking-tight text-primary">Your city</h2>
             <p className="mt-1 mb-5 text-sm font-normal text-muted">

@@ -42,7 +42,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
-        router.replace("/customer/auth?redirect=/customer/notifications");
+        router.push("/customer/auth?redirect=/customer/notifications");
         return;
       }
       fetch("/api/customer/notifications")
