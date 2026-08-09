@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag, Landmark, Trees, ChevronDown } from "lucide-react";
 import SocialFeed from "../components/SocialFeed";
@@ -967,7 +968,8 @@ export default function ExplorePage() {
       {/* Your-city picker — a bottom sheet. GPS sets it when it can; this
           lets a user correct it, or set it where GPS is denied or the city
           isn't imported yet (type "Somewhere else"). */}
-      {pickerOpen && (
+      {pickerOpen &&
+        createPortal(
         <div className="fixed inset-0 z-[60] flex items-end justify-center">
           <button
             aria-label="Close"
@@ -1020,7 +1022,8 @@ export default function ExplorePage() {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

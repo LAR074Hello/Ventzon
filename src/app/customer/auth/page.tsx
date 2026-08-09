@@ -227,10 +227,10 @@ function AuthForm() {
   // on mount, so those (and any off-origin value) fall back to Explore.
   function dismiss() {
     const raw = searchParams?.get("redirect") ?? "/customer/explore";
-    // Gate on the path only: profile appends ?compose=1 / ?tab=... to its
-    // redirect, and a query string would slip past the checks below.
-    const path = raw.split("?")[0];
-    const gated = ["/customer/home", "/customer/notifications", "/customer/profile"];
+    // Gate on the path only: a query (?compose=1) or fragment (#x) would slip
+    // past the checks - profile appends ?compose=1 / ?tab=... to its redirect.
+    const path = raw.split(/[?#]/)[0];
+    const gated = ["/customer/home", "/customer/auth", "/customer/notifications", "/customer/profile"];
     const target =
       path.startsWith("/customer/") &&
       !gated.some((g) => path === g || path.startsWith(g + "/"))
