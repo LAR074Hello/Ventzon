@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       "https://www.ventzon.com";
 
     // POST-BETA: the $0.85/redemption metered fee is removed. Pro is flat
-    // ($25/mo or $240/yr); free shops have no Stripe subscription at all.
+    // ($25/mo or $250/yr); free shops have no Stripe subscription at all.
     // That also means the ad-campaigns metered item (attached to a shop's
     // subscription) isn't available to free shops — ads are Pro-only until a
     // free-shop path exists. TODO(beta): decide how free shops get ads.

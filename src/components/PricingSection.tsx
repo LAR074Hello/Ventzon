@@ -23,7 +23,7 @@ export default function PricingSection() {
       <div className="mx-auto max-w-5xl">
         <ScrollReveal className="mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">
-            For shop owners
+            Pricing
           </p>
           <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em]">
             One flat price.
