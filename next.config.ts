@@ -3,6 +3,21 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  async redirects() {
+    return [
+      {
+        // The apex domain (ventzon.com) now serves the project directly since
+        // Vercel's domain-level redirect was removed. Preserve the old
+        // behavior for every path EXCEPT .well-known/ - Apple fetches the
+        // app-links file at the apex without following redirects, so it must
+        // return 200. [.] matches a literal dot with no string escaping.
+        source: "/:path((?![.]well-known/).*)",
+        has: [{ type: "host", value: "ventzon.com" }],
+        destination: "https://www.ventzon.com/:path",
+        permanent: false,
+      },
+    ];
+  },
   /**
    * Apple fetches /.well-known/apple-app-site-association and requires it to be
    * served as application/json. The file has no extension, so Next would
