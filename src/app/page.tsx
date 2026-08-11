@@ -113,8 +113,8 @@ export default function HomePage() {
         number="01"
         title="Find places worth going to"
         body="Browse thousands of real local spots — coffee shops, parks, bookshops, the corner bar. No ads, no algorithm, no listings you’ve never heard of."
-        photo="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&q=80"
-        photoAlt="A warm cafe interior with people"
+        photo="/site-images/photo-terrace.jpg"
+        photoAlt="A terrace restaurant above the sea at dusk"
       >
         <FadeImage
           src="/site-images/app-explore.png"
@@ -127,8 +127,8 @@ export default function HomePage() {
         number="02"
         title="Check in. Prove you were there."
         body="Check in once you’re there and your post carries a verified visit badge — proof you were really there, not a review from someone who never showed up."
-        photo="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80"
-        photoAlt="A barista at a coffee counter"
+        photo="/site-images/photo-checkin.jpg"
+        photoAlt="Scanning a QR code at a shop counter"
         flip
       >
         <FadeImage
@@ -142,8 +142,8 @@ export default function HomePage() {
         number="03"
         title="The feed fills with what’s actually good"
         body="Friends and locals post about the places they go. Over time the feed fills with what’s worth the trip — and where a shop runs a reward, you earn it just for visiting."
-        photo="https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1200&q=80"
-        photoAlt="Two people at a cafe table"
+        photo="/site-images/photo-taverna.jpg"
+        photoAlt="A seaside taverna with tables by the water"
       >
         <FadeImage
           src="/site-images/app-feed.png"
@@ -235,8 +235,8 @@ export default function HomePage() {
       <section className="px-6 pb-8">
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
           <FadeImage
-            src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=2000&q=80"
-            alt="A neighborhood street at golden hour"
+            src="/site-images/photo-taverna-wide.jpg"
+            alt="A seaside taverna with tables by the water"
             loading="lazy"
             className="h-[480px] w-full object-cover"
           />

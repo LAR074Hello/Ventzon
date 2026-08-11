@@ -10,18 +10,20 @@ import FadeImage from "@/components/FadeImage";
 import Parallax from "@/components/Parallax";
 import SiteFooter from "@/components/SiteFooter";
 
-/* Editorial photos — Unsplash placeholders, city-agnostic subjects,
-   swap-ready. Real app screenshots live in /site-images and render
-   inside DeviceFrame (captured from a seeded dev server, 390x844). */
+/* Editorial photos — licensed, self-hosted in /public/site-images.
+   Portrait files are cropped 4:5 for the Parallax cards; the *-wide
+   files are cropped for the full-width photo bands, so neither gets
+   upscaled. Real app screenshots are the app-*.png files below and
+   render inside DeviceFrame (seeded dev server, 390x844). */
 const PHOTOS = {
-  hero: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&q=80",
-  street: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200&q=80",
-  barista: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80",
-  dish: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
-  table: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=1200&q=80",
-  dusk: "https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=2000&q=80",
-  counter: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=1200&q=80",
-  goldenHour: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=2000&q=80",
+  hero: "/site-images/photo-terrace.jpg",
+  street: "/site-images/photo-shopfront.jpg",
+  barista: "/site-images/photo-checkin.jpg",
+  dish: "/site-images/photo-taverna.jpg",
+  table: "/site-images/photo-shelves.jpg",
+  dusk: "/site-images/photo-checkin-wide.jpg",
+  counter: "/site-images/photo-boutique.jpg",
+  goldenHour: "/site-images/photo-counter-wide.jpg",
 };
 
 const SCREENS = {
@@ -38,7 +40,7 @@ const customerSteps = [
     title: "Find a place near you",
     body: "Browse thousands of real local spots on the Ventzon map — coffee shops, parks, bookshops, the corner bar. No ads, no algorithm, no listings you've never heard of.",
     photo: PHOTOS.street,
-    photoAlt: "A neighborhood street lined with storefronts",
+    photoAlt: "The interior of an independent shop",
     screen: SCREENS.explore,
     screenAlt: "The Ventzon explore map showing places nearby",
   },
@@ -47,7 +49,7 @@ const customerSteps = [
     title: "Go there. Check in.",
     body: "Checking in takes seconds. Your visits add up — and where a shop runs a reward, you earn it just for showing up.",
     photo: PHOTOS.barista,
-    photoAlt: "A barista at a coffee counter",
+    photoAlt: "Scanning a QR code at a shop counter",
     screen: SCREENS.checkin,
     screenAlt: "The check-in confirmation in the Ventzon app",
   },
@@ -56,7 +58,7 @@ const customerSteps = [
     title: "Share a verified visit",
     body: "Post a photo or a note about the place and it carries a verified visit badge — proof you were really there, not a review from someone who wasn't.",
     photo: PHOTOS.dish,
-    photoAlt: "A plated dish at a table",
+    photoAlt: "A seaside taverna with tables by the water",
     screen: SCREENS.post,
     screenAlt: "A Ventzon post carrying the verified visit badge",
   },
@@ -65,7 +67,7 @@ const customerSteps = [
     title: "The feed gets better",
     body: "Friends and locals post about the places they go. Over time, the feed fills with what's actually worth the trip.",
     photo: PHOTOS.table,
-    photoAlt: "Two people at a cafe table",
+    photoAlt: "Shelves of records and books in a warm interior",
     screen: SCREENS.feed,
     screenAlt: "The Ventzon home feed",
   },
@@ -165,7 +167,7 @@ export default function HowItWorksPage() {
             <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
               <FadeImage
                 src={PHOTOS.hero}
-                alt="A warm cafe interior with people"
+                alt="A terrace restaurant above the sea at dusk"
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
@@ -211,7 +213,7 @@ export default function HowItWorksPage() {
       <section className="relative overflow-hidden">
         <FadeImage
           src={PHOTOS.dusk}
-          alt="A quiet street at dusk"
+          alt="Scanning a QR code at a shop counter"
           loading="lazy"
           className="h-[380px] w-full object-cover"
         />
@@ -274,7 +276,7 @@ export default function HowItWorksPage() {
               <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
                 <FadeImage
                   src={PHOTOS.counter}
-                  alt="A customer's hand at a counter"
+                  alt="The interior of a small boutique"
                   loading="lazy"
                   className="h-full w-full object-cover"
                 />
@@ -298,7 +300,7 @@ export default function HowItWorksPage() {
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
           <FadeImage
             src={PHOTOS.goldenHour}
-            alt="A neighborhood street at golden hour"
+            alt="Two people behind a shop counter"
             loading="lazy"
             className="h-[460px] w-full object-cover"
           />
