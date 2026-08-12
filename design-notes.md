@@ -221,7 +221,7 @@ with the reasoning because in October the list alone will not explain itself.
 Explicitly NOT deferred, despite looking merchant-adjacent:
 **places as first-class objects (1.3)** — it is the cold-start fix, not
 merchant infrastructure; **minimal event logging (1.4)** — half a session and
-it cannot be reconstructed after the fact; **the $0.85 fee removal** — it is
+it cannot be reconstructed after the fact; **the per-redemption fee removal** — it is
 deletion, and leaving dead billing paths around real users is a liability.
 
 ## Safety slice — decided ahead of build (2026-07-25)
