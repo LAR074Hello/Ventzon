@@ -1515,3 +1515,16 @@ the product. Worth planning before/at launch:
 - A graceful fallback is fine (the letter tile), but it should be an explicit
   *fallback*, not the default state every listing ships in.
 
+---
+
+## Email reply-to on merchant loyalty sends (2026-08-12)
+
+Every send through `lib/resend.ts` now sets `reply_to: support@ventzon.com`
+(EMAIL_REPLY_TO). That means a customer replying to a birthday, winback or
+campaign email **about a specific shop** reaches Ventzon support, not the shop.
+Correct for now — the FROM is Ventzon (hello@ventzon.com), never the merchant,
+so support@ is the honest reply destination — but worth revisiting when
+merchants are real accounts: per-shop reply routing (reply-to the merchant's
+address, or a `replies@` that forwards) would let a "gift from The Pressing
+Room" email actually land in The Pressing Room's inbox. Logged, not fixed.
+

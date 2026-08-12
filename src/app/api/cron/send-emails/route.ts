@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { EMAIL_FROM, EMAIL_REPLY_TO } from "@/lib/resend";
 
 export const dynamic = "force-dynamic";
 
@@ -259,7 +260,8 @@ export async function GET(req: Request) {
       }
 
       await resend.emails.send({
-        from: "Ventzon <onboarding@resend.dev>",
+        from: EMAIL_FROM,
+        replyTo: EMAIL_REPLY_TO,
         to: merchant_email,
         subject,
         html,

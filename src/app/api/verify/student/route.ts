@@ -14,6 +14,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { EMAIL_FROM, EMAIL_REPLY_TO } from "@/lib/resend";
 import { randomBytes } from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -88,7 +89,8 @@ export async function POST(req: Request) {
       const resend = new Resend(resendKey);
       const confirmUrl = `${BASE_URL}/api/verify/student/confirm?token=${token}`;
       await resend.emails.send({
-        from: "Ventzon <onboarding@resend.dev>",
+        from: EMAIL_FROM,
+        replyTo: EMAIL_REPLY_TO,
         to: eduEmail,
         subject: "Confirm your student status — Ventzon",
         html: `<!DOCTYPE html>

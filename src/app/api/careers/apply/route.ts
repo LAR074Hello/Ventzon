@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { EMAIL_FROM_CAREERS } from "@/lib/resend";
 
 export const dynamic = "force-dynamic";
 
@@ -118,7 +119,7 @@ export async function POST(req: Request) {
     `;
 
     await resend.emails.send({
-      from: "Ventzon Careers <onboarding@resend.dev>",
+      from: EMAIL_FROM_CAREERS,
       to: "lukerichardsschool@gmail.com",
       replyTo: application.email,
       subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative`,

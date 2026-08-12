@@ -1,12 +1,19 @@
 import { Resend } from "resend";
 
 /**
- * Sender address. Until a domain is verified in Resend this is the shared
- * sandbox sender, which can ONLY deliver to the Resend account owner —
- * every other recipient gets a 403. Swap to a verified ventzon.com
- * address once DNS is confirmed.
+ * Sender + reply-to configuration — env-overridable with product defaults.
+ * ventzon.com is verified in Resend, so sends go out from a real domain, NOT
+ * the shared onboarding@resend.dev sandbox (which only delivers to the Resend
+ * account owner — every other recipient gets a 403). The default local part
+ * is hello@ because people do reply to mail from a person-facing product;
+ * replies route to support@ via EMAIL_REPLY_TO, which is the published contact
+ * in the privacy/terms/content policy. Override any of these in .env.local /
+ * Vercel env as needed.
  */
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "Ventzon Rewards <onboarding@resend.dev>";
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? "Ventzon <hello@ventzon.com>";
+/** Careers mail keeps its own display name — sourced from config, not hardcoded. */
+export const EMAIL_FROM_CAREERS = process.env.EMAIL_FROM_CAREERS ?? "Ventzon Careers <hello@ventzon.com>";
+export const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO ?? "support@ventzon.com";
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -61,11 +68,12 @@ export async function sendEmail(
 
   // NOTE: the Resend SDK does NOT throw on API errors — it resolves with
   // { data, error }. Returning that object directly meant every caller's
-  // try/catch was dead code and failures (e.g. the 403 you get when
-  // sending from the unverified sandbox domain to a non-owner address)
-  // looked identical to success. Inspect the payload and throw.
+  // try/catch was dead code and failures (e.g. the 403 from the old
+  // onboarding@resend.dev sandbox sender to a non-owner address) looked
+  // identical to success. Inspect the payload and throw.
   const result = await getResend().emails.send({
     from: EMAIL_FROM,
+    replyTo: EMAIL_REPLY_TO,
     to,
     subject,
     html: htmlOverride ?? defaultHtml,
