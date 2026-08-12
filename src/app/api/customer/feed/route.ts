@@ -84,12 +84,27 @@ export async function GET(req: Request) {
       // place is in it. A city with no imported places (e.g. Philadelphia)
       // is a KNOWN EMPTY state — the NEARBY tab invites browsing elsewhere
       // rather than silently falling through to the global feed.
-      const { data: cityPlaces } = await admin
-        .from("places")
-        .select("id, slug")
-        .eq("city", city)
-        .limit(2000);
-      if (!cityPlaces || cityPlaces.length === 0) {
+      //
+      // The anchor list is fetched in full, paginated past PostgREST's
+      // per-request row cap (1000 rows, regardless of range). A single
+      // .limit() window silently dropped anchors for big cities (New
+      // York's 2403 imported places put every shop anchor outside a
+      // 2000-row window), which emptied NEARBY for the whole city.
+      const cityPlaces = [];
+      const PAGE = 1000;
+      for (let start = 0; ; start += PAGE) {
+        const { data, error: cityErr } = await admin
+          .from("places")
+          .select("id, slug")
+          .eq("city", city)
+          .range(start, start + PAGE - 1);
+        if (cityErr) {
+          return NextResponse.json({ error: cityErr.message }, { status: 500 });
+        }
+        cityPlaces.push(...(data ?? []));
+        if (!data || data.length < PAGE) break;
+      }
+      if (cityPlaces.length === 0) {
         return NextResponse.json({ posts: [], has_more: false, next_offset: offset });
       }
       const cityIds = new Set(cityPlaces.map((p) => p.id));
