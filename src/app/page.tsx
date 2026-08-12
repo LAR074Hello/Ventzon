@@ -235,8 +235,8 @@ export default function HomePage() {
       <section className="px-6 pb-8">
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
           <FadeImage
-            src="/site-images/photo-taverna-wide.jpg"
-            alt="A seaside taverna with tables by the water"
+            src="/site-images/photo-pool-wide.jpg"
+            alt="A pool terrace above the sea at sunset"
             loading="lazy"
             className="h-[480px] w-full object-cover"
           />

@@ -1473,3 +1473,45 @@ sends someone off to compress a video that will still be too long.
 Duration that cannot be read does **not** reject. An unreadable duration is far
 more likely to be an odd container than a 40-minute recording, and the size cap
 still applies.
+
+---
+
+## Check-in confirmation overlay — vertical dead space (2026-08-12)
+
+`CheckinOverlay` (`src/app/customer/shop/[shop]/page.tsx`) is a full-screen
+`fixed inset-0` surface with the confirmation centered: a 96px check circle,
+"Checked in", the `N of M visits collected` line, and a row of dots. On tall
+modern viewports (823pt+ — an iPhone-ish app frame) that content is ~200px tall
+in an ~823px screen, so the shot reads as roughly **80% empty surface**.
+
+That whitespace was left as-is for the marketing captures — it is what the
+product renders, and at the 280–300px display width inside DeviceFrame it reads
+as deliberate minimalism. If it is ever worth fixing, it is an app-design
+change, not a capture trick. Options if someone takes it on:
+
+- **Give the overlay context instead of resizing it** — the shop name/logo,
+  a "share your visit" prompt, or the next-reward hint would make the space
+  purposeful rather than empty.
+- **Collapse the overlay to a card** — a `surface-raised` centered card with
+  generous margins would sit higher in the visual hierarchy than an all-surface
+  fullscreen takeover.
+- Not: scaling the confirmation up, clipping the capture, or inventing UI that
+  no user sees.
+
+---
+
+## Store logos — letter placeholders in the Explore directory (2026-08-12)
+
+Every store in the Explore directory renders a letter tile (C, F, B, I…)
+instead of a logo, because the seeded places carry no `logo_url`. That is
+seeded data, not a capture problem, and the screenshots deliberately show the
+real render. But on a real launch those blanks will be the first thing a
+merchant notices about their own listing — a merchant who claimed their shop
+and sees a bare initial where their brand should be will not trust the rest of
+the product. Worth planning before/at launch:
+
+- A merchant-side "upload your logo" prompt on the claim/onboarding path (and
+  a `logo_url` population path that doesn't require re-importing the place).
+- A graceful fallback is fine (the letter tile), but it should be an explicit
+  *fallback*, not the default state every listing ships in.
+
