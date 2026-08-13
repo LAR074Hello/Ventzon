@@ -121,6 +121,13 @@ export default function TermsPage() {
               they are identified by phone number and an optional 6-digit PIN.
             </p>
             <p>
+              Ventzon is for people 13 and older. If you&rsquo;re under 13, please
+              don&rsquo;t create an account. By creating an account you confirm
+              you&rsquo;re at least 13; we may ask for your date of birth to verify
+              this. Accounts we believe belong to someone under 13 may be
+              closed.
+            </p>
+            <p>
               We reserve the right to suspend or terminate access to the Service
               for violation of these terms or for any conduct that we determine,
               in our sole discretion, to be harmful to other users or the

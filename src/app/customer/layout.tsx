@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Home, Trophy, User, ScanLine, Map, Bell, Plus } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
+import AgeGate from "./components/AgeGate";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { checkPushPermission, registerDevicePush } from "@/lib/push-client";
 
@@ -118,6 +119,9 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
   return (
     <div className="customer-app flex flex-col bg-surface" style={{ minHeight: "100dvh" }}>
+      {/* The 13+ age gate runs before onboarding — every signed-in session
+          (email, Apple, Google) must have a recorded age first. */}
+      <AgeGate />
       {showOnboarding && <Onboarding onFinish={finishOnboarding} />}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: hideNav ? 0 : "calc(80px + env(safe-area-inset-bottom))" }}>
         {children}

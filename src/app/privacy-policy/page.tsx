@@ -69,6 +69,13 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <span className="font-normal text-fog-100">
+                  Date of birth
+                </span>{" "}
+                — collected when you create an account, only to confirm you&rsquo;re
+                13 or older. Used for the age gate and nothing else.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">
                   Visit history
                 </span>{" "}
                 — the number of check-ins per shop and the date of each visit.
@@ -215,8 +222,12 @@ export default function PrivacyPolicyPage() {
             <p>
               Ventzon is not directed to children under the age of 13. We do
               not knowingly collect personal information from children under 13.
-              If you believe a child has provided us personal information,
-              please contact us and we will delete it promptly.
+              We ask for your date of birth when you create an account to
+              confirm you&rsquo;re old enough to use Ventzon; if you tell us you&rsquo;re
+              under 13, we record only that the request was refused and do not
+              keep the date you entered. If you believe a child has provided us
+              personal information, please contact us and we will delete it
+              promptly.
             </p>
           </Section>
 
