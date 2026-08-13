@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useLayoutEffect, useRef } from "react";
+
 /**
  * A person's avatar — never an empty circle.
  *
@@ -28,6 +30,67 @@ const TINTS = [
   "var(--accent-muted)",
   "var(--surface-overlay)",
 ];
+
+/**
+ * Contrast guard for the initials disc.
+ *
+ * The palette mixes light pastels (paper-100/200, maroon-100) with
+ * theme-adaptive surfaces. In light theme every entry is >=13:1 against
+ * --text-primary (ink). In dark theme --text-primary is fog, and the three
+ * pastels resolve to cream — paper-100 measured at 1.04:1, cream on cream
+ * (the blank "disc" under "Ilse Bergman"). A name must never land on an
+ * unreadable pair, so the chosen tint is verified at runtime against the
+ * resolved --text-primary: if it fails WCAG AA (4.5:1), the guard swaps to a
+ * legible palette entry — still deterministic per seed, still distinct
+ * people. The legible set in dark theme (night-900 15.6:1, maroon-900 13.3:1,
+ * night-600 12.8:1) is what keeps the disc readable.
+ */
+const MIN_INITIALS_CONTRAST = 4.5;
+
+function toRgb(s: string): [number, number, number] | null {
+  const t = s.trim();
+  // Custom properties compute to hex (#efe9e3) in modern engines; computed
+  // styles may also surface rgb()/rgba(). Handle both.
+  if (t.startsWith("#")) {
+    const hex = t.slice(1);
+    const full =
+      hex.length === 3
+        ? hex
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : hex;
+    const m = full.match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (!m) return null;
+    return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  }
+  const m = t.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+  if (!m) return null;
+  return [Number(m[1]), Number(m[2]), Number(m[3])];
+}
+
+/** WCAG 2.1 relative luminance. */
+function luminance([r, g, b]: [number, number, number]): number {
+  const f = (c: number) => {
+    c /= 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+
+function contrast(a: [number, number, number], b: [number, number, number]): number {
+  const l1 = luminance(a);
+  const l2 = luminance(b);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+/** Resolve a custom-property name against the live document. */
+function resolveVar(name: string): string {
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+    getComputedStyle(document.body).getPropertyValue(name).trim()
+  );
+}
 
 /** FNV-1a. Small, stable, and identical on server and client. */
 function hash(input: string): number {
@@ -70,32 +133,77 @@ export default function Avatar({
   className?: string;
 }) {
   const px = `${size}px`;
+  // A set-but-broken avatar_url (deleted storage object, 404, network) used to
+  // render a blank disc with no fallback. On image error, swap to the same
+  // deterministic initials disc a missing avatar gets — never an empty circle.
+  const [failed, setFailed] = useState(false);
 
-  if (url) {
+  // Guarded tint: the layout effect applies the legible background directly to
+  // the disc before paint (no state, no re-render), and re-applies when the
+  // theme flips. A name can never render an unreadable pair.
+  const discRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const el = discRef.current;
+    if (!el) return;
+    const apply = () => {
+      const initials = toRgb(resolveVar("--text-primary"));
+      if (!initials) {
+        el.style.background = TINTS[hash(seed) % TINTS.length];
+        return;
+      }
+      const rated = TINTS.map((t) => {
+        const c = toRgb(resolveVar(t.slice(4, -1)));
+        return { tint: t, ratio: c ? contrast(c, initials) : 0 };
+      });
+      const picked = rated[hash(seed) % rated.length];
+      const legible = rated.filter((r) => r.ratio >= MIN_INITIALS_CONTRAST);
+      let chosen = picked.tint;
+      if (picked.ratio < MIN_INITIALS_CONTRAST) {
+        // Refuse the unreadable pair. Rotate through the legible set with a
+        // second hash so people who share a palette slot still differ.
+        chosen = legible.length
+          ? legible[hash(`${seed}:fallback`) % legible.length].tint
+          : rated.slice().sort((a, b) => b.ratio - a.ratio)[0].tint;
+      }
+      el.style.background = chosen;
+    };
+    apply();
+    const doc = document.documentElement;
+    const mo = new MutationObserver(apply);
+    mo.observe(doc, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => mo.disconnect();
+  }, [seed, failed]);
+
+  if (url && !failed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- user-supplied URLs from Supabase storage, not a known loader
       <img
         src={url}
         alt={name ?? ""}
+        onError={() => setFailed(true)}
         style={{ width: px, height: px }}
         className={`shrink-0 rounded-full object-cover ${className}`}
       />
     );
   }
 
-  const tint = TINTS[hash(seed) % TINTS.length];
-
   return (
     <span
+      ref={discRef}
       aria-hidden
       style={{
         width: px,
         height: px,
-        background: tint,
+        // Background is deliberately NOT in this style object: the guard sets
+        // it via the ref, and React must not own it or a later re-render would
+        // reset it to a transient value. The guard runs pre-paint, so the disc
+        // never appears without its legible tint.
+        color: "var(--text-primary)",
         // Scales with the disc so a 24px avatar and a 72px one look related.
         fontSize: `${Math.max(9, Math.round(size * 0.38))}px`,
       }}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold leading-none text-primary ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold leading-none ${className}`}
     >
       {initialsFor(name)}
     </span>
