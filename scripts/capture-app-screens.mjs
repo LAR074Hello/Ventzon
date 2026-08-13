@@ -36,8 +36,37 @@ const SHOP_NAME = "The Pressing Room";
 // place must be a food venue to keep the pair coherent.
 const POST_SHOP = "the-cure-deli";
 const BASE = "http://localhost:3000";
-const OUT = path.join(".screenshots", "recapture");
-const VIEWPORT = { width: 390, height: 823 };
+
+// Two modes:
+//   default        — the marketing set, 390x823 @2x (= 780x1646, exact 9:19),
+//                    written to .screenshots/recapture/
+//   APPSTORE=1     — the App Store set, 440x956 @3x (= 1320x2868, the 6.9"
+//                    requirement), written to .screenshots/appstore/, in the
+//                    listing order 01-..06-
+const APPSTORE = process.env.APPSTORE === "1";
+const OUT = path.join(".screenshots", APPSTORE ? "appstore" : "recapture");
+const VIEWPORT = APPSTORE ? { width: 440, height: 956 } : { width: 390, height: 823 };
+const SCALE = APPSTORE ? 3 : 2;
+
+// Listing-order filenames (App Store) vs the marketing filenames.
+const FILE = (key) =>
+  APPSTORE
+    ? {
+        // Listing order: the map answers "is this useful where I live" fastest.
+        map: "01-map.png",
+        feed: "02-everywhere.png",
+        "post-detail": "03-post-detail.png",
+        explore: "04-nearby.png",
+        post: "05-composer.png",
+        checkin: "06-checkin.png",
+      }[key]
+    : {
+        explore: "app-explore.png",
+        feed: "app-feed.png",
+        checkin: "app-checkin.png",
+        post: "app-post.png",
+        join: "app-join.png",
+      }[key];
 
 const env = { ...loadEnv(), ...process.env };
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
@@ -51,6 +80,24 @@ if (error) {
 const session = data.session;
 const storageKey = `sb-${projectRefFrom(env.NEXT_PUBLIC_SUPABASE_URL)}-auth-token`;
 console.log(`  signed in as ${EMAIL}`);
+
+// The 13+ age gate shows once per account that has no dob. Set one on the
+// seeded capture account (the same state a real user reaches after completing
+// the DOB screen) so the gate passes and the captures show the app, not the
+// gate. One-time additive dev setup, like the check-in write below.
+try {
+  const adminClient = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  const { error: dobErr } = await adminClient
+    .from("customer_profiles")
+    .update({ dob: "1990-01-01" })
+    .eq("email", EMAIL);
+  if (dobErr) console.warn(`  age gate: dob update skipped (${dobErr.message})`);
+  else console.log("  age gate: dob set for capture account");
+} catch (e) {
+  console.warn(`  age gate: dob setup skipped (${e.message})`);
+}
 
 /**
  * The app uses @supabase/ssr's createBrowserClient, which keeps the session in
@@ -77,19 +124,29 @@ function check(name, ok, detail = "") {
 }
 
 // Run a subset of targets, e.g. CAPTURE_ONLY=explore node scripts/capture-app-screens.mjs
+// With no CAPTURE_ONLY, run the mode's full default set.
 const ONLY = (process.env.CAPTURE_ONLY || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
-const wants = (t) => ONLY.length === 0 || ONLY.includes(t);
+const DEFAULT_TARGETS = APPSTORE
+  ? ["map", "feed", "post-detail", "explore", "post", "checkin"]
+  : ["explore", "feed", "checkin", "post", "join"];
+const wants = (t) => (ONLY.length > 0 ? ONLY.includes(t) : DEFAULT_TARGETS.includes(t));
 
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
   viewport: VIEWPORT,
-  deviceScaleFactor: 2,
+  deviceScaleFactor: SCALE,
   colorScheme: "dark",
+  // The map target centres on the user's location when GPS is granted — the
+  // app's real "near you" behaviour (a device user grants this on first use).
+  // The longitude is nudged ~0.7km east of mid-Manhattan so the eastern
+  // clusters sit inside the frame instead of bleeding off the right edge.
+  geolocation: { latitude: 40.7128, longitude: -73.998 },
+  permissions: ["geolocation"],
 });
 
 // Pre-paint preferences: dark theme (matching the marketing site), onboarding
@@ -274,8 +331,8 @@ check(
   "explore: no dev overlay",
   await page.evaluate(() => document.querySelectorAll("nextjs-portal,[data-nextjs-toast]").length === 0)
 );
-await page.screenshot({ path: path.join(OUT, "app-explore.png") });
-console.log("  wrote app-explore.png");
+await page.screenshot({ path: path.join(OUT, FILE("explore")) });
+console.log(`  wrote ${FILE("explore")}`);
 }
 
 /* ── 2. FEED — /customer/explore, EVERYWHERE tab ───────────────────────── */
@@ -327,8 +384,138 @@ check(
   "feed: no dev overlay",
   await page.evaluate(() => document.querySelectorAll("nextjs-portal,[data-nextjs-toast]").length === 0)
 );
-await page.screenshot({ path: path.join(OUT, "app-feed.png") });
-console.log("  wrote app-feed.png");
+await page.screenshot({ path: path.join(OUT, FILE("feed")) });
+console.log(`  wrote ${FILE("feed")}`);
+}
+
+/* ── 2b. MAP — /customer/map, the real Leaflet map ─────────────────────── */
+if (wants("map")) {
+console.log(`\n== ${FILE("map")} (map, New York) ==`);
+await goto(`${BASE}/customer/map`);
+check("map: signed in (not bounced to auth)", !page.url().includes("/customer/auth"), page.url());
+// Wait for Leaflet to mount AND for the cluster markers to be painted — the
+// map's loading flag clears as soon as shops are fetched, but the cluster
+// layer mounts after the map initialises.
+await page
+  .waitForFunction(
+    () =>
+      !!document.querySelector(".leaflet-container") &&
+      document.querySelectorAll(".leaflet-marker-icon").length > 0,
+    { timeout: 25000 }
+  )
+  .catch(() => {});
+// Let the tiles paint and the opening view settle (Leaflet animates).
+await page.waitForTimeout(1800);
+const mapState = await page.evaluate(() => {
+  const tiles = [...document.querySelectorAll("img.leaflet-tile")];
+  const loaded = tiles.filter((t) => t.complete && t.naturalWidth > 0).length;
+  return {
+    tiles: tiles.length,
+    loaded,
+    markers: document.querySelectorAll(".leaflet-marker-icon").length,
+    clusters: document.querySelectorAll(".leaflet-marker-icon").length,
+  };
+});
+check("map: tile layer rendered", mapState.loaded > 0, `${mapState.loaded}/${mapState.tiles} tiles`);
+check("map: place markers/clusters present", mapState.markers > 0, `${mapState.markers} marker(s)`);
+check("map: dark theme", await isDark());
+await stripDevOverlays();
+check(
+  "map: no dev overlay",
+  await page.evaluate(() => document.querySelectorAll("nextjs-portal,[data-nextjs-toast]").length === 0)
+);
+await page.screenshot({ path: path.join(OUT, FILE("map")) });
+console.log(`  wrote ${FILE("map")}`);
+}
+
+/* ── 2c. POST-DETAIL — a rich post with media + comments + verified badge ─ */
+if (wants("post-detail")) {
+console.log(`\n== ${FILE("post-detail")} (post detail) ==`);
+await goto(`${BASE}/customer/explore`);
+check("post-detail: signed in (not bounced to auth)", !page.url().includes("/customer/auth"), page.url());
+await feedRendered(2);
+await stripSpam();
+// Scan the entire EVERYWHERE feed (paginated) for a post where the photo and
+// the venue category cohere — the whisky-bar-under-spa mismatch must not ship
+// as the App Store detail shot. Prefer Iron Gate Gym with the gym photo, then
+// Rye & Ember with the bakery photo, then any coherent pair. The pick is
+// reported so the human reviewing the set can eyeball it.
+const pick = await page.evaluate(async () => {
+  const coherent = (shop, media) => {
+    const s = (shop || "").toLowerCase();
+    const m = media || "";
+    if (/iron gate|gym|fitness/.test(s)) return m.includes("grid-1");
+    if (/rye|ember|baker|pastr/.test(s)) return m.includes("grid-3");
+    if (/cure deli|bao down|delicatessen|sandwich/.test(s)) return m.includes("grid-2");
+    if (/coffee|café|cafe|perch|kettle/.test(s)) return m.includes("feed-cafe");
+    return false;
+  };
+  let best = null;
+  let bestRank = Infinity;
+  for (let off = 0; off <= 150; off += 10) {
+    const res = await fetch(`/api/customer/feed?offset=${off}&limit=10`);
+    if (!res.ok) break;
+    const rows = (await res.json()).posts || [];
+    if (rows.length === 0) break;
+    for (const p of rows) {
+      if (p.media_type !== "image" || !p.media_url) continue;
+      if (!p.verified_visit || (p.counts?.comments ?? 0) < 1) continue;
+      if (!coherent(p.shop?.name, p.media_url)) continue;
+      const s = (p.shop?.name || "").toLowerCase();
+      const m = p.media_url || "";
+      const rank =
+        /iron gate|gym|fitness/.test(s) && m.includes("grid-1") ? 0
+        : /rye|ember|baker/.test(s) && m.includes("grid-3") ? 1
+        : 2;
+      if (rank < bestRank) {
+        bestRank = rank;
+        best = {
+          id: p.id,
+          shop: p.shop?.name,
+          media: p.media_url.split("/").pop(),
+          comments: p.counts?.comments ?? 0,
+        };
+      }
+    }
+  }
+  return best;
+});
+if (!pick) {
+  check("post-detail: found a coherent rich post (photo + comments + verified)", false, "no qualifying post in the feed");
+} else {
+  console.log(`  [post-detail] chose: ${pick.shop} — ${pick.media}, ${pick.comments} comment(s), verified`);
+  await goto(`${BASE}/customer/post/${pick.id}`);
+  check("post-detail: opened the detail page", /\/customer\/post\//.test(page.url()), page.url());
+  await settle();
+  // The post fetch + media decode take ~2s (measured); wait for the verified
+  // badge to actually render rather than guessing a timeout.
+  await page
+    .waitForFunction(
+      () => /Verified|Checked in here/.test(document.body.textContent || ""),
+      { timeout: 15000 }
+    )
+    .catch(() => {});
+  await page.waitForTimeout(500);
+  const detail = await page.evaluate(() => {
+    const text = document.body.textContent || "";
+    const img = [...document.querySelectorAll("img")].find(
+      (i) => i.complete && i.naturalWidth > 0
+    );
+    return {
+      media: !!img,
+      verified: /Verified|Checked in here/.test(text),
+      comments: /comment/.test(text),
+      title: text.slice(0, 40),
+    };
+  });
+  check("post-detail: media rendered", detail.media);
+  check("post-detail: verified-visit badge present", detail.verified);
+  check("post-detail: comments present", detail.comments);
+  await stripDevOverlays();
+  check("post-detail: dark theme", await isDark());
+  await page.screenshot({ path: path.join(OUT, FILE("post-detail")) });
+  console.log(`  wrote ${FILE("post-detail")}`);
+}
 }
 
 /* ── 3. CHECK-IN — land a fresh check-in on a mid-progress membership ──── */
@@ -353,15 +540,17 @@ for (const candidate of CHECKIN_SHOPS) {
     // Already checked in today at this shop — try the next one.
     continue;
   }
-  // Keep the shot mid-progress: skip a shop where this check-in would COMPLETE
-  // the reward (visits+1 >= goal), so the landed state still shows room to grow.
+  // Keep the shot mid-progress: require at least one visit already banked
+  // (a "1 of 8" card reads as zero-progress in the listing) and skip a shop
+  // where this check-in would COMPLETE the reward (visits+1 >= goal), so the
+  // landed state still shows room to grow.
   const progress = await page.evaluate(() => {
     const cards = [...document.querySelectorAll("div.rounded-card")];
     const card = cards.find((c) => c.textContent?.includes("YOUR PROGRESS"));
     const m = card?.textContent?.match(/(\d+)\s*\/\s*(\d+)/);
     return m ? { visits: Number(m[1]), goal: Number(m[2]) } : null;
   });
-  if (!progress || progress.visits + 1 >= progress.goal) continue;
+  if (!progress || progress.visits < 1 || progress.visits + 1 >= progress.goal) continue;
   checkin = candidate;
   checkinProgress = progress;
   break;
@@ -386,8 +575,8 @@ if (!checkin) {
   // Captured exactly as the product renders it — no zoom, no DOM scaling.
   await stripDevOverlays();
   check("checkin: dark theme", await isDark());
-  await page.screenshot({ path: path.join(OUT, "app-checkin.png") });
-  console.log("  wrote app-checkin.png");
+  await page.screenshot({ path: path.join(OUT, FILE("checkin")) });
+  console.log(`  wrote ${FILE("checkin")}`);
 }
 }
 
@@ -468,8 +657,8 @@ check(
   "post: no dev overlay",
   await page.evaluate(() => document.querySelectorAll("nextjs-portal,[data-nextjs-toast]").length === 0)
 );
-await page.screenshot({ path: path.join(OUT, "app-post.png") });
-console.log("  wrote app-post.png");
+await page.screenshot({ path: path.join(OUT, FILE("post")) });
+console.log(`  wrote ${FILE("post")}`);
 }
 
 /* ── 5. JOIN — the public join screen ──────────────────────────────────── */
@@ -483,8 +672,8 @@ check("join: CTA present", (await page.getByText(/check in|join|sign in/i).count
 check("join: dark theme", await isDark());
 await stripDevOverlays();
 await page.waitForTimeout(400);
-await page.screenshot({ path: path.join(OUT, "app-join.png") });
-console.log("  wrote app-join.png");
+await page.screenshot({ path: path.join(OUT, FILE("join")) });
+console.log(`  wrote ${FILE("join")}`);
 }
 
 await browser.close();
@@ -492,15 +681,17 @@ await browser.close();
 /* ── Summary ───────────────────────────────────────────────────────────── */
 const dims = await (async () => {
   const { execFileSync } = await import("node:child_process");
-  const files = ["app-explore.png", "app-feed.png", "app-checkin.png", "app-post.png", "app-join.png"];
+  const files = (APPSTORE ? DEFAULT_TARGETS : ["explore", "feed", "checkin", "post", "join"]).map((k) => FILE(k));
+  const expected = APPSTORE ? "1320x2868" : "780x1646";
+  const label = APPSTORE ? "1320x2868 (6.9\" App Store)" : "780x1646 (exact 9:19)";
   const rows = files.map((f) => {
     const out = execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", path.join(OUT, f)]).toString();
     const w = out.match(/pixelWidth: (\d+)/)?.[1];
     const h = out.match(/pixelHeight: (\d+)/)?.[1];
     return `${f}: ${w}x${h}`;
   });
-  const allCorrect = rows.every((r) => /780x1646$/.test(r));
-  check("all captures are 780x1646 (exact 9:19)", allCorrect, rows.join(" | "));
+  const allCorrect = rows.every((r) => r.endsWith(expected));
+  check(`all captures are ${expected} (${label})`, allCorrect, rows.join(" | "));
   return rows.join(" | ");
 })();
 console.log(`\n${failures === 0 ? "ALL CHECKS PASS" : `${failures} CHECK(S) FAILED`}`);

@@ -23,8 +23,7 @@ export default async function AppleIcon() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: "50%",
-            background: "#000",
+            background: "#5a1e24",
           }}
         >
           <span style={{ color: "#ededed", fontSize: 96, fontWeight: 200 }}>
@@ -45,8 +44,7 @@ export default async function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: "50%",
-          background: "#000",
+          background: "#5a1e24",
           overflow: "hidden",
         }}
       >
@@ -56,7 +54,7 @@ export default async function AppleIcon() {
           alt=""
           width={180}
           height={180}
-          style={{ objectFit: "cover", borderRadius: "50%" }}
+          style={{ objectFit: "cover" }}
         />
       </div>
     ),
