@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 };
 
 const perks = [
-  { icon: TrendingUp, label: "Equity upside", detail: "Get in early at a growing startup" },
+  { icon: TrendingUp, label: "Ground-floor experience", detail: "Work directly with the founding team" },
   { icon: DollarSign, label: "Commission-based", detail: "Uncapped earning potential" },
-  { icon: Clock, label: "Flexible hours", detail: "Work around your schedule" },
+  { icon: Clock, label: "Your own schedule", detail: "Set your own pace around classes" },
   { icon: MapPin, label: "Local impact", detail: "Help small businesses in your city thrive" },
 ];
 
@@ -46,20 +46,20 @@ export default function CareersPage() {
               <div>
                 <div className="flex items-center gap-2.5">
                   <span className="rounded-full border border-emerald-800/50 bg-emerald-950/30 px-2.5 py-1 text-[10px] font-light tracking-[0.15em] text-emerald-400">
-                    HIRING
+                    OPEN
                   </span>
-                  <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 CONTRACTOR</span>
+                  <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 INDEPENDENT CONTRACTOR</span>
                 </div>
-                <h3 className="mt-3 text-[24px] font-light text-fog-100">Business Development Representative</h3>
+                <h3 className="mt-3 text-[24px] font-light text-fog-100">Business Development Representative Intern</h3>
                 <div className="mt-2 flex flex-wrap items-center gap-4">
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
                     <MapPin className="h-3 w-3" /> Your city (field-based)
                   </span>
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
-                    <Clock className="h-3 w-3" /> Flexible · Work when you want
+                    <Clock className="h-3 w-3" /> Set your own schedule
                   </span>
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
-                    <DollarSign className="h-3 w-3" /> 20% monthly recurring commission
+                    <DollarSign className="h-3 w-3" /> 40% monthly recurring commission
                   </span>
                 </div>
               </div>
@@ -76,7 +76,7 @@ export default function CareersPage() {
               <div>
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">ABOUT THE ROLE</p>
                 <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
-                  As a Business Development Representative at Ventzon, you'll be the face of the company — walking into local businesses, building relationships with owners, and signing them up for the platform. This is a flexible, commission-based side hustle where you identify target businesses in your area, introduce them to Ventzon, and walk owners through a live demo on the spot.
+                  A school-year independent contractor role for college students. Walk into local businesses near campus, pitch Ventzon face-to-face, and earn 40% monthly recurring commission — paid out every two weeks.
                 </p>
                 <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-200">
                   Beyond the initial sale, you'll serve as the primary point of contact for your merchants — following up, answering questions, and making sure they're getting real value out of the platform.
@@ -87,8 +87,9 @@ export default function CareersPage() {
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">WHAT WE'RE LOOKING FOR</p>
                 <ul className="mt-4 space-y-2.5">
                   {[
+                    "A current college student — freshman through senior, any major",
                     "Strong interpersonal skills — comfortable walking into a business cold",
-                    "Self-motivated and able to manage your own time and territory",
+                    "Self-motivated and able to manage your own territory and schedule",
                     "Reliable transportation and willingness to travel locally",
                     "A smartphone capable of running the Ventzon app for live demos",
                     "Prior customer-facing experience is a plus but not required",
@@ -105,9 +106,9 @@ export default function CareersPage() {
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">COMPENSATION</p>
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
-                    { label: "20%", detail: "Of monthly subscription revenue per merchant" },
-                    { label: "Recurring", detail: "Earn as long as your merchants stay active" },
-                    { label: "Uncapped", detail: "Your book of business grows over time" },
+                    { label: "40%", detail: "Of each merchant's monthly subscription" },
+                    { label: "Recurring monthly", detail: "Every month the merchant stays subscribed" },
+                    { label: "Paid every two weeks", detail: "Fixed payout cadence" },
                   ].map(({ label, detail }) => (
                     <div key={label} className="rounded-xl border border-[#222] p-4">
                       <p className="text-[18px] font-light text-fog-100">{label}</p>

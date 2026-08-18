@@ -4,8 +4,8 @@ import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Business Development Representative — Ventzon Careers",
-  description: "Join Ventzon as a Business Development Representative. Help local businesses build loyalty and earn 33.33% recurring commission.",
+  title: "Business Development Representative Intern — Ventzon Careers",
+  description: "College students: earn 40% monthly recurring commission signing up local businesses. 1099 independent contractor. Set your own schedule.",
 };
 
 export default function BDRPage() {
@@ -24,13 +24,13 @@ export default function BDRPage() {
 
           <div className="mt-6 flex items-center gap-2.5">
             <span className="rounded-full border border-emerald-800/50 bg-emerald-950/30 px-2.5 py-1 text-[10px] font-light tracking-[0.15em] text-emerald-400">
-              HIRING NOW
+              OPEN
             </span>
-            <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 CONTRACTOR</span>
+            <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 INDEPENDENT CONTRACTOR</span>
           </div>
 
           <h1 className="mt-4 text-4xl font-light tracking-[0.02em] text-fog-100 sm:text-5xl">
-            Business Development<br />Representative
+            Business Development<br />Representative Intern
           </h1>
 
           <div className="mt-5 flex flex-wrap items-center gap-5">
@@ -38,10 +38,10 @@ export default function BDRPage() {
               <MapPin className="h-3.5 w-3.5" /> Your city (field-based)
             </span>
             <span className="flex items-center gap-1.5 text-[13px] font-light text-fog-300">
-              <Clock className="h-3.5 w-3.5" /> Flexible · Work when you want
+              <Clock className="h-3.5 w-3.5" /> Set your own schedule
             </span>
             <span className="flex items-center gap-1.5 text-[13px] font-light text-fog-300">
-              <DollarSign className="h-3.5 w-3.5" /> 33.33% monthly recurring commission
+              <DollarSign className="h-3.5 w-3.5" /> 40% monthly recurring commission
             </span>
           </div>
 
@@ -73,13 +73,13 @@ export default function BDRPage() {
           <div>
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">ABOUT THE ROLE</p>
             <p className="mt-5 text-[15px] font-light leading-relaxed text-fog-200">
-              As a Business Development Representative at Ventzon, you'll be the face of the company — walking into local businesses, building relationships with owners, and signing them up for the platform. This is a flexible, commission-based side hustle where you'll identify target businesses in your area, introduce them to Ventzon, and walk owners through a live demo on the spot.
+              This is a school-year role for college students, freshman through senior. You'll walk into local businesses near your campus, introduce owners to Ventzon, and run a live demo on the spot. You set your own schedule around classes, own your own territory, and operate as a 1099 independent contractor — commission-only, no guaranteed pay.
             </p>
             <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-200">
-              Once a merchant is interested, you'll guide them through the full onboarding process — setting up their account, configuring their reward program, and making sure their QR code is live and working in their store before you leave.
+              Once a merchant is interested, you'll guide them through onboarding — setting up their account, configuring their reward program, and making sure their QR code is live and working before you leave.
             </p>
             <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-200">
-              Beyond the initial sale, you'll serve as the primary point of contact for your merchants as the company grows. That means following up regularly, answering questions, troubleshooting any issues, and making sure they're getting real value out of the platform.
+              Beyond the initial sale, you'll be the primary point of contact for your merchants — following up regularly, answering questions, and making sure they're getting real value out of the platform.
             </p>
           </div>
 
@@ -87,12 +87,12 @@ export default function BDRPage() {
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">WHAT YOU'LL DO</p>
             <ul className="mt-5 space-y-3">
               {[
-                "Identify target businesses in your area and introduce them to Ventzon face-to-face",
-                "Walk owners through a live demo on the spot and sign them up during the visit",
-                "Guide new merchants through full onboarding — account setup, reward config, QR live in-store",
-                "Serve as primary point of contact: follow up, troubleshoot, ensure merchants see real value",
-                "Manage your own schedule, territory, and activity logging",
-                "Work directly with the founding team to sharpen the pitch and improve onboarding",
+                "Walk into local businesses near your campus and introduce them to Ventzon face-to-face",
+                "Run a live demo on the spot and sign owners up during the visit",
+                "Set up new merchants — account, reward program, QR code live in-store",
+                "Follow up with your merchants and stay their point of contact",
+                "Own your territory and your schedule — fit Ventzon around classes",
+                "Work directly with the founding team to sharpen the pitch and onboarding",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[14px] font-light leading-relaxed text-fog-200">
                   <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#666]" />
@@ -106,12 +106,13 @@ export default function BDRPage() {
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">QUALIFICATIONS</p>
             <ul className="mt-5 space-y-3">
               {[
-                "Strong interpersonal and communication skills — comfortable walking into a business cold",
-                "Self-motivated and able to manage your own time and territory without close supervision",
-                "Reliable transportation and willingness to travel locally on a daily basis",
+                "A current college student — freshman through senior, any major",
+                "Comfortable walking into a business and starting a conversation",
+                "A self-starter who manages their own territory without hand-holding",
+                "Reliable transportation to visit local businesses in person",
                 "A smartphone capable of running the Ventzon app for live demos",
-                "Prior experience in sales, retail, hospitality, or any customer-facing role is a plus but not required",
-                "A genuine interest in supporting local businesses and communities",
+                "18 or older",
+                "Prior customer-facing experience is a plus but not required",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[14px] font-light leading-relaxed text-fog-200">
                   <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#666]" />
@@ -124,16 +125,19 @@ export default function BDRPage() {
           <div>
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">COMPENSATION</p>
             <p className="mt-5 text-[14px] font-light leading-relaxed text-fog-200">
-              This role is designed as a flexible, commission-based side hustle rather than a traditional full-time position. There is no set schedule — you work when you want, in your own area, at your own pace.
+              This is a 1099 independent contractor engagement, commission-only. You set your own schedule and your own territory — the more merchants you sign, the more you earn, with no ceiling.
             </p>
             <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
-              Compensation is <span className="text-fog-100">33.33% of the monthly subscription revenue</span> generated from every merchant you sign up, paid out for the duration of your employment with Ventzon. The more merchants you onboard and keep active, the more you earn — and your book of business grows over time.
+              You earn <span className="text-fog-100">40% of each merchant's monthly subscription, every month, for as long as that merchant stays subscribed.</span> Paid out every two weeks.
+            </p>
+            <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
+              The math is simple: a merchant on the $25/month plan is <span className="text-fog-100">$10 a month</span> for you. Sign a shop in September and it pays you every month after — October, November, December, and on. That's the compounding part: shops you bring in early in the semester are still paying you when you're juggling finals.
             </p>
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
-                { label: "33.33%", detail: "Of monthly subscription revenue per merchant" },
-                { label: "Recurring", detail: "Earn every month merchants stay active" },
-                { label: "Uncapped", detail: "Your book of business grows over time" },
+                { label: "40%", detail: "Of each merchant's monthly subscription" },
+                { label: "Recurring", detail: "Every month the merchant stays subscribed" },
+                { label: "Paid every two weeks", detail: "Fixed payout cadence" },
               ].map(({ label, detail }) => (
                 <div key={label} className="rounded-xl border border-[#222] bg-night-900 p-5">
                   <p className="text-[20px] font-light text-fog-100">{label}</p>

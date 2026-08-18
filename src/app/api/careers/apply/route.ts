@@ -23,14 +23,16 @@ export async function POST(req: Request) {
       over_18: get("over18"),
       felony_disclosure: get("felony"),
       felony_explanation: get("felonyExplanation"),
-      available_full_summer: get("availableFullSummer"),
+      available_full_summer: get("availableFullSummer") || null,
+      school_name: get("schoolName") || null,
+      school_year_availability: get("schoolYearAvailability") || null,
       start_date: get("startDate") || null,
       has_transportation: get("hasTransportation"),
       comfortable_commission: get("comfortableCommission"),
       has_sales_experience: get("hasSalesExperience"),
       sales_experience: get("salesExperience"),
       why_ventzon: get("whyVentzon"),
-      role: "business-development-representative",
+      role: "business-development-representative-intern",
       submitted_at: new Date().toISOString(),
     };
 
@@ -69,7 +71,7 @@ export async function POST(req: Request) {
     const emailBody = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#000;color:#ededed">
         <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0">NEW APPLICATION</p>
-        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Business Development Representative</h1>
+        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Business Development Representative Intern</h1>
         <p style="font-size:13px;color:#555;margin:0">${application.submitted_at}</p>
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
@@ -79,6 +81,7 @@ export async function POST(req: Request) {
           <tr><td style="padding:8px 0;color:#555">Email</td><td style="color:#ededed"><a href="mailto:${application.email}" style="color:#ededed">${application.email}</a></td></tr>
           ${application.phone ? `<tr><td style="padding:8px 0;color:#555">Phone</td><td style="color:#ededed">${application.phone}</td></tr>` : ""}
           <tr><td style="padding:8px 0;color:#555">City</td><td style="color:#ededed">${application.city}</td></tr>
+          ${application.school_name ? `<tr><td style="padding:8px 0;color:#555">School</td><td style="color:#ededed">${application.school_name}</td></tr>` : ""}
           ${application.linkedin_url ? `<tr><td style="padding:8px 0;color:#555">LinkedIn</td><td style="color:#ededed"><a href="https://${application.linkedin_url.replace(/^https?:\/\//, "")}" style="color:#888">${application.linkedin_url}</a></td></tr>` : ""}
         </table>
 
@@ -99,7 +102,7 @@ export async function POST(req: Request) {
           <tr><td style="padding:8px 0;color:#555">Requires visa sponsorship</td><td style="color:#ededed">${application.requires_sponsorship}</td></tr>
           <tr><td style="padding:8px 0;color:#555">18 or older</td><td style="color:#ededed">${application.over_18}</td></tr>
           <tr><td style="padding:8px 0;color:#555">Felony disclosure</td><td style="color:#ededed">${application.felony_disclosure}${application.felony_explanation ? ` — ${application.felony_explanation}` : ""}</td></tr>
-          <tr><td style="padding:8px 0;color:#555">Available full summer</td><td style="color:#ededed">${application.available_full_summer}</td></tr>
+          <tr><td style="padding:8px 0;color:#555">School-year availability</td><td style="color:#ededed">${application.school_year_availability || application.available_full_summer || "Not provided"}</td></tr>
           ${application.start_date ? `<tr><td style="padding:8px 0;color:#555">Start date</td><td style="color:#ededed">${application.start_date}</td></tr>` : ""}
         </table>
 
@@ -122,7 +125,7 @@ export async function POST(req: Request) {
       from: EMAIL_FROM_CAREERS,
       to: "lukerichardsschool@gmail.com",
       replyTo: application.email,
-      subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative`,
+      subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative Intern`,
       html: emailBody,
       ...(resumeAttachment ? { attachments: [resumeAttachment] } : {}),
     });

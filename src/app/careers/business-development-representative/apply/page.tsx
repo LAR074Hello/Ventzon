@@ -19,6 +19,8 @@ type FormState = {
   felony: string;                 // yes | no | prefer-not
   felonyExplanation: string;
   startDate: string;
+  schoolName: string;                // free text
+  schoolYearAvailability: string;    // yes | partial | no
 
   // Screening
   hasTransportation: string;      // yes | no
@@ -37,7 +39,7 @@ type FormState = {
 const INITIAL: FormState = {
   firstName: "", lastName: "", email: "", phone: "", city: "",
   authorizedToWork: "", requiresSponsorship: "", over18: "", felony: "", felonyExplanation: "",
-  startDate: "",
+  startDate: "", schoolName: "", schoolYearAvailability: "",
   hasTransportation: "", comfortableCommission: "", hasSalesExperience: "",
   salesExperience: "", whyVentzon: "", linkedIn: "",
   resume: null,
@@ -145,7 +147,12 @@ export default function ApplyPage() {
       setErr("Please answer all legal questions.");
       return;
     }
-    if (!form.hasTransportation || !form.comfortableCommission || !form.hasSalesExperience) {
+    if (
+      !form.hasTransportation ||
+      !form.comfortableCommission ||
+      !form.hasSalesExperience ||
+      !form.schoolYearAvailability
+    ) {
       setErr("Please answer all role requirement questions.");
       return;
     }
@@ -202,7 +209,7 @@ export default function ApplyPage() {
         <h1 className="mt-6 text-[32px] font-light tracking-[-0.01em] text-fog-100">
           Apply
         </h1>
-        <p className="mt-2 text-[14px] font-light text-[#999]">Business Development Representative · Ventzon</p>
+        <p className="mt-2 text-[14px] font-light text-[#999]">Business Development Representative Intern · Ventzon</p>
 
         <form onSubmit={handleSubmit} className="mt-12 space-y-10">
 
@@ -226,6 +233,10 @@ export default function ApplyPage() {
               </Field>
               <Field label="City you're based in" required hint="You'll be working in-person in your local area.">
                 <TextInput value={form.city} onChange={set("city")} placeholder="e.g. Austin, TX" disabled={submitting} />
+              </Field>
+
+              <Field label="What school do you attend?" hint="If you're currently enrolled — this role is built for students.">
+                <TextInput value={form.schoolName} onChange={set("schoolName")} placeholder="e.g. Loyola University Maryland" disabled={submitting} />
               </Field>
               <Field label="LinkedIn profile URL">
                 <TextInput value={form.linkedIn} onChange={set("linkedIn")} placeholder="linkedin.com/in/janesmith" disabled={submitting} />
@@ -339,6 +350,20 @@ export default function ApplyPage() {
                 />
               </Field>
 
+              <Field label="Will you be available during the school year?" required>
+                <RadioGroup
+                  name="schoolYearAvailability"
+                  value={form.schoolYearAvailability}
+                  onChange={set("schoolYearAvailability")}
+                  options={[
+                    { value: "yes", label: "Yes — available during the school year" },
+                    { value: "partial", label: "Some semesters only" },
+                    { value: "no", label: "No" },
+                  ]}
+                  disabled={submitting}
+                />
+              </Field>
+
             </div>
           </div>
 
@@ -356,7 +381,7 @@ export default function ApplyPage() {
                 />
               </Field>
 
-              <Field label="Why do you want to work at Ventzon?" required>
+              <Field label="Why Ventzon?" required>
                 <Textarea
                   value={form.whyVentzon}
                   onChange={set("whyVentzon")}
