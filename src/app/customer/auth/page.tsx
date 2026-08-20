@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { captureReferralParam, flushPendingReferral } from "@/lib/referral-client";
 import { Suspense } from "react";
 import { Capacitor } from "@capacitor/core";
 
@@ -32,6 +33,10 @@ function AuthForm() {
   useEffect(() => {
     setIsNative(Capacitor.isNativePlatform());
     setIsIos(Capacitor.getPlatform() === "ios");
+
+    // Capture a referral code from a shared link before the auth dance — it
+    // must survive signup, not be read afterwards.
+    captureReferralParam(searchParams?.get("ref") ?? searchParams?.get("code"));
 
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace(redirectTo);
@@ -78,6 +83,7 @@ function AuthForm() {
         if (error) throw error;
         // If email confirmation is disabled, Supabase returns a session — go in.
         if (data.session) {
+          flushPendingReferral();
           router.replace(redirectTo);
           return;
         }
@@ -90,6 +96,7 @@ function AuthForm() {
           password,
         });
         if (error) throw error;
+        flushPendingReferral();
         router.replace(redirectTo);
       }
     } catch (e: any) {
@@ -111,6 +118,7 @@ function AuthForm() {
         type: "signup",
       });
       if (error) throw error;
+      flushPendingReferral();
       router.replace(redirectTo);
     } catch (e: any) {
       setErr(e?.message ?? "That code didn't work. Check it and try again.");
@@ -210,6 +218,7 @@ function AuthForm() {
       if (fullName) {
         await supabase.auth.updateUser({ data: { full_name: fullName } });
       }
+      flushPendingReferral();
       router.replace(redirectTo);
     } catch (e: any) {
       if (e?.message?.includes("cancelled") || e?.message?.includes("canceled") || e?.code === "1001") {

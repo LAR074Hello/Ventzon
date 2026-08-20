@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera } from "lucide-react";
+import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera, Copy, Check } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import PostGrid, { type GridPost } from "../components/PostGrid";
 import Avatar from "../components/Avatar";
@@ -27,6 +27,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [stats, setStats] = useState<ProfileStatValues | null>(null);
   const [badges, setBadges] = useState<BadgeValue[]>([]);
+  const [referral, setReferral] = useState<{ code: string; link: string; referral_count: number } | null>(null);
+  const [copied, setCopied] = useState(false);
   const [posts, setPosts] = useState<GridPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [showComposer, setShowComposer] = useState(false);
@@ -49,6 +51,15 @@ export default function ProfilePage() {
     if (new URLSearchParams(window.location.search).get("compose") === "1") {
       setShowComposer(true);
     }
+  }, []);
+
+  // Refer friends — the code is assigned server-side on first touch; the
+  // count is real data from the referrals table, never fabricated.
+  useEffect(() => {
+    fetch("/api/customer/referral")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.code && setReferral(d))
+      .catch(() => {});
   }, []);
 
   const loadPosts = useCallback(async () => {
@@ -138,6 +149,31 @@ export default function ProfilePage() {
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-subtle border-t-ink" />
       </div>
     );
+  }
+
+  async function copyReferralLink() {
+    if (!referral) return;
+    try {
+      await navigator.clipboard.writeText(referral.link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {}
+  }
+
+  async function inviteFriends() {
+    if (!referral) return;
+    const text = "I\u2019m on Ventzon. Come check it out 👀\nJoin me: " + referral.link;
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: "Ventzon", text, url: referral.link });
+        return;
+      } catch (e) {
+        // A cancel is not a failure — do nothing. Anything else falls
+        // through to the copy fallback.
+        if (e instanceof DOMException && e.name === "AbortError") return;
+      }
+    }
+    copyReferralLink();
   }
 
   const isPrivateRelay = user.email?.endsWith("@privaterelay.appleid.com") ?? false;
@@ -251,6 +287,42 @@ export default function ProfilePage() {
           SHARE PROFILE
         </button>
       </div>
+
+      {/* Refer friends — social growth, not a rewards dashboard. The count
+          comes from the server; no fabricated numbers. */}
+      {referral && (
+        <div className="mx-5 mt-5 rounded-card border border-subtle bg-surface-raised p-4">
+          <p className="text-2xs font-semibold uppercase tracking-caps text-muted">Refer friends</p>
+          <h3 className="mt-1 font-display text-lg font-semibold tracking-tight text-primary">
+            Bring your friends to Ventzon
+          </h3>
+          <p className="mt-0.5 text-sm text-secondary">
+            {referral.referral_count === 0
+              ? "No friends joined yet."
+              : `${referral.referral_count} friend${referral.referral_count === 1 ? "" : "s"} joined`}
+          </p>
+          <div className="mt-3 flex items-center justify-between rounded-ctl bg-surface-sunken px-3.5 py-2.5">
+            <span className="text-sm text-muted">Your referral code</span>
+            <span className="font-mono text-base font-medium tracking-wide text-primary">{referral.code}</span>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={copyReferralLink}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-subtle bg-surface px-4 py-2.5 text-sm font-medium text-primary active:bg-surface-sunken"
+            >
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied ? "Copied" : "Copy Link"}
+            </button>
+            <button
+              onClick={inviteFriends}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-inverse active:opacity-80"
+            >
+              <Share2 className="h-4 w-4" />
+              Invite Friends
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Posts / Saved */}
       <div className="mt-7 px-5">

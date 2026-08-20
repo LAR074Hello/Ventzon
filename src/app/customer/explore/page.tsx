@@ -8,6 +8,7 @@ import SocialFeed from "../components/SocialFeed";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
 import { IMPORTED_CITIES, cityForCoords } from "@/lib/city";
+import { captureReferralParam } from "@/lib/referral-client";
 
 type Shop = {
   shop_slug: string;
@@ -355,10 +356,10 @@ export default function ExplorePage() {
           cityPickedRef.current = true;
           setCity(savedCity);
         }
-        // Shared profile links land here carrying a referral code — stash it
-        // like the shop page does, credited on the first check-in.
-        const ref = new URLSearchParams(window.location.search).get("ref");
-        if (ref) localStorage.setItem("ventzon_ref", ref);
+        // Shared links land here with either a legacy ?ref=<profile_id> (the
+        // merchant check-in flow) or a customer referral code. captureReferralParam
+        // routes each to the right store.
+        captureReferralParam(new URLSearchParams(window.location.search).get("ref"));
       } catch {}
     }, 0);
     return () => clearTimeout(timer);

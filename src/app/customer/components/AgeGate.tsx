@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { clearPendingReferralCode, flushPendingReferral } from "@/lib/referral-client";
 
 type GateStatus = "checking" | "verified" | "blocked" | "missing";
 
@@ -100,6 +101,10 @@ export default function AgeGate() {
       const json = (await res.json()) as { status?: string; error?: string };
       if (!res.ok) throw new Error(json?.error ?? "Something went wrong.");
       setStatus(json.status === "blocked" ? "blocked" : "verified");
+      // A completed age gate IS the referral onboarding gate — flush any
+      // pending referral now. A blocked account is never attributed.
+      if (json.status === "blocked") clearPendingReferralCode();
+      else flushPendingReferral();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {

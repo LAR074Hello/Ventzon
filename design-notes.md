@@ -1574,3 +1574,32 @@ exists, treat this gate as a cheap partial mitigation, not a solution. Gated
 viewers get a play overlay on the poster instead of silence, so the video is
 still watchable in place.
 
+---
+
+## Customer referral system (2026-08-20)
+
+Customer referrals now exist as a first-class, server-side system built on the
+existing `referrals` table (which previously only carried merchant-era,
+first-check-in credits).
+
+- Every user has an 8-character referral code (`customer_profiles.referral_code`),
+  generated server-side with the same collision-safe generator for existing
+  (backfill script) and new (ensureReferralCode) users. Codes never expose the
+  user UUID. Run the backfill on production:
+  `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/backfill-referral-codes.mjs --apply`
+- The canonical share link is `https://www.ventzon.com/invite/<code>`; `?ref=`
+  still works and routes legacy profile-id refs to the merchant check-in flow.
+- Attribution is server-side and idempotent: POST /api/customer/referral resolves
+  the code, rejects self-referrals, and inserts into `referrals` (shop_slug NULL).
+  UNIQUE(referred_email) enforces one referrer per account at the database level;
+  a CHECK prevents self-referral.
+- A referral is credited only after the referred account completes onboarding,
+  i.e. passes the 13+ age gate (customer_profiles.dob set, no under-13 refusal).
+  Abandoned signups never count.
+- The merchant check-in flow is untouched and coexists: its insert is wrapped
+  in a non-fatal try/catch, so a duplicate (already attributed) referral never
+  fails a check-in. Whichever attribution lands first is permanent.
+- /invite/* was added to the AASA and to the webview appUrlOpen handler. On the
+  web the flow works regardless; native opening needs Apple to re-fetch the AASA.
+
+No rewards/campaigns are attached yet — this is the relationship layer only.

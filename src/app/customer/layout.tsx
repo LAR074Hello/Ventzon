@@ -7,6 +7,7 @@ import Onboarding, { useOnboarding } from "./components/Onboarding";
 import AgeGate from "./components/AgeGate";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { checkPushPermission, registerDevicePush } from "@/lib/push-client";
+import { flushPendingReferral, stashReferralCode } from "@/lib/referral-client";
 
 // Home (Discover) · Map · [scan] · Rewards · Notifications · Profile
 const tabs = [
@@ -93,6 +94,11 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         registerPushNotifications();
+        // Any pending referral code (e.g. landed via a shared link and signed
+        // in without the auth page in the session) is attributed here. The API
+        // is idempotent and gated on onboarding completion, so this is safe to
+        // run on every launch.
+        flushPendingReferral();
         // Load badge count
         fetch("/api/customer/memberships").then(r => r.json()).then(d => {
           const memberships = d.memberships ?? [];
@@ -105,6 +111,41 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
       }
     });
   }, []);
+
+  // Native universal links: /invite/<code> opens the app (the webview is
+  // pinned to /customer, so the URL arrives here as an event). Stash the code
+  // and let the normal flush attribute it. Auth-callback links are handled in
+  // the auth page; this is complementary, not a replacement.
+  useEffect(() => {
+    let disposed = false;
+    (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!Capacitor.isNativePlatform()) return;
+        const { App } = await import("@capacitor/app");
+        const listener = App.addListener("appUrlOpen", ({ url }) => {
+          try {
+            const u = new URL(url);
+            if (u.pathname.startsWith("/invite/")) {
+              const code = u.pathname.slice("/invite/".length).split("/")[0];
+              if (code) {
+                stashReferralCode(code);
+                router.push("/customer/explore");
+                flushPendingReferral();
+              }
+            }
+          } catch {}
+        });
+        const l = await listener;
+        if (disposed) l.remove();
+      } catch {
+        // Plugin missing or web context — nothing to do.
+      }
+    })();
+    return () => {
+      disposed = true;
+    };
+  }, [router]);
 
   // The Alerts page fires this once it marks everything read.
   useEffect(() => {
