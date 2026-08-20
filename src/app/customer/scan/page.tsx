@@ -6,6 +6,7 @@ import jsQR from "jsqr";
 import { X, Zap, RotateCw } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { performCheckin } from "@/lib/checkin";
+import { acquireBackCameraStream, isPermissionDeniedError } from "@/lib/camera";
 
 type ScanState = "scanning" | "success" | "error" | "permission-denied";
 
@@ -115,32 +116,24 @@ export default function ScanPage() {
   }, [onCode]);
 
   /**
-   * Camera startup — hardened against the iOS WebKit constraints bug.
+   * Camera startup — rear camera first.
    *
-   * `{ video: { facingMode: "environment" } }` in the INITIAL getUserMedia
-   * call is the shape iOS WebKit has historically failed to parse — the
-   * camera never starts. `{ video: true }` parses on every WebKit release;
-   * the rear camera is then requested ideal-only via applyConstraints, so a
-   * refusal keeps the default camera instead of failing the session. The call
-   * is also wrapped so a synchronous conversion throw cannot escape the
-   * effect, and the real error (name + message) is logged for diagnosis.
+   * iOS will open the FRONT camera and ignore a post-hoc
+   * `applyConstraints({ facingMode: "environment" })` — the physical camera
+   * never switches. The rear camera must be requested in the getUserMedia
+   * call itself. `acquireBackCameraStream` (src/lib/camera.ts) walks that
+   * ladder: exact environment → ideal environment → explicit rear deviceId
+   * from enumerateDevices() → `{ video: true }` as a last resort. The call is
+   * wrapped so a synchronous conversion throw cannot escape the effect, and
+   * the real error (name + message) is logged for diagnosis.
    */
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false,
-      });
+      const stream = await acquireBackCameraStream();
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
-      }
-      try {
-        const track = stream.getVideoTracks()[0];
-        if (track) await track.applyConstraints({ facingMode: "environment" });
-      } catch {
-        // ideal-only — keep the default camera
       }
       setState("scanning");
       rafRef.current = requestAnimationFrame(tick);
@@ -150,10 +143,7 @@ export default function ScanPage() {
         message: err?.message,
         error: err,
       });
-      const denied =
-        err?.name === "NotAllowedError" ||
-        err?.name === "PermissionDeniedError" ||
-        err?.code === 1;
+      const denied = isPermissionDeniedError(err);
       setState(denied ? "permission-denied" : "error");
       if (!denied) setErrorMsg(err?.message ?? String(err));
     }
