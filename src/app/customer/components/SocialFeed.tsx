@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, Compass, Sparkles, BadgeCheck, MapPin, Ticket, ChevronRight, Play, Volume2, VolumeX } from "lucide-react";
@@ -194,7 +195,7 @@ function SuggestionRow({ userLoc }: { userLoc: { lat: number; lng: number } | nu
   useEffect(() => {
     const params = userLoc ? `?lat=${userLoc.lat}&lng=${userLoc.lng}` : "";
     fetch(`/api/customer/suggestions${params}`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => d?.suggestions && setSuggestions(d.suggestions))
       .catch(() => {});
   }, [userLoc]);
@@ -377,7 +378,7 @@ export default function SocialFeed({
       qs.set("offset", String(offset));
       const res = await fetch(`/api/customer/feed?${qs.toString()}`);
       if (!res.ok) return;
-      const d = await res.json();
+      const d = await safeJson(res);
       setPosts((prev) => (replace ? d.posts ?? [] : [...prev, ...(d.posts ?? [])]));
       setHasMore(Boolean(d.has_more));
       offsetRef.current = d.next_offset ?? offset;

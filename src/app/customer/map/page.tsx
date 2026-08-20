@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Locate, X, ChevronRight } from "lucide-react";
@@ -81,14 +82,14 @@ export default function MapPage() {
   // Load shops
   useEffect(() => {
     fetch("/api/customer/shops-map")
-      .then((r) => r.json())
+      .then((r) => safeJson(r))
       .then((d) => setShops(d.shops ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
 
     // Live reward progress for the detail sheet — signed-out users skip this.
     fetch("/api/customer/memberships")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => {
         if (!d?.memberships) return;
         const map: Record<string, { visits: number; goal: number }> = {};

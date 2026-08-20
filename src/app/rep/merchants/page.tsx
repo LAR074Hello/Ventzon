@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Store } from "lucide-react";
@@ -45,7 +46,7 @@ export default function MerchantsPage() {
     fetch("/api/rep/merchants")
       .then(r => {
         if (r.status === 401 || r.status === 403) { router.replace("/rep/auth"); return null; }
-        return r.json();
+        return safeJson(r);
       })
       .then(d => { if (d) setMerchants(d.merchants ?? []); })
       .finally(() => setLoading(false));

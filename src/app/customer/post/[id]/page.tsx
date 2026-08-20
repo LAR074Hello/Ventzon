@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -52,7 +53,7 @@ export default function PostPage() {
       setLoading(false);
       return;
     }
-    setData(await res.json());
+    setData(await safeJson(res));
     setLoading(false);
   }, [postId]);
 

@@ -1,3 +1,5 @@
+import { safeJson } from "@/lib/safe-json";
+
 const CODE_KEY = "ventzon_referral_code";
 
 /**
@@ -75,7 +77,7 @@ export async function flushPendingReferral(): Promise<void> {
       body: JSON.stringify({ code }),
     });
     if (res.status === 401) return; // signed out — retry after auth
-    const json = await res.json().catch(() => ({}));
+    const json = await safeJson(res).catch(() => ({}));
     if (json?.status === "pending_onboarding") return; // retry after age gate
     clearPendingReferralCode(); // attributed / already_attributed / invalid / self
   } catch {

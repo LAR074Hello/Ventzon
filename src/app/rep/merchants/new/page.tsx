@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, ArrowLeft, Search, Store } from "lucide-react";
@@ -29,7 +30,7 @@ export default function NewMerchantPage() {
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       const res = await fetch(`/api/rep/merchants/search?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
+      const data = await safeJson(res);
       setResults(data.results ?? []);
       setSearching(false);
     }, 300);
@@ -45,7 +46,7 @@ export default function NewMerchantPage() {
       body: JSON.stringify({ slug }),
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
     setClaiming(null);
 
     if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }

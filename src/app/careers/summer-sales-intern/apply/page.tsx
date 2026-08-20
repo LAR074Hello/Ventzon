@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Upload, CheckCircle } from "lucide-react";
@@ -155,7 +156,7 @@ export default function ApplyPage() {
       if (form.resume) data.append("resume", form.resume);
 
       const res = await fetch("/api/careers/apply", { method: "POST", body: data });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json?.error ?? "Submission failed");
       setSubmitted(true);
     } catch (e: any) {

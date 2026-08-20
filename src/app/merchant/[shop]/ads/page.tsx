@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -46,7 +47,7 @@ export default function AdsPage() {
       const res = await fetch(`/api/merchant/ad-campaigns?shop_slug=${encodeURIComponent(shopSlug)}`, {
         cache: "no-store",
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json?.error ?? "Failed to load campaigns");
       setCampaigns(json.campaigns ?? []);
       setHasLocation(json.has_location ?? true);
@@ -77,7 +78,7 @@ export default function AdsPage() {
           radius_miles: Number(radiusMiles),
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json?.error ?? "Failed to create campaign");
       setShowCreate(false);
       setHeadline("");

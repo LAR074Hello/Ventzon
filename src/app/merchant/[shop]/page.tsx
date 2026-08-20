@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { Suspense, useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 // @ts-ignore - some installs of qrcode.react ship without TS types; runtime is fine
@@ -429,7 +430,7 @@ function MerchantShopPage() {
       setLoadError("");
       if (!statsUrl) { setLoadError("Missing shop slug"); return; }
       const res = await fetch(statsUrl, { cache: "no-store" });
-      const json = (await res.json()) as any;
+      const json = (await safeJson(res)) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to load stats");
       setData(json as StatsResponse);
       setLastUpdated(new Date().toLocaleTimeString());
@@ -447,7 +448,7 @@ function MerchantShopPage() {
       setSettingsError("");
       if (!shopSlug) { setSettingsError("Missing shop slug"); return; }
       const res = await fetch(`/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
-      const json = (await res.json()) as any;
+      const json = (await safeJson(res)) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to load shop settings");
       const s = json.settings as ShopSettings;
       if (json.join_token) setJoinToken(json.join_token);
@@ -463,7 +464,7 @@ function MerchantShopPage() {
       try {
         const pinRes = await fetch(`/api/merchant/shop-settings?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
         if (pinRes.ok) {
-          const pinJson = await pinRes.json();
+          const pinJson = await safeJson(pinRes);
           const ms = (pinJson.settings ?? {}) as any;
           setRegisterPinSet(!!ms?.register_pin);
           const mode = ms?.reward_mode === "points" ? "points" : "stamps";
@@ -489,7 +490,7 @@ function MerchantShopPage() {
     if (!shopSlug) return;
     try {
       const res = await fetch(`/api/merchant/occasions?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (res.ok) setOccasions(json.occasions ?? []);
     } catch { /* non-fatal */ }
   }
@@ -504,7 +505,7 @@ function MerchantShopPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shop_slug: shopSlug, title: occTitle.trim(), message: occMessage.trim() || null, month: occMonth, day: occDay, days_before: 0 }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json?.error ?? "Failed to add");
       setOccTitle(""); setOccMessage(""); setOccMonth(1); setOccDay(1);
       await loadOccasions();
@@ -577,7 +578,7 @@ function MerchantShopPage() {
           ...(registerPinDraft !== "" ? { register_pin: registerPinDraft } : {}),
         }),
       });
-      const json = (await res.json()) as any;
+      const json = (await safeJson(res)) as any;
       if (!res.ok) throw new Error(json?.error ?? "Failed to save settings");
       setSaveSettingsMsg("Saved");
       setRegisterPinDraft("");
@@ -600,7 +601,7 @@ function MerchantShopPage() {
       form.append("file", file);
       form.append("shop_slug", shopSlug);
       const res = await fetch("/api/merchant/logo", { method: "POST", body: form });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json?.error ?? "Upload failed");
       setLogoUrl(json.logo_url);
       setLogoMsg("Uploaded");
@@ -623,7 +624,7 @@ function MerchantShopPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shop_slug: shopSlug }),
       });
-      const d = await res.json();
+      const d = await safeJson(res);
       if (!res.ok) throw new Error(d.error || "Failed to open billing portal");
       window.location.href = d.url;
     } catch (e: any) {
@@ -638,7 +639,7 @@ function MerchantShopPage() {
     try {
       const res = await fetch(`/api/merchant/billing?shop_slug=${encodeURIComponent(shopSlug)}`, { cache: "no-store" });
       if (res.ok) {
-        const json = await res.json();
+        const json = await safeJson(res);
         setBillingData(json);
       }
     } catch {}
@@ -672,7 +673,7 @@ function MerchantShopPage() {
     try {
       const res = await fetch("/api/merchant/delete-account", { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await safeJson(res);
         throw new Error(data.error ?? "Failed to delete account");
       }
       const supabase = createSupabaseBrowserClient();
@@ -690,7 +691,7 @@ function MerchantShopPage() {
     setCustomersLoading(true);
     try {
       const res = await fetch(`/api/merchant/customers?shop_slug=${encodeURIComponent(shopSlug)}&page=${page}`);
-      const json = await res.json();
+      const json = await safeJson(res);
       if (res.ok) {
         const next = json.customers ?? [];
         setCustomers(prev => page === 1 ? next : [...prev, ...next]);
@@ -718,7 +719,7 @@ function MerchantShopPage() {
           contact: manualContact.trim(),
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) { setManualError(json.error ?? "Failed"); }
       else {
         setManualResult(json);
@@ -743,7 +744,7 @@ function MerchantShopPage() {
       const res = await fetch(
         `/api/merchant/customer-checkins?shop_slug=${encodeURIComponent(shopSlug)}&customer_id=${encodeURIComponent(customer.id)}`
       );
-      const json = await res.json();
+      const json = await safeJson(res);
       if (res.ok) {
         setCustomerCheckins(json.checkins ?? []);
         setCustomerRewards(json.rewards ?? []);
@@ -765,7 +766,7 @@ function MerchantShopPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shop_slug: shopSlug, subject: campaignSubject, body: campaignBody }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json.error ?? "Failed to send");
       setCampaignMsg(`Sent to ${json.sent} customer${json.sent !== 1 ? "s" : ""}${json.failed > 0 ? ` (${json.failed} failed)` : ""}`);
       setCampaignSubject("");
@@ -788,7 +789,7 @@ function MerchantShopPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shop_slug: shopSlug, target: "lapsed", win_back: true }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json.error ?? "Failed to send");
       setWinBackMsg(
         json.sent === 0
@@ -818,7 +819,7 @@ function MerchantShopPage() {
           details: aiDetails,
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json.error ?? "Generation failed");
       setAiOptions(json.options ?? []);
     } catch (err: any) {
@@ -844,7 +845,7 @@ function MerchantShopPage() {
       const params = new URLSearchParams({ shop_slug: shopSlug });
       if (refresh) params.set("refresh", "1");
       const res = await fetch(`/api/ai/insights?${params}`, { cache: "no-store" });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok || !json.insight) throw new Error(json.error ?? "No insight");
       setInsight(json.insight);
     } catch {
@@ -862,7 +863,7 @@ function MerchantShopPage() {
     try {
       const res = await fetch(`/api/merchant/qr-card?shop=${encodeURIComponent(shopSlug)}`);
       if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
+        const json = await safeJson(res).catch(() => ({}));
         setQrCardError(json.error ?? "Failed to generate PDF");
         return;
       }
@@ -886,7 +887,7 @@ function MerchantShopPage() {
     setCommunityLoading(true);
     try {
       const res = await fetch(`/api/merchant/community-settings?shop=${encodeURIComponent(shopSlug)}`);
-      const json = await res.json();
+      const json = await safeJson(res);
       if (json.ok) {
         setCommunitySettings(json.settings ?? []);
         setCommunityMerchantId(json.merchant_id ?? "");
@@ -915,7 +916,7 @@ function MerchantShopPage() {
           })),
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (json.ok) {
         setCommunityMsg("Saved.");
         setTimeout(() => setCommunityMsg(""), 2500);
@@ -934,7 +935,7 @@ function MerchantShopPage() {
     setCommunityAnalyticsLoading(true);
     try {
       const res = await fetch(`/api/merchant/community-analytics?shop=${encodeURIComponent(shopSlug)}`);
-      const json = await res.json();
+      const json = await safeJson(res);
       if (json.ok) setCommunityAnalytics(json);
     } catch {
       // non-fatal
@@ -960,7 +961,7 @@ function MerchantShopPage() {
           expires_months: grantExpires,
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (json.ok) {
         setGrantMsg("Perk granted.");
         setGrantContact("");

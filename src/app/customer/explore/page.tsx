@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag, Landmark, Trees } from "lucide-react";
@@ -365,13 +366,13 @@ export default function ExplorePage() {
 
   useEffect(() => {
     fetch("/api/customer/explore")
-      .then((r) => r.json())
+      .then((r) => safeJson(r))
       .then((d) => setShops(d.shops ?? []))
       .finally(() => setLoading(false));
 
     // Live reward progress — signed-out users simply get the default cards.
     fetch("/api/customer/memberships")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => {
         if (!d?.memberships) return;
         const map: Record<string, Progress> = {};
@@ -384,7 +385,7 @@ export default function ExplorePage() {
 
     // Friends' recent check-ins (creators the user follows) — quiet no-op signed out.
     fetch("/api/customer/friend-activity")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => d?.activity && setFriendActivity(d.activity))
       .catch(() => {});
 
@@ -408,7 +409,7 @@ export default function ExplorePage() {
       setNearbyLoading(true);
       try {
         const res = await fetch(`/api/customer/explore?${qs.toString()}`);
-        const d = await res.json();
+        const d = await safeJson(res);
         if (alive) setNearbyPlaces(d.shops ?? []);
       } catch {
         if (alive) setNearbyPlaces([]);
@@ -433,7 +434,7 @@ export default function ExplorePage() {
       setSearching(true);
       try {
         const r = await fetch(`/api/customer/search?q=${encodeURIComponent(q)}`);
-        if (r.ok) setRemote(await r.json());
+        if (r.ok) setRemote(await safeJson(r));
       } catch {
         /* a failed search shows no results, not an error screen */
       } finally {

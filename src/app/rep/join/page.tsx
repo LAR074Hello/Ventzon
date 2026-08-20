@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -22,7 +23,7 @@ function JoinForm() {
   useEffect(() => {
     if (!token) { setInviteError("No invite token found."); setLoading(false); return; }
     fetch(`/api/rep/invite?token=${token}`)
-      .then(r => r.json())
+      .then(r => safeJson(r))
       .then(d => {
         if (d.error) setInviteError(d.error);
         else setInvite(d.invite);
@@ -43,7 +44,7 @@ function JoinForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, password }),
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) { setError(data.error ?? "Something went wrong."); setSubmitting(false); return; }
 
     // Sign in

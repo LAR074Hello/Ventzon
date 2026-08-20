@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -34,7 +35,7 @@ export default function PrintCardPage() {
           `/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`,
           { cache: "no-store" }
         );
-        const data = await res.json();
+        const data = await safeJson(res);
 
         if (!res.ok || !data.ok) {
           setError(data.error ?? "Shop not found");

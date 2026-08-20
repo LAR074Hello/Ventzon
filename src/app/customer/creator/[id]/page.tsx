@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Share2 } from "lucide-react";
@@ -52,7 +53,7 @@ export default function CreatorProfilePage() {
       setLoading(false);
       return;
     }
-    const data = await res.json();
+    const data = await safeJson(res);
     setProfile(data.profile);
     setStats(data.stats);
     setBadges(data.badges ?? []);

@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -57,7 +58,7 @@ export default function GetStartedPage() {
         body: JSON.stringify({ shopName }),
       });
 
-      const json = await resp.json();
+      const json = await safeJson(resp);
       if (!resp.ok) throw new Error(json?.error ?? "Failed to create shop");
 
       // Send to pricing to pick a plan

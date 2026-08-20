@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -46,7 +47,7 @@ export default function NotificationsPage() {
         return;
       }
       fetch("/api/customer/notifications")
-        .then((r) => (r.ok ? r.json() : { notifications: [] }))
+        .then((r) => (r.ok ? safeJson(r) : { notifications: [] }))
         .then((d) => {
           setNotifications(d.notifications ?? []);
           // Opening this tab is what clears the badge.

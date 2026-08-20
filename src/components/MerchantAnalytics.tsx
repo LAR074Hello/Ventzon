@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useState } from "react";
 import {
   ResponsiveContainer,
@@ -174,7 +175,7 @@ export default function MerchantAnalytics({
         `/api/merchant/analytics?shop=${encodeURIComponent(shopSlug)}&period=${encodeURIComponent(period)}`,
         { cache: "no-store" }
       );
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json?.error ?? "Failed to load analytics");
       setData(json as AnalyticsResponse);
     } catch (e: any) {

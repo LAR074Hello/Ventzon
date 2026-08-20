@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -52,7 +53,7 @@ export default function ModerationPage() {
       setLoading(false);
       return;
     }
-    const data = await res.json().catch(() => null);
+    const data = await safeJson(res).catch(() => null);
     if (!data?.reports) {
       setError("Failed to load the queue.");
       setLoading(false);
@@ -73,7 +74,7 @@ export default function ModerationPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const data = await res.json().catch(() => null);
+    const data = await safeJson(res).catch(() => null);
     setBusy(null);
     if (!res.ok || !data?.ok) {
       setError(data?.hint ?? data?.error ?? "Action failed.");

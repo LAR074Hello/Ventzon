@@ -1,6 +1,7 @@
 // Sends push notifications via OneSignal REST API.
 // Set ONESIGNAL_APP_ID and ONESIGNAL_API_KEY in environment variables.
 // Docs: https://documentation.onesignal.com/reference/create-notification
+import { safeJson } from "@/lib/safe-json";
 
 let warnedMissingConfig = false;
 function warnMissingConfig() {
@@ -91,7 +92,7 @@ export async function sendPushToDeviceTokens(
       },
       body: JSON.stringify(payload),
     });
-    const json: any = await res.json().catch(() => ({}));
+    const json: any = await safeJson(res).catch(() => ({}));
     // OneSignal returns { recipients, id, errors? }. A 200 with 0
     // recipients (or an errors array) means nothing was delivered.
     if (!res.ok) return { delivered: 0 };

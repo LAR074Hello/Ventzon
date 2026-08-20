@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useRef, useState } from "react";
 import { X, Search, MapPin, Check } from "lucide-react";
 
@@ -56,7 +57,7 @@ export default function EditPostSheet({
       try {
         const r = await fetch(`/api/customer/places-search?q=${encodeURIComponent(q)}`);
         if (!r.ok) return;
-        const d = await r.json();
+        const d = await safeJson(r);
         setResults(
           (d.places ?? []).map((p: { slug: string; name: string; neighborhood?: string; city?: string }) => ({
             slug: p.slug,
@@ -89,7 +90,7 @@ export default function EditPostSheet({
       await onSaved();
       onClose();
     } else {
-      const d = await res.json().catch(() => ({}));
+      const d = await safeJson(res).catch(() => ({}));
       setError(d?.error ?? "Could not save");
       setSaving(false);
     }

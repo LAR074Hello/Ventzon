@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -54,7 +55,7 @@ export default function AgeGate() {
         if (!session) return;
         const res = await fetch("/api/customer/age-gate");
         if (!res.ok) return; // fail-open
-        const json = (await res.json()) as { status?: string };
+        const json = (await safeJson(res)) as { status?: string };
         if (alive && (json.status === "verified" || json.status === "blocked" || json.status === "missing")) {
           setStatus(json.status);
         }
@@ -98,7 +99,7 @@ export default function AgeGate() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dob: `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}` }),
       });
-      const json = (await res.json()) as { status?: string; error?: string };
+      const json = (await safeJson(res)) as { status?: string; error?: string };
       if (!res.ok) throw new Error(json?.error ?? "Something went wrong.");
       setStatus(json.status === "blocked" ? "blocked" : "verified");
       // A completed age gate IS the referral onboarding gate — flush any

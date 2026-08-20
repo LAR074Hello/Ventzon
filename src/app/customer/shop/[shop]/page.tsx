@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, ArrowLeft, Share2, Trophy, X, Clock, Bell, BellRing, Grid3x3 } from "lucide-react";
 import PostGrid, { type GridPost } from "../../components/PostGrid";
 import PostComposer from "../../components/PostComposer";
+import { safeJson } from "@/lib/safe-json";
 
 type ShopSettings = {
   shop_slug: string;
@@ -145,12 +146,10 @@ export default function CustomerShopPage() {
   const [status, setStatus] = useState<CustomerStatus | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [checkinLoading, setCheckinLoading] = useState(false);
   const [showCheckinOverlay, setShowCheckinOverlay] = useState(false);
   const [showShareVisit, setShowShareVisit] = useState(false);
   const [showRewardScreen, setShowRewardScreen] = useState(false);
   const [newStampIndex, setNewStampIndex] = useState<number | null>(null);
-  const [err, setErr] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
@@ -175,7 +174,7 @@ export default function CustomerShopPage() {
   async function loadHistory() {
     const res = await fetch(`/api/customer/history?shop_slug=${shopSlug}`);
     if (res.ok) {
-      const data = await res.json();
+      const data = await safeJson(res);
       setHistory(data.history ?? []);
     }
   }
@@ -189,7 +188,7 @@ export default function CustomerShopPage() {
         const res = await fetch(`/api/join/settings?shop_slug=${shopSlug}`);
         // A non-JSON body (an SSO redirect, an HTML error page) is a failure,
         // not a missing shop — .catch(null) keeps it out of the not-found branch.
-        const json = await res.json().catch(() => null);
+        const json = await safeJson(res).catch(() => null);
         if (res.ok && json?.settings) {
           setSettings(json.settings);
         } else if (res.status === 404 && json?.code === "shop_not_found") {
@@ -203,26 +202,35 @@ export default function CustomerShopPage() {
 
       // Posts featuring this business — same grid as creator profiles.
       fetch(`/api/customer/feed?shop_slug=${shopSlug}`)
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => (r.ok ? safeJson(r) : null))
         .then((d) => d?.posts && setShopPosts(d.posts))
         .catch(() => {});
 
       fetch(`/api/customer/follow-list?shop_slug=${shopSlug}`)
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => (r.ok ? safeJson(r) : null))
         .then((d) => typeof d?.total === "number" && setFollowerCount(d.total))
         .catch(() => {});
 
       if (session?.user?.email) {
         const memberRes = await fetch("/api/customer/memberships");
-        const memberData = await memberRes.json();
+        const memberData = await safeJson(memberRes);
         const match = (memberData.memberships ?? []).find((m: any) => m.shop_slug === shopSlug);
         if (match) setStatus({ visits: match.visits, last_checkin_date: match.last_checkin_date });
+        // Camera-first check-in lands back here with ?checked_in=1 — the scan
+        // page posts the check-in before navigating. Show the stamp animation
+        // once and clear the param so a refresh doesn't replay it.
+        if (match && new URLSearchParams(window.location.search).get("checked_in") === "1") {
+          const matchGoal = match.reward_goal ?? goal;
+          setNewStampIndex(Math.min(match.visits, matchGoal) - 1);
+          setShowCheckinOverlay(true);
+          window.history.replaceState({}, "", window.location.pathname);
+        }
         await loadHistory();
 
         try {
           const followRes = await fetch("/api/customer/follows");
           if (followRes.ok) {
-            const followData = await followRes.json();
+            const followData = await safeJson(followRes);
             setFollowing(
               (followData.follows ?? []).some((f: any) => f.shop_slug === shopSlug)
             );
@@ -232,7 +240,7 @@ export default function CustomerShopPage() {
         try {
           const profRes = await fetch("/api/customer/creator-profile");
           if (profRes.ok) {
-            const profData = await profRes.json();
+            const profData = await safeJson(profRes);
             if (profData.profile?.id) setMyProfileId(profData.profile.id);
           }
         } catch {}
@@ -243,46 +251,16 @@ export default function CustomerShopPage() {
     load();
   }, [shopSlug]);
 
-  async function handleCheckin() {
-    if (!user?.email) {
-      router.push(`/customer/auth?redirect=/customer/shop/${shopSlug}`);
-      return;
-    }
-    setErr(null);
-    setCheckinLoading(true);
-    await haptic("medium");
-    try {
-      let referredBy: string | null = null;
-      try { referredBy = localStorage.getItem("ventzon_ref"); } catch {}
-      const res = await fetch("/api/join/checkin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shop_slug: shopSlug,
-          email: user.email,
-          ...(referredBy ? { referred_by: referredBy } : {}),
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? "Check-in failed");
-      const newVisits = json.visits as number;
-      setNewStampIndex(Math.min(newVisits, goal) - 1);
-      setStatus({ visits: newVisits, last_checkin_date: today });
-      await loadHistory();
-      await haptic("success");
-      setShowCheckinOverlay(true);
-    } catch (e: any) {
-      setErr(e?.message ?? "Something went wrong");
-    } finally {
-      setCheckinLoading(false);
-    }
-  }
+  // Camera-first check-in: the "CHECK IN HERE" button opens the QR scanner
+  // (/customer/scan?shop=…). The scan page posts the check-in through the
+  // shared, hardened handler (src/lib/checkin.ts) and lands back here with
+  // ?checked_in=1 so this page can show the stamp animation.
 
   async function handleRedeemed() {
     setShowRewardScreen(false);
     // Reload fresh data from DB (visits already reset to 0 server-side)
     const memberRes = await fetch("/api/customer/memberships");
-    const memberData = await memberRes.json();
+    const memberData = await safeJson(memberRes);
     const match = (memberData.memberships ?? []).find((m: any) => m.shop_slug === shopSlug);
     if (match) setStatus({ visits: match.visits, last_checkin_date: match.last_checkin_date });
     if (user?.email) await loadHistory();
@@ -488,7 +466,7 @@ export default function CustomerShopPage() {
               setShowShareVisit(false);
               const res = await fetch(`/api/customer/feed?shop_slug=${shopSlug}`);
               if (res.ok) {
-                const d = await res.json();
+                const d = await safeJson(res);
                 setShopPosts(d.posts ?? []);
               }
             }}
@@ -528,12 +506,6 @@ export default function CustomerShopPage() {
             : "Scan the QR code in-store to check in"}
         </p>
       </div>
-
-      {err && (
-        <div className="mx-5 mt-4 rounded-ctl border border-danger/30 bg-danger/10 px-4 py-3 text-center">
-          <p className="text-sm text-danger font-normal">{err}</p>
-        </div>
-      )}
 
       {/* Posts featuring this business */}
       {shopPosts.length > 0 && (
@@ -591,11 +563,10 @@ export default function CustomerShopPage() {
         )}
         {user && !checkedInToday && !isReady && (
           <button
-            onClick={handleCheckin}
-            disabled={checkinLoading}
-            className="text-sm font-medium text-inverse w-full rounded-ctl bg-primary py-4 transition-all active:opacity-80 disabled:opacity-40"
+            onClick={() => router.push(`/customer/scan?shop=${shopSlug}`)}
+            className="text-sm font-medium text-inverse w-full rounded-ctl bg-primary py-4 transition-all active:opacity-80"
           >
-            {checkinLoading ? "CHECKING IN…" : "CHECK IN HERE"}
+            CHECK IN HERE
           </button>
         )}
         {user && checkedInToday && !isReady && (

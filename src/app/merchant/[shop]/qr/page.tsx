@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 // @ts-ignore
@@ -31,7 +32,7 @@ export default function MerchantQRPage() {
 
   useEffect(() => {
     fetch(`/api/join/settings?shop_slug=${encodeURIComponent(shopSlug)}`)
-      .then((r) => r.json())
+      .then((r) => safeJson(r))
       .then((data) => {
         if (data.settings) {
           setShopName(data.settings.shop_name ?? shopSlug);

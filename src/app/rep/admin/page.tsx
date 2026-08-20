@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Check, Users, DollarSign, Download } from "lucide-react";
@@ -46,7 +47,7 @@ export default function RepAdminPage() {
     fetch("/api/rep/admin")
       .then(r => {
         if (r.status === 401) { setUnauthorized(true); return null; }
-        return r.json();
+        return safeJson(r);
       })
       .then(d => {
         if (!d) return;
@@ -67,7 +68,7 @@ export default function RepAdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, full_name: name }),
     });
-    const data = await res.json();
+    const data = await safeJson(res);
     setInviting(false);
 
     if (!res.ok) { setInviteError(data.error); return; }
@@ -76,7 +77,7 @@ export default function RepAdminPage() {
     setInviteLink(link);
     setName(""); setEmail("");
     // Refresh
-    fetch("/api/rep/admin").then(r => r.json()).then(d => setPending(d.pendingInvites ?? []));
+    fetch("/api/rep/admin").then(r => safeJson(r)).then(d => setPending(d.pendingInvites ?? []));
   }
 
   function copyLink(link: string) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Send, AlertCircle, RotateCw, Trash2 } from "lucide-react";
@@ -146,7 +147,7 @@ export default function CommentsSheet({
       // Reconcile against the server rather than trusting the optimistic row:
       // the server assigns the real id, and the author's display name is
       // whatever their profile actually says, not the "You" placeholder.
-      const fresh = await fetch(`/api/customer/posts/${postId}`).then((r) => r.json());
+      const fresh = await fetch(`/api/customer/posts/${postId}`).then((r) => safeJson(r));
       setComments(fresh.comments ?? []);
     } catch {
       // Failure is shown WHERE the comment is, with the retry attached to it.

@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import jsQR from "jsqr";
-import { X, Zap } from "lucide-react";
+import { X, Zap, RotateCw } from "lucide-react";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { performCheckin } from "@/lib/checkin";
 
 type ScanState = "scanning" | "success" | "error" | "permission-denied";
 
@@ -29,14 +31,62 @@ export default function ScanPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number>(0);
 
+  // Resolved once, before any scan, so a decoded QR can be checked in on.
+  const emailRef = useRef<string | null>(null);
+  // ?shop=<slug> — set when the user came from a store's "Check in" button.
+  // It enables the no-camera fallback: check in without scanning.
+  const [originShop, setOriginShop] = useState<string | null>(null);
+
   const [state, setState] = useState<ScanState>("scanning");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [cameraAttempt, setCameraAttempt] = useState(0);
+  const [checkinBusy, setCheckinBusy] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+
+  // Signed-in customer email + the origin shop (if any), read once.
+  useEffect(() => {
+    try {
+      setOriginShop(new URLSearchParams(window.location.search).get("shop"));
+    } catch {}
+    createSupabaseBrowserClient()
+      .auth.getSession()
+      .then(({ data }) => {
+        emailRef.current = data.session?.user?.email?.toLowerCase() ?? null;
+        if (!data.session) {
+          router.replace("/customer/auth?redirect=/customer/scan");
+        }
+      });
+  }, [router]);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
   }, []);
+
+  /**
+   * A QR decoded. Stop the camera, check in via the shared hardened handler,
+   * then land on the shop page. `?checked_in=1` makes the shop page show the
+   * stamp animation; it is omitted when the check-in failed so the page never
+   * claims a success that did not happen.
+   */
+  const onCode = useCallback(
+    async (slug: string) => {
+      stopCamera();
+      setState("success");
+      let checkedIn = false;
+      if (emailRef.current) {
+        try {
+          const res = await performCheckin({ shopSlug: slug, email: emailRef.current });
+          checkedIn = res?.status !== "already_checked_in";
+        } catch (err: any) {
+          console.error("[scan] check-in failed for", slug, err?.message ?? err);
+        }
+      }
+      router.push(`/customer/shop/${slug}${checkedIn ? "?checked_in=1" : ""}`);
+    },
+    [router, stopCamera]
+  );
 
   const tick = useCallback(() => {
     const video = videoRef.current;
@@ -57,36 +107,62 @@ export default function ScanPage() {
     if (code) {
       const slug = parseShopSlug(code.data);
       if (slug) {
-        stopCamera();
-        setState("success");
-        setTimeout(() => router.push(`/customer/shop/${slug}`), 600);
+        onCode(slug);
         return;
       }
     }
     rafRef.current = requestAnimationFrame(tick);
-  }, [router, stopCamera]);
+  }, [onCode]);
+
+  /**
+   * Camera startup — hardened against the iOS WebKit constraints bug.
+   *
+   * `{ video: { facingMode: "environment" } }` in the INITIAL getUserMedia
+   * call is the shape iOS WebKit has historically failed to parse — the
+   * camera never starts. `{ video: true }` parses on every WebKit release;
+   * the rear camera is then requested ideal-only via applyConstraints, so a
+   * refusal keeps the default camera instead of failing the session. The call
+   * is also wrapped so a synchronous conversion throw cannot escape the
+   * effect, and the real error (name + message) is logged for diagnosis.
+   */
+  const startCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      try {
+        const track = stream.getVideoTracks()[0];
+        if (track) await track.applyConstraints({ facingMode: "environment" });
+      } catch {
+        // ideal-only — keep the default camera
+      }
+      setState("scanning");
+      rafRef.current = requestAnimationFrame(tick);
+    } catch (err: any) {
+      console.error("[scan] getUserMedia failed", {
+        name: err?.name,
+        message: err?.message,
+        error: err,
+      });
+      const denied =
+        err?.name === "NotAllowedError" ||
+        err?.name === "PermissionDeniedError" ||
+        err?.code === 1;
+      setState(denied ? "permission-denied" : "error");
+      if (!denied) setErrorMsg(err?.message ?? String(err));
+    }
+  }, [tick]);
 
   useEffect(() => {
-    let mounted = true;
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" } })
-      .then((stream) => {
-        if (!mounted) { stream.getTracks().forEach((t) => t.stop()); return; }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-          rafRef.current = requestAnimationFrame(tick);
-        }
-      })
-      .catch(() => {
-        if (mounted) setState("permission-denied");
-      });
-    return () => {
-      mounted = false;
-      stopCamera();
-    };
-  }, [tick, stopCamera]);
+    startCamera();
+    return () => stopCamera();
+  }, [startCamera, stopCamera, cameraAttempt]);
 
   async function toggleTorch() {
     const track = streamRef.current?.getVideoTracks()[0];
@@ -97,10 +173,24 @@ export default function ScanPage() {
     } catch {}
   }
 
+  /** No-camera fallback for viewers who came from a store's Check-in button. */
+  async function checkInWithoutCamera() {
+    const slug = originShop;
+    if (!slug || !emailRef.current || checkinBusy) return;
+    setCheckinBusy(true);
+    try {
+      await performCheckin({ shopSlug: slug, email: emailRef.current });
+      router.push(`/customer/shop/${slug}?checked_in=1`);
+    } catch (err: any) {
+      console.error("[scan] check-in without camera failed", err?.message ?? err);
+      setErrorMsg(err?.message ?? "Check-in failed — please try again.");
+    } finally {
+      setCheckinBusy(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black flex flex-col" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-      {/* Hidden video + canvas for processing */}
-      <video ref={videoRef} className="hidden" playsInline muted />
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Camera fill */}
@@ -186,6 +276,38 @@ export default function ScanPage() {
             <p className="text-sm text-white mt-2 /50">
               Go to Settings → Ventzon → Camera and enable access
             </p>
+            {originShop && (
+              <button
+                onClick={checkInWithoutCamera}
+                disabled={checkinBusy}
+                className="mt-5 rounded-full border border-white/40 px-5 py-2.5 text-sm font-medium text-white active:bg-white/10 disabled:opacity-40"
+              >
+                {checkinBusy ? "Checking in…" : "Check in without camera"}
+              </button>
+            )}
+          </div>
+        )}
+        {state === "error" && (
+          <div>
+            <p className="font-display text-lg font-semibold tracking-tight text-white /90">Couldn&rsquo;t start the camera</p>
+            {errorMsg && <p className="text-sm text-white mt-2 /50">{errorMsg}</p>}
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <button
+                onClick={() => setCameraAttempt((n) => n + 1)}
+                className="flex items-center gap-2 rounded-full border border-white/40 px-5 py-2.5 text-sm font-medium text-white active:bg-white/10"
+              >
+                <RotateCw className="h-4 w-4" /> Try again
+              </button>
+              {originShop && (
+                <button
+                  onClick={checkInWithoutCamera}
+                  disabled={checkinBusy}
+                  className="rounded-full border border-white/40 px-5 py-2.5 text-sm font-medium text-white active:bg-white/10 disabled:opacity-40"
+                >
+                  {checkinBusy ? "Checking in…" : "Check in without camera"}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

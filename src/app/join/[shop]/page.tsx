@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
+import { safeJson } from "@/lib/safe-json";
 
 /* ── Types ── */
 type ShopSettings = {
@@ -108,7 +109,7 @@ function CustomerJoinPage() {
         const res = await fetch(`/api/join/settings?${qs}`, {
           signal: AbortSignal.timeout(10_000),
         });
-        const json = await res.json();
+        const json = await safeJson(res);
         if (!res.ok) {
           if (json?.error === "invalid_token") {
             if (!cancelled) setTokenInvalid(true);
@@ -162,7 +163,7 @@ function CustomerJoinPage() {
         body: JSON.stringify(payload),
       });
 
-      const json = (await res.json()) as any;
+      const json = (await safeJson(res)) as any;
       if (!res.ok) throw new Error(json?.error || "Check-in failed");
 
       const checkinResult = json as CheckinResponse;

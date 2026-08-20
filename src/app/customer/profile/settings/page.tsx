@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -153,7 +154,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/customer/blocks");
       if (res.ok) {
-        const d = await res.json();
+        const d = await safeJson(res);
         setBlocked(d.blocks ?? []);
       }
     } catch {}
@@ -228,7 +229,7 @@ export default function ProfilePage() {
       setEmailNotif(session.user.user_metadata?.email_notif !== false);
       const res = await fetch("/api/customer/memberships");
       if (res.ok) {
-        const data = await res.json();
+        const data = await safeJson(res);
         setMemberships(data.memberships ?? []);
         if (data.birthday) {
           setBirthMonth(data.birthday.birth_month ?? "");
@@ -238,14 +239,14 @@ export default function ProfilePage() {
       try {
         const prefsRes = await fetch("/api/customer/notification-prefs");
         if (prefsRes.ok) {
-          const prefsData = await prefsRes.json();
+          const prefsData = await safeJson(prefsRes);
           if (prefsData.prefs) setNotifPrefs(prefsData.prefs);
         }
       } catch {}
       try {
         const creatorRes = await fetch("/api/customer/creator-profile");
         if (creatorRes.ok) {
-          const creatorData = await creatorRes.json();
+          const creatorData = await safeJson(creatorRes);
           if (creatorData.profile) {
             setCreatorProfile({
               id: creatorData.profile.id,
@@ -353,7 +354,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/customer/delete-account", { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await safeJson(res);
         throw new Error(data.error ?? "Failed to delete account");
       }
       await supabase.auth.signOut();

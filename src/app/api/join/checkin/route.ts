@@ -52,12 +52,15 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  // Rate limit: 20 check-ins per IP per minute
-  const ip = getClientIp(req);
-  const rl = await rateLimit(`checkin:${ip}`, 20, 60_000);
-  if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
-
   try {
+    // Rate limit: 20 check-ins per IP per minute. Runs INSIDE the try so a
+    // limiter/platform failure still produces a JSON body — a non-JSON 500
+    // would surface on iOS as Safari's "The string did not match the expected
+    // pattern." instead of a parseable error.
+    const ip = getClientIp(req);
+    const rl = await rateLimit(`checkin:${ip}`, 20, 60_000);
+    if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
+
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !serviceRoleKey) {

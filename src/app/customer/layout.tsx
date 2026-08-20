@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Home, Trophy, User, ScanLine, Map, Bell, Plus } from "lucide-react";
@@ -100,12 +101,12 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
         // run on every launch.
         flushPendingReferral();
         // Load badge count
-        fetch("/api/customer/memberships").then(r => r.json()).then(d => {
+        fetch("/api/customer/memberships").then(r => safeJson(r)).then(d => {
           const memberships = d.memberships ?? [];
           setReadyCount(memberships.filter((m: any) => m.visits >= m.reward_goal).length);
         }).catch(() => {});
         fetch("/api/customer/notifications")
-          .then(r => (r.ok ? r.json() : null))
+          .then(r => (r.ok ? safeJson(r) : null))
           .then(d => setUnreadAlerts(d?.unread ?? 0))
           .catch(() => {});
       }

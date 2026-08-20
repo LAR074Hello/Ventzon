@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useRef, useState } from "react";
 import { Send, ImagePlus, X } from "lucide-react";
 import Avatar from "./Avatar";
@@ -106,7 +107,7 @@ export default function PostComposer({
   // at signup it is friction before any value has been delivered.
   useEffect(() => {
     fetch("/api/customer/creator-profile")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => {
         if (d?.profile && !d.profile.display_name) setNeedsIdentity(true);
       })
@@ -115,7 +116,7 @@ export default function PostComposer({
 
   useEffect(() => {
     fetch("/api/customer/memberships")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => {
         if (d?.memberships) {
           setMyShops(
@@ -148,7 +149,7 @@ export default function PostComposer({
         try {
           const res = await fetch("/api/customer/shops-map");
           if (!res.ok) { setLocState("unavailable"); return; }
-          const d = await res.json();
+          const d = await safeJson(res);
           const { latitude: la, longitude: lo } = pos.coords;
           const withDist = (d.shops ?? [])
             .filter((p: any) => p.latitude != null && p.longitude != null)
@@ -188,7 +189,7 @@ export default function PostComposer({
       try {
         const r = await fetch(`/api/customer/places-search?q=${encodeURIComponent(q)}`);
         if (!r.ok) return;
-        const d = await r.json();
+        const d = await safeJson(r);
         setSearchResults(
           (d.places ?? []).map((p: any) => ({
             shop_slug: p.slug,
@@ -406,7 +407,7 @@ export default function PostComposer({
         pickMedia(null);
         await onPosted();
       } else {
-        const err = await res.json().catch(() => ({}));
+        const err = await safeJson(res).catch(() => ({}));
         await discardUpload(uploadedPath);
         await discardUpload(posterPathUploaded);
         uploadedPath = null;

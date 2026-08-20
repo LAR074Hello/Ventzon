@@ -1,6 +1,7 @@
 // src/app/pricing/PricingContent.tsx
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, X, Trophy, ArrowRight } from "lucide-react";
@@ -140,7 +141,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
         body: JSON.stringify({ shop, plan }),
       });
 
-      const data = await res.json();
+      const data = await safeJson(res);
 
       if (!res.ok) {
         throw new Error(data.error || "Checkout failed");

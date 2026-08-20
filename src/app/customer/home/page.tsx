@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -97,7 +98,7 @@ export default function HomePage() {
         router.push("/customer/auth?redirect=/customer/home");
         return [];
       }
-      const data = await res.json();
+      const data = await safeJson(res);
       const list: Membership[] = data.memberships ?? [];
       setMemberships(list);
       setOffline(false);
@@ -136,15 +137,15 @@ export default function HomePage() {
 
       // Passport, badges, and leaderboard load quietly alongside the cards.
       fetch("/api/customer/passport")
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => (r.ok ? safeJson(r) : null))
         .then((d) => d?.passport && setPassport(d.passport))
         .catch(() => {});
       fetch("/api/customer/creator-profile")
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => (r.ok ? safeJson(r) : null))
         .then((d) => d?.badges && setBadges(d.badges))
         .catch(() => {});
       fetch("/api/customer/leaderboard")
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => (r.ok ? safeJson(r) : null))
         .then((d) => {
           if (d?.leaders) setLeaders(d.leaders);
           if (d?.period_label) setLeaderPeriod(d.period_label);

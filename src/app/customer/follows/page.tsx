@@ -1,6 +1,7 @@
 
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Avatar from "../components/Avatar";
@@ -44,7 +45,7 @@ function FollowListContent() {
       qs.set("offset", String(nextOffset));
       const res = await fetch(`/api/customer/follow-list?${qs.toString()}`);
       if (!res.ok) return;
-      const data = await res.json();
+      const data = await safeJson(res);
       setItems((prev) => (replace ? data.items : [...prev, ...data.items]));
       setHasMore(data.has_more);
       setTotal(data.total);

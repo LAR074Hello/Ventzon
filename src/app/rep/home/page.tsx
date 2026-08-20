@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DollarSign, Store, TrendingUp, ArrowRight, LogOut, Plus, X, Trash2 } from "lucide-react";
@@ -52,7 +53,7 @@ export default function RepHomePage() {
           router.replace("/rep/auth");
           return null;
         }
-        return r.json();
+        return safeJson(r);
       })
       .then(d => {
         if (!d) return;
@@ -66,7 +67,7 @@ export default function RepHomePage() {
 
   function loadLogs() {
     fetch("/api/rep/commission-log")
-      .then(r => r.json())
+      .then(r => safeJson(r))
       .then(d => {
         setLogs(d.logs ?? []);
         setLogMonthTotal(d.monthTotal ?? 0);
@@ -95,7 +96,7 @@ export default function RepHomePage() {
     setLogSaving(false);
 
     if (!res.ok) {
-      const d = await res.json();
+      const d = await safeJson(res);
       setLogError(d.error ?? "Failed to save");
       return;
     }

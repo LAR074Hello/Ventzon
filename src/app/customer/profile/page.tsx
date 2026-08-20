@@ -1,5 +1,6 @@
 "use client";
 
+import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Settings, Share2, Pencil, Plus, Sparkles, X, Bookmark, ChevronRight, Camera, Copy, Check } from "lucide-react";
@@ -57,7 +58,7 @@ export default function ProfilePage() {
   // count is real data from the referrals table, never fabricated.
   useEffect(() => {
     fetch("/api/customer/referral")
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? safeJson(r) : null))
       .then((d) => d?.code && setReferral(d))
       .catch(() => {});
   }, []);
@@ -66,7 +67,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/customer/posts");
       if (res.ok) {
-        const data = await res.json();
+        const data = await safeJson(res);
         setPosts(data.posts ?? []);
         setStats((s) => (s ? { ...s, posts: (data.posts ?? []).length } : s));
       }
@@ -89,7 +90,7 @@ export default function ProfilePage() {
       try {
         const res = await fetch("/api/customer/creator-profile");
         if (res.ok) {
-          const d = await res.json();
+          const d = await safeJson(res);
           setProfile(d.profile);
           setStats(d.stats);
           setBadges(d.badges ?? []);
@@ -99,7 +100,7 @@ export default function ProfilePage() {
       try {
         const sres = await fetch("/api/customer/saves");
         if (sres.ok) {
-          const sd = await sres.json();
+          const sd = await safeJson(sres);
           setSavedPosts(sd.posts ?? []);
           setSavedShops(sd.shops ?? []);
         }
@@ -118,7 +119,7 @@ export default function ProfilePage() {
         body: JSON.stringify({ is_creator: true }),
       });
       if (res.ok) {
-        const d = await res.json();
+        const d = await safeJson(res);
         setProfile((p) => (p ? { ...p, is_creator: true, ...d.profile } : d.profile));
         setShowComposer(true);
       }
