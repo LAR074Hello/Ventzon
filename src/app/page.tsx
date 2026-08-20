@@ -112,7 +112,7 @@ export default function HomePage() {
       <ProductBlock
         number="01"
         title="Find places worth going to"
-        body="Browse thousands of real local spots — coffee shops, parks, bookshops, the corner bar. No ads, no algorithm, no listings you’ve never heard of."
+        body="See what people are actually sharing around you — the places they go, and who is really there. No ads, no algorithm, no listings you’ve never heard of."
         photo="/site-images/photo-terrace.jpg"
         photoAlt="A terrace restaurant above the sea at dusk"
       >

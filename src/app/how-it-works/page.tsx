@@ -38,7 +38,7 @@ const customerSteps = [
   {
     number: "01",
     title: "Find a place near you",
-    body: "Browse thousands of real local spots on the Ventzon map — coffee shops, parks, bookshops, the corner bar. No ads, no algorithm, no listings you've never heard of.",
+    body: "See what people are actually sharing around you — the places they go, and who is really there. No ads, no algorithm, no listings you’ve never heard of.",
     photo: PHOTOS.street,
     photoAlt: "The interior of an independent shop",
     screen: SCREENS.explore,

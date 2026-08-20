@@ -48,6 +48,7 @@ export async function GET(req: Request) {
       admin
         .from("places")
         .select("slug, name, neighborhood, city, category, photos")
+        .eq("source", "merchant")
         .or(`name.ilike.%${safe}%,neighborhood.ilike.%${safe}%`)
         .limit(20),
       admin

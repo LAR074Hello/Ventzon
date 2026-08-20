@@ -1603,3 +1603,30 @@ first-check-in credits).
   web the flow works regardless; native opening needs Apple to re-fetch the AASA.
 
 No rewards/campaigns are attached yet — this is the relationship layer only.
+
+---
+
+## Fake-location removal, device-location NEARBY, comment fixes (2026-08-20)
+
+Three cleanup workstreams landed in one pass:
+
+1. Fake locations. The ~3,600 OSM-imported places (plus any seed rows) are
+   removed by `20260820_remove_fake_places.sql`. That migration is DESTRUCTIVE
+   and is NOT auto-applied — it must be reviewed and run manually; the dry-run
+   (`scripts/dry-run-fake-places.mjs`) prints exact counts first. Meanwhile the
+   app already stops serving fake locations: every places read now filters
+   `source = merchant`, so only real merchant claims appear. `import-osm.mjs`
+   is deleted. Merchant places, shops, rewards and merchant-anchored check-ins
+   are preserved; posts anchored only to a fake place become community posts;
+   place-lane check-ins at fake places are removed (they cannot survive the FK
+   nulling under checkins_subject_present_check).
+
+2. Location states. The Your-city picker, IMPORTED_CITIES, cityForCoords,
+   ventzon_city and the ?city= feed plumbing are gone. NEARBY is driven by
+   useLocationPermission (src/lib/location.ts), which distinguishes
+   not-requested / asking / granted / denied / unavailable / error with an
+   honest screen for each. No manual city fallback anywhere.
+
+3. Comments. Rapid-tap duplicate submissions are blocked (in-flight guard +
+   disabled Send button). The feed comment count excludes hidden comments; the
+   post detail count uses the actually-visible list.

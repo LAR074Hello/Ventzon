@@ -84,6 +84,12 @@ export default function CommentsSheet({
   const [comments, setComments] = useState<SheetComment[]>(initialComments);
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  // Guards a comment send while one is in flight — rapid taps must not
+  // create duplicates. The ref blocks synchronously; the state drives the
+  // disabled Send button.
+  const sendingRef = useRef(false);
+  const [sending, setSending] = useState(false);
+
   const viewportHeight = useViewportHeight();
 
   const scrollToNewest = useCallback((smooth = false) => {
@@ -103,6 +109,10 @@ export default function CommentsSheet({
   }, [comments, onCountChange]);
 
   async function send(text: string, replacingId?: string) {
+    if (sendingRef.current) return;
+    sendingRef.current = true;
+    setSending(true);
+
     // Clock read here, in the event handler, NOT inside the state updater — an
     // updater can be replayed during render, where reading the clock is impure.
     const now = new Date().toISOString();
@@ -143,12 +153,15 @@ export default function CommentsSheet({
       setComments((prev) =>
         prev.map((c) => (c.id === tempId ? { ...c, status: "failed" } : c))
       );
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
     }
   }
 
   function submit() {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || sendingRef.current) return;
     setDraft("");
     send(text);
   }
@@ -332,8 +345,9 @@ export default function CommentsSheet({
             />
             <button
               onClick={submit}
-              disabled={!draft.trim()}
+              disabled={!draft.trim() || sending}
               aria-label="Send comment"
+
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent disabled:opacity-40"
             >
               <Send className="h-4 w-4" />

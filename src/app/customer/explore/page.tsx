@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag, Landmark, Trees, ChevronDown } from "lucide-react";
+import { Search, X, MapPin, Coffee, ShoppingBag, Utensils, Sparkles, Dumbbell, Tag, Landmark, Trees } from "lucide-react";
 import SocialFeed from "../components/SocialFeed";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
-import { IMPORTED_CITIES, cityForCoords } from "@/lib/city";
 import { captureReferralParam } from "@/lib/referral-client";
+import { useLocationPermission } from "@/lib/location";
 
 type Shop = {
   shop_slug: string;
@@ -304,7 +303,6 @@ function Divider() {
 export default function ExplorePage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, Progress>>({});
-  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [friendActivity, setFriendActivity] = useState<
     { profile_id: string | null; display_name: string; avatar_url: string | null; shop_slug: string; shop_name: string; created_at: string }[]
   >([]);
@@ -323,18 +321,20 @@ export default function ExplorePage() {
   // the same from all cities (browse-only), "rewards" = the discovery
   // surface. Last choice persists across sessions.
   const [homeTab, setHomeTab] = useState<"nearby" | "everywhere" | "rewards">("nearby");
-  // "Your city" — the NEARBY scope. GPS resolves it automatically when it
-  // can; the picker is the fallback AND the override, so a user in a city we
-  // haven't imported (Philadelphia, Baltimore) can say so honestly instead
-  // of being shown another city's feed.
-  const [city, setCity] = useState<string | null>(null);
-  const cityPickedRef = useRef(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [freeCity, setFreeCity] = useState("");
+  // NEARBY is driven by the device location, never by a chosen city. The
+  // hook distinguishes not-requested / asking / granted / denied /
+  // unavailable / error so each gets an honest screen.
+  const { state: locState, request: requestLocation } = useLocationPermission();
   // City-scoped places for NEARBY (separate from `shops`, which is the
   // global list the REWARDS tab and EVERYWHERE rails read).
   const [nearbyPlaces, setNearbyPlaces] = useState<Shop[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(false);
+  // Distance-scoring signal for the feed and the Rewards rails — derived from
+  // the location state, never from a hand-picked city.
+  const userLoc = useMemo(
+    () => (locState.status === "granted" ? { lat: locState.lat, lng: locState.lng } : null),
+    [locState]
+  );
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -349,13 +349,6 @@ export default function ExplorePage() {
         // Pre-split builds stored "explore" for the formerly global feed — the
         // closest ancestor of NEARBY, so it migrates rather than surprises.
         if (t === "nearby" || t === "everywhere" || t === "rewards") setHomeTab(t);
-        // A chosen city always wins over GPS — a deliberate statement of where
-        // you are outranks where we think you are.
-        const savedCity = localStorage.getItem("ventzon_city");
-        if (savedCity) {
-          cityPickedRef.current = true;
-          setCity(savedCity);
-        }
         // Shared links land here with either a legacy ?ref=<profile_id> (the
         // merchant check-in flow) or a customer referral code. captureReferralParam
         // routes each to the right store.
@@ -395,36 +388,18 @@ export default function ExplorePage() {
       .then((d) => d?.activity && setFriendActivity(d.activity))
       .catch(() => {});
 
-    // Location is optional — used to sort "near you" and to resolve NEARBY's
-    // city. Computed on the device; never sent anywhere.
-    if (typeof navigator !== "undefined" && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          // GPS only bootstraps NEARBY when the user hasn't chosen a city.
-          if (!cityPickedRef.current) {
-            const fromCoords = cityForCoords(pos.coords.latitude, pos.coords.longitude);
-            if (fromCoords) setCity(fromCoords);
-          }
-        },
-        () => {},
-        { timeout: 6000, maximumAge: 300000 }
-      );
-    }
   }, []);
 
   const go = (slug: string) => router.push(`/customer/shop/${slug}`);
 
-  // NEARBY's place list — city-scoped, distance-first when we have GPS.
+  // NEARBY's place list — merchant places near the user, distance-first.
   useEffect(() => {
-    // city starts null and is only ever set (never cleared), so the initial
-    // [] state is already the right empty value for the unset case.
-    if (!city) return;
-    const qs = new URLSearchParams({ city });
-    if (userLoc) {
-      qs.set("lat", String(userLoc.lat));
-      qs.set("lng", String(userLoc.lng));
-    }
+    // Only meaningful with location granted; otherwise there is no "near".
+    // Only meaningful with location granted; otherwise there is no "near".
+    if (!userLoc) return;
+    const qs = new URLSearchParams();
+    qs.set("lat", String(userLoc.lat));
+    qs.set("lng", String(userLoc.lng));
     // State updates live inside the async chain, not synchronously in the
     // effect body — the pattern this file already follows for its other
     // effects.
@@ -443,16 +418,7 @@ export default function ExplorePage() {
     };
     void load();
     return () => { alive = false; };
-  }, [city, userLoc]);
-
-  function pickCity(name: string) {
-    const clean = name.trim();
-    if (!clean) return;
-    cityPickedRef.current = true;
-    setCity(clean);
-    setPickerOpen(false);
-    try { localStorage.setItem("ventzon_city", clean); } catch {}
-  }
+  }, [userLoc]);
   useEffect(() => {
     const q = query.trim();
     // All state changes happen inside the timeout, never synchronously in the
@@ -623,39 +589,51 @@ export default function ExplorePage() {
       )}
       <div className="pt-4" />
 
-      {/* NEARBY — a city chip, then posts and places in your city. */}
-      {homeTab === "nearby" && !searchActive && (
-        <div className="mx-5 mt-3 flex items-center gap-2">
-          <button
-            onClick={() => setPickerOpen(true)}
-            className="flex items-center gap-1.5 rounded-full border border-subtle bg-surface-raised px-3.5 py-2 text-xs font-medium text-primary transition-colors active:bg-surface-sunken"
-          >
-            <MapPin className="h-3 w-3 text-muted" />
-            {city ?? "Choose your city"}
-            <ChevronDown className="h-3 w-3 text-muted" />
-          </button>
-        </div>
-      )}
-      {homeTab === "nearby" && !searchActive && !city && (
+      {/* NEARBY — driven by the device location, never a chosen city. Each
+          permission state gets its own honest screen. */}
+      {(homeTab === "nearby" && !searchActive && (locState.status === "not_requested" || locState.status === "asking")) && (
         <div className="px-5 pb-8">
           <EmptyState
             icon={MapPin}
             eyebrow="Near you"
-            title="Where are you?"
-            body="NEARBY shows posts and places in your city. Right now that's New York, Hoboken and Columbus — choose yours, or see what's happening everywhere."
-            primary={{ label: "Choose your city", onClick: () => setPickerOpen(true) }}
+            title="Allow location services to see nearby posts"
+            body="Ventzon uses your location to show what is happening around you. It is never stored on our servers."
+            primary={{ label: "Allow location services", onClick: requestLocation }}
             secondary={{ label: "Browse everywhere", onClick: () => switchTab("everywhere") }}
           />
         </div>
       )}
-      {homeTab === "nearby" && !searchActive && city && (
+      {(homeTab === "nearby" && !searchActive && locState.status === "denied") && (
+        <div className="px-5 pb-8">
+          <EmptyState
+            icon={MapPin}
+            eyebrow="Near you"
+            title="Allow location services to see nearby posts"
+            body="Location is turned off. Enable it in your device settings, or browse what is happening everywhere."
+            primary={{ label: "Enable Location", onClick: requestLocation }}
+            secondary={{ label: "Browse everywhere", onClick: () => switchTab("everywhere") }}
+          />
+        </div>
+      )}
+      {(homeTab === "nearby" && !searchActive && (locState.status === "unavailable" || locState.status === "error")) && (
+        <div className="px-5 pb-8">
+          <EmptyState
+            icon={MapPin}
+            eyebrow="Near you"
+            title="We couldn\u2019t get your location"
+            body="Something went wrong reading your location. Try again, or browse what is happening everywhere."
+            primary={{ label: "Try again", onClick: requestLocation }}
+            secondary={{ label: "Browse everywhere", onClick: () => switchTab("everywhere") }}
+          />
+        </div>
+      )}
+      {homeTab === "nearby" && !searchActive && locState.status === "granted" && (
         <SocialFeed
           userLoc={userLoc}
-          city={city}
           onBrowseEverywhere={() => switchTab("everywhere")}
         />
       )}
-      {homeTab === "nearby" && !searchActive && city && nearbyLoading && (
+      {homeTab === "nearby" && !searchActive && locState.status === "granted" && nearbyLoading && (
         <div className="mx-5 space-y-3 pb-6">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex gap-4">
@@ -668,10 +646,10 @@ export default function ExplorePage() {
           ))}
         </div>
       )}
-      {homeTab === "nearby" && !searchActive && city && nearbyPlaces.length > 0 && (
+      {homeTab === "nearby" && !searchActive && locState.status === "granted" && nearbyPlaces.length > 0 && (
         <div className="mb-10">
           <Divider />
-          <SectionHeader title={`Places in ${city}`} sub="Where to go next" />
+          <SectionHeader title="Near you" sub="Where to go next" />
           <div className="divide-y divide-line/60">
             {nearbySorted.map((s) => (
               <StoreCard
@@ -966,66 +944,6 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Your-city picker — a bottom sheet. GPS sets it when it can; this
-          lets a user correct it, or set it where GPS is denied or the city
-          isn't imported yet (type "Somewhere else"). */}
-      {pickerOpen &&
-        createPortal(
-        <div className="fixed inset-0 z-[60] flex items-end justify-center">
-          <button
-            aria-label="Close"
-            onClick={() => setPickerOpen(false)}
-            className="absolute inset-0 bg-black/40"
-          />
-          <div className="relative w-full max-w-md rounded-t-sheet bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+36px)]">
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-subtle" />
-            <h2 className="font-display text-xl font-semibold tracking-tight text-primary">Your city</h2>
-            <p className="mt-1 mb-5 text-sm font-normal text-muted">
-              NEARBY shows posts and places where you actually are.
-            </p>
-            <div className="flex flex-col gap-2">
-              {IMPORTED_CITIES.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => pickCity(c)}
-                  className={`flex items-center justify-between rounded-ctl border px-4 py-3 text-left text-base font-medium transition-colors ${
-                    city === c
-                      ? "border-primary bg-surface-raised text-primary"
-                      : "border-subtle text-primary active:bg-surface-sunken"
-                  }`}
-                >
-                  {c}
-                  {city === c && (
-                    <span className="text-2xs font-semibold uppercase tracking-caps text-muted">Your city</span>
-                  )}
-                </button>
-              ))}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  pickCity(freeCity);
-                }}
-                className="mt-2 flex items-center gap-2"
-              >
-                <input
-                  value={freeCity}
-                  onChange={(e) => setFreeCity(e.target.value)}
-                  placeholder="Somewhere else…"
-                  className="min-w-0 flex-1 rounded-ctl border border-subtle bg-surface-raised px-4 py-3 text-base text-primary outline-none placeholder:text-muted"
-                />
-                <button
-                  type="submit"
-                  disabled={!freeCity.trim()}
-                  className="rounded-ctl bg-primary px-4 py-3 text-sm font-semibold text-inverse disabled:opacity-40"
-                >
-                  Use
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 }

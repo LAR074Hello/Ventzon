@@ -53,6 +53,7 @@ export async function GET() {
       const { data, error } = await supabase
         .from("places")
         .select("slug, name, address, latitude, longitude, neighborhood, city, category, verification_tier, source")
+        .eq("source", "merchant")
         .not("latitude", "is", null)
         .not("longitude", "is", null)
         .order("slug", { ascending: true })

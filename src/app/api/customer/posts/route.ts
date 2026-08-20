@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     let shopSlugForRow: string | null = null;
     if (shopSlug) {
       const [{ data: place }, { data: shop }] = await Promise.all([
-        admin.from("places").select("id, slug").eq("slug", shopSlug).maybeSingle(),
+        admin.from("places").select("id, slug").eq("slug", shopSlug).eq("source", "merchant").maybeSingle(),
         admin.from("shops").select("slug").eq("slug", shopSlug).maybeSingle(),
       ]);
       if (!place && !shop) {

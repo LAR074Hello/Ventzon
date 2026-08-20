@@ -37,6 +37,7 @@ export async function GET(req: Request) {
     const { data, error } = await supabase
       .from("places")
       .select("slug, name, neighborhood, city, category, latitude, longitude")
+      .eq("source", "merchant")
       .ilike("name", `%${safe}%`)
       .order("name", { ascending: true })
       .limit(20);

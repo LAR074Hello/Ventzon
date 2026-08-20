@@ -340,19 +340,16 @@ function useVideoPolicy(): VideoPolicy {
  * Visit & Earn, NEARBY) or stands alone (community kind — no place). Plain
  * posts lead with the person; place posts always have a one-tap path to a
  * real visit via the Visit & Earn chip.
- *
- * `city` narrows the feed to one city — the NEARBY scope. Without it the
- * feed is global (EVERYWHERE). Actions (like, comment, follow) are the same
- * in either scope; only what is shown changes.
+ * The NEARBY scope (marked by the onBrowseEverywhere CTA) is shown when the
+ * device location is granted; without the CTA it is the global EVERYWHERE
+ * feed. Actions (like, comment, follow) are the same in either scope.
  */
 export default function SocialFeed({
   userLoc,
-  city,
   onBrowseEverywhere,
 }: {
   userLoc: { lat: number; lng: number } | null;
-  /** NEARBY scope — only posts at places in this city. */
-  city?: string | null;
+  /** Present = the NEARBY scope (device location granted); absent = EVERYWHERE. */
   /** CTA for the empty state: jump to the EVERYWHERE tab. */
   onBrowseEverywhere?: () => void;
 }) {
@@ -377,7 +374,6 @@ export default function SocialFeed({
         qs.set("lat", String(userLoc.lat));
         qs.set("lng", String(userLoc.lng));
       }
-      if (city) qs.set("city", city);
       qs.set("offset", String(offset));
       const res = await fetch(`/api/customer/feed?${qs.toString()}`);
       if (!res.ok) return;
@@ -386,7 +382,7 @@ export default function SocialFeed({
       setHasMore(Boolean(d.has_more));
       offsetRef.current = d.next_offset ?? offset;
     },
-    [userLoc, city]
+    [userLoc]
   );
 
   useEffect(() => {
@@ -510,19 +506,17 @@ export default function SocialFeed({
   }
 
   if (posts.length === 0) {
-    // NEARBY empty = an invitation out, not a dead end. Someone in a city
-    // with no posts yet (or no places at all — Philadelphia, Baltimore) is
-    // pointed at EVERYWHERE, which always has places even when it has almost
-    // no posts.
-    if (city) {
+    // NEARBY empty is honest, not broken: location granted and nothing
+    // nearby yet is a real state, so say so and point at EVERYWHERE.
+    if (onBrowseEverywhere) {
       return (
         <div>
           <EmptyState
             icon={Compass}
             eyebrow="Near you"
-            title="No one's posted here yet"
-            body={`Nothing from ${city} yet — be the first, or see what people are sharing in every other city.`}
-            primary={{ label: "See what's everywhere", onClick: onBrowseEverywhere ?? (() => {}) }}
+            title="No nearby posts yet"
+            body="Nothing nearby yet — be the first to post, or see what people are sharing everywhere."
+            primary={{ label: "See what\u2019s everywhere", onClick: onBrowseEverywhere ?? (() => {}) }}
             secondary={{ label: "Explore the map", onClick: () => router.push("/customer/map") }}
           />
         </div>
@@ -548,8 +542,9 @@ export default function SocialFeed({
     // matching Instagram web). It does not bind at 375px, so mobile stays full-bleed.
     <div className="mx-auto max-w-[510px] space-y-7 px-5 pb-4">
       {/* A sparse feed gets suggestions to follow — the new-user fix. */}
-      {posts.length < 3 && !city && (
+      {posts.length < 3 && onBrowseEverywhere === undefined && (
         <div className="-mx-5">
+
           <SuggestionRow userLoc={userLoc} />
         </div>
       )}

@@ -78,6 +78,7 @@ export async function GET(req: Request) {
         ? supabase
             .from("places")
             .select(PLACE_COLS)
+            .eq("source", "merchant")
             .or(
               [
                 seedIds.length ? `id.in.(${seedIds.slice(0, 100).join(",")})` : "",
@@ -97,6 +98,7 @@ export async function GET(req: Request) {
       let q = supabase
         .from("places")
         .select(PLACE_COLS)
+        .eq("source", "merchant")
         .not("name", "is", null)
         .neq("name", "");
       if (city) q = q.eq("city", city);

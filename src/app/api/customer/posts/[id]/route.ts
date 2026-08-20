@@ -128,6 +128,7 @@ export async function GET(
         .from("places")
         .select("slug, name, neighborhood, city, category")
         .eq("id", (post as { place_id?: string | null }).place_id)
+        .eq("source", "merchant")
         .maybeSingle();
       place = placeRow ?? null;
     }
@@ -218,7 +219,7 @@ export async function GET(
       counts: {
         likes: (likes ?? []).length,
         saves: saveCount ?? 0,
-        comments: (comments ?? []).length,
+        comments: visibleComments.length,
       },
       viewer: {
         liked: !!viewerEmail && (likes ?? []).some((l) => l.email === viewerEmail),
@@ -419,7 +420,7 @@ export async function PATCH(
       // Same resolution as creation: place_id is the identity, shop_slug is
       // only set when a merchant account actually exists (it is FK-bound).
       const [{ data: place }, { data: shop }] = await Promise.all([
-        admin.from("places").select("id, slug").eq("slug", slug).maybeSingle(),
+        admin.from("places").select("id, slug").eq("slug", slug).eq("source", "merchant").maybeSingle(),
         admin.from("shops").select("slug").eq("slug", slug).maybeSingle(),
       ]);
       if (!place && !shop) {

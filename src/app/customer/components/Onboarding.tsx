@@ -7,7 +7,7 @@ const SLIDES = [
   {
     icon: MapPin,
     title: "Every place near you",
-    sub: "Thousands of real spots in your neighbourhood — the coffee place on the corner, the bar you keep meaning to try.",
+    sub: "See what people are sharing around you — the places they go, and who is really there.",
     accent: "var(--text-muted)",
   },
   {

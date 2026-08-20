@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 // Do not flip it without both.
 const COMMUNITY_FEED_ENABLED = false;
 
-// GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…][&city=…][&offset=…&limit=…]
+// GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…][&offset=…&limit=…]
 //
 // The single source for post feeds — the Explore social feed, and (via
 // ?shop_slug=) the post grid on a business profile. Only business-tied
@@ -37,14 +37,7 @@ export async function GET(req: Request) {
     // Over-fetch so post-query filtering (blocks, non-creator authors)
     // can't leave a short page that looks like the end of the feed.
     const fetchWindow = offset + limit * 3;
-    // ?city= — the NEARBY scope. The feed is global otherwise; a city filter
-    // narrows posts to places whose imported city matches (place_id anchor)
-    // or whose merchant account resolves there (shop_slug anchor).
-    const city = url.searchParams.get("city")?.trim() || null;
-    // A city filter is applied AFTER the fetch (a post anchors either way, so
-    // it is not a single WHERE clause) — pull the full bounded window so a
-    // sparse city is not starved by the global recency head.
-    const fetchCap = city ? 300 : Math.min(fetchWindow + limit, 300);
+    const fetchCap = Math.min(fetchWindow + limit, 300);
 
     const admin = createClient(
       process.env.SUPABASE_URL!,
@@ -79,53 +72,16 @@ export async function GET(req: Request) {
     if (shopFilter) query = query.eq("shop_slug", shopFilter).eq("post_kind", "business");
     if (COMMUNITY_FEED_ENABLED) {
       // Intentionally unreachable — see the constant above. This is also
-      // where the ?city= filter below would stop dropping anchorless posts.
+      // This is where a future city-scoped feed would be built.
     }
 
     const { data: rawPosts, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const blocked = await getBlockedSet(admin, viewerEmail);
     const banned = await publiclyExcludedAuthors(admin);
-    let postRows = (rawPosts ?? []).filter(
+    const postRows = (rawPosts ?? []).filter(
       (p) => !blocked.has(p.author_email) && !banned.has(p.author_email)
     );
-
-    if (city) {
-      // Resolve the city to its place anchors, then keep only posts whose
-      // place is in it. A city with no imported places (e.g. Philadelphia)
-      // is a KNOWN EMPTY state — the NEARBY tab invites browsing elsewhere
-      // rather than silently falling through to the global feed.
-      //
-      // The anchor list is fetched in full, paginated past PostgREST's
-      // per-request row cap (1000 rows, regardless of range). A single
-      // .limit() window silently dropped anchors for big cities (New
-      // York's 2403 imported places put every shop anchor outside a
-      // 2000-row window), which emptied NEARBY for the whole city.
-      const cityPlaces = [];
-      const PAGE = 1000;
-      for (let start = 0; ; start += PAGE) {
-        const { data, error: cityErr } = await admin
-          .from("places")
-          .select("id, slug")
-          .eq("city", city)
-          .range(start, start + PAGE - 1);
-        if (cityErr) {
-          return NextResponse.json({ error: cityErr.message }, { status: 500 });
-        }
-        cityPlaces.push(...(data ?? []));
-        if (!data || data.length < PAGE) break;
-      }
-      if (cityPlaces.length === 0) {
-        return NextResponse.json({ posts: [], has_more: false, next_offset: offset });
-      }
-      const cityIds = new Set(cityPlaces.map((p) => p.id));
-      const citySlugs = new Set(cityPlaces.map((p) => p.slug));
-      postRows = postRows.filter(
-        (p) =>
-          (p.place_id && cityIds.has(p.place_id as string)) ||
-          (p.shop_slug && citySlugs.has(p.shop_slug as string))
-      );
-    }
 
     if (postRows.length === 0) return NextResponse.json({ posts: [] });
 
@@ -175,11 +131,12 @@ export async function GET(req: Request) {
         .select("slug, logo_url, latitude, longitude")
         .in("slug", shopSlugs),
       admin.from("post_likes").select("post_id, email").in("post_id", postIds),
-      admin.from("post_comments").select("post_id").in("post_id", postIds),
+      admin.from("post_comments").select("post_id").eq("hidden", false).in("post_id", postIds),
       placeIds.length
         ? admin
             .from("places")
             .select("id, slug, name, neighborhood, latitude, longitude, category, verification_tier")
+            .eq("source", "merchant")
             .in("id", placeIds)
         : Promise.resolve({ data: [] as any[] }),
     ]);
