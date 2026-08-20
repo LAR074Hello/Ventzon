@@ -25,6 +25,10 @@ originals.
 | `feed-cafe.jpg` | [UPTYzwX3QME](https://unsplash.com/photos/UPTYzwX3QME) (`photo-1645677020082-721a854c24f2`) | Roman Denisenko ([@romandempire](https://unsplash.com/@romandempire)) | A coffee shop with a coffee machine and lights. |
 | `feed-bakery.jpg` | [gKWvWZVRwZQ](https://unsplash.com/photos/gKWvWZVRwZQ) (`photo-1705972018470-a89eda1c6ce4`) | Sitraka ([@srakotoarivelo7](https://unsplash.com/@srakotoarivelo7)) | A bakery filled with lots of different types of pastries. |
 
+`feed-video.mp4` is the MDN interactive-examples **flower** sample
+(`interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4`), CC0 —
+public domain. It is the inline-autoplay fixture for the feed video post.
+
 Sourced 2026-08-12. Photographer names/usernames and alt text are taken from the
 Unsplash search API response for each photo; the CDN `photo-*` id is the stable
 key on `images.unsplash.com`.

@@ -94,6 +94,21 @@ const FEED_FIXTURE = {
       verified_visit: false,
       viewer: { liked: false, progress: null },
     },
+    {
+      // Inline-autoplay fixture: a real playable mp4 + a poster, so the
+      // looping feed video can be reviewed against local bytes, not a stub.
+      id: "p4",
+      body: "Autoplay fixture — muted, looping, one at a time. Tap the corner to hear it.",
+      media_url: "/dev-fixtures/feed-video.mp4",
+      media_type: "video",
+      poster_url: IMG("grid-2"),
+      hours_ago: 2,
+      author: { profile_id: "u1", display_name: "Mara Ellison", avatar_url: null, followed: false },
+      shop: { slug: "cafe-mercado", name: "Cafe Mercado", logo_url: null, deal_title: null, reward_goal: 10 },
+      counts: { likes: 4, comments: 0 },
+      verified_visit: true,
+      viewer: { liked: false, progress: null },
+    },
   ],
   hasMore: false,
 };
@@ -213,7 +228,7 @@ export default function ComponentGallery() {
             </div>
           </Section>
 
-          <Section title="SocialFeed" note="Rendered against stubbed endpoints: three posts — one with a verified visit, one at reward-ready, one plain (no place, person-first header).">
+          <Section title="SocialFeed" note="Rendered against stubbed endpoints: four posts — one with a verified visit, one at reward-ready, one plain (no place, person-first header), and one looping video with a poster (inline autoplay fixture).">
             <div className="-mx-5">
               <SocialFeed userLoc={null} />
             </div>

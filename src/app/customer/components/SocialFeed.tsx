@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Compass, Sparkles, BadgeCheck, MapPin, Ticket, ChevronRight } from "lucide-react";
+import { Heart, Compass, Sparkles, BadgeCheck, MapPin, Ticket, ChevronRight, Play, Volume2, VolumeX } from "lucide-react";
 import FollowButton from "./FollowButton";
 import EmptyState from "./EmptyState";
 import Avatar from "./Avatar";
@@ -82,6 +82,107 @@ function ShopFollowButton({ shopSlug }: { shopSlug: string }) {
     >
       {following ? "Following" : "Follow"}
     </button>
+  );
+}
+
+/**
+ * Inline feed video. Playback is owned by the feed's ONE observer ("one at a
+ * time" is a feed-wide rule, not a per-card one) — this card only registers
+ * its element on mount and lets the observer play/pause it. Local concerns
+ * live here: the unmute control, and the manual-play overlay that appears
+ * when autoplay is gated (data saver / reduced motion).
+ */
+function FeedVideo({
+  src,
+  poster,
+  gated,
+  onMount,
+  onUnmount,
+}: {
+  src: string;
+  poster?: string;
+  /** Autoplay is off for this viewer (reduced motion or data saver). */
+  gated: boolean;
+  onMount: (el: HTMLVideoElement, entry: { allowAutoplay: boolean }) => void;
+  onUnmount: (el: HTMLVideoElement) => void;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  // Mutable per-card state the parent observer reads (is this one allowed to
+  // autoplay?). A ref, not React state: the observer reads it from its own
+  // closure and must always see the latest value.
+  const entryRef = useRef({ allowAutoplay: false });
+  const [unmuted, setUnmuted] = useState(false);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    onMount(el, entryRef.current);
+    return () => onUnmount(el);
+  }, [onMount, onUnmount]);
+
+  function toggleMute(e: React.MouseEvent) {
+    e.stopPropagation();
+    const el = ref.current;
+    if (!el) return;
+    const next = !el.muted;
+    el.muted = next;
+    setUnmuted(!next);
+  }
+
+  function start(e: React.MouseEvent) {
+    e.stopPropagation();
+    const el = ref.current;
+    if (!el) return;
+    // The viewer asked for this one explicitly, so it keeps playing like an
+    // autoplay card from here on — the data-saver gate is overridden by their
+    // tap. (Reduced motion is NOT overridden: that is a preference, not a
+    // meter.) Muted start is what iOS permits without a gesture chain.
+    entryRef.current.allowAutoplay = true;
+    setStarted(true);
+    el.muted = true;
+    setUnmuted(false);
+    el.play().catch(() => {});
+  }
+
+  return (
+    <div className="relative">
+      <video
+        ref={ref}
+        src={src}
+        poster={poster}
+        // muted + playsInline are what make iOS autoplay inline — never remove.
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="aspect-[4/5] max-h-[70vh] w-full object-cover"
+      />
+      {/* Unmute — a visible control, NOT tap-to-unmute: the whole media surface
+          still means "open the post", so stealing the tap would hide comments
+          and the detail view. */}
+      {(!gated || started) && (
+        <button
+          onClick={toggleMute}
+          aria-label={unmuted ? "Mute video" : "Unmute video"}
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white active:bg-black/70"
+        >
+          {unmuted ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </button>
+      )}
+      {/* Manual play — only when autoplay is gated and this one hasn't started. */}
+      {gated && !started && (
+        <button
+          onClick={start}
+          aria-label="Play video"
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/50">
+            <Play className="ml-0.5 h-5 w-5 text-white" fill="white" />
+          </span>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -171,6 +272,70 @@ function timeAgo(iso: string) {
 }
 
 /**
+ * Autoplay policy for feed video — whether this viewer should have videos
+ * start at all, and whether reduced motion is a hard rule.
+ *
+ * Two gates (see the observer comment in SocialFeed):
+ *  - prefers-reduced-motion — the codebase's motion-safe discipline.
+ *  - data saver — navigator.connection is Chromium-only. Safari and WKWebView
+ *    (iOS, the primary platform) never expose it, so the data half of this
+ *    gate is a NO-OP there and autoplay simply happens. It helps Android and
+ *    the mobile web, nothing more; a real fix is a user-facing autoplay
+ *    setting (design-notes 2026-08-19).
+ *
+ * useSyncExternalStore because the policy must be correct on the very first
+ * client render (a gated viewer must never see a video start, even for a
+ * frame) AND must not trip a hydration mismatch — the server snapshot is the
+ * un-gated default, and the store re-checks on the client.
+ */
+type VideoPolicy = { gated: boolean; reducedMotion: boolean };
+
+/**
+ * The Chromium-only Network Information API, structural — the project's lib
+ * types do not ship `NetworkInformation`. Safari and WKWebView never expose
+ * `navigator.connection` at all, which is the whole "no-op on iOS" caveat.
+ */
+type NetworkInfo = {
+  saveData?: boolean;
+  effectiveType?: string;
+  addEventListener?: (type: "change", cb: () => void) => void;
+  removeEventListener?: (type: "change", cb: () => void) => void;
+};
+
+let cachedVideoPolicy: VideoPolicy | null = null;
+
+function readVideoPolicy(): VideoPolicy {
+  if (typeof window === "undefined") return { gated: false, reducedMotion: false };
+  const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  const reducedMotion = mq?.matches ?? false;
+  const conn = (navigator as Navigator & { connection?: NetworkInfo }).connection;
+  const dataGated =
+    conn?.saveData === true ||
+    (conn?.effectiveType != null && ["slow-2g", "2g", "3g"].includes(conn.effectiveType));
+  return { gated: reducedMotion || dataGated, reducedMotion };
+}
+
+function subscribeVideoPolicy(cb: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  mq?.addEventListener("change", cb);
+  const conn = (navigator as Navigator & { connection?: NetworkInfo }).connection;
+  conn?.addEventListener?.("change", cb);
+  return () => {
+    mq?.removeEventListener("change", cb);
+    conn?.removeEventListener?.("change", cb);
+  };
+}
+
+function useVideoPolicy(): VideoPolicy {
+  return useSyncExternalStore(
+    subscribeVideoPolicy,
+    () => (cachedVideoPolicy ??= readVideoPolicy()),
+    () => ({ gated: false, reducedMotion: false })
+  );
+}
+
+/**
  * The social feed. A post either names a place (business kind — badge,
  * Visit & Earn, NEARBY) or stands alone (community kind — no place). Plain
  * posts lead with the person; place posts always have a one-tap path to a
@@ -198,6 +363,12 @@ export default function SocialFeed({
   const [hasMore, setHasMore] = useState(false);
   const offsetRef = useRef(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  // Video registry + autoplay policy for inline playback (see the observer
+  // below). The registry is a ref so like-toggles and page loads never replay
+  // a video; the policy is an external store so gated viewers get the play
+  // overlay from the first client render.
+  const videoEntries = useRef(new Map<HTMLVideoElement, { allowAutoplay: boolean }>());
+  const videoPolicy = useVideoPolicy();
 
   const fetchPage = useCallback(
     async (offset: number, replace: boolean) => {
@@ -240,6 +411,63 @@ export default function SocialFeed({
     io.observe(el);
     return () => io.disconnect();
   }, [hasMore, loading, loadingMore, fetchPage]);
+
+  // Autoplay policy — decided once per session via useVideoPolicy (below).
+  //
+  // Two gates:
+  //  - prefers-reduced-motion — the codebase's motion-safe discipline: no
+  //    motion the user didn't ask for.
+  //  - data saver — navigator.connection is Chromium-only. Safari and
+  //    WKWebView (i.e. iOS, the primary platform) never expose it, so this
+  //    branch is a NO-OP there and autoplay just happens. It helps Android
+  //    and mobile web, nothing more; a real fix is a user-facing autoplay
+  //    setting (design-notes 2026-08-19).
+
+  // Inline feed video playback. ONE observer owns every video element so
+  // "one at a time" is global to the feed, not per card. A video takes over
+  // when it is majority-visible (threshold 0.5) and the previous player
+  // pauses at the same crossing — scrolling past pauses, scrolling back
+  // resumes, and a below-fold video never starts at all.
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entering = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (entering.length > 0) {
+          const winner = entering[0].target as HTMLVideoElement;
+          const entry = videoEntries.current.get(winner);
+          // Reduced motion is never overridden; the data gate is, once the
+          // viewer has explicitly started that video.
+          const mayPlay =
+            !videoPolicy.reducedMotion && (!videoPolicy.gated || entry?.allowAutoplay);
+          if (mayPlay) winner.play().catch(() => {});
+          for (const [el] of videoEntries.current) {
+            if (el !== winner) el.pause();
+          }
+          return;
+        }
+        for (const e of entries) {
+          if (!e.isIntersecting) (e.target as HTMLVideoElement).pause();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    for (const [el] of videoEntries.current) io.observe(el);
+    return () => io.disconnect();
+    // posts: re-observe when a new page lands — the observer only knows the
+    // videos that were registered when it was created.
+  }, [videoPolicy, posts]);
+
+  const registerVideo = useCallback(
+    (el: HTMLVideoElement, entry: { allowAutoplay: boolean }) => {
+      videoEntries.current.set(el, entry);
+    },
+    []
+  );
+  const unregisterVideo = useCallback((el: HTMLVideoElement) => {
+    videoEntries.current.delete(el);
+  }, []);
 
   async function toggleLike(post: FeedPost) {
     const next = !post.viewer.liked;
@@ -401,25 +629,36 @@ export default function SocialFeed({
             {/* One envelope: media + Visit & Earn footer share the card */}
             <div className="elevation-1 overflow-hidden rounded-card">
               {p.media_url && (
-                <button onClick={() => router.push(`/customer/post/${p.id}`)} className="block w-full">
+                // A div, not a button: a video with its own controls (mute,
+                // play) cannot live inside a <button> — invalid HTML and an
+                // ambiguous tap target. Keyboard access is preserved below.
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Open post"
+                  onClick={() => router.push(`/customer/post/${p.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/customer/post/${p.id}`);
+                    }
+                  }}
+                  className="block w-full"
+                >
                   {p.media_type === "video" ? (
                     // max-h stops a 4:5 frame from eating a short laptop viewport;
                     // object-cover crops rather than letterboxing.
-                    <video
+                    <FeedVideo
                       src={p.media_url}
-                      // A poster is what a video tile shows before it decodes —
-                      // and on Chrome, which will not play iOS quicktime at
-                      // all, it is the ONLY thing it will ever show.
                       poster={p.poster_url ?? undefined}
-                      muted
-                      playsInline
-                      preload="metadata"
-                      className="aspect-[4/5] max-h-[70vh] w-full object-cover"
+                      gated={videoPolicy.gated}
+                      onMount={registerVideo}
+                      onUnmount={unregisterVideo}
                     />
                   ) : (
                     <img src={p.media_url} alt="" loading="lazy" className="aspect-[4/5] max-h-[70vh] w-full object-cover" />
                   )}
-                </button>
+                </div>
               )}
               {/* LOYALTY IS A PROPERTY OF THE PLACE, NOT THE POST.
                   It used to render on every card, which meant that with no

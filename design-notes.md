@@ -1552,3 +1552,25 @@ merchants are real accounts: per-shop reply routing (reply-to the merchant's
 address, or a `replies@` that forwards) would let a "gift from The Pressing
 Room" email actually land in The Pressing Room's inbox. Logged, not fixed.
 
+---
+
+## Feed video autoplay: the data-saver gate is a no-op on iOS (2026-08-19)
+
+Feed videos now autoplay muted, looping, one at a time (a single feed-wide
+IntersectionObserver: play when majority-visible, pause on leave) with a
+visible unmute control instead of tap-to-unmute — tap still opens the post.
+The media envelope stopped being a `<button>` because a video with its own
+controls cannot legally nest inside one.
+
+Autoplay is gated on `prefers-reduced-motion` (motion-safe discipline) and on
+`navigator.connection` (`saveData` / `effectiveType`) — but **that API is
+Chromium-only**. Safari and WKWebView never expose it, so on iOS — the primary
+platform — the data half of the gate does nothing and autoplay simply happens.
+It helps Android and the mobile web, nothing more.
+
+The real fix is a user-facing setting ("Autoplay videos" / "Use less data"),
+the same shape as Instagram's "Use less data" and X's "Data saver". Until that
+exists, treat this gate as a cheap partial mitigation, not a solution. Gated
+viewers get a play overlay on the poster instead of silence, so the video is
+still watchable in place.
+
