@@ -23,7 +23,8 @@ type Phase = "idle" | "preparing" | "uploading" | "saving";
 /**
  * Shared post composer — used on the public creator page (own profile)
  * and the Profile tab. Uploads media to the `posts` bucket and tags a
- * business so the post can appear in the Explore feed.
+ * place when one is chosen. A place is optional: without one the post
+ * publishes as a plain community post (no badge, no Nearby).
  */
 export default function PostComposer({
   onPosted,
@@ -165,7 +166,9 @@ export default function PostComposer({
 
           if (withDist.length === 0) { setLocState("unavailable"); return; }
           setNearby(withDist.map((p: any) => ({ shop_slug: p.slug, shop_name: p.shop_name })));
-          setTagShop((cur) => cur || withDist[0].slug);
+          // No auto-select. Silently attaching a location the user never
+          // chose is exactly the behaviour optional-place was meant to
+          // remove — the picker starts empty, like Instagram.
           setLocState("granted");
         } catch { setLocState("unavailable"); }
       },
@@ -623,7 +626,7 @@ export default function PostComposer({
                 className="w-full min-w-0 rounded-full bg-surface-sunken px-3.5 py-2.5 text-sm text-secondary outline-none"
                 style={{ boxShadow: "inset 0 0 0 1px var(--border-subtle)" }}
               >
-                <option value="">Pick a place (required)</option>
+                <option value="">Add a place (optional)</option>
                 {nearby.length > 0 && (
                   <optgroup label="Near you">
                     {nearby.map((s2) => (
@@ -669,7 +672,7 @@ export default function PostComposer({
 
             {!tagShop && (
               <p className="mt-2 px-1 text-2xs text-muted">
-                Pick a place to post — it is what makes this a Ventzon post.
+                Add a place so people know where you were — or post without one.
               </p>
             )}
           </div>
@@ -686,7 +689,6 @@ export default function PostComposer({
           onClick={submitPost}
           disabled={
             (!composer.trim() && !mediaFile) ||
-            (!lockShop && !tagShop) ||
             !!limitError ||
             // A name is required to publish, but it is asked for INLINE above
             // rather than blocking the composer — you write first, then say

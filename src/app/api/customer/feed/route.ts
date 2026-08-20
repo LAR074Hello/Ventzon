@@ -8,10 +8,14 @@ import { publiclyExcludedAuthors } from "@/lib/public-visibility";
 
 export const dynamic = "force-dynamic";
 
-// A city-wide open community feed (post_kind = 'community', posts with no
-// linked business) is deliberately NOT enabled. It stays off until there
-// is sufficient local density and a moderation/reporting system, neither
-// of which exists yet. Do not flip this without both.
+// A city-wide open community feed — NEARBY filling up with plain posts
+// (post_kind = 'community', no linked business) — stays deliberately off.
+// INDIVIDUAL plain posts are enabled: the feed below now admits anchorless
+// community posts. What this constant gates is the city scope of them:
+// NEARBY is place-anchored on purpose, because "near you" should mean
+// somewhere you can walk to. Flipping this requires sufficient local
+// density AND a moderation/reporting system, neither of which exists yet.
+// Do not flip it without both.
 const COMMUNITY_FEED_ENABLED = false;
 
 // GET /api/customer/feed[?shop_slug=…][&lat=…&lng=…][&city=…][&offset=…&limit=…]
@@ -58,17 +62,24 @@ export async function GET(req: Request) {
     let query = admin
       .from("posts")
       .select("id, author_email, shop_slug, place_id, body, media_url, media_type, poster_url, created_at")
-      .eq("post_kind", "business")
       .eq("hidden", false)
       // A post at an imported place has place_id and NO shop_slug, because
       // shop_slug is FK-bound to a merchant account that does not exist.
       // Requiring shop_slug here hid every post made at an OSM place.
-      .or("shop_slug.not.is.null,place_id.not.is.null")
+      //
+      // Plain posts are admitted too — but ONLY as post_kind = 'community'.
+      // A 'business' post with no anchor is a data error (the two pre-beta
+      // junk posts) and stays invisible: the anchor branches and the
+      // community branch together are the whole admission policy.
+      .or("post_kind.eq.community,shop_slug.not.is.null,place_id.not.is.null")
       .order("created_at", { ascending: false })
       .limit(fetchCap);
-    if (shopFilter) query = query.eq("shop_slug", shopFilter);
+    // A shop's own grid is strictly business posts at that shop — the
+    // relaxed feed filter above must not change what a shop sees on itself.
+    if (shopFilter) query = query.eq("shop_slug", shopFilter).eq("post_kind", "business");
     if (COMMUNITY_FEED_ENABLED) {
-      // Intentionally unreachable — see the constant above.
+      // Intentionally unreachable — see the constant above. This is also
+      // where the ?city= filter below would stop dropping anchorless posts.
     }
 
     const { data: rawPosts, error } = await query;
@@ -237,6 +248,10 @@ export async function GET(req: Request) {
         placesBySlug.get(p.shop_slug!) ??
         placeById.get((p as any).place_id) ??
         undefined;
+      // A plain post has no anchor to build a shop block from. The card
+      // renders person-first instead of showing a map pin with nothing
+      // after it.
+      const anchorless = !p.shop_slug && !(p as { place_id?: string | null }).place_id;
       const ageHours = (now - new Date(p.created_at).getTime()) / 3600000;
 
       let score = -ageHours;
@@ -260,20 +275,22 @@ export async function GET(req: Request) {
           avatar_url: author.avatar_url,
           followed: followedAuthors.has(p.author_email),
         },
-        shop: {
-          // Falls back to the place slug so a post at an imported place still
-          // has something to link to — shop_slug is null for those.
-          slug: p.shop_slug ?? place?.slug ?? null,
-          // Place is the authority for identity; shop_settings is the
-          // fallback during expand, and the reward fields stay on the
-          // merchant account where they belong.
-          name: place?.name ?? setting?.shop_name ?? p.shop_slug,
-          neighborhood: place?.neighborhood ?? null,
-          verification_tier: place?.verification_tier ?? "unclaimed",
-          logo_url: shop?.logo_url ?? null,
-          deal_title: setting?.deal_title ?? null,
-          reward_goal: setting?.reward_goal ?? 5,
-        },
+        shop: anchorless
+          ? null
+          : {
+              // Falls back to the place slug so a post at an imported place
+              // still has something to link to — shop_slug is null for those.
+              slug: p.shop_slug ?? place?.slug ?? null,
+              // Place is the authority for identity; shop_settings is the
+              // fallback during expand, and the reward fields stay on the
+              // merchant account where they belong.
+              name: place?.name ?? setting?.shop_name ?? p.shop_slug,
+              neighborhood: place?.neighborhood ?? null,
+              verification_tier: place?.verification_tier ?? "unclaimed",
+              logo_url: shop?.logo_url ?? null,
+              deal_title: setting?.deal_title ?? null,
+              reward_goal: setting?.reward_goal ?? 5,
+            },
         counts: {
           likes: likeCounts[p.id] ?? 0,
           comments: commentCounts[p.id] ?? 0,

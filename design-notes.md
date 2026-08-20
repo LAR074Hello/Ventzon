@@ -1515,6 +1515,30 @@ the product. Worth planning before/at launch:
 - A graceful fallback is fine (the letter tile), but it should be an explicit
   *fallback*, not the default state every listing ships in.
 
+## Removing a place from an existing post (deferred, 2026-08-19)
+
+Optional-place landed: the composer now publishes without a place (`post_kind
+= 'community'`, no badge, no Nearby), and the feed admits those plain posts.
+One editing gap was deliberately left: the edit sheet (`EditPostSheet`) can
+*change* a post's place but cannot *remove* it — the PATCH route rejects an
+empty `shop_slug` with `400 "A place is required"`, because before this change
+every post had to have one. A place-tagged post therefore keeps its place for
+life.
+
+Why deferred. With the composer's auto-select of the nearest place gone
+(2026-08-19), accidental tagging should be rare, so the inability to undo one
+hurts less than it did. Removing a place on edit is more than a UI tweak: the
+PATCH route has to accept an explicit "unlink" (distinct from "unchanged"),
+and unsetting the anchor must also flip `post_kind` from 'business' to
+'community' — otherwise the post stays a business-kind row with no anchor and
+drops out of every feed. Two places that logic can go wrong, for a case that
+is now supposed to be rare.
+
+When it is built, the copy should say the badge goes away — same as the
+existing "moving a place you haven't checked in at removes the badge" line in
+`EditPostSheet`. An unlinked visit badge is a forgery, so it must not survive
+the edit.
+
 ---
 
 ## Email reply-to on merchant loyalty sends (2026-08-12)

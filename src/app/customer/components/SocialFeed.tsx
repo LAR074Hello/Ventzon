@@ -14,6 +14,8 @@ type FeedPost = {
   media_type: "image" | "video" | null;
   created_at: string;
   author: { profile_id: string; display_name: string; avatar_url: string | null; followed: boolean };
+  // null for a plain post (no place attached) — the card renders
+  // person-first instead of showing a map pin with nothing after it.
   shop: {
     slug: string;
     name: string;
@@ -21,7 +23,7 @@ type FeedPost = {
     logo_url: string | null;
     deal_title: string | null;
     reward_goal: number;
-  };
+  } | null;
   counts: { likes: number; comments: number };
   verified_visit?: boolean;
   poster_url?: string | null;
@@ -169,9 +171,10 @@ function timeAgo(iso: string) {
 }
 
 /**
- * The social feed. Every post is tied to a real business (enforced
- * server-side in /api/customer/feed) so browsing always has a one-tap path
- * to a real visit via the Visit & Earn chip.
+ * The social feed. A post either names a place (business kind — badge,
+ * Visit & Earn, NEARBY) or stands alone (community kind — no place). Plain
+ * posts lead with the person; place posts always have a one-tap path to a
+ * real visit via the Visit & Earn chip.
  *
  * `city` narrows the feed to one city — the NEARBY scope. Without it the
  * feed is global (EVERYWHERE). Actions (like, comment, follow) are the same
@@ -326,54 +329,58 @@ export default function SocialFeed({
         const remaining = p.viewer.progress
           ? Math.max(p.viewer.progress.goal - p.viewer.progress.visits, 0)
           : null;
-        const goal = p.viewer.progress?.goal ?? p.shop.reward_goal;
+        const shop = p.shop;
+        const goal = shop ? (p.viewer.progress?.goal ?? shop.reward_goal) : 0;
         const visits = p.viewer.progress?.visits ?? 0;
         // True of THIS viewer at THIS place, or not shown at all. Without a
         // merchant there is no reward, and inventing progress toward one is
-        // the old product leaking into the new one.
+        // the old product leaking into the new one. A plain post has no shop
+        // to measure progress against, so it never shows a loyalty line.
         const showLoyalty =
-          Boolean(p.shop.slug) &&
-          (visits > 0 || Boolean(p.shop.deal_title));
+          Boolean(shop?.slug) &&
+          (visits > 0 || Boolean(shop?.deal_title));
         return (
           <div key={p.id}>
-            {/* Card header — PLACE FIRST.
+            {/* Card header — PLACE FIRST when there is a place.
                 The place and the proof lead; the person is the second line.
                 This ordering is the product: a photo feed with location tags
                 is a different app, and the differentiator is lost by inches if
-                the place keeps sliding into the caption. */}
+                the place keeps sliding into the caption.
+                A plain post (no place) has nothing to lead with, so the author
+                row below IS the header — Instagram-style, person first. */}
             <div className="mb-2.5">
-              <button
-                onClick={() =>
-                  p.shop.slug ? router.push(`/place/${p.shop.slug}`) : undefined
-                }
-                className="flex w-full items-start gap-2 text-left"
-              >
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-display text-lg font-semibold leading-tight text-primary">
-                    {p.shop.name}
+              {shop?.slug && (
+                <button
+                  onClick={() => router.push(`/place/${shop.slug}`)}
+                  className="flex w-full items-start gap-2 text-left"
+                >
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-display text-lg font-semibold leading-tight text-primary">
+                      {shop.name}
+                    </span>
+                    {shop.neighborhood && (
+                      <span className="mt-0.5 block truncate text-xs text-muted">
+                        {shop.neighborhood}
+                      </span>
+                    )}
                   </span>
-                  {p.shop.neighborhood && (
-                    <span className="mt-0.5 block truncate text-xs text-muted">
-                      {p.shop.neighborhood}
+                  {p.verified_visit && (
+                    <span
+                      /* Ink, NOT accent. Green is brand and never reports state
+                         (design-notes, 2026-07-25) — a green "verified" pill is
+                         exactly the collision that rule exists to prevent, and it
+                         would sit inches from the green Visit button. A stamp is
+                         a record, and records are printed in ink. */
+                      className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5 text-primary"
+                      title="This person checked in here"
+                    >
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      <span className="text-2xs font-semibold uppercase tracking-caps">Verified</span>
                     </span>
                   )}
-                </span>
-                {p.verified_visit && (
-                  <span
-                    /* Ink, NOT accent. Green is brand and never reports state
-                       (design-notes, 2026-07-25) — a green "verified" pill is
-                       exactly the collision that rule exists to prevent, and it
-                       would sit inches from the green Visit button. A stamp is
-                       a record, and records are printed in ink. */
-                    className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-sunken px-2 py-0.5 text-primary"
-                    title="This person checked in here"
-                  >
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    <span className="text-2xs font-semibold uppercase tracking-caps">Verified</span>
-                  </span>
-                )}
-              </button>
+                </button>
+              )}
 
               <button
                 onClick={() => router.push(`/customer/creator/${p.author.profile_id}`)}
@@ -425,7 +432,7 @@ export default function SocialFeed({
                   with the post it is attached to. */}
               {showLoyalty && (
                 <button
-                  onClick={() => router.push(`/customer/shop/${p.shop.slug}`)}
+                  onClick={() => router.push(`/customer/shop/${shop!.slug}`)}
                   className="flex w-full items-center gap-2 px-4 py-2.5 text-left active:bg-surface-sunken"
                 >
                   {visits > 0 ? (
@@ -446,8 +453,8 @@ export default function SocialFeed({
                     {remaining === 0
                       ? "Reward ready to redeem"
                       : remaining !== null
-                      ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${p.shop.deal_title ?? "your reward"}`
-                      : p.shop.deal_title}
+                      ? `${remaining} more visit${remaining === 1 ? "" : "s"} to ${shop!.deal_title ?? "your reward"}`
+                      : shop!.deal_title}
                   </span>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted" />
                 </button>

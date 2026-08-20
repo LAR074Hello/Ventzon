@@ -82,6 +82,18 @@ const FEED_FIXTURE = {
       verified_visit: false,
       viewer: { liked: false, progress: { visits: 5, goal: 5 } },
     },
+    {
+      id: "p3",
+      body: "No place attached — just a bench, the sun exactly right, and ten minutes I wasn't expecting.",
+      media_url: IMG("grid-4"),
+      media_type: "image",
+      hours_ago: 7,
+      author: { profile_id: "u3", display_name: "Ilse Bergman", avatar_url: null, followed: false },
+      shop: null,
+      counts: { likes: 12, comments: 0 },
+      verified_visit: false,
+      viewer: { liked: false, progress: null },
+    },
   ],
   hasMore: false,
 };
@@ -201,7 +213,7 @@ export default function ComponentGallery() {
             </div>
           </Section>
 
-          <Section title="SocialFeed" note="Rendered against stubbed endpoints: two posts, one with a verified visit, one at reward-ready.">
+          <Section title="SocialFeed" note="Rendered against stubbed endpoints: three posts — one with a verified visit, one at reward-ready, one plain (no place, person-first header).">
             <div className="-mx-5">
               <SocialFeed userLoc={null} />
             </div>

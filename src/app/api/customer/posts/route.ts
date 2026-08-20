@@ -134,9 +134,13 @@ export async function POST(req: Request) {
         media_url: mediaUrl,
         media_type: mediaUrl ? mediaType : null,
         poster_url: mediaUrl && mediaType === "video" ? posterUrl : null,
-        // 'community' (no linked business) stays stubbed off — see the
-        // COMMUNITY_FEED_ENABLED note in /api/customer/feed.
-        post_kind: "business",
+        // 'business' means the post names a place — the verified-visit
+        // badge and NEARBY depend on that anchor. No place means a plain
+        // 'community' post; the feed admits anchorless posts only under
+        // that kind, so leaving this 'business' would silently keep the
+        // post off every feed. (COMMUNITY_FEED_ENABLED in /api/customer/feed
+        // gates the CITY-wide community feed, not individual plain posts.)
+        post_kind: shopSlugForRow || placeId ? "business" : "community",
       })
       .select("id, body, shop_slug, media_url, media_type, poster_url, created_at")
       .single();
