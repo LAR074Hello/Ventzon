@@ -40,7 +40,7 @@ export default function PricingSection() {
             <div className="flex h-full flex-col rounded-[2rem] bg-night-800 p-12 shadow-warm transition-all duration-700 ease-luxe hover:-translate-y-1 hover:shadow-warm-lg hover:ring-1 hover:ring-white/10">
               <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">Monthly</p>
               <p className="mt-7 font-display text-[2.5rem] font-normal leading-none tracking-[0.02em] text-fog-100">
-                $25<span className="text-[1rem] text-fog-300">/month</span>
+                $30<span className="text-[1rem] text-fog-300">/month</span>
               </p>
               <p className="mt-3 text-[14px] font-light text-fog-300">Flat. Month to month, cancel anytime.</p>
               <ul className="mt-8 space-y-3">
@@ -76,9 +76,9 @@ export default function PricingSection() {
                 </span>
               </div>
               <p className="mt-7 font-display text-[2.5rem] font-normal leading-none tracking-[0.02em] text-white">
-                $250<span className="text-[1rem] text-fog-300">/year</span>
+                $300<span className="text-[1rem] text-fog-300">/year</span>
               </p>
-              <p className="mt-3 text-[14px] font-light text-fog-300">Save $50 vs monthly — ten months paid, two free.</p>
+              <p className="mt-3 text-[14px] font-light text-fog-300">Save $60 vs monthly — ten months paid, two free.</p>
               <ul className="mt-8 space-y-3">
                 {INCLUDED.map((item) => (
                   <li

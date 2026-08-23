@@ -19,7 +19,7 @@ const steps = [
   {
     number: "03",
     title: "Choose a plan and subscribe",
-    body: "Pick monthly ($25/month) or yearly ($250/year — two months free) and enter your card. It's a flat $25/month — no per-redemption fees, no surprise charges.",
+    body: "Pick monthly ($30/month) or yearly ($300/year — two months free) and enter your card. It's a flat $30/month — no per-redemption fees, no surprise charges.",
   },
   {
     number: "04",

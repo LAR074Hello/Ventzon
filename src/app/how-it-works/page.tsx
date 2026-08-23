@@ -87,7 +87,7 @@ const merchantSteps = [
   {
     number: "03",
     title: "Rewards at one flat price",
-    body: "When you're ready, set a visit goal and a reward. Customers earn it by showing up — $25/month flat, no per-redemption fees.",
+    body: "When you're ready, set a visit goal and a reward. Customers earn it by showing up — $30/month flat, no per-redemption fees.",
   },
 ];
 

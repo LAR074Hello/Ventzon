@@ -50,7 +50,7 @@ export default function CareersPage() {
                   </span>
                   <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 INDEPENDENT CONTRACTOR</span>
                 </div>
-                <h3 className="mt-3 text-[24px] font-light text-fog-100">Business Development Representative Intern</h3>
+                <h3 className="mt-3 text-[24px] font-light text-fog-100">Marketing Intern</h3>
                 <div className="mt-2 flex flex-wrap items-center gap-4">
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
                     <MapPin className="h-3 w-3" /> Your city (field-based)
@@ -59,7 +59,7 @@ export default function CareersPage() {
                     <Clock className="h-3 w-3" /> Set your own schedule
                   </span>
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
-                    <DollarSign className="h-3 w-3" /> 40% monthly recurring commission
+                    <DollarSign className="h-3 w-3" /> 50% commission, uncapped
                   </span>
                 </div>
               </div>
@@ -76,10 +76,10 @@ export default function CareersPage() {
               <div>
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">ABOUT THE ROLE</p>
                 <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
-                  A school-year independent contractor role for college students. Walk into local businesses near campus, pitch Ventzon face-to-face, and earn 40% monthly recurring commission — paid out every two weeks.
+                  A student internship where you&apos;re the face of Ventzon in your city — grow our user base on campus and around the area, sign up local businesses, and earn 50% of every plan you sell: $150 per annual signup, $15/mo recurring on monthly plans. Uncapped.
                 </p>
                 <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-200">
-                  Beyond the initial sale, you'll serve as the primary point of contact for your merchants — following up, answering questions, and making sure they're getting real value out of the platform.
+                  An entrepreneurial, flexible role for someone who wants real sales and marketing experience at an early-stage startup, on their own schedule.
                 </p>
               </div>
 
@@ -106,9 +106,9 @@ export default function CareersPage() {
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">COMPENSATION</p>
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
-                    { label: "40%", detail: "Of each merchant's monthly subscription" },
-                    { label: "Recurring monthly", detail: "Every month the merchant stays subscribed" },
-                    { label: "Paid every two weeks", detail: "Fixed payout cadence" },
+                    { label: "50%", detail: "Of every plan you sell — uncapped" },
+                    { label: "$150", detail: "Per annual signup (50% of the $300/yr plan)" },
+                    { label: "$15/mo", detail: "Recurring on monthly plans, for as long as they stay" },
                   ].map(({ label, detail }) => (
                     <div key={label} className="rounded-xl border border-[#222] p-4">
                       <p className="text-[18px] font-light text-fog-100">{label}</p>

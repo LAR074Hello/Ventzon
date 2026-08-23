@@ -210,7 +210,7 @@ export default function ApplyPage() {
         <h1 className="mt-6 text-[32px] font-light tracking-[-0.01em] text-fog-100">
           Apply
         </h1>
-        <p className="mt-2 text-[14px] font-light text-[#999]">Business Development Representative Intern · Ventzon</p>
+        <p className="mt-2 text-[14px] font-light text-[#999]">Marketing Intern · Ventzon</p>
 
         <form onSubmit={handleSubmit} className="mt-12 space-y-10">
 

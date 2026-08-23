@@ -45,7 +45,8 @@ export async function GET() {
       const myShops = shopsByRep[rep.id] ?? [];
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
 
-      // Signup-bounty model: $25 in the first month, $5/mo after, $0 for free shops.
+      // Flat 50% commission: $150 in a merchant's first month (annual
+      // signup), $15/mo after, $0 for free shops.
       const commissionThisMonth = myShops.reduce((sum, s) => {
         const isPro = s.plan_type === "pro" && s.subscription_status === "active";
         return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at));

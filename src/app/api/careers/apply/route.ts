@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     const emailBody = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#000;color:#ededed">
         <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0">NEW APPLICATION</p>
-        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Business Development Representative Intern</h1>
+        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Marketing Intern</h1>
         <p style="font-size:13px;color:#555;margin:0">${application.submitted_at}</p>
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
       from: EMAIL_FROM_CAREERS,
       to: "lukerichardsschool@gmail.com",
       replyTo: application.email,
-      subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative Intern`,
+      subject: `New Application: ${application.first_name} ${application.last_name} — Marketing Intern`,
       html: emailBody,
       ...(resumeAttachment ? { attachments: [resumeAttachment] } : {}),
     });

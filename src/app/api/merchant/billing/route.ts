@@ -58,11 +58,11 @@ export async function GET(req: Request) {
 
     const rewardsThisMonth = count ?? 0;
 
-    // Flat-only pricing: Pro is $25/month, Free is $0. No per-redemption
+    // Flat-only pricing: Pro is $30/month, Free is $0. No per-redemption
     // fees. rewards_this_month is kept as an analytics count only.
     let estimatedCharge: string;
     if (planType === "pro") {
-      estimatedCharge = "$25.00 flat monthly";
+      estimatedCharge = "$30.00 flat monthly";
     } else {
       estimatedCharge = "$0.00 (free plan)";
     }

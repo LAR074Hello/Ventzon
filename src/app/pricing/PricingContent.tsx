@@ -38,8 +38,8 @@ const proFeatures = [
 
 const faqs = [
   {
-    q: "What does the $25/month cover?",
-    a: "The $25 operational fee covers everything — your shop listing, QR code, stamp tracking, analytics, customer list, CSV export, manual stamp tool, and email campaigns.",
+    q: "What does the $30/month cover?",
+    a: "The $30 operational fee covers everything — your shop listing, QR code, stamp tracking, analytics, customer list, CSV export, manual stamp tool, and email campaigns.",
   },
   {
     q: "How do customers get notified?",
@@ -51,7 +51,7 @@ const faqs = [
   },
   {
     q: "Is yearly billing worth it?",
-    a: "At $250/year vs $300 billed monthly, you save $50 — that's 2 months free.",
+    a: "At $300/year vs $360 billed monthly, you save $60 — that's 2 months free.",
   },
 ];
 
@@ -176,7 +176,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
-            $25/month, flat &mdash; everything included.
+            $30/month, flat &mdash; everything included.
             <br className="hidden sm:block" />
             No per-redemption fees, no surprises.
           </p>
@@ -278,7 +278,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
 
               <div className="mt-6">
                 <span className="text-5xl font-light tracking-tight text-fog-100">
-                  {billingPeriod === "yearly" ? "$250" : "$25"}
+                  {billingPeriod === "yearly" ? "$300" : "$30"}
                 </span>
                 <span className="ml-1 text-lg font-light text-fog-600">
                   {billingPeriod === "yearly" ? "/yr" : "/mo"}
@@ -287,11 +287,11 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
 
               {billingPeriod === "yearly" ? (
                 <p className="mt-2 text-[11px] font-light tracking-[0.05em] text-emerald-500">
-                  Save $50 vs monthly &mdash; that&apos;s 2 months free
+                  Save $60 vs monthly &mdash; that&apos;s 2 months free
                 </p>
               ) : (
                 <p className="mt-2 text-[11px] font-light text-fog-500">
-                  or $250/yr and save $50
+                  or $300/yr and save $60
                 </p>
               )}
 
@@ -377,7 +377,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
               One flat rate. No fine print.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
-              Everything is in the $25/month &mdash; rewards, analytics, the customer list. Here&rsquo;s what that looks like when a customer comes back.
+              Everything is in the $30/month &mdash; rewards, analytics, the customer list. Here&rsquo;s what that looks like when a customer comes back.
             </p>
           </ScrollReveal>
 
@@ -405,7 +405,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
                 </div>
                 <div className="rounded-xl border border-night-700 p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">YOU PAY VENTZON</p>
-                  <p className="mt-2 text-3xl font-light text-white">$25</p>
+                  <p className="mt-2 text-3xl font-light text-white">$30</p>
                   <p className="mt-1 text-[12px] font-light text-fog-500">per month, flat</p>
                 </div>
                 <div className="rounded-xl border border-night-700 p-5">
@@ -445,7 +445,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
             </div>
 
             {[
-              { feature: "Monthly fee", ventzon: "$25", square: "paid", punch: "$0" },
+              { feature: "Monthly fee", ventzon: "$30", square: "paid", punch: "$0" },
               { feature: "Per-redemption fees", ventzon: "$0", square: "included", punch: "$0" },
               { feature: "Customer data & analytics", ventzon: true, square: true, punch: false },
               { feature: "Digital stamp tracking", ventzon: true, square: true, punch: false },

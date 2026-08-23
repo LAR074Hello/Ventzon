@@ -2616,7 +2616,7 @@ function MerchantShopPage() {
                       </span>
                       <span className="text-[13px] font-light text-fog-500">
                         {billingData.plan_type === "pro"
-                          ? "$25/mo flat — no per-redemption fees"
+                          ? "$30/mo flat — no per-redemption fees"
                           : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month → ${billingData.estimated_charge}`}
                       </span>
                     </div>

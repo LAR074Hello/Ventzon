@@ -268,8 +268,8 @@ export default function RepHomePage() {
           <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">HOW YOU EARN</p>
           <div className="mt-4 space-y-3">
             {[
-              { label: "New pro merchant", value: "$25 bounty", detail: "100% of month one" },
-              { label: "Pro merchant, month two+", value: "$5/mo", detail: "20% of the $25 flat" },
+              { label: "Annual plan", value: "$150", detail: "50% of the $300/yr plan — per signup" },
+              { label: "Monthly plan", value: "$15/mo", detail: "50% of the $30/mo plan — recurring for as long as they stay" },
               { label: "Free shops", value: "$0", detail: "Commission starts when they go pro" },
             ].map(({ label, value, detail }) => (
               <div key={label} className="flex items-center justify-between">

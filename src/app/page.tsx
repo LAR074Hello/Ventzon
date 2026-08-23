@@ -85,7 +85,7 @@ const SHOP_BENEFITS = [
   },
   {
     title: "Rewards at one flat price",
-    body: "Set a visit goal and a reward in minutes. $25/month flat — no per-redemption fees, no surprises.",
+    body: "Set a visit goal and a reward in minutes. $30/month flat — no per-redemption fees, no surprises.",
   },
 ];
 
