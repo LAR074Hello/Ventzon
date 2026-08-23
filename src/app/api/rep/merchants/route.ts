@@ -31,7 +31,7 @@ export async function GET() {
 
     const { data: shops } = await admin
       .from("shops")
-      .select("slug, plan_type, subscription_status, rep_claimed_at, created_at")
+      .select("slug, plan_type, subscription_status, rep_claimed_at, created_at, plan_interval")
       .eq("rep_id", profile.id)
       .order("rep_claimed_at", { ascending: false });
 
@@ -66,7 +66,7 @@ export async function GET() {
         status: shop.subscription_status,
         claimedAt: shop.rep_claimed_at ?? shop.created_at,
         rewardsThisMonth: rewardCount,
-        monthlyCommission: calcMerchantCommission(isPro, isInFirstMonth(shop.rep_claimed_at ?? shop.created_at)),
+        monthlyCommission: calcMerchantCommission(isPro, isInFirstMonth(shop.rep_claimed_at ?? shop.created_at), shop.plan_interval),
       };
     });
 

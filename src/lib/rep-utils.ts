@@ -9,8 +9,12 @@ export function isAdmin(email: string | null | undefined): boolean {
 
 // Commission constants — flat 50% of every plan sold (approved 2026-08):
 //  • Monthly ($30/mo) → $15/mo recurring for as long as the shop stays subscribed
-//  • Annual ($300/yr) → $150 per signup
+//  • Annual ($300/yr) → $150 per signup, then $15/mo recurring
 //  • Uncapped; free shops earn $0
+//
+// shops.plan_interval ('monthly' | 'annual' | NULL) decides the first-month
+// credit: annual → $150 signup commission; monthly or NULL → $15/mo only.
+// NULL is the safe default — it never over-credits (see calcMerchantCommission).
 export const MONTHLY_FLAT = 30;            // Pro plan $/month
 export const ANNUAL_FLAT = 300;            // Pro plan $/year
 export const COMMISSION_RATE = 0.5;        // flat 50% of every plan sold
@@ -26,10 +30,13 @@ export function isInFirstMonth(startIso: string | null | undefined): boolean {
   return days >= 0 && days < 30;
 }
 
-export function calcMerchantCommission(isPro: boolean, isFirstMonth: boolean): number {
+export function calcMerchantCommission(
+  isPro: boolean,
+  isFirstMonth: boolean,
+  planInterval: string | null | undefined
+): number {
   if (!isPro) return 0;
-  // First month ≈ annual-signup payout ($150); after that, $15/mo recurring.
-  // (The DB doesn't track monthly vs annual per shop, so the first month is
-  // credited at the annual rate — see MONTHLY_FLAT/ANNUAL_FLAT above.)
-  return isFirstMonth ? SIGNUP_COMMISSION : RECURRING_COMMISSION;
+  // Annual signup → $150 signup commission in month one, then $15/mo recurring.
+  // Monthly (or NULL/unknown — never over-credit) → $15/mo only, no signup bonus.
+  return planInterval === "annual" && isFirstMonth ? SIGNUP_COMMISSION : RECURRING_COMMISSION;
 }

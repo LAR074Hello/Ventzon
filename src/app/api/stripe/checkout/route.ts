@@ -46,16 +46,30 @@ export async function POST(req: Request) {
 
     // ── Pro plan: flat only ──
     const plan = planRaw === "yearly" ? "yearly" : "monthly";
-    const flatPriceId =
-      plan === "yearly"
-        ? (process.env.PRICE_YEARLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY)
-        : (process.env.PRICE_MONTHLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY);
+    const monthlyPriceId =
+      process.env.PRICE_MONTHLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY;
+    const yearlyPriceId =
+      process.env.PRICE_YEARLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY;
+
+    const flatPriceId = plan === "yearly" ? yearlyPriceId : monthlyPriceId;
 
     if (!flatPriceId) {
       return Response.json(
         { error: "Missing PRICE env var for selected plan" },
         { status: 500 }
       );
+    }
+
+    // plan_interval is persisted on the shop when the subscription is created
+    // (the webhook reads it from session/subscription metadata). Derive it from
+    // the price ID actually charged so billing and rep-commission display can't
+    // drift. Safe default is monthly — never over-credit a rep with the $150
+    // annual signup commission.
+    let planInterval: "monthly" | "annual" = "monthly";
+    if (flatPriceId === yearlyPriceId) {
+      planInterval = "annual";
+    } else if (flatPriceId === monthlyPriceId) {
+      planInterval = "monthly";
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -68,9 +82,9 @@ export async function POST(req: Request) {
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
         shop_slug
       )}&canceled=1`,
-      metadata: { shop_slug, plan_type: "pro" },
+      metadata: { shop_slug, plan_type: "pro", plan_interval: planInterval },
       subscription_data: {
-        metadata: { shop_slug, plan_type: "pro" },
+        metadata: { shop_slug, plan_type: "pro", plan_interval: planInterval },
       },
     });
 

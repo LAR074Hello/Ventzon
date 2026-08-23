@@ -32,7 +32,7 @@ export async function GET() {
     // Batch: fetch all shops with rep_id set, then group by rep
     const { data: allShops } = await admin
       .from("shops")
-      .select("slug, plan_type, subscription_status, rep_id, rep_claimed_at, created_at")
+      .select("slug, plan_type, subscription_status, rep_id, rep_claimed_at, created_at, plan_interval")
       .not("rep_id", "is", null);
 
     const shopsByRep: Record<string, typeof allShops> = {};
@@ -45,11 +45,11 @@ export async function GET() {
       const myShops = shopsByRep[rep.id] ?? [];
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
 
-      // Flat 50% commission: $150 in a merchant's first month (annual
-      // signup), $15/mo after, $0 for free shops.
+      // Flat 50% commission: annual signups pay $150 in month one then $15/mo;
+      // monthly (or unknown/NULL) pay $15/mo only; free shops pay $0.
       const commissionThisMonth = myShops.reduce((sum, s) => {
         const isPro = s.plan_type === "pro" && s.subscription_status === "active";
-        return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at));
+        return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at), s.plan_interval);
       }, 0);
 
       return {

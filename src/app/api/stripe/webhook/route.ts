@@ -98,6 +98,11 @@ export async function POST(req: Request) {
           break;
         }
 
+        const planInterval =
+          (session.metadata?.plan_interval ?? "").trim().toLowerCase() === "annual"
+            ? "annual"
+            : "monthly";
+
         const { error } = await supabaseAdmin
           .from("shops")
           .update({
@@ -106,6 +111,7 @@ export async function POST(req: Request) {
             stripe_customer_id: customerId,
             stripe_subscription_id: subscriptionId,
             plan_type: planType,
+            plan_interval: planInterval,
             updated_at: new Date().toISOString(),
           } as any)
           .eq("slug", shopSlug);
@@ -113,7 +119,7 @@ export async function POST(req: Request) {
         if (error) {
           console.error("Supabase update failed on checkout.session.completed", error);
         } else {
-          console.log("[WEBHOOK] shop activated", { shopSlug, planType });
+          console.log("[WEBHOOK] shop activated", { shopSlug, planType, planInterval });
         }
 
         break;
@@ -151,6 +157,7 @@ export async function POST(req: Request) {
         }
 
         const planType = (sub.metadata?.plan_type ?? "").trim().toLowerCase();
+        const planInterval = (sub.metadata?.plan_interval ?? "").trim().toLowerCase();
 
         const updatePayload: Record<string, any> = {
           is_paid: isPaid,
@@ -163,6 +170,12 @@ export async function POST(req: Request) {
         // Only update plan_type if metadata has it (avoids wiping it on legacy subs)
         if (planType) {
           updatePayload.plan_type = planType;
+        }
+
+        // Only update plan_interval if metadata has a valid value (legacy subs
+        // carry no metadata — leave their existing value, or NULL, untouched).
+        if (planInterval === "monthly" || planInterval === "annual") {
+          updatePayload.plan_interval = planInterval;
         }
 
         const { error } = await supabaseAdmin

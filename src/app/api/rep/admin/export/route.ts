@@ -30,7 +30,7 @@ export async function GET() {
     // Batch fetch all rep-owned shops
     const { data: allShops } = await admin
       .from("shops")
-      .select("slug, plan_type, subscription_status, rep_id, rep_claimed_at, created_at")
+      .select("slug, plan_type, subscription_status, rep_id, rep_claimed_at, created_at, plan_interval")
       .not("rep_id", "is", null)
       .order("rep_claimed_at", { ascending: false });
 
@@ -66,7 +66,7 @@ export async function GET() {
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
       const commission = myShops.reduce((sum, s) => {
         const isPro = s.plan_type === "pro" && s.subscription_status === "active";
-        return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at));
+        return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at), s.plan_interval);
       }, 0);
 
       rows.push([
@@ -90,7 +90,7 @@ export async function GET() {
       const rep = shop.rep_id ? repMap[shop.rep_id] : null;
       const isPro = shop.plan_type === "pro" && shop.subscription_status === "active";
       const rewards = rewardCounts[shop.slug] ?? 0;
-      const commission = calcMerchantCommission(isPro, isInFirstMonth(shop.rep_claimed_at ?? shop.created_at));
+      const commission = calcMerchantCommission(isPro, isInFirstMonth(shop.rep_claimed_at ?? shop.created_at), shop.plan_interval);
       const claimedDate = shop.rep_claimed_at ?? shop.created_at;
 
       rows.push([
