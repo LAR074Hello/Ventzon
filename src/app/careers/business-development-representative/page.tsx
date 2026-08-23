@@ -132,7 +132,7 @@ export default function BDRPage() {
               This is a <span className="text-fog-100">50% commission internship (1099) with uncapped earning potential</span> — you earn half of every plan you sell. That&apos;s <span className="text-fog-100">$150 per annual signup</span> (50% of the $300/year plan) and <span className="text-fog-100">$15/month recurring</span> on monthly plans, for as long as that business stays on Ventzon.
             </p>
             <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
-              On-target earnings are <span className="text-fog-100">~$750–$1,000/month</span> for solid performers, and top reps earn more.
+              On-target earnings are <span className="text-fog-100">$1,000–$3,000/month</span> for solid performers, and top reps earn more.
             </p>
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
