@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
-import { EMAIL_FROM_CAREERS } from "@/lib/resend";
+import { EMAIL_FROM_CAREERS, EMAIL_TO_CAREERS } from "@/lib/resend";
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +30,6 @@ export async function POST(req: Request) {
       has_transportation: get("hasTransportation"),
       comfortable_commission: get("comfortableCommission"),
       has_sales_experience: get("hasSalesExperience"),
-      sales_experience: get("salesExperience"),
-      why_ventzon: get("whyVentzon"),
       role: "business-development-representative-intern",
       submitted_at: new Date().toISOString(),
     };
@@ -46,17 +44,27 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // The written-answer fields (sales experience / why Ventzon) only exist on
+    // the legacy summer-sales-intern form — the Marketing Intern form replaced
+    // them with a cover-letter upload. Keep storing them when a form sends them.
+    const salesExperience = get("salesExperience") || null;
+    const whyVentzon = get("whyVentzon") || null;
+
     // Store in DB
     const { error: dbError } = await supabase
       .from("job_applications")
-      .insert(application);
+      .insert({
+        ...application,
+        ...(salesExperience ? { sales_experience: salesExperience } : {}),
+        ...(whyVentzon ? { why_ventzon: whyVentzon } : {}),
+      });
 
     if (dbError) {
       console.error("DB error:", dbError.message);
       // Don't block the submission — still send email
     }
 
-    // Handle resume file
+    // Handle resume + cover letter files
     const resumeFile = formData.get("resume") as File | null;
     let resumeAttachment: { filename: string; content: Buffer } | null = null;
 
@@ -65,13 +73,21 @@ export async function POST(req: Request) {
       resumeAttachment = { filename: resumeFile.name, content: buffer };
     }
 
+    const coverLetterFile = formData.get("coverLetter") as File | null;
+    let coverLetterAttachment: { filename: string; content: Buffer } | null = null;
+
+    if (coverLetterFile && coverLetterFile.size > 0) {
+      const buffer = Buffer.from(await coverLetterFile.arrayBuffer());
+      coverLetterAttachment = { filename: coverLetterFile.name, content: buffer };
+    }
+
     // Send email notification
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const emailBody = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#000;color:#ededed">
         <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0">NEW APPLICATION</p>
-        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Marketing Intern</h1>
+        <h1 style="font-size:24px;font-weight:300;color:#ededed;margin:16px 0 4px">Business Development Representative Intern</h1>
         <p style="font-size:13px;color:#555;margin:0">${application.submitted_at}</p>
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
@@ -108,26 +124,31 @@ export async function POST(req: Request) {
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
 
-        <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0 0 12px">SALES EXPERIENCE</p>
-        <p style="font-size:14px;font-weight:300;color:#888;line-height:1.7;white-space:pre-wrap">${application.sales_experience || "Not provided"}</p>
+        ${salesExperience ? `<p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:0 0 12px">SALES EXPERIENCE</p>
+        <p style="font-size:14px;font-weight:300;color:#888;line-height:1.7;white-space:pre-wrap">${salesExperience}</p>` : ""}
 
-        <p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:24px 0 12px">WHY VENTZON</p>
-        <p style="font-size:14px;font-weight:300;color:#888;line-height:1.7;white-space:pre-wrap">${application.why_ventzon}</p>
+        ${whyVentzon ? `<p style="font-size:11px;letter-spacing:0.3em;color:#555;margin:24px 0 12px">WHY VENTZON</p>
+        <p style="font-size:14px;font-weight:300;color:#888;line-height:1.7;white-space:pre-wrap">${whyVentzon}</p>` : ""}
 
         ${resumeAttachment ? `<p style="font-size:12px;color:#555;margin-top:24px">Resume attached: ${resumeAttachment.filename}</p>` : ""}
+        ${coverLetterAttachment ? `<p style="font-size:12px;color:#555;margin-top:4px">Cover letter attached: ${coverLetterAttachment.filename}</p>` : ""}
 
         <hr style="border:none;border-top:1px solid #1a1a1a;margin:24px 0"/>
         <p style="font-size:11px;color:#333;margin:0">Ventzon Careers · ventzon.com/careers</p>
       </div>
     `;
 
+    const attachments = [resumeAttachment, coverLetterAttachment].filter(
+      (a): a is { filename: string; content: Buffer } => a !== null
+    );
+
     await resend.emails.send({
       from: EMAIL_FROM_CAREERS,
-      to: "lukerichardsschool@gmail.com",
+      to: EMAIL_TO_CAREERS,
       replyTo: application.email,
-      subject: `New Application: ${application.first_name} ${application.last_name} — Marketing Intern`,
+      subject: `New Application: ${application.first_name} ${application.last_name} — Business Development Representative Intern`,
       html: emailBody,
-      ...(resumeAttachment ? { attachments: [resumeAttachment] } : {}),
+      ...(attachments.length ? { attachments } : {}),
     });
 
     return NextResponse.json({ ok: true });

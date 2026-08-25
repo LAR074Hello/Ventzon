@@ -4,7 +4,7 @@ import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Marketing Intern — Ventzon Careers",
+  title: "Business Development Representative Intern — Ventzon Careers",
   description: "Student internship: earn 50% of every plan you sell — $150 per annual signup, $15/mo recurring. Grow Ventzon on campus and in your city. 1099, uncapped.",
 };
 
@@ -30,7 +30,7 @@ export default function BDRPage() {
           </div>
 
           <h1 className="mt-4 text-4xl font-light tracking-[0.02em] text-fog-100 sm:text-5xl">
-            Marketing Intern
+            Business Development Representative Intern
           </h1>
 
           <div className="mt-5 flex flex-wrap items-center gap-5">
@@ -70,7 +70,7 @@ export default function BDRPage() {
           <div>
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">ABOUT THE ROLE</p>
             <p className="mt-5 text-[15px] font-light leading-relaxed text-fog-200">
-              As a Marketing Intern, you&apos;ll be the face of Ventzon in your city — both on campus and out in the local community. You&apos;ll grow our user base among students and residents, and sign up local businesses across the area. It&apos;s an entrepreneurial, flexible role for someone who wants real sales and marketing experience at an early-stage startup, on their own schedule.
+              As a Business Development Representative Intern, you&apos;ll be the face of Ventzon in your city — both on campus and out in the local community. You&apos;ll grow our user base among students and residents, and sign up local businesses across the area. It&apos;s an entrepreneurial, flexible role for someone who wants real sales and marketing experience at an early-stage startup, on their own schedule.
             </p>
           </div>
 
@@ -162,7 +162,7 @@ export default function BDRPage() {
           <div>
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">HOW TO APPLY</p>
             <p className="mt-5 text-[15px] font-light leading-relaxed text-fog-200">
-              Apply directly on our website — reach out with a short note on why you&apos;d be a great fit. We&apos;d love to hear from you!
+              Apply directly on our website — upload a cover letter and resume. We&apos;d love to hear from you!
             </p>
           </div>
 
@@ -170,7 +170,7 @@ export default function BDRPage() {
           <div className="rounded-2xl border border-night-600 bg-[#060606] p-8 text-center">
             <p className="text-[18px] font-light text-fog-100">Sound like you?</p>
             <p className="mt-2 text-[13px] font-light text-[#999]">
-              Send a short note on why you&apos;d be a great fit — we&apos;d love to hear from you.
+              Upload a cover letter and resume — we&apos;d love to hear from you.
             </p>
             <Link
               href="/careers/business-development-representative/apply"

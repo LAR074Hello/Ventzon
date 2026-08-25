@@ -50,7 +50,7 @@ export default function CareersPage() {
                   </span>
                   <span className="text-[10px] font-light tracking-[0.15em] text-[#777]">1099 INDEPENDENT CONTRACTOR</span>
                 </div>
-                <h3 className="mt-3 text-[24px] font-light text-fog-100">Marketing Intern</h3>
+                <h3 className="mt-3 text-[24px] font-light text-fog-100">Business Development Representative Intern</h3>
                 <div className="mt-2 flex flex-wrap items-center gap-4">
                   <span className="flex items-center gap-1.5 text-[12px] font-light text-[#999]">
                     <MapPin className="h-3 w-3" /> Your city (field-based)

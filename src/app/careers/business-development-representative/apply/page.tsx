@@ -29,12 +29,11 @@ type FormState = {
   hasSalesExperience: string;     // yes | no
 
   // Experience
-  salesExperience: string;
-  whyVentzon: string;
   linkedIn: string;
 
-  // Resume
+  // Uploads
   resume: File | null;
+  coverLetter: File | null;
 };
 
 const INITIAL: FormState = {
@@ -42,8 +41,8 @@ const INITIAL: FormState = {
   authorizedToWork: "", requiresSponsorship: "", over18: "", felony: "", felonyExplanation: "",
   startDate: "", schoolName: "", schoolYearAvailability: "",
   hasTransportation: "", comfortableCommission: "", hasSalesExperience: "",
-  salesExperience: "", whyVentzon: "", linkedIn: "",
-  resume: null,
+  linkedIn: "",
+  resume: null, coverLetter: null,
 };
 
 function Field({ label, required, children, hint }: { label: string; required?: boolean; children: React.ReactNode; hint?: string }) {
@@ -131,6 +130,7 @@ export default function ApplyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const coverLetterRef = useRef<HTMLInputElement>(null);
 
   function set(key: keyof FormState) {
     return (value: string) => setForm((f) => ({ ...f, [key]: value }));
@@ -157,18 +157,14 @@ export default function ApplyPage() {
       setErr("Please answer all role requirement questions.");
       return;
     }
-    if (!form.whyVentzon.trim()) {
-      setErr("Please tell us why you want to work at Ventzon.");
-      return;
-    }
-
     setSubmitting(true);
     try {
       const data = new FormData();
       Object.entries(form).forEach(([k, v]) => {
-        if (k !== "resume" && v !== null) data.append(k, v as string);
+        if (k !== "resume" && k !== "coverLetter" && v !== null) data.append(k, v as string);
       });
       if (form.resume) data.append("resume", form.resume);
+      if (form.coverLetter) data.append("coverLetter", form.coverLetter);
 
       const res = await fetch("/api/careers/apply", { method: "POST", body: data });
       const json = await safeJson(res);
@@ -210,7 +206,7 @@ export default function ApplyPage() {
         <h1 className="mt-6 text-[32px] font-light tracking-[-0.01em] text-fog-100">
           Apply
         </h1>
-        <p className="mt-2 text-[14px] font-light text-[#999]">Marketing Intern · Ventzon</p>
+        <p className="mt-2 text-[14px] font-light text-[#999]">Business Development Representative Intern · Ventzon</p>
 
         <form onSubmit={handleSubmit} className="mt-12 space-y-10">
 
@@ -368,30 +364,47 @@ export default function ApplyPage() {
             </div>
           </div>
 
-          {/* ── 4. Experience ── */}
+          {/* ── 4. Cover letter ── */}
           <div>
-            <SectionHeading number="4" title="Experience & motivation" />
-            <div className="space-y-4">
-              <Field label="Describe any sales, retail, or customer-facing experience you have" hint="No experience? Tell us about a time you persuaded someone of something.">
-                <Textarea
-                  value={form.salesExperience}
-                  onChange={set("salesExperience")}
-                  placeholder="e.g. I worked at a coffee shop for two summers and regularly upsold seasonal drinks…"
-                  rows={4}
-                  disabled={submitting}
-                />
-              </Field>
-
-              <Field label="Why Ventzon?" required>
-                <Textarea
-                  value={form.whyVentzon}
-                  onChange={set("whyVentzon")}
-                  placeholder="Tell us what excites you about this role and what you'd bring to it…"
-                  rows={5}
-                  disabled={submitting}
-                />
-              </Field>
-            </div>
+            <SectionHeading number="4" title="Cover letter" />
+            <Field label="Upload cover letter" hint="PDF, DOC, or DOCX. Max 5 MB. Optional but recommended.">
+              <div
+                onClick={() => coverLetterRef.current?.click()}
+                className={`flex cursor-pointer flex-col items-center gap-3 rounded-xl border border-dashed py-8 transition-colors duration-200 ${
+                  form.coverLetter ? "border-night-600 bg-[#0d0d0d]" : "border-night-600 bg-night-950 hover:border-[#555]"
+                }`}
+              >
+                <Upload className="h-5 w-5 text-[#777]" />
+                {form.coverLetter ? (
+                  <div className="text-center">
+                    <p className="text-[13px] font-light text-fog-100">{form.coverLetter.name}</p>
+                    <p className="mt-1 text-[11px] font-light text-fog-300">
+                      {(form.coverLetter.size / 1024 / 1024).toFixed(2)} MB · Click to change
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-[13px] font-light text-fog-300">Click to upload cover letter</p>
+                    <p className="mt-1 text-[11px] font-light text-[#777]">PDF, DOC, DOCX up to 5 MB</p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={coverLetterRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  if (file && file.size > 5 * 1024 * 1024) {
+                    setErr("Cover letter must be under 5 MB.");
+                    return;
+                  }
+                  setForm((f) => ({ ...f, coverLetter: file }));
+                  setErr(null);
+                }}
+              />
+            </Field>
           </div>
 
           {/* ── 5. Resume ── */}

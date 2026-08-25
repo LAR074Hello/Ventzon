@@ -13,6 +13,8 @@ import { Resend } from "resend";
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? "Ventzon <hello@ventzon.com>";
 /** Careers mail keeps its own display name — sourced from config, not hardcoded. */
 export const EMAIL_FROM_CAREERS = process.env.EMAIL_FROM_CAREERS ?? "Ventzon Careers <hello@ventzon.com>";
+/** Every submitted careers application is routed to this inbox. */
+export const EMAIL_TO_CAREERS = process.env.EMAIL_TO_CAREERS ?? "careers@ventzon.com";
 export const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO ?? "support@ventzon.com";
 
 let _resend: Resend | null = null;
