@@ -81,17 +81,11 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   other: {
-    // SMART APP BANNER — DISABLED 2026-07-29, deliberately kept here.
-    //
-    // `apple-itunes-app` renders Safari's Smart App Banner across the top of
-    // the page. The beta runs in mobile Safari, and the banner pointed at the
-    // App Store build — the one WITHOUT the Info.plist permission strings — so
-    // it actively recruited testers away from the working web version into the
-    // broken native one. It also stacked with the in-app AppStoreBanner.
-    //
-    // RE-ENABLE by uncommenting, once the native build carries the permission
-    // strings and the safety slice has landed. Nothing else needs changing.
-    // "apple-itunes-app": "app-id=6763768638",
+    // iOS Smart App Banner — Apple's native "Open in the App Store" strip on
+    // iPhone/iPad Safari. Inert on desktop and Android, safe site-wide.
+    // Enabled once the shipped native build carries the permission strings and
+    // the safety slice landed (previously disabled 2026-07-29 for the beta).
+    "apple-itunes-app": "app-id=6763768638",
   },
   openGraph: {
     title: "Ventzon — Find Real Places. See Who's Actually There.",
