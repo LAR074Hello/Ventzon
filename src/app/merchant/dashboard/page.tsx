@@ -3,8 +3,14 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { ArrowRight } from "lucide-react";
+import PendingPayment from "./PendingPayment";
 
-export default async function MerchantDashboardPage() {
+export default async function MerchantDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
+  const { checkout } = await searchParams;
   const supabase = await createSupabaseServerClient();
 
   const {
@@ -46,8 +52,16 @@ export default async function MerchantDashboardPage() {
     is_paid: boolean | null;
   }>).filter((s) => s && typeof s.slug === "string" && s.slug.length > 0);
 
-  // No shops — send to create
+  // No shops — after a fresh checkout the webhook may still be creating the
+  // row; wait for it instead of bouncing the user to create-again.
   if (shops.length === 0) {
+    if (checkout === "success") {
+      return (
+        <main className="min-h-screen bg-surface text-primary">
+          <PendingPayment />
+        </main>
+      );
+    }
     redirect("/merchant/create");
   }
 

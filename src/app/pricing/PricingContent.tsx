@@ -59,12 +59,24 @@ const faqs = [
 /*  server page, so there's no Suspense/useSearchParams dance.         */
 /* ------------------------------------------------------------------ */
 
-export default function PricingContent({ shopFromQuery }: { shopFromQuery: string }) {
+export default function PricingContent({
+  shopFromQuery,
+  shopNameFromQuery,
+}: {
+  shopFromQuery: string;
+  shopNameFromQuery: string;
+}) {
   const supabase = createSupabaseBrowserClient();
+
+  // Legacy activation: ?shop=<existing-slug>. New onboarding: ?shop_name=<name>
+  // (no shop row exists yet — it is created only after payment).
+  const isOnboarding = !shopFromQuery && shopNameFromQuery.trim().length > 0;
 
   const [shop, setShop] = useState(shopFromQuery);
   const [shopName, setShopName] = useState<string | null>(null);
-  const [loadingShop, setLoadingShop] = useState(!shopFromQuery);
+  const [onboardingName, setOnboardingName] = useState(shopNameFromQuery.trim());
+  const [editingName, setEditingName] = useState(false);
+  const [loadingShop, setLoadingShop] = useState(!shopFromQuery && !shopNameFromQuery);
   // A signed-in merchant is the only visitor who gets the shop context
   // bar (their shop, or a "create a shop" prompt). Anonymous visitors see
   // neither that bar nor any loading state.
@@ -74,11 +86,13 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
   const [error, setError] = useState("");
 
   const hasShop = shop.length > 0;
+  const displayName = isOnboarding ? onboardingName : shopName || shop;
 
-  // Auto-detect the logged-in user's shop if no ?shop= param. With a shop in
-  // the URL, loadingShop already starts false — nothing to set here.
+  // Auto-detect the logged-in user's shop if neither ?shop= nor ?shop_name=
+  // is present (marketing pricing for a signed-in merchant). Onboarding carries
+  // its own name and must not be replaced by an unrelated existing shop.
   useEffect(() => {
-    if (shopFromQuery) return;
+    if (shopFromQuery || shopNameFromQuery) return;
 
     (async () => {
       try {
@@ -105,11 +119,12 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
         setLoadingShop(false);
       }
     })();
-  }, [shopFromQuery, supabase]);
+  }, [shopFromQuery, shopNameFromQuery, supabase]);
 
-  // Load shop name for display
+  // Load shop name for display (legacy activation only — onboarding carries
+  // the name in client state and has no DB row yet).
   useEffect(() => {
-    if (!shop) return;
+    if (!shop || isOnboarding) return;
     (async () => {
       try {
         const { data } = await supabase
@@ -122,12 +137,23 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
         }
       } catch {}
     })();
-  }, [shop, supabase]);
+  }, [shop, isOnboarding, supabase]);
 
   async function startCheckout(plan: "monthly" | "yearly") {
-    if (!hasShop) {
-      setError("No shop found. Please create a shop first.");
-      return;
+    let payload: { shop_name?: string; shop?: string; plan: string };
+    if (isOnboarding) {
+      const name = onboardingName.trim();
+      if (!name) {
+        setError("Enter your shop name.");
+        return;
+      }
+      payload = { shop_name: name, plan };
+    } else {
+      if (!hasShop) {
+        setError("No shop found. Please create a shop first.");
+        return;
+      }
+      payload = { shop, plan };
     }
 
     setLoading(plan);
@@ -137,7 +163,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop, plan }),
+        body: JSON.stringify(payload),
       });
 
       // Read the raw body so a non-JSON (HTML error page / empty) response is
@@ -214,7 +240,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
       {/* ============================================================
           ONBOARDING STEP INDICATOR (shown when coming from get-started)
           ============================================================ */}
-      {shopFromQuery && (
+      {(shopFromQuery || shopNameFromQuery) && (
         <section className="px-4 sm:px-8 pb-4">
           <div className="mx-auto flex max-w-4xl items-center justify-center gap-3">
             <div className="flex items-center gap-2">
@@ -243,11 +269,71 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
           ============================================================ */}
       <section className="px-8">
         <div className="mx-auto max-w-lg">
-          {loadingShop ? null : hasShop ? (
+          {loadingShop ? null : isOnboarding ? (
+            <div className="animate-fade-in rounded-2xl border border-night-700 px-6 py-4">
+              {!editingName ? (
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center">
+                  <span className="text-[13px] font-light text-fog-500">Subscribing for </span>
+                  <span className="max-w-[240px] truncate text-[13px] font-normal tracking-[0.05em] text-fog-100">
+                    {onboardingName}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setEditingName(true);
+                      setError("");
+                    }}
+                    className="text-[12px] font-normal underline decoration-night-600 underline-offset-2 text-fog-400 transition-colors duration-200 hover:text-fog-100"
+                  >
+                    Edit
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <form
+                    className="flex w-full items-center gap-2"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!onboardingName.trim()) {
+                        setError("Enter your shop name.");
+                        return;
+                      }
+                      setEditingName(false);
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      value={onboardingName}
+                      onChange={(e) => setOnboardingName(e.target.value)}
+                      maxLength={60}
+                      placeholder="Shop name"
+                      className="min-w-0 flex-1 rounded-lg border border-night-700 bg-night-900 px-3 py-2 text-[13px] text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-full border border-fog-100 px-4 py-2 text-[12px] font-light text-fog-100 transition-all duration-300 hover:bg-fog-100 hover:text-black"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingName(false)}
+                      className="shrink-0 text-[12px] font-light text-fog-500 transition-colors hover:text-fog-100"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                  <p className="text-center text-[11px] font-light text-fog-600">
+                    Applies to this checkout only — your shop is created after
+                    payment.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : hasShop ? (
             <div className="animate-fade-in rounded-2xl border border-night-700 px-6 py-4 text-center">
               <span className="text-[13px] font-light text-fog-500">Subscribing for </span>
               <span className="text-[13px] font-normal tracking-[0.05em] text-fog-100">
-                {shopName || shop}
+                {displayName}
               </span>
             </div>
           ) : knownUser ? (
@@ -344,7 +430,7 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
               </ul>
 
               {/* CTA */}
-              {hasShop ? (
+              {(isOnboarding || hasShop) ? (
                 <button
                   onClick={() => startCheckout(billingPeriod)}
                   disabled={loading !== null || loadingShop}

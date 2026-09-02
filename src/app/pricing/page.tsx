@@ -4,8 +4,13 @@ import PricingContent from "./PricingContent";
 export default async function PricingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ shop?: string }>;
+  searchParams: Promise<{ shop?: string; shop_name?: string; canceled?: string }>;
 }) {
-  const { shop } = await searchParams;
-  return <PricingContent shopFromQuery={(shop ?? "").trim()} />;
+  const { shop, shop_name } = await searchParams;
+  return (
+    <PricingContent
+      shopFromQuery={(shop ?? "").trim()}
+      shopNameFromQuery={(shop_name ?? "").trim()}
+    />
+  );
 }

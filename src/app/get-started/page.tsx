@@ -1,6 +1,5 @@
 "use client";
 
-import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -49,23 +48,20 @@ export default function GetStartedPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const name = shopName.trim();
+    if (!name) {
+      setError("Enter your shop name to continue.");
+      return;
+    }
+
+    // The shop row is NOT created here. The name travels in the URL/client
+    // state to the plan step and is only persisted after Stripe payment is
+    // confirmed (webhook). Abandoning before paying leaves nothing behind.
     setLoading(true);
-
     try {
-      const resp = await fetch("/api/merchant/onboard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shopName }),
-      });
-
-      const json = await safeJson(resp);
-      if (!resp.ok) throw new Error(json?.error ?? "Failed to create shop");
-
-      // Send to pricing to pick a plan
-      router.push(`/pricing?shop=${encodeURIComponent(json.shopSlug)}`);
-    } catch (err: any) {
-      setError(err?.message ?? "Something went wrong");
-    } finally {
+      router.push(`/pricing?shop_name=${encodeURIComponent(name)}`);
+    } catch {
       setLoading(false);
     }
   }
@@ -155,10 +151,14 @@ export default function GetStartedPage() {
               className="mt-6 w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.15em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
             >
               <span className="inline-flex items-center gap-2">
-                {loading ? "Creating shop…" : "Continue to plans"}
+                {loading ? "Continuing…" : "Continue to plans"}
                 {!loading && <ArrowRight className="h-3 w-3" />}
               </span>
             </button>
+            <p className="mt-3 text-center text-[11px] font-light text-fog-600">
+              Your shop is created once your payment is confirmed — nothing is
+              saved before then.
+            </p>
           </form>
 
           {/* Dashboard link */}

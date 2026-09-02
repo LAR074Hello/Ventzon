@@ -1,6 +1,9 @@
 // src/app/api/stripe/webhook/route.ts
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { createPaidShop, type ShopWriteDb } from "@/lib/merchant-shop";
+import { sendEmail } from "@/lib/resend";
+import { scheduleOnboardingDrip } from "@/lib/onboarding-drip";
 
 export const runtime = "nodejs";
 
@@ -22,6 +25,43 @@ function ok(body: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+// Adapter from the service-role Supabase client to the narrow ShopWriteDb
+// surface used by src/lib/merchant-shop.ts (mockable in tests).
+function toShopDb(admin: NonNullable<typeof supabaseAdmin>): ShopWriteDb {
+  return {
+    findSlug: async (slug) => {
+      const { data, error } = await admin
+        .from("shops")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
+      return {
+        data: data as { id: string } | null,
+        error: error ? { message: error.message } : null,
+      };
+    },
+    insertShop: async (row) => {
+      const { data, error } = await admin
+        .from("shops")
+        .insert(row)
+        .select("id, slug")
+        .single();
+      return {
+        data: data as { id: string; slug: string } | null,
+        error: error ? { message: error.message } : null,
+      };
+    },
+    insertMember: async (row) => {
+      const { error } = await admin.from("shop_members").insert(row);
+      return { error: error ? { message: error.message } : null };
+    },
+    insertSettings: async (row) => {
+      const { error } = await admin.from("shop_settings").insert(row);
+      return { error: error ? { message: error.message } : null };
+    },
+  };
 }
 
 export async function POST(req: Request) {
@@ -87,6 +127,14 @@ export async function POST(req: Request) {
 
         const shopSlug = (session.metadata?.shop_slug ?? "").trim().toLowerCase();
         const planType = (session.metadata?.plan_type ?? "").trim().toLowerCase() || "pro";
+        const planInterval =
+          (session.metadata?.plan_interval ?? "").trim().toLowerCase() === "annual"
+            ? "annual"
+            : "monthly";
+        // New-onboarding metadata: the shop may not exist yet. user_id is
+        // server-stamped by the checkout route — never client-supplied.
+        const shopName = (session.metadata?.shop_name ?? "").trim();
+        const userId = (session.metadata?.user_id ?? "").trim();
 
         const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
         const customerId = typeof session.customer === "string" ? session.customer : null;
@@ -98,28 +146,82 @@ export async function POST(req: Request) {
           break;
         }
 
-        const planInterval =
-          (session.metadata?.plan_interval ?? "").trim().toLowerCase() === "annual"
-            ? "annual"
-            : "monthly";
-
-        const { error } = await supabaseAdmin
+        const { data: existingShop, error: findErr } = await supabaseAdmin
           .from("shops")
-          .update({
-            is_paid: true,
-            subscription_status: "active",
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            plan_type: planType,
-            plan_interval: planInterval,
-            updated_at: new Date().toISOString(),
-          } as any)
-          .eq("slug", shopSlug);
+          .select("id")
+          .eq("slug", shopSlug)
+          .maybeSingle();
 
-        if (error) {
-          console.error("Supabase update failed on checkout.session.completed", error);
-        } else {
-          console.log("[WEBHOOK] shop activated", { shopSlug, planType, planInterval });
+        if (findErr) {
+          console.error("checkout.session.completed: shop lookup failed", findErr);
+          return ok({ error: "Shop lookup failed, will retry" }, 500);
+        }
+
+        if (existingShop) {
+          // ── Legacy activation: row already exists → update, never recreate.
+          // This is the path every existing shop takes (incl. the-daily-grind)
+          // and preserves the plan_interval handling unchanged.
+          const { error } = await supabaseAdmin
+            .from("shops")
+            .update({
+              is_paid: true,
+              subscription_status: "active",
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              plan_type: planType,
+              plan_interval: planInterval,
+              updated_at: new Date().toISOString(),
+            } as any)
+            .eq("slug", shopSlug);
+
+          if (error) {
+            console.error("Supabase update failed on checkout.session.completed", error);
+            return ok({ error: "Shop activation update failed, will retry" }, 500);
+          }
+          console.log("[WEBHOOK] shop activated (existing)", { shopSlug, planType, planInterval });
+          break;
+        }
+
+        // ── Deferred onboarding: no shop row yet — create it now, paid/active.
+        if (!shopName || !userId) {
+          console.warn(
+            "checkout.session.completed missing shop_name/user_id for shop creation",
+            { sessionId: session.id, shopSlug }
+          );
+          break;
+        }
+
+        let created: { id: string; slug: string };
+        try {
+          created = await createPaidShop(toShopDb(supabaseAdmin), {
+            slug: shopSlug,
+            name: shopName,
+            userId,
+            planType,
+            planInterval,
+            customerId,
+            subscriptionId,
+          });
+        } catch (e) {
+          console.error("checkout.session.completed: shop creation failed", e);
+          return ok({ error: "Shop creation failed, will retry" }, 500);
+        }
+        console.log("[WEBHOOK] shop created after payment", created);
+
+        // Post-payment drip + welcome email — best-effort, never blocks payment.
+        try {
+          const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+          const email = authUser?.user?.email;
+          if (email) {
+            await scheduleOnboardingDrip(email, created.slug);
+            await sendEmail(
+              email,
+              `Welcome to Ventzon — ${shopName} is live`,
+              `Hi there,\n\nYour shop "${shopName}" is now live on Ventzon. Here's what to do next:\n\n1. Set your reward deal — tell customers what they're working toward (e.g. "Free coffee after 8 visits").\n2. Upload your logo — helps customers recognize your shop in the app.\n3. Print your QR code — this is what customers scan to check in.\n\nYour dashboard: https://ventzon.com/merchant/${created.slug}\n\nAny questions? Reply to this email or reach us at support@ventzon.com.\n\n— The Ventzon Team`
+            );
+          }
+        } catch (emailErr) {
+          console.warn("Post-payment welcome email/drip failed (non-fatal):", emailErr);
         }
 
         break;

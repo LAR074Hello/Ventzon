@@ -51,9 +51,9 @@ export async function GET(req: Request) {
     // 2) If missing, fall back to derived defaults — WITHOUT writing.
     //    This handler used to upsert a shop_settings row here. A GET must not
     //    write: Next.js prefetches on hover and crawlers hit URLs, so rows could
-    //    appear with no user action. The real creation path is the merchant
-    //    onboarding insert (api/merchant/onboard), which is the only place a
-    //    settings row should be born.
+    //    appear with no user action. Settings rows are born with the shop: the
+    //    Stripe webhook (checkout.session.completed) creates shop + settings
+    //    together once payment is confirmed (see src/lib/merchant-shop.ts).
     if (!existing) {
       const { data: shopExists } = await supabase
         .from("shops")

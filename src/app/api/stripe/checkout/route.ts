@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { slugify } from "@/lib/merchant-shop";
 
 export const runtime = "nodejs";
 
@@ -23,24 +25,28 @@ export async function POST(req: Request) {
   if (rl.limited) return rateLimitResponse(rl.retryAfterMs);
 
   try {
-    const body = await req.json();
-    const shop_slug = String(body.shop_slug ?? body.shop ?? "").trim();
-    const planRaw = String(body.plan ?? "monthly").trim().toLowerCase();
-
-    if (!shop_slug) {
-      return Response.json({ error: "Missing shop_slug" }, { status: 400 });
+    // ── Authenticated only ──
+    // Checkout creates shops after payment, so the shop must always be owned
+    // by the authenticated merchant. user_id is stamped server-side (never
+    // trusted from the client body).
+    const supabaseAuth = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return Response.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    const body = await req.json();
+    const shopName = String(body.shop_name ?? "").trim();
+    const shopSlugInput = String(body.shop_slug ?? body.shop ?? "").trim();
+    const planRaw = String(body.plan ?? "monthly").trim().toLowerCase();
 
     const origin =
       req.headers.get("origin") ||
       process.env.NEXT_PUBLIC_SITE_URL ||
       "https://www.ventzon.com";
 
-    // POST-BETA: the per-redemption metered fee is removed. Pro is flat
-    // ($30/mo or $300/yr); free shops have no Stripe subscription at all.
-    // That also means the ad-campaigns metered item (attached to a shop's
-    // subscription) isn't available to free shops — ads are Pro-only until a
-    // free-shop path exists. TODO(beta): decide how free shops get ads.
     if (planRaw === "free") {
       // No checkout needed — free is "no subscription". Guard so a stray
       // plan=free request can't silently create a Pro session.
@@ -82,11 +88,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // plan_interval is persisted on the shop when the subscription is created
-    // (the webhook reads it from session/subscription metadata). Derive it from
-    // the price ID actually charged so billing and rep-commission display can't
-    // drift. Safe default is monthly — never over-credit a rep with the $150
-    // annual signup commission.
     let planInterval: "monthly" | "annual" = "monthly";
     if (flatPriceId === yearlyPriceId) {
       planInterval = "annual";
@@ -94,19 +95,59 @@ export async function POST(req: Request) {
       planInterval = "monthly";
     }
 
+    const isOnboarding = shopName.length > 0;
+    if (isOnboarding) {
+      // ── New onboarding: NO shop row exists yet ──
+      // The name (and its base slug) travel through Stripe metadata only; the
+      // shop is created by the webhook once payment is confirmed. Slug
+      // uniqueness is resolved at creation time there.
+      if (shopName.length > 60) {
+        return Response.json(
+          { error: "Shop name must be 60 characters or fewer." },
+          { status: 400 }
+        );
+      }
+      const baseSlug = slugify(shopName);
+      const metadata = {
+        user_id: user.id, // server-stamped owner — never client-supplied
+        shop_name: shopName,
+        shop_slug: baseSlug,
+        plan_type: "pro",
+        plan_interval: planInterval,
+      };
+
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [{ price: flatPriceId, quantity: 1 }],
+        success_url: `${origin}/merchant/dashboard?checkout=success`,
+        cancel_url: `${origin}/pricing?shop_name=${encodeURIComponent(
+          shopName
+        )}&canceled=1`,
+        metadata,
+        subscription_data: { metadata },
+      });
+
+      return Response.json({ url: session.url });
+    }
+
+    // ── Legacy activation: an existing (usually unpaid) shop row ──
+    const shopSlug = shopSlugInput.toLowerCase();
+    if (!shopSlug) {
+      return Response.json({ error: "Missing shop_slug" }, { status: 400 });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [
-        { price: flatPriceId, quantity: 1 },   // $30/month flat — no metered usage
-      ],
-      success_url: `${origin}/merchant/${encodeURIComponent(shop_slug)}?checkout=success`,
+      line_items: [{ price: flatPriceId, quantity: 1 }],
+      success_url: `${origin}/merchant/${encodeURIComponent(shopSlug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
-        shop_slug
+        shopSlug
       )}&canceled=1`,
-      metadata: { shop_slug, plan_type: "pro", plan_interval: planInterval },
+      metadata: { shop_slug: shopSlug, plan_type: "pro", plan_interval: planInterval },
       subscription_data: {
-        metadata: { shop_slug, plan_type: "pro", plan_interval: planInterval },
+        metadata: { shop_slug: shopSlug, plan_type: "pro", plan_interval: planInterval },
       },
     });
 
