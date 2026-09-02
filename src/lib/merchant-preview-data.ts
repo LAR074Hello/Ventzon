@@ -10,7 +10,13 @@
 
 export type PreviewPoint = { date: string; count: number };
 
-function series(base: number, variance: number, weekendBoost: number, days = 30): PreviewPoint[] {
+function series(
+  base: number,
+  variance: number,
+  weekendBoost: number,
+  days = 30,
+  min = 3
+): PreviewPoint[] {
   const points: PreviewPoint[] = [];
   const anchor = new Date("2026-08-06T12:00:00");
   for (let i = days - 1; i >= 0; i--) {
@@ -19,7 +25,7 @@ function series(base: number, variance: number, weekendBoost: number, days = 30)
     const dow = dt.getDay();
     const weekend = dow === 0 || dow === 6 ? weekendBoost : 1;
     const wave = Math.sin(i / 4.1) * variance;
-    const count = Math.max(3, Math.round(base + wave + base * 0.3 * (weekend - 1)));
+    const count = Math.max(min, Math.round(base + wave + base * 0.3 * (weekend - 1)));
     points.push({ date: dt.toISOString().slice(0, 10), count });
   }
   return points;
@@ -34,6 +40,21 @@ const HOURS = Array.from({ length: 15 }, (_, k) => {
   };
 });
 
+/** Rewards on the showcase are sample rows in the SAME shape the real
+ *  analytics API returns: rewards_earned / rewards_redeemed series read
+ *  from real reward_events. The numbers below are illustrative only. */
+const rewardsEarnedSeries = series(1.2, 0.7, 1.25, 30, 0);
+const rewardsRedeemedSeries = series(0.6, 0.4, 1.3, 30, 0);
+const rewardsEarnedPeriod = rewardsEarnedSeries.reduce((s, d) => s + d.count, 0);
+const rewardsRedeemedPeriod = rewardsRedeemedSeries.reduce(
+  (s, d) => s + d.count,
+  0
+);
+const sampleRedemptionRate =
+  rewardsEarnedPeriod > 0
+    ? Math.round((rewardsRedeemedPeriod / rewardsEarnedPeriod) * 1000) / 10
+    : 0;
+
 /** Feeds the real <MerchantAnalytics> component — charts, retention,
  *  lifecycle, top customers. */
 export const analyticsMock = {
@@ -43,7 +64,11 @@ export const analyticsMock = {
   startDate: "2026-07-08",
   endDate: "2026-08-06",
   checkins: series(33, 8, 1.28),
-  rewards: series(5, 2.2, 1.35),
+  rewards_earned: rewardsEarnedSeries,
+  rewards_redeemed: rewardsRedeemedSeries,
+  rewards_earned_period: rewardsEarnedPeriod,
+  rewards_redeemed_period: rewardsRedeemedPeriod,
+  rewards_pending_period: Math.max(0, rewardsEarnedPeriod - rewardsRedeemedPeriod),
   retention_rate: 38,
   top_customers: [
     { id: "c1", phone: "(555) 214-9902", email: null, visits: 12 },
@@ -76,7 +101,7 @@ export const analyticsMock = {
   churned_count: 48,
   avg_lifetime_days: 96,
   loyal_count: 96,
-  redemption_rate: 34,
+  redemption_rate: sampleRedemptionRate,
   period_vs_previous: { checkins_pct_change: 12, customers_pct_change: 8 },
   lifecycle: { new: 214, returning: 428, loyal: 96 },
   reward_mode: "stamps" as const,
@@ -87,6 +112,7 @@ export const previewOverview = {
   shopName: "Northside Coffee",
   meta: "Brooklyn, NY · Loyalty since 2024",
   totalCustomers: "1,284",
+  newMembersToday: "18",
   checkinsToday: "42",
   rewardGoal: "8",
   insight:

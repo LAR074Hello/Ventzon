@@ -699,3 +699,118 @@ body {
   --shadow-warm: 0 24px 60px -24px rgb(60 50 30 / 0.18);
   --shadow-warm-lg: 0 32px 80px -24px rgb(60 50 30 / 0.24);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MERCHANT DASHBOARD — product surfaces on the customer-app tokens
+   The merchant dashboard is a product surface, so it consumes the same
+   semantic roles as the customer app (surface / text / border / accent)
+   and inherits light + dark from [data-theme]. Three additions live
+   here and nowhere else:
+
+   · brand — the canonical maroon anchor (#7A1F2B) as a single primitive.
+     The older maroon scale stays untouched for the marketing site.
+   · chart tokens — resolved per theme so recharts strokes/fills are
+     read from CSS vars instead of hex literals in components.
+   · .merchant-dark — re-declares the semantic roles for a subtree so a
+     product frame inside the (always-dark) marketing showcase renders
+     the dashboard's dark theme regardless of the user's preference.
+
+   No component file defines a color value.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* brand — the one maroon every Ventzon surface points at. */
+:root {
+  --brand-950: #2a0d11;
+  --brand-900: #3d1418;
+  --brand-800: #521c23;
+  --brand-700: #7a1f2b;   /* the brand anchor — light theme accent */
+  --brand-600: #8c2431;
+  --brand-500: #a04650;
+  --brand-400: #b96e77;   /* links + series on dark */
+  --brand-300: #c98f96;
+  --brand-100: #ebd9db;
+  --brand-50: #f9ecee;    /* soft tint */
+}
+
+/* Merchant accent aliases (utilities: bg-merchant, text-merchant, …).
+   Theme-aware: maroon-700 on light, lightened on dark. */
+@theme inline {
+  --color-merchant: var(--merchant-accent);
+  --color-merchant-hover: var(--merchant-accent-hover);
+  --color-positive: var(--positive);
+  --color-warn: var(--warn);
+}
+
+:root,
+[data-theme="light"] {
+  --merchant-accent: var(--brand-700);
+  --merchant-accent-hover: var(--brand-800);
+
+  /* Status colours for merchant data only (deltas, health states). */
+  --positive: #14785a;
+  --warn: #a16207;
+
+  /* Chart tokens — used by recharts via chartTokens(). */
+  --chart-grid: var(--paper-200);
+  --chart-axis: var(--ink-500);
+  --chart-accent: var(--brand-700);
+  --chart-emphasis: var(--ink-900);
+  --chart-muted: var(--ink-300);
+}
+
+[data-theme="dark"] {
+  --merchant-accent: var(--brand-500);
+  --merchant-accent-hover: var(--brand-400);
+
+  --positive: #34d399;
+  --warn: #fbbf24;
+
+  --chart-grid: var(--night-500);
+  --chart-axis: var(--fog-500);
+  --chart-accent: var(--brand-400);
+  --chart-emphasis: var(--fog-100);
+  --chart-muted: var(--night-400);
+}
+
+/* Force the dashboard's dark theme inside a subtree (marketing frames).
+   Same role map as [data-theme="dark"] — declared here so it scopes to a
+   wrapper instead of the whole document. */
+.merchant-dark {
+  color-scheme: dark;
+
+  --surface: var(--night-800);
+  --surface-raised: var(--night-700);
+  --surface-sunken: var(--night-900);
+  --surface-overlay: var(--night-600);
+
+  --text-primary: var(--fog-100);
+  --text-secondary: var(--fog-300);
+  --text-muted: var(--fog-500);
+  --text-inverse: var(--night-800);
+
+  --border-subtle: var(--night-500);
+  --border-strong: var(--night-400);
+  --border-media: rgb(255 255 255 / 0.1);
+
+  --accent: var(--brand-400);
+  --accent-hover: var(--brand-300);
+  --accent-muted: var(--maroon-900);
+  --on-accent: var(--fog-100);
+
+  --merchant-accent: var(--brand-500);
+  --merchant-accent-hover: var(--brand-400);
+
+  --positive: #34d399;
+  --warn: #fbbf24;
+
+  --chart-grid: var(--night-500);
+  --chart-axis: var(--fog-500);
+  --chart-accent: var(--brand-400);
+  --chart-emphasis: var(--fog-100);
+  --chart-muted: var(--night-400);
+
+  --elevation-1: 0 0 0 1px rgb(255 255 255 / 0.06);
+  --elevation-2: 0 0 0 1px rgb(255 255 255 / 0.09);
+
+  --focus-ring: var(--brand-300);
+}

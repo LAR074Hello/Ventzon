@@ -26,8 +26,10 @@ const SHOW_ADVERTISING = false;
 
 type StatsResponse = {
   shop_slug: string;
-  totals: { total: number; today: number };
-  latest: Array<{ phone: string | null; email: string | null; created_at: string }>;
+  totals: { total: number };
+  new_members_today: number;
+  checkins_today: number;
+  latest_checkins: Array<{ contact: string | null; checked_in_at: string }>;
   is_paid?: boolean;
   subscription_status?: string | null;
 };
@@ -79,7 +81,7 @@ function formatShortNY(iso: string) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
+    <p className="text-2xs font-medium uppercase tracking-caps text-muted">
       {children}
     </p>
   );
@@ -87,7 +89,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-fog-100 sm:text-2xl">
+    <h2 className="mt-1 text-lg font-semibold tracking-tight text-primary sm:text-xl">
       {children}
     </h2>
   );
@@ -95,7 +97,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block text-[12px] font-light tracking-[0.1em] text-fog-500">
+    <label className="block text-xs font-medium text-secondary">
       {children}
     </label>
   );
@@ -116,7 +118,7 @@ function GhostButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full border border-night-600 px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-fog-100 transition-all duration-500 hover:border-fog-500 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+      className={`rounded-lg border border-strong px-4 py-2 text-sm font-medium text-secondary transition-colors hover:bg-surface-sunken/60 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
     >
       {children}
     </button>
@@ -136,7 +138,7 @@ function PrimaryButton({
   href?: string;
   className?: string;
 }) {
-  const cls = `inline-flex items-center justify-center rounded-full bg-maroon px-6 py-2.5 text-[12px] font-light tracking-[0.1em] text-white transition-all duration-500 hover:bg-maroon-hover disabled:cursor-not-allowed disabled:opacity-40 ${className}`;
+  const cls = `inline-flex items-center justify-center rounded-lg bg-merchant px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-merchant-hover disabled:cursor-not-allowed disabled:opacity-40 ${className}`;
 
   if (href) {
     return (
@@ -160,8 +162,8 @@ export default function MerchantShopPageWrapper() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-night-950 text-fog-100">
-          <p className="text-[13px] font-light text-fog-500">Loading dashboard…</p>
+        <main className="flex min-h-screen items-center justify-center bg-surface text-primary">
+          <p className="text-sm text-muted">Loading dashboard…</p>
         </main>
       }
     >
@@ -1019,20 +1021,20 @@ function MerchantShopPage() {
   // setup instead of the empty analytics/customers panels below.
   const hasCustomers = (data?.totals?.total ?? 0) > 0;
   const qrSection = (
-            <section className="mt-14">
-              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+            <section className="mt-10">
+              
 
-              <div className="print-area rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600 sm:p-10">
+              <div className="print-area rounded-xl border border-subtle p-8 transition-all duration-500 hover:border-strong sm:p-10">
                 <div className="grid items-center gap-10 lg:grid-cols-[auto_1fr]">
                   {/* QR code */}
                   <div className="flex flex-col items-center gap-4">
-                    <div className={`rounded-2xl bg-white p-4 shadow-sm ${!paid ? "opacity-40" : ""}`}>
+                    <div className={`rounded-xl bg-white p-4 shadow-sm ${!paid ? "opacity-40" : ""}`}>
                       <QRCodeCanvas value={paid ? (joinUrl || " ") : "locked"} size={180} />
                     </div>
                     {paid && (
                       <Link
                         href={`/merchant/${shopSlug}/print-card`}
-                        className="text-[11px] font-light tracking-[0.15em] text-fog-500 transition-colors duration-300 hover:text-fog-100"
+                        className="text-2xs font-medium tracking-caps text-muted transition-colors duration-300 hover:text-primary"
                       >
                         Open print card
                       </Link>
@@ -1048,8 +1050,8 @@ function MerchantShopPage() {
 
                     {paid ? (
                       <>
-                        <div className="mt-6 rounded-xl border border-night-700 bg-night-900 px-5 py-4">
-                          <p className="break-all font-mono text-[13px] font-light text-fog-300">
+                        <div className="mt-6 rounded-xl border border-subtle bg-surface-raised px-5 py-4">
+                          <p className="break-all font-mono text-sm text-secondary">
                             {joinUrl}
                           </p>
                         </div>
@@ -1063,13 +1065,13 @@ function MerchantShopPage() {
                           </GhostButton>
                           <Link
                             href={`/merchant/${shopSlug}/qr`}
-                            className="rounded-full border border-night-600 px-4 py-2 text-[12px] font-light tracking-[0.1em] text-fog-300 transition-colors duration-300 hover:border-night-500 hover:text-fog-100"
+                            className="rounded-full border border-strong px-4 py-2 text-xs tracking-[0.1em] text-secondary transition-colors duration-300 hover:border-strong hover:text-primary"
                           >
                             Display in-store
                           </Link>
                           <Link
                             href={`/merchant/${shopSlug}/print-card`}
-                            className="text-[12px] font-light tracking-[0.1em] text-fog-500 transition-colors duration-300 hover:text-fog-100"
+                            className="text-xs tracking-[0.1em] text-muted transition-colors duration-300 hover:text-primary"
                           >
                             Print card
                           </Link>
@@ -1077,26 +1079,26 @@ function MerchantShopPage() {
                             href={joinUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[12px] font-light tracking-[0.1em] text-fog-500 transition-colors duration-300 hover:text-fog-100"
+                            className="text-xs tracking-[0.1em] text-muted transition-colors duration-300 hover:text-primary"
                           >
                             Open join page
                           </a>
                         </div>
                         {qrCardError && (
-                          <p className="mt-4 text-[12px] font-light text-red-400">{qrCardError}</p>
+                          <p className="mt-4 text-xs text-danger">{qrCardError}</p>
                         )}
 
-                        <p className="mt-5 text-[13px] font-light leading-[1.7] text-fog-600">
+                        <p className="mt-5 text-sm leading-[1.7] text-muted">
                           Print this QR code and place it near your register.
                           Customers scan to join your rewards program instantly.
                         </p>
-                        <p className="mt-3 text-[12px] font-light text-fog-600">
+                        <p className="mt-3 text-xs text-muted">
                           Customers can also download the app:{" "}
                           <a
                             href="https://apps.apple.com/us/app/ventzon/id6763768638"
                             target="_blank"
                             rel="noreferrer"
-                            className="text-fog-500 underline underline-offset-2 transition-colors hover:text-fog-100"
+                            className="text-muted underline underline-offset-2 transition-colors hover:text-primary"
                           >
                             App Store
                           </a>
@@ -1104,7 +1106,7 @@ function MerchantShopPage() {
                       </>
                     ) : (
                       <>
-                        <p className="mt-4 text-[14px] font-light leading-[1.7] text-fog-500">
+                        <p className="mt-4 text-sm leading-[1.7] text-muted">
                           Subscribe to unlock your QR code, join link, and customer rewards.
                           This dashboard updates automatically once payment is confirmed.
                         </p>
@@ -1123,8 +1125,8 @@ function MerchantShopPage() {
   );
 
   const settingsSection = (
-            <section className="mt-14">
-              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+            <section className="mt-10">
+              
 
               <div id="settings-section" className="flex items-end justify-between gap-4">
                 <div>
@@ -1135,8 +1137,8 @@ function MerchantShopPage() {
               </div>
 
               <div className="mt-8">
-                <div className="rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
-                  <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">
+                <div className="rounded-xl border border-subtle p-8 transition-all duration-500 hover:border-strong">
+                  <p className="text-2xs font-medium uppercase tracking-caps text-muted">
                     OFFER CUSTOMERS SEE
                   </p>
 
@@ -1148,10 +1150,10 @@ function MerchantShopPage() {
                           value={shopNameDraft}
                           onChange={(e) => setShopNameDraft(e.target.value)}
                           placeholder={shopSlug}
-                          className="mt-2 w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 focus:border-night-600"
+                          className="mt-2 w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors duration-300 placeholder:text-muted focus:border-strong"
                         />
                       ) : (
-                        <div className="mt-2 text-[15px] font-normal text-fog-100">
+                        <div className="mt-2 text-[15px] font-normal text-primary">
                           {settingsLoading ? "Loading…" : settings?.shop_name || shopSlug}
                         </div>
                       )}
@@ -1164,10 +1166,10 @@ function MerchantShopPage() {
                           value={dealTitleDraft}
                           onChange={(e) => setDealTitleDraft(e.target.value)}
                           placeholder="e.g., 10% off your next visit"
-                          className="mt-2 w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 focus:border-night-600"
+                          className="mt-2 w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors duration-300 placeholder:text-muted focus:border-strong"
                         />
                       ) : (
-                        <div className="mt-2 text-[15px] font-normal text-fog-100">
+                        <div className="mt-2 text-[15px] font-normal text-primary">
                           {settingsLoading ? "Loading…" : settings?.deal_title || "—"}
                         </div>
                       )}
@@ -1181,10 +1183,10 @@ function MerchantShopPage() {
                           onChange={(e) => setDealDetailsDraft(e.target.value)}
                           placeholder="e.g., Show this message at checkout within 7 days."
                           rows={3}
-                          className="mt-2 w-full resize-none rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 focus:border-night-600"
+                          className="mt-2 w-full resize-none rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors duration-300 placeholder:text-muted focus:border-strong"
                         />
                       ) : (
-                        <div className="mt-2 whitespace-pre-wrap text-[14px] font-light text-fog-300">
+                        <div className="mt-2 whitespace-pre-wrap text-sm text-secondary">
                           {settingsLoading ? "Loading…" : settings?.deal_details || "—"}
                         </div>
                       )}
@@ -1197,14 +1199,14 @@ function MerchantShopPage() {
                           value={addressDraft}
                           onChange={(e) => setAddressDraft(e.target.value)}
                           placeholder="e.g., 123 Main St, Brooklyn, NY 11201"
-                          className="mt-2 w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 placeholder:text-fog-600 focus:border-night-600"
+                          className="mt-2 w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors duration-300 placeholder:text-muted focus:border-strong"
                         />
                       ) : (
-                        <div className="mt-2 text-[14px] font-light text-fog-300">
+                        <div className="mt-2 text-sm text-secondary">
                           {settingsLoading ? "Loading…" : (settings as any)?.address || "—"}
                         </div>
                       )}
-                      <p className="mt-1.5 text-[11px] font-light text-fog-600">
+                      <p className="mt-1.5 text-xs text-muted">
                         Shows your store as a pin on the customer map.
                       </p>
                     </div>
@@ -1230,16 +1232,16 @@ function MerchantShopPage() {
                                 if (opt.key === "stamps" && rewardGoalDraft > 31) setRewardGoalDraft(8);
                               }}
                               className={`flex-1 rounded-xl border px-4 py-3 text-left transition-all duration-300 disabled:opacity-40 ${
-                                active ? "border-fog-100 bg-fog-100/5" : "border-night-700 hover:border-night-600"
+                                active ? "border-strong bg-primary/5" : "border-subtle hover:border-strong"
                               }`}
                             >
-                              <span className={`block text-[13px] font-light ${active ? "text-fog-100" : "text-fog-300"}`}>{opt.label}</span>
-                              <span className="mt-0.5 block text-[11px] font-light text-fog-600">{opt.sub}</span>
+                              <span className={`block text-sm ${active ? "text-primary" : "text-secondary"}`}>{opt.label}</span>
+                              <span className="mt-0.5 block text-xs text-muted">{opt.sub}</span>
                             </button>
                           );
                         })}
                       </div>
-                      <p className="mt-2 text-[11px] font-light text-fog-600">
+                      <p className="mt-2 text-xs text-muted">
                         Both are self check-in — the customer scans and enters their phone. Points just let you set a custom earn rate and a bigger reward goal.
                       </p>
                     </div>
@@ -1256,11 +1258,11 @@ function MerchantShopPage() {
                             value={pointsPerVisitDraft}
                             onChange={(e) => setPointsPerVisitDraft(Number(e.target.value) || 10)}
                             disabled={!paid}
-                            className="w-28 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600 disabled:opacity-40"
+                            className="w-28 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong disabled:opacity-40"
                           />
-                          <span className="text-[12px] font-light text-fog-600">points each check-in</span>
+                          <span className="text-xs text-muted">points each check-in</span>
                         </div>
-                        <p className="mt-2 text-[11px] font-light text-fog-600">
+                        <p className="mt-2 text-xs text-muted">
                           At {pointsPerVisitDraft} pts/visit, a reward takes {Math.max(1, Math.ceil(rewardGoalDraft / (pointsPerVisitDraft || 1)))} visits.
                         </p>
                       </div>
@@ -1278,23 +1280,23 @@ function MerchantShopPage() {
                             value={rewardGoalDraft}
                             onChange={(e) => setRewardGoalDraft(Number(e.target.value) || 100)}
                             disabled={!paid}
-                            className="w-36 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600 disabled:opacity-40"
+                            className="w-36 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong disabled:opacity-40"
                           />
                         ) : (
                           <select
                             value={rewardGoalDraft}
                             onChange={(e) => setRewardGoalDraft(Number(e.target.value))}
                             disabled={!paid}
-                            className="rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors duration-300 focus:border-night-600 disabled:opacity-40"
+                            className="rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors duration-300 focus:border-strong disabled:opacity-40"
                           >
                             {Array.from({ length: 30 }, (_, i) => i + 2).map((n) => (
                               <option key={n} value={n}>{n} visits</option>
                             ))}
                           </select>
                         )}
-                        {rewardModeDraft === "points" && <span className="text-[12px] font-light text-fog-600">points</span>}
+                        {rewardModeDraft === "points" && <span className="text-xs text-muted">points</span>}
                       </div>
-                      <p className="mt-2 text-[11px] font-light text-fog-600">
+                      <p className="mt-2 text-xs text-muted">
                         {rewardModeDraft === "points"
                           ? "Common: 100 points = one reward."
                           : "Coffee shops: 5–10 visits. Salons: 2–5."}
@@ -1312,23 +1314,23 @@ function MerchantShopPage() {
                             value={rewardExpiresDaysDraft}
                             onChange={(e) => setRewardExpiresDaysDraft(e.target.value === "" ? "" : Number(e.target.value))}
                             placeholder="No expiry"
-                            className="w-32 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                            className="w-32 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                           />
-                          <span className="text-[12px] font-light text-fog-600">days after earning</span>
+                          <span className="text-xs text-muted">days after earning</span>
                         </div>
                       ) : (
-                        <div className="mt-2 text-[14px] font-light text-fog-300">
+                        <div className="mt-2 text-sm text-secondary">
                           {settings?.reward_expires_days ? `${settings.reward_expires_days} days` : "No expiry"}
                         </div>
                       )}
-                      <p className="mt-2 text-[11px] font-light text-fog-600">
+                      <p className="mt-2 text-xs text-muted">
                         Leave blank for rewards that never expire.
                       </p>
                     </div>
 
                     <div>
                       <FieldLabel>BONUS STAMP DAYS</FieldLabel>
-                      <p className="mt-1 text-[11px] font-light text-fog-600">Customers earn 2 stamps on these days.</p>
+                      <p className="mt-1 text-xs text-muted">Customers earn 2 stamps on these days.</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => {
                           const isSelected = bonusDaysDraft.includes(idx);
@@ -1342,10 +1344,10 @@ function MerchantShopPage() {
                                   isSelected ? prev.filter(d => d !== idx) : [...prev, idx]
                                 );
                               }}
-                              className={`rounded-full border px-3.5 py-1.5 text-[11px] font-light tracking-[0.05em] transition-all duration-200 disabled:opacity-40 ${
+                              className={`rounded-full border px-3.5 py-1.5 text-2xs font-medium tracking-caps transition-all duration-200 disabled:opacity-40 ${
                                 isSelected
-                                  ? "border-fog-100 bg-fog-100 text-black"
-                                  : "border-night-700 text-fog-500 hover:border-night-600"
+                                  ? "border-strong bg-primary text-inverse"
+                                  : "border-subtle text-muted hover:border-strong"
                               }`}
                             >
                               {day}
@@ -1356,7 +1358,7 @@ function MerchantShopPage() {
                     </div>
                     <div>
                       <FieldLabel>REGISTER TOOL PIN</FieldLabel>
-                      <p className="mt-1 text-[11px] font-light text-fog-600">
+                      <p className="mt-1 text-xs text-muted">
                         {registerPinSet ? "A PIN is set. Enter a new one to change it, or save blank to remove it." : "Set a 4-digit PIN to lock the register tool. Leave blank for no PIN."}
                       </p>
                       <div className="mt-2 flex items-center gap-3">
@@ -1367,7 +1369,7 @@ function MerchantShopPage() {
                           value={registerPinDraft}
                           onChange={(e) => setRegisterPinDraft(e.target.value.replace(/\D/g, "").slice(0, 4))}
                           placeholder={registerPinSet ? "••••" : "e.g. 1234"}
-                          className="w-32 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                          className="w-32 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                         />
                         {registerPinSet && registerPinDraft === "" && (
                           <button
@@ -1382,7 +1384,7 @@ function MerchantShopPage() {
                               setSaveSettingsMsg("PIN removed");
                               setTimeout(() => setSaveSettingsMsg(""), 1500);
                             }}
-                            className="text-[11px] font-light text-red-400/70 hover:text-red-400 transition-colors"
+                            className="text-xs text-danger/80 hover:text-danger transition-colors"
                           >
                             Remove PIN
                           </button>
@@ -1391,11 +1393,11 @@ function MerchantShopPage() {
                     </div>
 
                     {/* Birthday rewards */}
-                    <div className="rounded-2xl border border-night-700 p-5">
+                    <div className="rounded-xl border border-subtle p-5">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <FieldLabel>BIRTHDAY REWARDS</FieldLabel>
-                          <p className="mt-1 text-[11px] font-light text-fog-600">
+                          <p className="mt-1 text-xs text-muted">
                             Automatically send a customer a reward around their birthday. Customers add their birthday in the app.
                           </p>
                         </div>
@@ -1406,12 +1408,12 @@ function MerchantShopPage() {
                           disabled={!paid}
                           onClick={() => setBdayEnabledDraft((v) => !v)}
                           className={`relative mt-1 h-6 w-11 shrink-0 rounded-full border transition-colors duration-300 disabled:opacity-40 ${
-                            bdayEnabledDraft ? "border-emerald-700 bg-emerald-900/40" : "border-night-600 bg-night-900"
+                            bdayEnabledDraft ? "border-positive/60 bg-positive/20" : "border-strong bg-surface-raised"
                           }`}
                         >
                           <span
                             className={`absolute top-0.5 h-4 w-4 rounded-full transition-all duration-300 ${
-                              bdayEnabledDraft ? "left-[22px] bg-emerald-400" : "left-0.5 bg-[#555]"
+                              bdayEnabledDraft ? "left-[22px] bg-positive" : "left-0.5 bg-[#555]"
                             }`}
                           />
                         </button>
@@ -1427,7 +1429,7 @@ function MerchantShopPage() {
                               disabled={!paid}
                               placeholder="e.g. Free birthday dessert"
                               maxLength={120}
-                              className="mt-2 w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600 disabled:opacity-40"
+                              className="mt-2 w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong disabled:opacity-40"
                             />
                           </div>
                           <div className="grid gap-4 sm:grid-cols-2">
@@ -1441,9 +1443,9 @@ function MerchantShopPage() {
                                   value={bdayDaysBeforeDraft}
                                   onChange={(e) => setBdayDaysBeforeDraft(Math.max(0, Math.min(60, Number(e.target.value) || 0)))}
                                   disabled={!paid}
-                                  className="w-24 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors focus:border-night-600 disabled:opacity-40"
+                                  className="w-24 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors focus:border-strong disabled:opacity-40"
                                 />
-                                <span className="text-[12px] font-light text-fog-600">
+                                <span className="text-xs text-muted">
                                   {bdayDaysBeforeDraft === 0 ? "on their birthday" : "days before"}
                                 </span>
                               </div>
@@ -1459,9 +1461,9 @@ function MerchantShopPage() {
                                   onChange={(e) => setBdayExpiryDraft(e.target.value === "" ? "" : Math.max(1, Math.min(365, Number(e.target.value))))}
                                   disabled={!paid}
                                   placeholder="No expiry"
-                                  className="w-28 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600 disabled:opacity-40"
+                                  className="w-28 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong disabled:opacity-40"
                                 />
-                                <span className="text-[12px] font-light text-fog-600">days</span>
+                                <span className="text-xs text-muted">days</span>
                               </div>
                             </div>
                           </div>
@@ -1474,7 +1476,7 @@ function MerchantShopPage() {
                               rows={2}
                               maxLength={300}
                               placeholder="A short note that appears in the birthday email."
-                              className="mt-2 w-full resize-none rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600 disabled:opacity-40"
+                              className="mt-2 w-full resize-none rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong disabled:opacity-40"
                             />
                           </div>
                         </div>
@@ -1482,9 +1484,9 @@ function MerchantShopPage() {
                     </div>
 
                     {/* Special occasions (holidays / dates) */}
-                    <div className="rounded-2xl border border-night-700 p-5">
+                    <div className="rounded-xl border border-subtle p-5">
                       <FieldLabel>SPECIAL OCCASIONS</FieldLabel>
-                      <p className="mt-1 text-[11px] font-light text-fog-600">
+                      <p className="mt-1 text-xs text-muted">
                         Announce a holiday or special-date offer to all your customers — a push notification for app users, an email for everyone else. No per-customer charge.
                       </p>
 
@@ -1493,8 +1495,8 @@ function MerchantShopPage() {
                           {occasions.map((o) => (
                             <div key={o.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#141414] px-4 py-3">
                               <div className="min-w-0">
-                                <p className="text-[13px] font-light text-fog-100 truncate">{o.title}</p>
-                                <p className="text-[11px] font-light text-fog-500">
+                                <p className="text-sm text-primary truncate">{o.title}</p>
+                                <p className="text-xs text-muted">
                                   {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][o.month - 1]} {o.day}
                                   {o.message ? " · " + o.message : ""}
                                 </p>
@@ -1503,11 +1505,11 @@ function MerchantShopPage() {
                                 <button
                                   type="button"
                                   onClick={() => toggleOccasion(o)}
-                                  className={`text-[11px] font-light ${o.enabled ? "text-emerald-400/80" : "text-fog-500"} hover:opacity-80`}
+                                  className={`text-xs ${o.enabled ? "text-positive/80" : "text-muted"} hover:opacity-80`}
                                 >
                                   {o.enabled ? "On" : "Off"}
                                 </button>
-                                <button type="button" onClick={() => deleteOccasion(o.id)} className="text-[11px] font-light text-fog-500 hover:text-red-400">
+                                <button type="button" onClick={() => deleteOccasion(o.id)} className="text-xs text-muted hover:text-danger">
                                   Delete
                                 </button>
                               </div>
@@ -1523,13 +1525,13 @@ function MerchantShopPage() {
                             onChange={(e) => setOccTitle(e.target.value)}
                             placeholder="Offer, e.g. 15% off for Valentine's Day"
                             maxLength={120}
-                            className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                            className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                           />
                           <div className="flex items-center gap-3">
                             <select
                               value={occMonth}
                               onChange={(e) => setOccMonth(Number(e.target.value))}
-                              className="rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none focus:border-night-600"
+                              className="rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none focus:border-strong"
                             >
                               {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
                                 <option key={m} value={i + 1}>{m}</option>
@@ -1538,7 +1540,7 @@ function MerchantShopPage() {
                             <select
                               value={occDay}
                               onChange={(e) => setOccDay(Number(e.target.value))}
-                              className="w-24 rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none focus:border-night-600"
+                              className="w-24 rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none focus:border-strong"
                             >
                               {Array.from({ length: [31,29,31,30,31,30,31,31,30,31,30,31][occMonth - 1] }, (_, i) => i + 1).map((d) => (
                                 <option key={d} value={d}>{d}</option>
@@ -1550,13 +1552,13 @@ function MerchantShopPage() {
                             onChange={(e) => setOccMessage(e.target.value)}
                             placeholder="Optional note shown to customers"
                             maxLength={300}
-                            className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                            className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                           />
-                          {occError && <p className="text-[12px] font-light text-red-400">{occError}</p>}
+                          {occError && <p className="text-xs text-danger">{occError}</p>}
                           <button
                             type="submit"
                             disabled={occSaving || !occTitle.trim()}
-                            className="rounded-xl border border-night-600 px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-fog-100 transition-all hover:border-[#555] disabled:opacity-40"
+                            className="rounded-xl border border-strong px-5 py-2.5 text-xs tracking-[0.1em] text-primary transition-all hover:border-[#555] disabled:opacity-40"
                           >
                             {occSaving ? "Adding…" : "Add occasion"}
                           </button>
@@ -1567,8 +1569,8 @@ function MerchantShopPage() {
 
                   {/* Deal-change warning */}
                   {dealChangeWarning && (
-                    <div className="mt-6 rounded-xl border border-yellow-900/40 bg-yellow-950/10 px-5 py-4">
-                      <p className="text-[13px] font-light text-yellow-300/90">
+                    <div className="mt-6 rounded-xl border border-warn/30 bg-warn/10 px-5 py-4">
+                      <p className="text-sm text-warn">
                         {dealChangeWarning.knownCount
                           ? dealChangeWarning.affectedCount === 1
                             ? "1 customer currently has stamps in progress toward the current reward."
@@ -1580,13 +1582,13 @@ function MerchantShopPage() {
                         <button
                           onClick={saveShopSettings}
                           disabled={savingSettings}
-                          className="rounded-full border border-yellow-700/60 px-5 py-2 text-[11px] font-light tracking-[0.1em] text-yellow-300 transition-all hover:bg-yellow-950/40 disabled:opacity-40"
+                          className="rounded-full border border-warn/60 px-5 py-2 text-2xs font-medium tracking-caps text-warn transition-all hover:bg-warn/10 disabled:opacity-40"
                         >
                           {savingSettings ? "Saving…" : "Save anyway"}
                         </button>
                         <button
                           onClick={() => setDealChangeWarning(null)}
-                          className="text-[11px] font-light text-fog-500 transition-colors hover:text-fog-300"
+                          className="text-xs text-muted transition-colors hover:text-secondary"
                         >
                           Cancel
                         </button>
@@ -1601,15 +1603,15 @@ function MerchantShopPage() {
                         {savingSettings ? "Saving…" : "Save settings"}
                       </PrimaryButton>
                       {saveSettingsMsg && (
-                        <span className="text-[12px] font-light text-fog-500">{saveSettingsMsg}</span>
+                        <span className="text-xs text-muted">{saveSettingsMsg}</span>
                       )}
                       {!paid && (
-                        <span className="text-[11px] font-light text-fog-600">Activate to edit</span>
+                        <span className="text-xs text-muted">Activate to edit</span>
                       )}
                     </div>
                   )}
                   {dealChangeWarning && saveSettingsMsg && (
-                    <p className="mt-3 text-[12px] font-light text-fog-500">{saveSettingsMsg}</p>
+                    <p className="mt-3 text-xs text-muted">{saveSettingsMsg}</p>
                   )}
                 </div>
               </div>
@@ -1624,51 +1626,57 @@ function MerchantShopPage() {
   // future feature — the dashboard is currently one long page.
 
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
-      {/* Radial glow */}
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(90,30,36,0.10),transparent)]" />
+    <main className="min-h-screen bg-surface text-primary">
 
-      <div className="relative mx-auto max-w-5xl px-4 sm:px-8 pb-20 pt-28">
+      <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8">
 
         {/* ============================================================
             HEADER
             ============================================================ */}
         <header className="animate-fade-in anim-delay-200 opacity-0">
-          {/* Brand mark — the dashboard belongs to Ventzon */}
-          <div className="mb-8 flex items-center gap-2.5">
-            <div className="h-6 w-6 overflow-hidden rounded-full bg-night-800 ring-1 ring-white/15">
-              <Image
-                src="/logo.png"
-                alt="Ventzon"
-                width={24}
-                height={24}
-                className="h-full w-full object-cover"
-              />
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-surface-sunken ring-1 ring-strong">
+                <Image
+                  src="/logo.png"
+                  alt="Ventzon"
+                  width={36}
+                  height={36}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xs font-medium uppercase tracking-caps text-muted">
+                  Merchant dashboard
+                </p>
+                <h1 className="mt-0.5 truncate font-display text-2xl font-medium tracking-tight text-primary sm:text-3xl">
+                  {settingsLoading ? shopSlug : (settings?.shop_name || shopSlug)}
+                </h1>
+              </div>
             </div>
-            <span className="text-[11px] font-medium tracking-[0.4em] text-fog-300">
-              VENTZON
-            </span>
+
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="inline-flex items-center gap-2 rounded-lg border border-subtle px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-strong hover:text-primary disabled:opacity-40"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              {loggingOut ? "Signing out…" : "Sign out"}
+            </button>
           </div>
 
-          <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-            MERCHANT DASHBOARD
-          </p>
-          <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
-            {settingsLoading ? shopSlug : (settings?.shop_name || shopSlug)}
-          </h1>
-
           {/* Status bar */}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-night-700 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-300">
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-subtle pt-4">
+            <span className="rounded-md border border-subtle px-2.5 py-1 font-mono text-xs text-secondary">
               {shopSlug}
             </span>
             <span
-              className={`rounded-full border px-4 py-1.5 text-[11px] font-light tracking-[0.1em] ${
+              className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
                 paid
-                  ? "border-emerald-800/50 text-emerald-400"
+                  ? "border-positive/40 bg-positive/10 text-positive"
                   : waitingForPayment
-                  ? "animate-pulse border-yellow-800/50 text-yellow-400"
-                  : "border-night-700 text-fog-500"
+                  ? "animate-pulse border-warn/50 bg-warn/10 text-warn"
+                  : "border-subtle text-muted"
               }`}
             >
               {paid ? "Active" : waitingForPayment ? "Processing payment…" : "Inactive"}
@@ -1684,7 +1692,7 @@ function MerchantShopPage() {
                 {SHOW_ADVERTISING && (
                   <Link
                     href={`/merchant/${shopSlug}/ads`}
-                    className="rounded-full border border-night-600 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-300 transition-all duration-300 hover:border-[#555] hover:text-fog-100"
+                    className="rounded-md border border-strong px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-strong hover:text-primary"
                   >
                     Advertising
                   </Link>
@@ -1692,7 +1700,7 @@ function MerchantShopPage() {
               </>
             )}
             {portalError && (
-              <span className="text-[12px] font-light text-red-400">{portalError}</span>
+              <span className="text-xs text-danger">{portalError}</span>
             )}
             {!paid && !waitingForPayment && isCheckoutReturn && (
               <GhostButton onClick={() => { pollCountRef.current = 0; window.location.reload(); }}>
@@ -1700,18 +1708,8 @@ function MerchantShopPage() {
               </GhostButton>
             )}
             {shopLoadError && (
-              <span className="text-[12px] font-light text-fog-500">{shopLoadError}</span>
+              <span className="text-xs text-muted">{shopLoadError}</span>
             )}
-
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="ml-auto inline-flex items-center gap-2 rounded-full border border-night-700 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-500 transition-all duration-500 hover:border-night-600 hover:text-fog-100 disabled:opacity-40"
-            >
-              <LogOut className="h-3 w-3" />
-              {loggingOut ? "Signing out…" : "Sign out"}
-            </button>
           </div>
         </header>
 
@@ -1734,27 +1732,27 @@ function MerchantShopPage() {
           const doneCount = steps.filter(s => s.done).length;
           return (
             <section className="animate-fade-in-up anim-delay-300 mt-10 opacity-0">
-              <div className="rounded-2xl border border-night-700 bg-night-900/60 p-6">
+              <div className="rounded-xl border border-subtle bg-surface-raised p-6">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">GETTING STARTED</p>
-                  <p className="text-[11px] font-light text-fog-600">{doneCount}/{steps.length} complete</p>
+                  <p className="text-2xs font-medium uppercase tracking-caps text-muted">GETTING STARTED</p>
+                  <p className="text-xs text-muted">{doneCount}/{steps.length} complete</p>
                 </div>
-                <div className="mt-1 h-1 w-full rounded-full bg-night-800">
-                  <div className="h-1 rounded-full bg-fog-100 transition-all duration-700" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+                <div className="mt-1 h-1 w-full rounded-full bg-surface-sunken">
+                  <div className="h-1 rounded-full bg-primary transition-all duration-700" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
                 </div>
                 <ul className="mt-5 space-y-3">
                   {steps.map((step, i) => (
                     <li key={i} className="flex items-center gap-3">
-                      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${step.done ? "border-emerald-700 bg-emerald-950" : "border-night-600"}`}>
-                        {step.done && <Check className="h-3 w-3 text-emerald-400" strokeWidth={2.5} />}
+                      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${step.done ? "border-positive/60 bg-positive/10" : "border-strong"}`}>
+                        {step.done && <Check className="h-3 w-3 text-positive" strokeWidth={2.5} />}
                       </div>
-                      <span className={`text-[13px] font-light ${step.done ? "text-fog-600 line-through" : "text-fog-200"}`}>
+                      <span className={`text-sm ${step.done ? "text-muted line-through" : "text-secondary"}`}>
                         {step.label}
                       </span>
                       {!step.done && (step.href ? (
-                        <a href={step.href} className="ml-auto text-[11px] font-light tracking-[0.1em] text-fog-500 underline decoration-night-600 underline-offset-2 hover:text-fog-100">Go →</a>
+                        <a href={step.href} className="ml-auto text-xs font-medium tracking-normal text-muted underline decoration-subtle underline-offset-2 hover:text-primary">Go →</a>
                       ) : step.action ? (
-                        <button onClick={step.action} className="ml-auto text-[11px] font-light tracking-[0.1em] text-fog-500 underline decoration-night-600 underline-offset-2 hover:text-fog-100">Go →</button>
+                        <button onClick={step.action} className="ml-auto text-xs font-medium tracking-normal text-muted underline decoration-subtle underline-offset-2 hover:text-primary">Go →</button>
                       ) : null)}
                     </li>
                   ))}
@@ -1763,7 +1761,7 @@ function MerchantShopPage() {
                   href="/setup"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-block text-[11px] font-light tracking-[0.1em] text-fog-500 transition-colors duration-300 hover:text-fog-100"
+                  className="mt-5 inline-block text-xs font-medium tracking-normal text-muted transition-colors duration-300 hover:text-primary"
                 >
                   New here? Read the setup guide →
                 </a>
@@ -1774,12 +1772,12 @@ function MerchantShopPage() {
 
         {isMissingShop ? (
           /* ── Missing shop fallback ── */
-          <section className="mt-16 rounded-2xl border border-night-700 p-8">
+          <section className="mt-16 rounded-xl border border-subtle p-8">
             <SectionLabel>ERROR</SectionLabel>
             <SectionTitle>Missing shop slug</SectionTitle>
-            <p className="mt-4 text-[14px] font-light text-fog-500">
+            <p className="mt-4 text-sm text-muted">
               Open this page like:{" "}
-              <code className="rounded bg-night-800 px-2 py-0.5 font-mono text-[13px] text-fog-300">
+              <code className="rounded bg-surface-sunken px-2 py-0.5 font-mono text-[13px] text-secondary">
                 /merchant/your-shop-slug
               </code>
             </p>
@@ -1787,69 +1785,76 @@ function MerchantShopPage() {
         ) : (
           <>
             {/* ============================================================
-                STATS
+                OVERVIEW — real counts, today
                 ============================================================ */}
-            <section className="animate-fade-in-up anim-delay-400 mt-14 opacity-0">
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Total signups */}
-                <div className="group rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
-                  <SectionLabel>TOTAL CUSTOMERS</SectionLabel>
-                  <div className="mt-4 text-5xl font-extralight tracking-tight text-fog-100">
-                    {loading ? "…" : (data?.totals?.total ?? 0).toLocaleString()}
-                  </div>
-                  <p className="mt-3 text-[12px] font-light text-fog-600">All-time loyalty members</p>
+            <section className="mt-10 animate-fade-in-up anim-delay-400 opacity-0">
+              <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                <div>
+                  <SectionLabel>Overview</SectionLabel>
+                  <SectionTitle>Today at a glance</SectionTitle>
                 </div>
-
-                {/* Today */}
-                <div className="group rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
-                  <SectionLabel>CHECK-INS TODAY</SectionLabel>
-                  <div className="mt-4 text-5xl font-extralight tracking-tight text-fog-100">
-                    {loading ? "…" : (data?.totals?.today ?? 0).toLocaleString()}
-                  </div>
-                  <p className="mt-3 text-[12px] font-light text-fog-600">Since midnight</p>
-                </div>
-
-                {/* Reward goal */}
-                <div className="group rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
-                  <SectionLabel>REWARD GOAL</SectionLabel>
-                  <div className="mt-4 text-5xl font-extralight tracking-tight text-fog-100">
-                    {settingsLoading ? "…" : (settings?.reward_goal ?? "—")}
-                  </div>
-                  <p className="mt-3 text-[12px] font-light text-fog-600">
-                    {settings?.reward_goal
-                      ? rewardModeDraft === "points"
-                        ? "Points to earn reward"
-                        : "Visits to earn reward"
-                      : "Set your goal below"}
-                  </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <GhostButton onClick={loadStats}>Refresh stats</GhostButton>
+                  <button
+                    onClick={() => setAutoRefresh(v => !v)}
+                    className={`text-xs font-medium transition-colors ${autoRefresh ? "text-positive" : "text-muted hover:text-secondary"}`}
+                  >
+                    {autoRefresh ? "● Live" : "Auto-refresh off"}
+                  </button>
+                  {lastUpdated && (
+                    <span className="text-xs text-muted">Updated {lastUpdated}</span>
+                  )}
                 </div>
               </div>
 
-              {/* Refresh controls */}
-              <div className="mt-4 flex flex-wrap items-center gap-4">
-                <GhostButton onClick={loadStats}>Refresh stats</GhostButton>
-                <button
-                  onClick={() => setAutoRefresh(v => !v)}
-                  className={`text-[11px] font-light tracking-[0.1em] transition-colors duration-300 ${autoRefresh ? "text-emerald-400" : "text-fog-600 hover:text-fog-300"}`}
-                >
-                  {autoRefresh ? "● Live" : "Auto-refresh off"}
-                </button>
-                {lastUpdated && (
-                  <span className="text-[11px] font-light text-fog-600">
-                    Updated {lastUpdated}
-                  </span>
-                )}
+              <div className="mt-5 overflow-hidden rounded-xl border border-subtle bg-surface-raised">
+                <div className="grid grid-cols-2 lg:grid-cols-4">
+                  <div className="border-t border-subtle px-5 py-4 sm:px-6 sm:py-5 lg:border-l lg:border-t-0 lg:first:border-l-0">
+                    <SectionLabel>Total members</SectionLabel>
+                    <p className="mt-1.5 text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary">
+                      {loading ? "…" : (data?.totals?.total ?? 0).toLocaleString()}
+                    </p>
+                    <p className="mt-2 text-xs text-muted">All-time loyalty members</p>
+                  </div>
+                  <div className="border-t border-subtle px-5 py-4 sm:px-6 sm:py-5 lg:border-l lg:border-t-0">
+                    <SectionLabel>New members today</SectionLabel>
+                    <p className="mt-1.5 text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary">
+                      {loading ? "…" : (data?.new_members_today ?? 0).toLocaleString()}
+                    </p>
+                    <p className="mt-2 text-xs text-muted">Joined since midnight</p>
+                  </div>
+                  <div className="border-t border-subtle px-5 py-4 sm:px-6 sm:py-5 lg:border-l lg:border-t-0">
+                    <SectionLabel>Check-ins today</SectionLabel>
+                    <p className="mt-1.5 text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary">
+                      {loading ? "…" : (data?.checkins_today ?? 0).toLocaleString()}
+                    </p>
+                    <p className="mt-2 text-xs text-muted">Visits recorded since midnight</p>
+                  </div>
+                  <div className="border-t border-subtle px-5 py-4 sm:px-6 sm:py-5 lg:border-l lg:border-t-0">
+                    <SectionLabel>Reward goal</SectionLabel>
+                    <p className="mt-1.5 text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary">
+                      {settingsLoading ? "…" : (settings?.reward_goal ?? "—")}
+                    </p>
+                    <p className="mt-2 text-xs text-muted">
+                      {settings?.reward_goal
+                        ? rewardModeDraft === "points"
+                          ? "Points to earn a reward"
+                          : "Visits to earn a reward"
+                        : "Set your goal below"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
 
             {/* Errors */}
             {loadError && (
-              <div className="mt-6 rounded-2xl border border-red-900/30 p-4 text-[13px] font-light text-red-400">
+              <div className="mt-6 rounded-xl border border-danger/30 p-4 text-sm text-danger">
                 {loadError}
               </div>
             )}
             {settingsError && (
-              <div className="mt-6 rounded-2xl border border-red-900/30 p-4 text-[13px] font-light text-red-400">
+              <div className="mt-6 rounded-xl border border-danger/30 p-4 text-sm text-danger">
                 {settingsError}
               </div>
             )}
@@ -1858,11 +1863,11 @@ function MerchantShopPage() {
                 SETUP REMINDER (new merchants who haven't set a reward yet)
                 ============================================================ */}
             {paid && !settingsLoading && !settings?.deal_title && (
-              <div className="mt-8 rounded-2xl border border-yellow-900/30 bg-yellow-950/10 px-6 py-5">
-                <p className="text-[11px] font-light tracking-[0.2em] text-yellow-600/80">ACTION NEEDED</p>
-                <p className="mt-1 text-[14px] font-light text-fog-100">Set your reward offer</p>
-                <p className="mt-1 text-[12px] font-light text-fog-500">
-                  Scroll down to <span className="text-fog-300">Offer &amp; reward</span> to add a reward title and details so customers know what they&rsquo;re earning.
+              <div className="mt-8 rounded-xl border border-warn/30 bg-warn/10 px-6 py-5">
+                <p className="text-2xs font-medium tracking-caps text-warn/90">ACTION NEEDED</p>
+                <p className="mt-1 text-sm text-primary">Set your reward offer</p>
+                <p className="mt-1 text-xs text-muted">
+                  Scroll down to <span className="text-secondary">Offer &amp; reward</span> to add a reward title and details so customers know what they&rsquo;re earning.
                 </p>
               </div>
             )}
@@ -1871,17 +1876,17 @@ function MerchantShopPage() {
                 AI INSIGHT CARD
                 ============================================================ */}
             <section className="mt-8">
-              <div className="rounded-2xl border border-night-700 bg-night-900/60 p-6 transition-all duration-500 hover:border-night-600">
+              <div className="rounded-xl border border-subtle bg-surface-raised p-6 transition-all duration-500 hover:border-strong">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-3.5 w-3.5 text-fog-500" />
-                    <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">THIS WEEK&apos;S INSIGHT</p>
+                    <Sparkles className="h-3.5 w-3.5 text-muted" />
+                    <p className="text-2xs font-medium uppercase tracking-caps text-muted">THIS WEEK&apos;S INSIGHT</p>
                   </div>
                   <button
                     onClick={() => loadInsight(true)}
                     disabled={insightLoading}
                     title="Refresh insight"
-                    className="flex items-center gap-1.5 rounded-full border border-night-700 px-3 py-1.5 text-[11px] font-light text-fog-600 transition-all duration-300 hover:border-night-600 hover:text-fog-300 disabled:opacity-40"
+                    className="flex items-center gap-1.5 rounded-full border border-subtle px-3 py-1.5 text-xs text-muted transition-all duration-300 hover:border-strong hover:text-secondary disabled:opacity-40"
                   >
                     <RefreshCw className={`h-3 w-3 ${insightLoading ? "animate-spin" : ""}`} />
                     Refresh
@@ -1891,17 +1896,17 @@ function MerchantShopPage() {
                 {insightLoading ? (
                   /* Skeleton */
                   <div className="space-y-2 animate-pulse">
-                    <div className="h-3.5 w-full rounded-full bg-night-800" />
-                    <div className="h-3.5 w-4/5 rounded-full bg-night-800" />
+                    <div className="h-3.5 w-full rounded-full bg-surface-sunken" />
+                    <div className="h-3.5 w-4/5 rounded-full bg-surface-sunken" />
                   </div>
                 ) : insightError ? (
-                  <p className="text-[13px] font-light text-fog-600">
+                  <p className="text-sm text-muted">
                     Check back after more customers visit — insights appear once you have a week of data.
                   </p>
                 ) : insight ? (
-                  <p className="text-[14px] font-light leading-relaxed text-fog-200">{insight}</p>
+                  <p className="text-sm leading-relaxed text-secondary">{insight}</p>
                 ) : (
-                  <p className="text-[13px] font-light text-fog-600">Loading your insight…</p>
+                  <p className="text-sm text-muted">Loading your insight…</p>
                 )}
               </div>
             </section>
@@ -1924,12 +1929,12 @@ function MerchantShopPage() {
                 CUSTOMERS
                 ============================================================ */}
             {paid && (
-              <section className="mt-14">
-                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+              <section className="mt-10">
+                
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">CUSTOMERS</p>
-                    <p className="mt-1 text-[13px] font-light text-fog-600">
+                    <p className="text-2xs font-medium uppercase tracking-caps text-muted">CUSTOMERS</p>
+                    <p className="mt-1 text-sm text-muted">
                       {customersLoaded
                         ? `${customersTotal.toLocaleString()} loyalty member${customersTotal !== 1 ? "s" : ""}`
                         : "Everyone who has joined your loyalty program"}
@@ -1955,15 +1960,15 @@ function MerchantShopPage() {
                 {/* Tabs */}
                 {customersLoaded && (
                   <div className="mb-4 flex flex-wrap items-center gap-3">
-                    <div className="flex gap-1 rounded-full border border-night-700 p-1">
+                    <div className="flex gap-1 rounded-full border border-subtle p-1">
                       {(["all", "lapsed"] as const).map((tab) => (
                         <button
                           key={tab}
                           onClick={() => setCustomerTab(tab)}
-                          className={`rounded-full px-4 py-1.5 text-[11px] font-light tracking-[0.1em] transition-all duration-300 ${
+                          className={`rounded-full px-4 py-1.5 text-2xs font-medium tracking-caps transition-all duration-300 ${
                             customerTab === tab
-                              ? "bg-fog-100 text-black"
-                              : "text-fog-500 hover:text-fog-100"
+                              ? "bg-primary text-inverse"
+                              : "text-muted hover:text-primary"
                           }`}
                         >
                           {tab === "all" ? "ALL" : "LAPSED 30+ DAYS"}
@@ -1977,15 +1982,15 @@ function MerchantShopPage() {
                         <button
                           onClick={sendWinBack}
                           disabled={winBackSending}
-                          className="rounded-full border border-night-600 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-300 transition-all duration-300 hover:border-fog-100 hover:text-fog-100 disabled:opacity-40"
+                          className="rounded-full border border-strong px-4 py-1.5 text-2xs font-medium tracking-caps text-secondary transition-all duration-300 hover:border-strong hover:text-primary disabled:opacity-40"
                         >
                           {winBackSending ? "Sending…" : "Send win-back email"}
                         </button>
                         {winBackMsg && (
-                          <p className="text-[11px] font-light text-emerald-400">{winBackMsg}</p>
+                          <p className="text-xs text-positive">{winBackMsg}</p>
                         )}
                         {winBackError && (
-                          <p className="text-[11px] font-light text-red-400">{winBackError}</p>
+                          <p className="text-xs text-danger">{winBackError}</p>
                         )}
                       </div>
                     )}
@@ -1993,29 +1998,29 @@ function MerchantShopPage() {
                 )}
 
                 {customersLoaded && (
-                  <div className="rounded-2xl border border-night-700 overflow-hidden">
+                  <div className="rounded-xl border border-subtle overflow-hidden">
                     {customers.length > 0 && (
-                      <div className="px-4 py-3 border-b border-night-800">
+                      <div className="px-4 py-3 border-b border-subtle">
                         <input
                           value={customerSearch}
                           onChange={e => setCustomerSearch(e.target.value)}
                           placeholder="Search by phone or email…"
-                          className="w-full bg-transparent text-[13px] font-light text-fog-100 placeholder:text-fog-600 outline-none"
+                          className="w-full bg-transparent text-sm text-primary placeholder:text-muted outline-none"
                         />
                       </div>
                     )}
                     {customers.length === 0 ? (
-                      <div className="px-6 py-10 text-center text-[13px] font-light text-fog-600">
+                      <div className="px-6 py-10 text-center text-sm text-muted">
                         No customers yet — share your QR code to get started.
                       </div>
                     ) : (
                       <table className="w-full text-left">
                         <thead>
-                          <tr className="border-b border-night-800">
-                            <th className="px-5 py-3 text-[10px] font-light tracking-[0.15em] text-fog-600">CONTACT</th>
-                            <th className="px-5 py-3 text-[10px] font-light tracking-[0.15em] text-fog-600">STAMPS</th>
-                            <th className="hidden px-5 py-3 text-[10px] font-light tracking-[0.15em] text-fog-600 sm:table-cell">LAST VISIT</th>
-                            <th className="hidden px-5 py-3 text-[10px] font-light tracking-[0.15em] text-fog-600 sm:table-cell">STATUS</th>
+                          <tr className="border-b border-subtle">
+                            <th className="px-5 py-3 text-left text-2xs font-medium uppercase tracking-caps text-muted">CONTACT</th>
+                            <th className="px-5 py-3 text-right text-2xs font-medium uppercase tracking-caps text-muted">STAMPS</th>
+                            <th className="hidden px-5 py-3 text-left text-2xs font-medium uppercase tracking-caps text-muted sm:table-cell">LAST VISIT</th>
+                            <th className="hidden px-5 py-3 text-right text-2xs font-medium uppercase tracking-caps text-muted sm:table-cell">STATUS</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -2038,28 +2043,28 @@ function MerchantShopPage() {
                               const progress = Math.min(((c.visits ?? 0) % goal) / goal, 1);
                               const isReady = (c.visits ?? 0) > 0 && (c.visits ?? 0) % goal === 0;
                               return (
-                                <tr key={c.id} onClick={() => openCustomerDetail(c)} className={`cursor-pointer ${i > 0 ? "border-t border-night-800" : ""} hover:bg-night-900`}>
-                                  <td className="px-5 py-3.5 text-[13px] font-light text-fog-300 font-mono">
+                                <tr key={c.id} onClick={() => openCustomerDetail(c)} className={`cursor-pointer ${i > 0 ? "border-t border-subtle" : ""} hover:bg-surface-sunken`}>
+                                  <td className="px-5 py-3.5 text-sm text-secondary font-mono">
                                     {c.phone || c.email || "—"}
                                   </td>
                                   <td className="px-5 py-3.5">
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-[13px] font-light text-fog-100">{c.visits ?? 0}</span>
-                                      <div className="hidden h-1 w-16 overflow-hidden rounded-full bg-night-800 sm:block">
-                                        <div className="h-full rounded-full bg-night-600 transition-all" style={{ width: `${progress * 100}%` }} />
+                                    <div className="flex items-center justify-end gap-3">
+                                      <span className="text-sm font-medium tabular-nums text-primary">{c.visits ?? 0}</span>
+                                      <div className="hidden h-1 w-16 overflow-hidden rounded-full bg-surface-sunken sm:block">
+                                        <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${progress * 100}%` }} />
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="hidden px-5 py-3.5 text-[12px] font-light text-fog-600 sm:table-cell">
+                                  <td className="hidden px-5 py-3.5 text-xs tabular-nums text-muted sm:table-cell">
                                     {c.last_checkin_date ?? "—"}
                                   </td>
-                                  <td className="hidden px-5 py-3.5 sm:table-cell">
+                                  <td className="hidden px-5 py-3.5 text-right sm:table-cell">
                                     {c.opted_out ? (
-                                      <span className="text-[10px] font-light tracking-[0.1em] text-fog-600">OPTED OUT</span>
+                                      <span className="text-2xs font-medium uppercase tracking-caps text-muted">OPTED OUT</span>
                                     ) : isReady ? (
-                                      <span className="text-[10px] font-light tracking-[0.1em] text-yellow-500">REWARD READY</span>
+                                      <span className="text-2xs font-medium tracking-caps text-warn">REWARD READY</span>
                                     ) : (
-                                      <span className="text-[10px] font-light tracking-[0.1em] text-fog-600">ACTIVE</span>
+                                      <span className="text-2xs font-medium uppercase tracking-caps text-muted">ACTIVE</span>
                                     )}
                                   </td>
                                 </tr>
@@ -2086,33 +2091,33 @@ function MerchantShopPage() {
                 MANUAL CHECK-IN MODAL
                 ============================================================ */}
             {showManualCheckin && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-night-950/80 px-4 backdrop-blur-sm" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }}>
-                <div className="w-full max-w-md rounded-2xl border border-night-700 bg-night-900 p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
-                  <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">{rewardModeDraft === "points" ? "MANUAL POINTS" : "MANUAL STAMP"}</p>
-                  <p className="mt-2 text-[18px] font-extralight text-fog-100">{rewardModeDraft === "points" ? "Add points" : "Add a stamp"}</p>
-                  <p className="mt-1 text-[13px] font-light text-fog-600">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }}>
+                <div className="w-full max-w-md rounded-xl border border-subtle bg-surface-raised p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+                  <p className="text-2xs font-medium uppercase tracking-caps text-muted">{rewardModeDraft === "points" ? "MANUAL POINTS" : "MANUAL STAMP"}</p>
+                  <p className="mt-2 text-[18px] font-medium text-primary">{rewardModeDraft === "points" ? "Add points" : "Add a stamp"}</p>
+                  <p className="mt-1 text-sm text-muted">
                     {rewardModeDraft === "points"
                       ? "Enter a customer's phone number or email to add points manually."
                       : "Enter a customer's phone number or email to add a stamp manually."}
                   </p>
 
                   {manualResult ? (
-                    <div className="mt-6 rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-5 py-4">
-                      <p className="text-[14px] font-light text-emerald-400">
+                    <div className="mt-6 rounded-xl border border-positive/30 bg-positive/10 px-5 py-4">
+                      <p className="text-sm text-positive">
                         {manualResult.status === "reward"
                           ? "Reward earned."
                           : manualResult.unit === "points"
                           ? `+${manualResult.earned} points added.`
                           : "Stamp added."}
                       </p>
-                      <p className="mt-1 text-[12px] font-light text-fog-500">
+                      <p className="mt-1 text-xs text-muted">
                         {manualResult.new_customer ? "New customer · " : ""}
                         {manualResult.unit === "points"
                           ? `${manualResult.visits} / ${manualResult.goal} points`
                           : `${manualResult.visits} / ${manualResult.goal} stamps`}
                         {manualResult.status !== "reward" && ` · ${manualResult.remaining} to go`}
                       </p>
-                      <button onClick={() => setManualResult(null)} className="mt-4 text-[12px] font-light text-fog-500 hover:text-fog-100">
+                      <button onClick={() => setManualResult(null)} className="mt-4 text-xs text-muted hover:text-primary">
                         Add another →
                       </button>
                     </div>
@@ -2123,16 +2128,16 @@ function MerchantShopPage() {
                         value={manualContact}
                         onChange={e => setManualContact(e.target.value)}
                         placeholder="Phone (e.g. 5551234567) or email"
-                        className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none placeholder:text-fog-600 focus:border-night-600"
+                        className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none placeholder:text-muted focus:border-strong"
                       />
                       {manualError && (
-                        <p className="text-[12px] font-light text-red-400">{manualError}</p>
+                        <p className="text-xs text-danger">{manualError}</p>
                       )}
                       <div className="flex gap-3">
-                        <button type="submit" disabled={manualLoading || !manualContact.trim()} className="flex-1 rounded-xl border border-fog-100 py-3 text-[12px] font-light tracking-[0.1em] text-fog-100 transition-all hover:bg-fog-100 hover:text-black disabled:opacity-40">
+                        <button type="submit" disabled={manualLoading || !manualContact.trim()} className="flex-1 rounded-xl border border-strong py-3 text-xs tracking-[0.1em] text-primary transition-all hover:bg-primary hover:text-inverse disabled:opacity-40">
                           {manualLoading ? "Adding…" : rewardModeDraft === "points" ? "Add points" : "Add stamp"}
                         </button>
-                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }} className="rounded-xl border border-night-700 px-5 py-3 text-[12px] font-light text-fog-500 hover:border-night-600">
+                        <button type="button" onClick={() => { setShowManualCheckin(false); setManualResult(null); setManualError(""); }} className="rounded-xl border border-subtle px-5 py-3 text-xs text-muted hover:border-strong">
                           Cancel
                         </button>
                       </div>
@@ -2146,47 +2151,47 @@ function MerchantShopPage() {
                 CUSTOMER DETAIL MODAL
                 ============================================================ */}
             {selectedCustomer && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-night-950/80 px-4 backdrop-blur-sm" onClick={() => setSelectedCustomer(null)}>
-                <div className="w-full max-w-md rounded-2xl border border-night-700 bg-night-900 p-8 shadow-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm" onClick={() => setSelectedCustomer(null)}>
+                <div className="w-full max-w-md rounded-xl border border-subtle bg-surface-raised p-8 shadow-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                   <div className="flex items-start justify-between mb-5">
                     <div>
-                      <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">CUSTOMER DETAIL</p>
-                      <p className="mt-2 font-mono text-[15px] font-light text-fog-100">
+                      <p className="text-2xs font-medium uppercase tracking-caps text-muted">CUSTOMER DETAIL</p>
+                      <p className="mt-2 font-mono text-base text-primary">
                         {selectedCustomer.phone || selectedCustomer.email || "—"}
                       </p>
                     </div>
-                    <button onClick={() => setSelectedCustomer(null)} className="text-fog-500 hover:text-fog-100 text-[20px] leading-none">×</button>
+                    <button onClick={() => setSelectedCustomer(null)} className="text-muted hover:text-primary text-[20px] leading-none">×</button>
                   </div>
 
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-3 mb-6">
-                    <div className="rounded-xl border border-night-700 p-3 text-center">
-                      <p className="text-[10px] font-light tracking-[0.1em] text-fog-500">STAMPS</p>
-                      <p className="mt-1 text-xl font-extralight text-fog-100">{selectedCustomer.visits ?? 0}</p>
+                    <div className="rounded-xl border border-subtle p-3 text-center">
+                      <p className="text-2xs font-medium uppercase tracking-caps text-muted">STAMPS</p>
+                      <p className="mt-1 text-xl font-medium text-primary">{selectedCustomer.visits ?? 0}</p>
                     </div>
-                    <div className="rounded-xl border border-night-700 p-3 text-center">
-                      <p className="text-[10px] font-light tracking-[0.1em] text-fog-500">LAST VISIT</p>
-                      <p className="mt-1 text-[12px] font-light text-fog-100">{selectedCustomer.last_checkin_date ?? "—"}</p>
+                    <div className="rounded-xl border border-subtle p-3 text-center">
+                      <p className="text-2xs font-medium uppercase tracking-caps text-muted">LAST VISIT</p>
+                      <p className="mt-1 text-xs text-primary">{selectedCustomer.last_checkin_date ?? "—"}</p>
                     </div>
-                    <div className="rounded-xl border border-night-700 p-3 text-center">
-                      <p className="text-[10px] font-light tracking-[0.1em] text-fog-500">VISITS</p>
-                      <p className="mt-1 text-xl font-extralight text-fog-100">{customerCheckins.length}</p>
+                    <div className="rounded-xl border border-subtle p-3 text-center">
+                      <p className="text-2xs font-medium uppercase tracking-caps text-muted">VISITS</p>
+                      <p className="mt-1 text-xl font-medium text-primary">{customerCheckins.length}</p>
                     </div>
                   </div>
 
                   {customerDetailLoading ? (
-                    <p className="text-center text-[13px] font-light text-fog-600">Loading history…</p>
+                    <p className="text-center text-sm text-muted">Loading history…</p>
                   ) : (
                     <>
                       {/* Rewards */}
                       {customerRewards.length > 0 && (
                         <div className="mb-5">
-                          <p className="text-[10px] font-light tracking-[0.15em] text-fog-500 mb-3">REWARDS EARNED</p>
+                          <p className="text-2xs font-medium uppercase tracking-caps text-muted mb-3">REWARDS EARNED</p>
                           <div className="space-y-1.5">
                             {customerRewards.map((r, i) => (
-                              <div key={i} className="flex items-center justify-between rounded-lg border border-night-800 px-3 py-2">
-                                <span className="text-[12px] font-light text-fog-300">{r.reward_date}</span>
-                                <span className={`text-[10px] font-light tracking-[0.1em] ${r.is_redeemed ? "text-emerald-500" : "text-yellow-500"}`}>
+                              <div key={i} className="flex items-center justify-between rounded-lg border border-subtle px-3 py-2">
+                                <span className="text-xs text-secondary">{r.reward_date}</span>
+                                <span className={`text-2xs font-medium tracking-caps ${r.is_redeemed ? "text-positive" : "text-warn"}`}>
                                   {r.is_redeemed ? "REDEEMED" : "PENDING"}
                                 </span>
                               </div>
@@ -2197,15 +2202,15 @@ function MerchantShopPage() {
 
                       {/* Check-in history */}
                       <div>
-                        <p className="text-[10px] font-light tracking-[0.15em] text-fog-500 mb-3">CHECK-IN HISTORY</p>
+                        <p className="text-2xs font-medium uppercase tracking-caps text-muted mb-3">CHECK-IN HISTORY</p>
                         {customerCheckins.length === 0 ? (
-                          <p className="text-[13px] font-light text-fog-600">No check-ins recorded.</p>
+                          <p className="text-sm text-muted">No check-ins recorded.</p>
                         ) : (
                           <div className="max-h-48 overflow-y-auto space-y-1.5">
                             {customerCheckins.map((c, i) => (
-                              <div key={i} className="flex items-center justify-between rounded-lg border border-night-800 px-3 py-2">
-                                <span className="text-[12px] font-light text-fog-300">{c.checkin_date}</span>
-                                <span className="text-[11px] font-light text-fog-600">
+                              <div key={i} className="flex items-center justify-between rounded-lg border border-subtle px-3 py-2">
+                                <span className="text-xs text-secondary">{c.checkin_date}</span>
+                                <span className="text-xs text-muted">
                                   {new Date(c.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                                 </span>
                               </div>
@@ -2226,35 +2231,35 @@ function MerchantShopPage() {
                 campaign) is a future feature — today the dashboard can
                 only send. */}
             {paid && (
-              <section className="mt-14">
-                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+              <section className="mt-10">
+                
                 <div>
-                  <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">EMAIL CAMPAIGNS</p>
-                  <h2 className="mt-3 text-xl font-extralight tracking-[-0.01em] text-fog-100 sm:text-2xl">Send to customers</h2>
-                  <p className="mt-1 text-[13px] font-light text-fog-600">
+                  <p className="text-2xs font-medium uppercase tracking-caps text-muted">EMAIL CAMPAIGNS</p>
+                  <h2 className="mt-3 text-xl font-medium tracking-[-0.01em] text-primary sm:text-2xl">Send to customers</h2>
+                  <p className="mt-1 text-sm text-muted">
                     Sends to all opted-in customers who have an email address on file.
                   </p>
                 </div>
 
-                <div className="mt-6 rounded-2xl border border-night-700 p-6 transition-all duration-500 hover:border-night-600">
+                <div className="mt-6 rounded-xl border border-subtle p-6 transition-all duration-500 hover:border-strong">
                   <form onSubmit={sendCampaign} className="space-y-4">
                     <div>
-                      <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">SUBJECT</label>
+                      <label className="block text-2xs font-medium tracking-caps text-muted mb-2">SUBJECT</label>
                       <input
                         value={campaignSubject}
                         onChange={e => setCampaignSubject(e.target.value)}
                         placeholder="e.g. Double stamps this weekend!"
                         required
-                        className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                        className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                       />
                     </div>
                     <div>
                       <div className="mb-2 flex items-center justify-between">
-                        <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500">MESSAGE</label>
+                        <label className="block text-2xs font-medium tracking-caps text-muted">MESSAGE</label>
                         <button
                           type="button"
                           onClick={() => { setShowAIModal(true); setAiOptions([]); setAiError(""); }}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-night-600 px-3.5 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-300 transition-all duration-300 hover:border-fog-100 hover:text-fog-100"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-strong px-3.5 py-1.5 text-2xs font-medium tracking-caps text-secondary transition-all duration-300 hover:border-strong hover:text-primary"
                         >
                           <Sparkles className="h-3.5 w-3.5" /> Write with AI
                         </button>
@@ -2265,18 +2270,18 @@ function MerchantShopPage() {
                         placeholder="Write your message to customers…"
                         required
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                        className="w-full resize-none rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                       />
                     </div>
 
                     {campaignMsg && (
-                      <div className="rounded-xl border border-emerald-900/30 bg-emerald-950/10 px-4 py-3">
-                        <p className="text-[13px] font-light text-emerald-400">{campaignMsg}</p>
+                      <div className="rounded-xl border border-positive/30 bg-positive/10 px-4 py-3">
+                        <p className="text-sm text-positive">{campaignMsg}</p>
                       </div>
                     )}
                     {campaignError && (
-                      <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
-                        <p className="text-[13px] font-light text-red-400">{campaignError}</p>
+                      <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3">
+                        <p className="text-sm text-danger">{campaignError}</p>
                       </div>
                     )}
 
@@ -2284,7 +2289,7 @@ function MerchantShopPage() {
                       <PrimaryButton disabled={campaignSending || !campaignSubject.trim() || !campaignBody.trim()}>
                         {campaignSending ? "Sending…" : "Send campaign"}
                       </PrimaryButton>
-                      <span className="text-[12px] font-light text-fog-600">Emails only · No SMS</span>
+                      <span className="text-xs text-muted">Emails only · No SMS</span>
                     </div>
                   </form>
                 </div>
@@ -2297,44 +2302,45 @@ function MerchantShopPage() {
             {hasCustomers && qrSection}
 
             {/* ============================================================
-                LATEST SIGNUPS
+                RECENT CHECK-INS
                 ============================================================ */}
-            <section className="mt-14">
+            <section className="mt-10">
               <div>
-                <SectionLabel>RECENT ACTIVITY</SectionLabel>
+                <SectionLabel>Recent activity</SectionLabel>
                 <SectionTitle>Latest check-ins</SectionTitle>
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-2xl border border-night-700">
+              <div className="mt-4 overflow-hidden rounded-xl border border-subtle bg-surface-raised">
                 <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-night-700">
-                      <th className="px-6 py-4 text-[11px] font-light tracking-[0.2em] text-fog-500">
-                        CONTACT
+                  <thead className="border-b border-subtle">
+                    <tr>
+                      <th className="px-5 py-2.5 text-2xs font-medium uppercase tracking-caps text-muted">
+                        Customer
                       </th>
-                      <th className="px-6 py-4 text-[11px] font-light tracking-[0.2em] text-fog-500">
-                        TIME
+                      <th className="px-5 py-2.5 text-right text-2xs font-medium uppercase tracking-caps text-muted">
+                        Time
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-night-800">
-                    {(data?.latest ?? []).length === 0 ? (
+                  <tbody className="divide-y divide-subtle">
+                    {(data?.latest_checkins ?? []).length === 0 ? (
                       <tr>
-                        <td className="px-6 py-8 text-[13px] font-light text-fog-600" colSpan={2}>
+                        <td className="px-5 py-8 text-sm text-muted" colSpan={2}>
                           {loading ? "Loading…" : "No check-ins yet — share your QR code to get started."}
                         </td>
                       </tr>
                     ) : (
-                      (data?.latest ?? []).map((row, idx) => (
-                        <tr
-                          key={`${row.phone}-${row.created_at}-${idx}`}
-                          className="transition-colors duration-300 hover:bg-white/[0.02]"
-                        >
-                          <td className="px-6 py-4 font-mono text-[13px] font-light text-fog-100">
-                            {row.phone ? maskPhone(row.phone) : row.email ? row.email.replace(/(.{2}).+(@.+)/, "$1***$2") : "—"}
+                      (data?.latest_checkins ?? []).map((row, idx) => (
+                        <tr key={`${row.contact}-${row.checked_in_at}-${idx}`}>
+                          <td className="px-5 py-3 font-mono text-sm text-secondary">
+                            {row.contact
+                              ? /^\+?[\d\s()-]+$/.test(row.contact)
+                                ? maskPhone(row.contact)
+                                : row.contact.replace(/(.{2}).+(@.+)/, "$1***$2")
+                              : "—"}
                           </td>
-                          <td className="px-6 py-4 font-mono text-[13px] font-light text-fog-500">
-                            {formatShortNY(row.created_at)}
+                          <td className="px-5 py-3 text-right text-sm tabular-nums text-muted">
+                            {formatShortNY(row.checked_in_at)}
                           </td>
                         </tr>
                       ))
@@ -2347,13 +2353,13 @@ function MerchantShopPage() {
             {/* ============================================================
                 STORE LOGO
                 ============================================================ */}
-            <section className="mt-14">
-              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+            <section className="mt-10">
+              
 
-              <div className="rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
+              <div className="rounded-xl border border-subtle p-8 transition-all duration-500 hover:border-strong">
                 <SectionLabel>BRANDING</SectionLabel>
                 <SectionTitle>Store logo</SectionTitle>
-                <p className="mt-2 text-[13px] font-light text-fog-600">
+                <p className="mt-2 text-sm text-muted">
                   Displayed on your customer check-in page.
                 </p>
 
@@ -2362,10 +2368,10 @@ function MerchantShopPage() {
                     <img
                       src={logoUrl}
                       alt="Store logo"
-                      className="h-20 w-20 rounded-xl border border-night-700 bg-white object-contain"
+                      className="h-20 w-20 rounded-xl border border-subtle bg-white object-contain"
                     />
                   ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-night-600 text-[11px] font-light text-fog-600">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-strong text-xs text-muted">
                       No logo
                     </div>
                   )}
@@ -2388,8 +2394,8 @@ function MerchantShopPage() {
                       />
                     </label>
 
-                    {!paid && <span className="text-[11px] font-light text-fog-600">Available after activating subscription</span>}
-                    {logoMsg && <span className="text-[11px] font-light text-fog-500">{logoMsg}</span>}
+                    {!paid && <span className="text-xs text-muted">Available after activating subscription</span>}
+                    {logoMsg && <span className="text-xs text-muted">{logoMsg}</span>}
                   </div>
                 </div>
               </div>
@@ -2405,8 +2411,8 @@ function MerchantShopPage() {
                 Hidden for now — set SHOW_COMMUNITY_REWARDS to true to bring back.
                 ============================================================ */}
             {SHOW_COMMUNITY_REWARDS && (
-            <section className="mt-14">
-              <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+            <section className="mt-10">
+              
 
               <div className="flex items-end justify-between gap-4">
                 <div>
@@ -2418,12 +2424,12 @@ function MerchantShopPage() {
 
               <div className="mt-8 space-y-4">
                 {communityLoading ? (
-                  <p className="text-[13px] font-light text-fog-600">Loading…</p>
+                  <p className="text-sm text-muted">Loading…</p>
                 ) : (
                   <>
                     {/* Per-group toggles */}
-                    <div className="rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
-                      <p className="text-[11px] font-light tracking-[0.3em] text-fog-500 mb-6">
+                    <div className="rounded-xl border border-subtle p-8 transition-all duration-500 hover:border-strong">
+                      <p className="text-2xs font-medium uppercase tracking-caps text-muted mb-6">
                         GROUPS &amp; BOOST MULTIPLIERS
                       </p>
                       <div className="space-y-5">
@@ -2452,21 +2458,21 @@ function MerchantShopPage() {
                             >
                               <span
                                 className={`inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full border transition-colors duration-300 ${
-                                  g.enabled ? "border-fog-100 bg-fog-100" : "border-night-600 bg-transparent"
+                                  g.enabled ? "border-strong bg-primary" : "border-strong bg-transparent"
                                 }`}
                               >
                                 <span
                                   className={`h-3.5 w-3.5 rounded-full transition-transform duration-300 ${
-                                    g.enabled ? "translate-x-4 bg-night-950" : "translate-x-0.5 bg-[#444]"
+                                    g.enabled ? "translate-x-4 bg-surface" : "translate-x-0.5 bg-[#444]"
                                   }`}
                                 />
                               </span>
-                              <span className="text-[14px] font-light text-fog-100">{g.label}</span>
+                              <span className="text-sm text-primary">{g.label}</span>
                             </button>
 
                             {/* Boost multiplier */}
                             <div className="flex items-center gap-2">
-                              <span className="text-[11px] font-light text-fog-500">BOOST</span>
+                              <span className="text-xs text-muted">BOOST</span>
                               <input
                                 type="number"
                                 min={1.0}
@@ -2482,9 +2488,9 @@ function MerchantShopPage() {
                                     )
                                   );
                                 }}
-                                className="w-16 rounded-lg border border-night-700 bg-night-900 px-2 py-1.5 text-center text-[13px] font-light text-fog-100 outline-none transition-colors focus:border-night-600 disabled:opacity-30"
+                                className="w-16 rounded-lg border border-subtle bg-surface-raised px-2 py-1.5 text-center text-sm text-primary outline-none transition-colors focus:border-strong disabled:opacity-30"
                               />
-                              <span className="text-[11px] font-light text-fog-600">×</span>
+                              <span className="text-xs text-muted">×</span>
                             </div>
                           </div>
                         ))}
@@ -2495,40 +2501,40 @@ function MerchantShopPage() {
                           <button
                             onClick={saveCommunitySettings}
                             disabled={communitySaving}
-                            className="rounded-full border border-fog-100 px-6 py-2.5 text-[12px] font-light tracking-[0.1em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
+                            className="rounded-full border border-strong px-6 py-2.5 text-xs tracking-[0.1em] text-primary transition-all duration-500 hover:bg-primary hover:text-inverse disabled:opacity-40"
                           >
                             {communitySaving ? "Saving…" : "Save boosts"}
                           </button>
                           {communityMsg && (
-                            <p className="text-[12px] font-light text-fog-500">{communityMsg}</p>
+                            <p className="text-xs text-muted">{communityMsg}</p>
                           )}
                         </div>
                       ) : (
-                        <p className="mt-6 text-[11px] font-light text-fog-600">Activate to enable community rewards</p>
+                        <p className="mt-6 text-xs text-muted">Activate to enable community rewards</p>
                       )}
                     </div>
 
                     {/* How verification works */}
-                    <div className="rounded-2xl border border-night-700 px-6 py-5">
-                      <p className="text-[11px] font-light tracking-[0.3em] text-fog-500 mb-3">HOW IT WORKS</p>
-                      <div className="space-y-2 text-[12px] font-light text-fog-600 leading-relaxed">
-                        <p><Medal className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-fog-500 font-light">Veterans</strong> — verified via VA Lighthouse API (global badge, works at all merchants)</p>
-                        <p><GraduationCap className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-fog-500 font-light">Students</strong> — verified via .edu email link (global badge)</p>
-                        <p><strong className="text-fog-500 font-light">Seniors</strong> — derived from date of birth at scan time, no badge stored</p>
-                        <p><Siren className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-fog-500 font-light">First Responders</strong> — merchant grant only (use &quot;Grant a perk&quot; below)</p>
-                        <p><HeartHandshake className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-fog-500 font-light">Care Community</strong> — merchant grant only, cancer patients &amp; family</p>
-                        <p className="mt-2 text-fog-600">Boosts resolve as max, not stack. A customer who qualifies for multiple groups gets the highest boost only.</p>
+                    <div className="rounded-xl border border-subtle px-6 py-5">
+                      <p className="text-2xs font-medium uppercase tracking-caps text-muted mb-3">HOW IT WORKS</p>
+                      <div className="space-y-2 text-xs text-muted leading-relaxed">
+                        <p><Medal className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-muted font-light">Veterans</strong> — verified via VA Lighthouse API (global badge, works at all merchants)</p>
+                        <p><GraduationCap className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-muted font-light">Students</strong> — verified via .edu email link (global badge)</p>
+                        <p><strong className="text-muted font-light">Seniors</strong> — derived from date of birth at scan time, no badge stored</p>
+                        <p><Siren className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-muted font-light">First Responders</strong> — merchant grant only (use &quot;Grant a perk&quot; below)</p>
+                        <p><HeartHandshake className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px" /> <strong className="text-muted font-light">Care Community</strong> — merchant grant only, cancer patients &amp; family</p>
+                        <p className="mt-2 text-muted">Boosts resolve as max, not stack. A customer who qualifies for multiple groups gets the highest boost only.</p>
                       </div>
                     </div>
 
                     {/* Grant a perk */}
                     {paid && (
-                      <div className="rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
+                      <div className="rounded-xl border border-subtle p-8 transition-all duration-500 hover:border-strong">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">MANUAL GRANTS</p>
-                            <p className="mt-2 text-[15px] font-extralight text-fog-100">Grant a perk</p>
-                            <p className="mt-1 text-[12px] font-light text-fog-600">
+                            <p className="text-2xs font-medium uppercase tracking-caps text-muted">MANUAL GRANTS</p>
+                            <p className="mt-2 text-[15px] font-medium text-primary">Grant a perk</p>
+                            <p className="mt-1 text-xs text-muted">
                               Give a community boost to a specific customer by phone or email.
                             </p>
                           </div>
@@ -2541,13 +2547,13 @@ function MerchantShopPage() {
 
                     {/* Community analytics */}
                     {communityAnalytics && (communityAnalytics.total_community_scans > 0) && (
-                      <div className="rounded-2xl border border-night-700 p-8 transition-all duration-500 hover:border-night-600">
+                      <div className="rounded-xl border border-subtle p-8 transition-all duration-500 hover:border-strong">
                         <div className="flex items-center justify-between mb-6">
-                          <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">COMMUNITY ANALYTICS · 90 DAYS</p>
+                          <p className="text-2xs font-medium uppercase tracking-caps text-muted">COMMUNITY ANALYTICS · 90 DAYS</p>
                           <button
                             onClick={loadCommunityAnalytics}
                             disabled={communityAnalyticsLoading}
-                            className="text-[11px] font-light text-fog-600 hover:text-fog-300 transition-colors disabled:opacity-40"
+                            className="text-xs text-muted hover:text-secondary transition-colors disabled:opacity-40"
                           >
                             {communityAnalyticsLoading ? "…" : "Refresh"}
                           </button>
@@ -2555,20 +2561,20 @@ function MerchantShopPage() {
 
                         {/* Summary row */}
                         <div className="grid grid-cols-3 gap-4 mb-6">
-                          <div className="rounded-xl border border-night-700 px-4 py-3 text-center">
-                            <p className="text-[22px] font-extralight text-fog-100">{communityAnalytics.total_community_scans}</p>
-                            <p className="text-[10px] font-light tracking-[0.2em] text-fog-500 mt-1">COMMUNITY SCANS</p>
+                          <div className="rounded-xl border border-subtle px-4 py-3 text-center">
+                            <p className="text-[22px] font-medium text-primary">{communityAnalytics.total_community_scans}</p>
+                            <p className="text-2xs font-medium uppercase tracking-caps text-muted mt-1">COMMUNITY SCANS</p>
                           </div>
-                          <div className="rounded-xl border border-night-700 px-4 py-3 text-center">
-                            <p className="text-[22px] font-extralight text-fog-100">{communityAnalytics.total_community_customers}</p>
-                            <p className="text-[10px] font-light tracking-[0.2em] text-fog-500 mt-1">UNIQUE CUSTOMERS</p>
+                          <div className="rounded-xl border border-subtle px-4 py-3 text-center">
+                            <p className="text-[22px] font-medium text-primary">{communityAnalytics.total_community_customers}</p>
+                            <p className="text-2xs font-medium uppercase tracking-caps text-muted mt-1">UNIQUE CUSTOMERS</p>
                           </div>
-                          <div className="rounded-xl border border-night-700 px-4 py-3 text-center">
-                            <p className="text-[22px] font-extralight text-fog-100">
+                          <div className="rounded-xl border border-subtle px-4 py-3 text-center">
+                            <p className="text-[22px] font-medium text-primary">
                               {communityAnalytics.verified_badges}
-                              <span className="text-[14px] text-fog-500"> / {communityAnalytics.verified_badges + communityAnalytics.merchant_grants}</span>
+                              <span className="text-[14px] text-muted"> / {communityAnalytics.verified_badges + communityAnalytics.merchant_grants}</span>
                             </p>
-                            <p className="text-[10px] font-light tracking-[0.2em] text-fog-500 mt-1">VERIFIED / TOTAL</p>
+                            <p className="text-2xs font-medium uppercase tracking-caps text-muted mt-1">VERIFIED / TOTAL</p>
                           </div>
                         </div>
 
@@ -2576,18 +2582,18 @@ function MerchantShopPage() {
                         {communityAnalytics.groups.length > 0 && (
                           <div className="space-y-3">
                             {communityAnalytics.groups.map((g) => (
-                              <div key={g.group_key} className="flex items-center justify-between rounded-xl border border-night-800 px-4 py-3">
+                              <div key={g.group_key} className="flex items-center justify-between rounded-xl border border-subtle px-4 py-3">
                                 <div>
-                                  <p className="text-[13px] font-light text-fog-100 capitalize">
+                                  <p className="text-sm text-primary capitalize">
                                     {g.group_key.replace("_", " ")}
                                   </p>
-                                  <p className="text-[11px] font-light text-fog-500">
+                                  <p className="text-xs text-muted">
                                     {g.unique_customers} customer{g.unique_customers !== 1 ? "s" : ""} · {g.repeat_rate}% repeat
                                   </p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-[13px] font-light text-fog-100">{g.scan_count} scans</p>
-                                  <p className="text-[11px] font-light text-fog-500">{g.avg_boost}× avg boost</p>
+                                  <p className="text-sm text-primary">{g.scan_count} scans</p>
+                                  <p className="text-xs text-muted">{g.avg_boost}× avg boost</p>
                                 </div>
                               </div>
                             ))}
@@ -2605,16 +2611,16 @@ function MerchantShopPage() {
                 BILLING (small, understated)
                 ============================================================ */}
             {paid && billingData && (
-              <section className="mt-14">
-                <div className="luxury-divider mx-auto mb-14 max-w-xs" />
+              <section className="mt-10">
+                
 
-                <div className="rounded-2xl border border-night-700 px-8 py-6 transition-all duration-500 hover:border-night-600">
+                <div className="rounded-xl border border-subtle px-8 py-6 transition-all duration-500 hover:border-strong">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <span className="rounded-full border border-night-700 px-3 py-1 text-[10px] font-light tracking-[0.2em] text-fog-500">
+                      <span className="rounded-full border border-subtle px-3 py-1 text-2xs font-medium uppercase tracking-caps text-muted">
                         {billingData.plan_type === "pro" ? "PRO" : "FREE"}
                       </span>
-                      <span className="text-[13px] font-light text-fog-500">
+                      <span className="text-sm text-muted">
                         {billingData.plan_type === "pro"
                           ? "$30/mo flat — no per-redemption fees"
                           : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month → ${billingData.estimated_charge}`}
@@ -2623,7 +2629,7 @@ function MerchantShopPage() {
                     <button
                       onClick={openBillingPortal}
                       disabled={portalLoading}
-                      className="text-[11px] font-light tracking-[0.1em] text-fog-600 transition-colors duration-300 hover:text-fog-100"
+                      className="text-xs font-medium tracking-normal text-muted transition-colors duration-300 hover:text-primary"
                     >
                       {portalLoading ? "Opening\u2026" : "Manage billing"}
                     </button>
@@ -2640,36 +2646,36 @@ function MerchantShopPage() {
           DANGER ZONE
           ============================================================ */}
       <section className="mx-auto mt-16 w-full max-w-6xl px-4 pb-16">
-        <div className="rounded-2xl border border-red-950/30 p-8">
-          <p className="text-[11px] font-light tracking-[0.3em] text-red-900/60">DANGER ZONE</p>
+        <div className="rounded-xl border border-danger/30 p-8">
+          <p className="text-2xs font-medium tracking-caps text-danger/70">DANGER ZONE</p>
           <div className="mt-6 flex items-start justify-between gap-8">
             <div className="flex-1">
-              <p className="text-[14px] font-light text-fog-300">Delete account</p>
-              <p className="mt-1 text-[12px] font-light text-fog-600">
+              <p className="text-sm text-secondary">Delete account</p>
+              <p className="mt-1 text-xs text-muted">
                 Permanently removes your account, all shops, all customer data, and cancels your subscription.
               </p>
               {deleteConfirmStep === 1 && (
-                <div className="mt-4 rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
-                  <p className="text-[12px] font-light text-red-300/80">
+                <div className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3">
+                  <p className="text-xs text-danger/80">
                     This cannot be undone. All customer data and your subscription will be permanently deleted.
                   </p>
                   <div className="mt-3 flex items-center gap-3">
                     <button
                       onClick={handleDeleteAccount}
                       disabled={deletingAccount}
-                      className="rounded-lg border border-red-800/60 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-red-400 transition-colors hover:bg-red-950/30 disabled:opacity-40"
+                      className="rounded-lg border border-danger/60 px-4 py-1.5 text-2xs font-medium tracking-caps text-danger transition-colors hover:bg-danger/10 disabled:opacity-40"
                     >
                       Yes, permanently delete
                     </button>
                     <button
                       onClick={() => setDeleteConfirmStep(0)}
-                      className="text-[11px] font-light text-fog-500 transition-colors hover:text-fog-300"
+                      className="text-xs text-muted transition-colors hover:text-secondary"
                     >
                       Cancel
                     </button>
                   </div>
                   {deleteError && (
-                    <p className="mt-3 text-[12px] font-light text-red-400">{deleteError}</p>
+                    <p className="mt-3 text-xs text-danger">{deleteError}</p>
                   )}
                 </div>
               )}
@@ -2678,7 +2684,7 @@ function MerchantShopPage() {
               <button
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount}
-                className="shrink-0 rounded-xl border border-red-950/40 px-5 py-2.5 text-[12px] font-light tracking-[0.1em] text-red-900/60 transition-colors hover:border-red-900/60 hover:text-red-400 disabled:opacity-40"
+                className="shrink-0 rounded-xl border border-danger/30 px-5 py-2.5 text-xs tracking-[0.1em] text-danger/70 transition-colors hover:border-danger/30 hover:text-danger disabled:opacity-40"
               >
                 Delete account
               </button>
@@ -2692,21 +2698,21 @@ function MerchantShopPage() {
           ============================================================ */}
       {showAIModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-night-950/80 px-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
           onClick={() => { setShowAIModal(false); setAiOptions([]); setAiError(""); }}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-night-700 bg-night-900 p-8 shadow-2xl"
+            className="w-full max-w-lg rounded-xl border border-subtle bg-surface-raised p-8 shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-start justify-between mb-6">
               <div>
-                <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">WRITE WITH AI</p>
-                <p className="mt-2 text-[18px] font-extralight text-fog-100">Generate options</p>
+                <p className="text-2xs font-medium uppercase tracking-caps text-muted">WRITE WITH AI</p>
+                <p className="mt-2 text-[18px] font-medium text-primary">Generate options</p>
               </div>
               <button
                 onClick={() => { setShowAIModal(false); setAiOptions([]); setAiError(""); }}
-                className="text-fog-500 hover:text-fog-100 text-[22px] leading-none transition-colors"
+                className="text-muted hover:text-primary text-[22px] leading-none transition-colors"
               >
                 ×
               </button>
@@ -2716,13 +2722,13 @@ function MerchantShopPage() {
               <div className="space-y-5">
                 {/* Goal dropdown */}
                 <div>
-                  <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">
+                  <label className="block text-2xs font-medium tracking-caps text-muted mb-2">
                     WHAT&apos;S THE GOAL?
                   </label>
                   <select
                     value={aiGoal}
                     onChange={e => setAiGoal(e.target.value)}
-                    className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors focus:border-night-600"
+                    className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors focus:border-strong"
                   >
                     <option value="slow_day">Slow day traffic boost</option>
                     <option value="new_item">New item announcement</option>
@@ -2734,46 +2740,46 @@ function MerchantShopPage() {
 
                 {/* Details field */}
                 <div>
-                  <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">
-                    ANYTHING SPECIFIC TO MENTION? <span className="text-fog-600">(optional)</span>
+                  <label className="block text-2xs font-medium tracking-caps text-muted mb-2">
+                    ANYTHING SPECIFIC TO MENTION? <span className="text-muted">(optional)</span>
                   </label>
                   <input
                     value={aiDetails}
                     onChange={e => setAiDetails(e.target.value)}
                     placeholder="e.g. 20% off lattes, new fall menu, free cookie…"
-                    className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                    className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                   />
                 </div>
 
                 {aiError && (
-                  <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
-                    <p className="text-[13px] font-light text-red-400">{aiError}</p>
+                  <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3">
+                    <p className="text-sm text-danger">{aiError}</p>
                   </div>
                 )}
 
                 <button
                   onClick={generatePromoOptions}
                   disabled={aiGenerating}
-                  className="w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.2em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
+                  className="w-full rounded-full border border-strong py-3.5 text-xs tracking-[0.2em] text-primary transition-all duration-500 hover:bg-primary hover:text-inverse disabled:opacity-40"
                 >
                   {aiGenerating ? "Generating…" : "Generate Options"}
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-[11px] font-light tracking-[0.15em] text-fog-500 mb-4">PICK ONE TO USE</p>
+                <p className="text-2xs font-medium tracking-caps text-muted mb-4">PICK ONE TO USE</p>
                 {aiOptions.map((opt, i) => (
                   <button
                     key={i}
                     onClick={() => pickAIOption(opt)}
-                    className="group w-full rounded-xl border border-night-700 bg-night-900 px-5 py-4 text-left transition-all duration-300 hover:border-fog-100 hover:bg-night-800"
+                    className="group w-full rounded-xl border border-subtle bg-surface-raised px-5 py-4 text-left transition-all duration-300 hover:border-strong hover:bg-surface-sunken"
                   >
-                    <p className="text-[13px] font-light leading-relaxed text-fog-200 group-hover:text-fog-100 transition-colors">{opt}</p>
+                    <p className="text-sm leading-relaxed text-secondary group-hover:text-primary transition-colors">{opt}</p>
                     <div className="mt-2 flex items-center justify-between">
-                      <p className={`text-[11px] font-light ${opt.length > 140 ? "text-yellow-500/70" : "text-fog-600"}`}>
+                      <p className={`text-xs ${opt.length > 140 ? "text-warn/80" : "text-muted"}`}>
                         {opt.length}/155 chars
                       </p>
-                      <p className="text-[11px] font-light tracking-[0.1em] text-fog-600 group-hover:text-fog-300 transition-colors">
+                      <p className="text-xs font-medium tracking-normal text-muted group-hover:text-secondary transition-colors">
                         Use this →
                       </p>
                     </div>
@@ -2781,7 +2787,7 @@ function MerchantShopPage() {
                 ))}
                 <button
                   onClick={() => { setAiOptions([]); setAiError(""); }}
-                  className="mt-2 w-full text-center text-[11px] font-light text-fog-600 hover:text-fog-300 transition-colors"
+                  className="mt-2 w-full text-center text-xs text-muted hover:text-secondary transition-colors"
                 >
                   ← Try different options
                 </button>
@@ -2801,17 +2807,17 @@ function MerchantShopPage() {
           onClick={() => setShowGrantModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-t-3xl border border-night-700 bg-night-800 p-8 sm:rounded-3xl"
+            className="w-full max-w-md rounded-t-3xl border border-subtle bg-surface-sunken p-8 sm:rounded-3xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <p className="text-[11px] font-light tracking-[0.3em] text-fog-500">COMMUNITY REWARDS</p>
-                <p className="mt-2 text-[18px] font-extralight text-fog-100">Grant a perk</p>
+                <p className="text-2xs font-medium uppercase tracking-caps text-muted">COMMUNITY REWARDS</p>
+                <p className="mt-2 text-[18px] font-medium text-primary">Grant a perk</p>
               </div>
               <button
                 onClick={() => setShowGrantModal(false)}
-                className="text-fog-500 hover:text-fog-100 text-[22px] leading-none transition-colors"
+                className="text-muted hover:text-primary text-[22px] leading-none transition-colors"
               >
                 ×
               </button>
@@ -2820,26 +2826,26 @@ function MerchantShopPage() {
             <div className="space-y-5">
               {/* Customer lookup */}
               <div>
-                <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">
+                <label className="block text-2xs font-medium tracking-caps text-muted mb-2">
                   CUSTOMER PHONE OR EMAIL
                 </label>
                 <input
                   value={grantContact}
                   onChange={(e) => setGrantContact(e.target.value)}
                   placeholder="+1 555 000 0000 or name@example.com"
-                  className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors placeholder:text-fog-600 focus:border-night-600"
+                  className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors placeholder:text-muted focus:border-strong"
                 />
               </div>
 
               {/* Group picker */}
               <div>
-                <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">
+                <label className="block text-2xs font-medium tracking-caps text-muted mb-2">
                   GROUP
                 </label>
                 <select
                   value={grantGroup}
                   onChange={(e) => setGrantGroup(e.target.value)}
-                  className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors focus:border-night-600"
+                  className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors focus:border-strong"
                 >
                   <option value="care">Care Community (cancer patients &amp; family)</option>
                   <option value="first_responder">First Responder</option>
@@ -2851,7 +2857,7 @@ function MerchantShopPage() {
               {/* Boost */}
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">
+                  <label className="block text-2xs font-medium tracking-caps text-muted mb-2">
                     BOOST MULTIPLIER
                   </label>
                   <input
@@ -2861,11 +2867,11 @@ function MerchantShopPage() {
                     step={0.25}
                     value={grantBoost}
                     onChange={(e) => setGrantBoost(Math.min(5, Math.max(1, parseFloat(e.target.value) || 1)))}
-                    className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors focus:border-night-600"
+                    className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors focus:border-strong"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-[11px] font-light tracking-[0.15em] text-fog-500 mb-2">
+                  <label className="block text-2xs font-medium tracking-caps text-muted mb-2">
                     EXPIRES (MONTHS)
                   </label>
                   <input
@@ -2875,29 +2881,29 @@ function MerchantShopPage() {
                     step={1}
                     value={grantExpires}
                     onChange={(e) => setGrantExpires(Math.max(1, parseInt(e.target.value) || 12))}
-                    className="w-full rounded-xl border border-night-700 bg-night-900 px-4 py-3 text-[14px] font-light text-fog-100 outline-none transition-colors focus:border-night-600"
+                    className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors focus:border-strong"
                   />
                 </div>
               </div>
 
               {grantError && (
-                <div className="rounded-xl border border-red-900/30 bg-red-950/10 px-4 py-3">
-                  <p className="text-[13px] font-light text-red-400">{grantError}</p>
+                <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3">
+                  <p className="text-sm text-danger">{grantError}</p>
                 </div>
               )}
               {grantMsg && (
-                <p className="text-[13px] font-light text-green-400">{grantMsg}</p>
+                <p className="text-sm text-green-400">{grantMsg}</p>
               )}
 
               <button
                 onClick={submitGrant}
                 disabled={grantLoading || !grantContact.trim()}
-                className="w-full rounded-full border border-fog-100 py-3.5 text-[12px] font-light tracking-[0.2em] text-fog-100 transition-all duration-500 hover:bg-fog-100 hover:text-black disabled:opacity-40"
+                className="w-full rounded-full border border-strong py-3.5 text-xs tracking-[0.2em] text-primary transition-all duration-500 hover:bg-primary hover:text-inverse disabled:opacity-40"
               >
                 {grantLoading ? "Granting…" : "Grant perk"}
               </button>
 
-              <p className="text-[11px] font-light text-fog-600 text-center">
+              <p className="text-xs text-muted text-center">
                 Grants are for this shop only · Default 12-month expiry · Customer is not notified of revocation
               </p>
             </div>

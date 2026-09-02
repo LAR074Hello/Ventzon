@@ -77,7 +77,7 @@ export async function GET(req: Request) {
       .eq("shop_slug", shop)
       .maybeSingle();
 
-    const rewardMode = (settingsRow as any)?.reward_mode === "points" ? "points" : "stamps";
+    const rewardMode = settingsRow?.reward_mode === "points" ? "points" : "stamps";
 
     const goal = Number(settingsRow?.reward_goal ?? 5);
     // bonus_days is stored as an array of date strings e.g. ["2026-05-03"]
@@ -119,6 +119,23 @@ export async function GET(req: Request) {
       );
     }
 
+    // Fetch REAL reward events (one row per reward earned, marked redeemed
+    // at the register). These replace the old goal-crossing estimate for
+    // every rewards figure on the dashboard.
+    const { data: rewardEvents, error: rewardEventsErr } = await supabase
+      .from("reward_events")
+      .select("reward_date, is_redeemed, redeemed_at")
+      .eq("shop_slug", shop)
+      .order("reward_date", { ascending: true })
+      .limit(200000);
+
+    if (rewardEventsErr) {
+      return NextResponse.json(
+        { error: rewardEventsErr.message },
+        { status: 500 }
+      );
+    }
+
     // Walk through every checkin in chronological order.
     // Track per-customer visit counts so we can identify reward events
     // (every time visits % goal === 0).
@@ -127,7 +144,6 @@ export async function GET(req: Request) {
     const customerLastSeen: Record<string, string> = {};  // customer_id -> latest date
 
     const dailyCheckins: Record<string, number> = {};
-    const dailyRewards: Record<string, number> = {};
     const dayOfWeekCounts: number[] = [0, 0, 0, 0, 0, 0, 0]; // indexed Sun=0
     const hourOfDayCounts: number[] = new Array(24).fill(0);
 
@@ -146,19 +162,11 @@ export async function GET(req: Request) {
 
       // Bonus days award 2 stamps instead of 1
       const stampsAwarded = bonusDaysSet.has(date) ? 2 : 1;
-      const prevVisits = customerVisits[cid] || 0;
-      customerVisits[cid] = prevVisits + stampsAwarded;
+      customerVisits[cid] = (customerVisits[cid] || 0) + stampsAwarded;
 
       // Only accumulate counts within the selected period
       if (date >= startDate && date <= endDate) {
         dailyCheckins[date] = (dailyCheckins[date] || 0) + stampsAwarded;
-
-        // Check if the customer crossed the goal threshold with this checkin
-        const crossedGoal =
-          Math.floor(customerVisits[cid] / goal) > Math.floor(prevVisits / goal);
-        if (crossedGoal) {
-          dailyRewards[date] = (dailyRewards[date] || 0) + 1;
-        }
 
         // Day-of-week breakdown (use checkin_date which is a reliable YYYY-MM-DD string)
         const dow = new Date(date + "T12:00:00").getDay();
@@ -178,9 +186,41 @@ export async function GET(req: Request) {
       }
     }
 
+    // Daily reward series, from real reward_events rows.
+    //  - earned:   the day a reward was earned (reward_date)
+    //  - redeemed: the day it was marked redeemed at the register
+    //              (redeemed_at; falls back to reward_date when a legacy
+    //              row was flagged redeemed without a timestamp)
+    const earnedByDate: Record<string, number> = {};
+    const redeemedByDate: Record<string, number> = {};
+    for (const ev of rewardEvents || []) {
+      const earnedDate = ev.reward_date as string;
+      if (earnedDate >= startDate && earnedDate <= endDate) {
+        earnedByDate[earnedDate] = (earnedByDate[earnedDate] || 0) + 1;
+      }
+      if (ev.is_redeemed) {
+        const redeemedDate = (ev.redeemed_at as string | null)?.slice(0, 10) || earnedDate;
+        if (redeemedDate >= startDate && redeemedDate <= endDate) {
+          redeemedByDate[redeemedDate] = (redeemedByDate[redeemedDate] || 0) + 1;
+        }
+      }
+    }
+
+    // Period totals from real rows (earned-in-period cohort)
+    let rewardsEarnedInPeriod = 0;
+    let redeemedOfEarnedInPeriod = 0;
+    for (const ev of rewardEvents || []) {
+      const earnedDate = ev.reward_date as string;
+      if (earnedDate >= startDate && earnedDate <= endDate) {
+        rewardsEarnedInPeriod++;
+        if (ev.is_redeemed) redeemedOfEarnedInPeriod++;
+      }
+    }
+
     // Fill missing dates with zeros so charts show a continuous timeline
     const checkins: Array<{ date: string; count: number }> = [];
-    const rewards: Array<{ date: string; count: number }> = [];
+    const rewards_earned: Array<{ date: string; count: number }> = [];
+    const rewards_redeemed: Array<{ date: string; count: number }> = [];
 
     const cursor = new Date(startDate + "T00:00:00");
     const end = new Date(endDate + "T00:00:00");
@@ -188,7 +228,8 @@ export async function GET(req: Request) {
     while (cursor <= end) {
       const d = cursor.toISOString().slice(0, 10);
       checkins.push({ date: d, count: dailyCheckins[d] || 0 });
-      rewards.push({ date: d, count: dailyRewards[d] || 0 });
+      rewards_earned.push({ date: d, count: earnedByDate[d] || 0 });
+      rewards_redeemed.push({ date: d, count: redeemedByDate[d] || 0 });
       cursor.setDate(cursor.getDate() + 1);
     }
 
@@ -299,12 +340,16 @@ export async function GET(req: Request) {
     // Loyal customers: total stamps >= goal (earned at least 1 reward)
     const loyalCount = Object.values(customerVisits).filter((v) => v >= goal).length;
 
-    // Redemption rate: rewards per check-in in period (%)
+    // Reward figures — all from real reward_events rows, never an estimate.
     const totalCheckinsInPeriod = checkins.reduce((s, d) => s + d.count, 0);
-    const totalRewardsInPeriod = rewards.reduce((s, d) => s + d.count, 0);
+    const rewardsRedeemedInPeriod = rewards_redeemed.reduce((s, d) => s + d.count, 0);
+    const rewardsPendingInPeriod = Math.max(
+      0,
+      rewardsEarnedInPeriod - redeemedOfEarnedInPeriod
+    );
     const redemptionRate =
-      totalCheckinsInPeriod > 0
-        ? Math.round((totalRewardsInPeriod / totalCheckinsInPeriod) * 1000) / 10
+      rewardsEarnedInPeriod > 0
+        ? Math.round((redeemedOfEarnedInPeriod / rewardsEarnedInPeriod) * 1000) / 10
         : null;
 
     // Period-over-period comparison (only for named periods, not "all")
@@ -368,7 +413,11 @@ export async function GET(req: Request) {
       startDate,
       endDate,
       checkins,
-      rewards,
+      rewards_earned,
+      rewards_redeemed,
+      rewards_earned_period: rewardsEarnedInPeriod,
+      rewards_redeemed_period: rewardsRedeemedInPeriod,
+      rewards_pending_period: rewardsPendingInPeriod,
       retention_rate: retentionRate,
       top_customers: topCustomerRows ?? [],
       // Foot traffic analytics
@@ -393,9 +442,9 @@ export async function GET(req: Request) {
       lifecycle,
       reward_mode: rewardMode,
     });
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
-      { error: err?.message ?? "Unknown error" },
+      { error: err instanceof Error ? err.message : "Unknown error" },
       { status: 500 }
     );
   }

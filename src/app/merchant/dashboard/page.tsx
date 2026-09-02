@@ -24,15 +24,15 @@ export default async function MerchantDashboardPage() {
   if (error) {
     console.error("Failed to load shops:", error);
     return (
-      <main className="flex min-h-screen items-center justify-center bg-night-950 px-8 text-fog-100">
+      <main className="flex min-h-screen items-center justify-center bg-surface px-8 text-primary">
         <div className="w-full max-w-md text-center">
-          <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
+          <p className="text-2xs font-medium tracking-caps text-muted">
             ERROR
           </p>
-          <h1 className="mt-6 text-3xl font-extralight tracking-[-0.02em]">
+          <h1 className="mt-6 text-3xl font-medium tracking-[-0.02em]">
             Something went wrong
           </h1>
-          <p className="mt-4 text-[15px] font-light text-fog-500">
+          <p className="mt-4 text-[15px] font-normal text-muted">
             Could not load your shops. Please try again later.
           </p>
         </div>
@@ -40,9 +40,11 @@ export default async function MerchantDashboardPage() {
     );
   }
 
-  const shops = (shopRows ?? []).filter(
-    (s: any) => s && typeof s.slug === "string" && s.slug.length > 0
-  );
+  const shops = ((shopRows ?? []) as Array<{
+    id: string;
+    slug: string;
+    is_paid: boolean | null;
+  }>).filter((s) => s && typeof s.slug === "string" && s.slug.length > 0);
 
   // No shops — send to create
   if (shops.length === 0) {
@@ -56,68 +58,66 @@ export default async function MerchantDashboardPage() {
 
   // Multiple shops — show selector
   return (
-    <main className="min-h-screen bg-night-950 text-fog-100">
-      {/* Radial glow */}
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(90,30,36,0.10),transparent)]" />
-
-      <div className="relative mx-auto max-w-3xl px-8 pb-20 pt-28">
-        <div className="mb-10 flex items-center gap-2.5">
-          <div className="h-6 w-6 overflow-hidden rounded-full bg-night-800 ring-1 ring-white/15">
+    <main className="min-h-screen bg-surface text-primary">
+      <div className="mx-auto max-w-3xl px-4 pb-24 pt-10 sm:px-6">
+        <div className="mb-8 flex items-center gap-2.5">
+          <div className="h-7 w-7 overflow-hidden rounded-lg bg-surface-sunken ring-1 ring-strong">
             <Image
               src="/logo.png"
               alt="Ventzon"
-              width={24}
-              height={24}
+              width={28}
+              height={28}
               className="h-full w-full object-cover"
             />
           </div>
-          <span className="text-[11px] font-medium tracking-[0.4em] text-fog-300">
-            VENTZON
+          <span className="text-2xs font-medium uppercase tracking-caps text-secondary">
+            Ventzon merchant
           </span>
         </div>
 
-        <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-          MERCHANT DASHBOARD
+        <p className="text-2xs font-medium uppercase tracking-caps text-muted">
+          Merchant dashboard
         </p>
-        <h1 className="mt-4 text-4xl font-extralight tracking-[-0.02em] text-fog-100 sm:text-5xl">
+        <h1 className="mt-2 font-display text-3xl font-medium tracking-tight text-primary sm:text-4xl">
           Your shops
         </h1>
-        <p className="mt-4 text-[15px] font-light leading-[1.7] text-fog-500">
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
           Your account has access to multiple shops. Choose one to open its
           dashboard.
         </p>
 
-        <div className="mt-12 space-y-0">
-          {shops.map((shop: any) => (
+        <div className="mt-10 overflow-hidden rounded-xl border border-subtle bg-surface-raised">
+          {shops.map((shop, i: number) => (
             <Link
               key={shop.id ?? shop.slug}
               href={`/merchant/${shop.slug}`}
-              className="group flex items-center justify-between gap-4 border-t border-night-700 py-6 transition-colors duration-500 hover:border-night-600"
+              className={`group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-surface-sunken/50 sm:px-6 ${
+                i > 0 ? "border-t border-subtle" : ""
+              }`}
             >
-              <div className="flex items-center gap-4">
-                <span className="text-[15px] font-normal tracking-[0.02em] text-fog-100 transition-colors duration-300 group-hover:text-fog-100">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="truncate text-base font-medium text-primary">
                   {shop.slug}
                 </span>
                 <span
-                  className={`rounded-full border px-3 py-1 text-[10px] font-light tracking-[0.15em] ${
+                  className={`shrink-0 rounded-md border px-2 py-0.5 text-2xs font-medium uppercase tracking-caps ${
                     shop.is_paid
-                      ? "border-emerald-800/50 text-emerald-400"
-                      : "border-night-700 text-fog-500"
+                      ? "border-positive/40 bg-positive/10 text-positive"
+                      : "border-subtle text-muted"
                   }`}
                 >
                   {shop.is_paid ? "Active" : "Inactive"}
                 </span>
               </div>
-              <ArrowRight className="h-4 w-4 text-fog-600 transition-colors duration-300 group-hover:text-fog-300" />
+              <ArrowRight className="h-4 w-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-secondary" />
             </Link>
           ))}
-          <div className="border-t border-night-700" />
         </div>
 
-        <div className="mt-10">
+        <div className="mt-6">
           <Link
             href="/merchant/create"
-            className="inline-flex items-center gap-3 rounded-full border border-night-600 px-6 py-2.5 text-[12px] font-light tracking-[0.1em] text-fog-100 transition-all duration-500 hover:border-fog-500 hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-lg border border-strong px-4 py-2 text-sm font-medium text-secondary transition-colors hover:bg-surface-sunken/60 hover:text-primary"
           >
             Create another shop
           </Link>

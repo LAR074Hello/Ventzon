@@ -116,28 +116,56 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: totalRes.error.message }, { status: 500 });
     }
 
-    // New customers today (New York local day)
-    const todayRes = await supabase
+    // New members today (customers who joined since New York midnight)
+    const newTodayRes = await supabase
       .from("customers")
       .select("id", { count: "exact", head: true })
       .eq("shop_slug", shop_slug)
       .gte("created_at", startOfTodayNYUTC);
 
-    if (todayRes.error) {
-      return NextResponse.json({ error: todayRes.error.message }, { status: 500 });
+    if (newTodayRes.error) {
+      return NextResponse.json({ error: newTodayRes.error.message }, { status: 500 });
     }
 
-    // Latest customers
-    const latestRes = await supabase
-      .from("customers")
-      .select("phone, email, created_at")
+    // Check-ins today (actual checkin events since New York midnight)
+    const checkinsTodayRes = await supabase
+      .from("checkins")
+      .select("id", { count: "exact", head: true })
       .eq("shop_slug", shop_slug)
+      .gte("created_at", startOfTodayNYUTC);
+
+    if (checkinsTodayRes.error) {
+      return NextResponse.json({ error: checkinsTodayRes.error.message }, { status: 500 });
+    }
+
+    // Latest check-ins — most recent checkin events, joined to their customer
+    const latestCheckinsRes = await supabase
+      .from("checkins")
+      .select("created_at, customer_id, customers(phone, email)")
+      .eq("shop_slug", shop_slug)
+      .not("customer_id", "is", null)
       .order("created_at", { ascending: false })
       .limit(10);
 
-    if (latestRes.error) {
-      return NextResponse.json({ error: latestRes.error.message }, { status: 500 });
+    if (latestCheckinsRes.error) {
+      return NextResponse.json({ error: latestCheckinsRes.error.message }, { status: 500 });
     }
+
+    const latestCheckins = ((latestCheckinsRes.data ?? []) as unknown as Array<{
+      created_at: string;
+      customers:
+        | { phone: string | null; email: string | null }
+        | Array<{ phone: string | null; email: string | null }>
+        | null;
+    }>).map((row) => {
+      const customer = Array.isArray(row.customers)
+        ? row.customers[0]
+        : row.customers;
+      return {
+        contact: customer?.phone || customer?.email || null,
+        checked_in_at: row.created_at,
+      };
+    });
 
     return NextResponse.json({
       shop_slug,
@@ -149,13 +177,14 @@ export async function GET(req: Request) {
       },
       totals: {
         total: totalRes.count ?? 0,
-        today: todayRes.count ?? 0,
       },
-      latest: latestRes.data ?? [],
+      new_members_today: newTodayRes.count ?? 0,
+      checkins_today: checkinsTodayRes.count ?? 0,
+      latest_checkins: latestCheckins,
     });
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
-      { error: err?.message ?? "Unknown error" },
+      { error: err instanceof Error ? err.message : "Unknown error" },
       { status: 500 }
     );
   }
