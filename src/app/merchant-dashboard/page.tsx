@@ -138,10 +138,12 @@ function HeroDashboard() {
   );
 }
 
-/* ── Analytics mockup — the real analytics component, scrollable ── */
+/* ── Analytics mockup — the real analytics component, unboxed ──
+   No device bezel, no fixed height, no inner scroll: the dashboard
+   renders at natural height, open on the marketing canvas. */
 function AnalyticsScreen() {
   return (
-    <div className="merchant-dark relative h-full overflow-y-auto bg-surface px-4 py-5 text-primary sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="merchant-dark w-full text-primary">
       <MerchantAnalytics shopSlug="northside-coffee" mockData={analyticsMock} />
     </div>
   );
@@ -402,15 +404,10 @@ export default function MerchantDashboardPage() {
           </p>
         </ScrollReveal>
 
-        <div className="relative mt-20">
-                    <ScrollReveal delay={2} className="relative z-10 mx-auto max-w-6xl">
-            <Parallax>
-              <LaptopFrame screenClassName="sm:h-[62vh] sm:max-h-[660px] sm:min-h-[460px]">
-                <AnalyticsScreen />
-              </LaptopFrame>
-            </Parallax>
-            <ExampleNote />
-          </ScrollReveal>
+        <div className="relative mt-4 sm:mt-6">
+          <AnalyticsScreen />
+          <ExampleNote />
+        </div>
 
           {/* Close-up stats */}
           <div className="relative z-10 mx-auto mt-12 grid max-w-4xl gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3">
@@ -430,7 +427,6 @@ export default function MerchantDashboardPage() {
           <p className="relative z-10 mt-3 text-center text-[10px] font-medium uppercase tracking-[0.25em] text-taupe-faint">
             Sample figures
           </p>
-        </div>
       </section>
 
 
