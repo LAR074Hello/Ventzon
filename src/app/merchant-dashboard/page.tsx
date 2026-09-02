@@ -4,9 +4,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
-import Parallax from "@/components/Parallax";
 import Divider from "@/components/Divider";
-import LaptopFrame from "@/components/LaptopFrame";
 import MerchantQR from "@/components/MerchantQR";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
 import SiteFooter from "@/components/SiteFooter";
@@ -92,47 +90,47 @@ function statusChip(status: string) {
   return `${base} ${tones[status] ?? tones.ACTIVE}`;
 }
 
-/* ── Hero mockup — the redesigned dashboard top ── */
+/* ── Hero mockup — the redesigned dashboard top ──
+   Natural-height panel: no frame, no h-full/flex filler, so the card
+   ends just below the insight strip. */
 function HeroDashboard() {
   return (
-    <div className="merchant-dark flex h-full flex-col bg-surface text-primary">
+    <div className="merchant-dark overflow-hidden rounded-xl border border-subtle bg-surface text-primary">
       <SampleHeader
         title={previewOverview.shopName}
         meta={previewOverview.meta}
         chip="EXAMPLE"
       />
-      <div className="flex-1 overflow-hidden rounded-b-xl">
-        <div className="grid grid-cols-2 gap-px bg-subtle sm:grid-cols-4">
-          <SampleStat
-            label="Total members"
-            value={previewOverview.totalCustomers}
-            caption="All-time loyalty members"
-          />
-          <SampleStat
-            label="New members today"
-            value={previewOverview.newMembersToday}
-            caption="Joined since midnight"
-          />
-          <SampleStat
-            label="Check-ins today"
-            value={previewOverview.checkinsToday}
-            caption="Visits recorded since midnight"
-          />
-          <SampleStat
-            label="Reward goal"
-            value={previewOverview.rewardGoal}
-            caption="Visits to earn a reward"
-          />
-        </div>
+      <div className="grid grid-cols-2 gap-px bg-subtle sm:grid-cols-4">
+        <SampleStat
+          label="Total members"
+          value={previewOverview.totalCustomers}
+          caption="All-time loyalty members"
+        />
+        <SampleStat
+          label="New members today"
+          value={previewOverview.newMembersToday}
+          caption="Joined since midnight"
+        />
+        <SampleStat
+          label="Check-ins today"
+          value={previewOverview.checkinsToday}
+          caption="Visits recorded since midnight"
+        />
+        <SampleStat
+          label="Reward goal"
+          value={previewOverview.rewardGoal}
+          caption="Visits to earn a reward"
+        />
+      </div>
 
-        <div className="border-t border-subtle bg-surface-raised px-5 py-4 sm:px-6">
-          <p className="text-2xs font-medium uppercase tracking-caps text-muted">
-            This week&rsquo;s insight
-          </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-secondary">
-            {previewOverview.insight}
-          </p>
-        </div>
+      <div className="border-t border-subtle bg-surface-raised px-5 py-4 sm:px-6">
+        <p className="text-2xs font-medium uppercase tracking-caps text-muted">
+          This week&rsquo;s insight
+        </p>
+        <p className="mt-1.5 text-sm leading-relaxed text-secondary">
+          {previewOverview.insight}
+        </p>
       </div>
     </div>
   );
@@ -375,12 +373,8 @@ export default function MerchantDashboardPage() {
         </div>
 
         {/* The dashboard, large */}
-        <div className="relative z-10 mx-auto mt-16 max-w-6xl sm:mt-20">
-          <Parallax>
-            <LaptopFrame>
-              <HeroDashboard />
-            </LaptopFrame>
-          </Parallax>
+        <div className="relative z-10 mx-auto mt-14 max-w-6xl sm:mt-16">
+          <HeroDashboard />
           <p className="mx-auto mt-6 max-w-xl text-center text-[12px] font-light leading-relaxed text-fog-600">
             Example screen — sample data shown. Once your shop is live,
             this dashboard shows your own numbers.
