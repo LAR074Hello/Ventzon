@@ -1,10 +1,9 @@
 // src/app/pricing/PricingContent.tsx
 "use client";
 
-import { safeJson } from "@/lib/safe-json";
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { Check, X, Trophy, ArrowRight } from "lucide-react";
+import { Check, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import Divider from "@/components/Divider";
@@ -141,10 +140,39 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
         body: JSON.stringify({ shop, plan }),
       });
 
-      const data = await safeJson(res);
+      // Read the raw body so a non-JSON (HTML error page / empty) response is
+      // logged instead of surfacing as a confusing generic message.
+      const raw = await res.text();
+      let data: { url?: string; error?: string } | null = null;
+      if (raw.trim()) {
+        try {
+          data = JSON.parse(raw);
+        } catch (parseErr) {
+          console.error(
+            "[pricing] non-JSON checkout response",
+            res.status,
+            raw.slice(0, 300),
+            parseErr
+          );
+        }
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || "Checkout failed");
+        throw new Error(
+          data?.error ||
+            `Checkout failed — the server responded with an error (${res.status}). Please try again.`
+        );
+      }
+
+      if (!data?.url) {
+        console.error(
+          "[pricing] checkout response missing url",
+          res.status,
+          raw.slice(0, 300)
+        );
+        throw new Error(
+          "Checkout failed — the server did not return a checkout link. Please try again."
+        );
       }
 
       window.location.href = data.url;
@@ -466,156 +494,6 @@ export default function PricingContent({ shopFromQuery }: { shopFromQuery: strin
           <p className="mt-6 text-center text-[11px] font-light text-fog-600">
             Competitor plans and pricing change &mdash; check each vendor&rsquo;s current site.
           </p>
-        </div>
-      </section>
-
-      {/* ============================================================
-          DASHBOARD PREVIEW
-          ============================================================ */}
-      <section className="px-8 py-24 sm:py-32">
-        <Divider className="mx-auto mb-20 max-w-xs" />
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal className="text-center">
-            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-              DASHBOARD
-            </p>
-            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] sm:text-4xl">
-              See what you get.
-            </h2>
-            <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
-              Real-time stats and analytics charts &mdash; all in one place.
-            </p>
-            <p className="mt-3 text-[11px] font-light tracking-[0.25em] text-fog-600">
-              EXAMPLE SCREEN &middot; SAMPLE DATA
-            </p>
-          </ScrollReveal>
-
-          <ScrollReveal>
-            <div className="mt-14 rounded-2xl border border-night-700 bg-night-950 p-6 sm:p-8">
-              <div className="flex items-center justify-between border-b border-night-700 pb-5">
-                <div>
-                  <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">MERCHANT DASHBOARD</p>
-                  <p className="mt-2 text-xl font-light tracking-[-0.01em] text-white sm:text-2xl">Sunrise Bakery</p>
-                </div>
-                <span className="rounded-full border border-white/10 px-4 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-300">
-                  SAMPLE DATA
-                </span>
-              </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-night-700 px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">TOTAL SIGNUPS</p>
-                  <p className="mt-2 text-3xl font-light tracking-tight text-white">1,247</p>
-                </div>
-                <div className="rounded-xl border border-night-700 px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">TODAY</p>
-                  <p className="mt-2 text-3xl font-light tracking-tight text-white">23</p>
-                </div>
-                <div className="rounded-xl border border-night-700 px-5 py-4">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">REWARD GOAL</p>
-                  <p className="mt-2 text-3xl font-light tracking-tight text-white">8</p>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <p className="text-[11px] font-light tracking-[0.2em] text-fog-500">ANALYTICS</p>
-                <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                  <div className="rounded-xl border border-night-700 p-5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-light tracking-[0.15em] text-fog-500">CUSTOMER CHECK-INS</p>
-                      <div className="flex gap-1">
-                        {["7d", "30d", "60d"].map((p) => (
-                          <span
-                            key={p}
-                            className={`rounded-full px-2 py-0.5 text-[9px] font-light ${
-                              p === "30d" ? "bg-fog-100 text-black" : "text-fog-600"
-                            }`}
-                          >
-                            {p}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mt-3 h-[120px]">
-                      <svg viewBox="0 0 400 100" className="h-full w-full" preserveAspectRatio="none">
-                        {[0, 25, 50, 75, 100].map((y) => (
-                          <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="#1a1a1a" strokeWidth="1" />
-                        ))}
-                        <path
-                          d="M0,85 C25,80 50,75 75,68 C100,60 125,65 150,52 C175,40 200,45 225,35 C250,25 275,30 300,20 C325,14 350,17 375,10 C390,7 400,9 400,9 L400,100 L0,100 Z"
-                          fill="url(#pricingGrad)"
-                          opacity="0.12"
-                        />
-                        <path
-                          d="M0,85 C25,80 50,75 75,68 C100,60 125,65 150,52 C175,40 200,45 225,35 C250,25 275,30 300,20 C325,14 350,17 375,10 C390,7 400,9 400,9"
-                          fill="none"
-                          stroke="#ededed"
-                          strokeWidth="1.5"
-                        />
-                        <circle cx="375" cy="10" r="3" fill="#ededed" stroke="#050505" strokeWidth="2" />
-                        <defs>
-                          <linearGradient id="pricingGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#ededed" />
-                            <stop offset="100%" stopColor="#ededed" stopOpacity="0" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-night-700 p-5">
-                    <p className="text-[10px] font-light tracking-[0.15em] text-fog-500">REWARDS REDEEMED</p>
-                    <div className="mt-3 h-[120px]">
-                      <svg viewBox="0 0 400 100" className="h-full w-full" preserveAspectRatio="none">
-                        {[0, 25, 50, 75, 100].map((y) => (
-                          <line key={y} x1="0" y1={y} x2="400" y2={y} stroke="#1a1a1a" strokeWidth="1" />
-                        ))}
-                        {[
-                          { x: 8, h: 20 }, { x: 38, h: 32 }, { x: 68, h: 24 }, { x: 98, h: 45 },
-                          { x: 128, h: 38 }, { x: 158, h: 55 }, { x: 188, h: 42 }, { x: 218, h: 50 },
-                          { x: 248, h: 65 }, { x: 278, h: 48 }, { x: 308, h: 72 }, { x: 338, h: 58 },
-                          { x: 368, h: 68 },
-                        ].map((bar, i) => (
-                          <rect
-                            key={i}
-                            x={bar.x}
-                            y={100 - bar.h}
-                            width="18"
-                            height={bar.h}
-                            rx="2"
-                            fill="#ededed"
-                            opacity={0.5 + (i / 25)}
-                          />
-                        ))}
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-night-700 p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">CUSTOMER LIST</p>
-                  <div className="mt-3 rounded-lg border border-night-800 bg-night-900 px-4 py-3">
-                    <p className="text-[10px] font-light tracking-[0.2em] text-fog-600">SAMPLE</p>
-                    <p className="mt-1.5 font-mono text-[11px] font-light text-fog-300">
-                      customer@example.com &middot; 7 stamps &middot; Last visit: today
-                    </p>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-night-700 p-5">
-                  <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">PUSH NOTIFICATION</p>
-                  <div className="mt-3 rounded-lg border border-night-800 bg-night-900 px-4 py-3">
-                    <p className="text-[10px] font-light tracking-[0.2em] text-fog-600">PREVIEW</p>
-                    <p className="mt-1.5 font-mono text-[11px] font-light text-fog-300">
-                      <Trophy className="mr-1.5 inline h-3 w-3 -translate-y-px" />
-                      Reward earned! You&apos;ve earned your reward at Sunrise Bakery. Show the app at the register.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
         </div>
       </section>
 

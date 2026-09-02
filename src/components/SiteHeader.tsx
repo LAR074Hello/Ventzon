@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/app", label: "Customer app" },
   { href: "/merchant-dashboard", label: "For shops" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export default function SiteHeader() {
@@ -45,8 +46,12 @@ export default function SiteHeader() {
   }, []);
 
   // Close menu on route change
+  const pathnameRef = useRef(pathname);
   useEffect(() => {
-    setOpen(false);
+    if (pathnameRef.current === pathname) return;
+    pathnameRef.current = pathname;
+    const id = window.setTimeout(() => setOpen(false), 0);
+    return () => window.clearTimeout(id);
   }, [pathname]);
 
   // Lock body scroll when menu is open

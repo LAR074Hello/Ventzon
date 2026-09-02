@@ -15,14 +15,36 @@ import { Ratelimit } from "@upstash/ratelimit";
 // ---------------------------------------------------------------------------
 
 let redis: Redis | null = null;
+let redisBlockedUntil = 0;
+// After an Upstash failure we skip Redis for a short cooldown so a broken or
+// unreachable Upstash account can't make every request wait on a network
+// timeout. The in-memory limiter carries the window in the meantime.
+const REDIS_RETRY_MS = 30_000;
+
+function markRedisBroken(reason: string, err?: unknown) {
+  redis = null;
+  redisBlockedUntil = Date.now() + REDIS_RETRY_MS;
+  const detail = err instanceof Error ? err.message : err ? String(err) : "";
+  console.warn(
+    `[rate-limit] Upstash Redis unavailable (${reason}); failing open with the in-memory limiter for ${REDIS_RETRY_MS / 1000}s.`,
+    detail
+  );
+}
 
 function getRedis(): Redis | null {
   if (redis) return redis;
+  // Inside the cooldown window after a failure, skip Upstash entirely.
+  if (Date.now() < redisBlockedUntil) return null;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
-  redis = new Redis({ url, token });
-  return redis;
+  try {
+    redis = new Redis({ url, token });
+    return redis;
+  } catch (e) {
+    markRedisBroken("failed to initialize", e);
+    return null;
+  }
 }
 
 // Cache of Ratelimit instances keyed by "limit:windowMs"
@@ -104,15 +126,26 @@ export async function rateLimit(
   limit: number,
   windowMs: number = 60_000
 ): Promise<{ limited: boolean; remaining: number; retryAfterMs: number }> {
-  const limiter = getLimiter(limit, windowMs);
-
-  if (limiter) {
-    const { success, remaining, reset } = await limiter.limit(key);
-    const retryAfterMs = success ? 0 : Math.max(reset - Date.now(), 0);
-    return { limited: !success, remaining, retryAfterMs };
+  let limiter: Ratelimit | null = null;
+  try {
+    limiter = getLimiter(limit, windowMs);
+  } catch (e) {
+    markRedisBroken("failed to build limiter", e);
   }
 
-  // Fallback: in-memory (local dev)
+  if (limiter) {
+    try {
+      const { success, remaining, reset } = await limiter.limit(key);
+      const retryAfterMs = success ? 0 : Math.max(reset - Date.now(), 0);
+      return { limited: !success, remaining, retryAfterMs };
+    } catch (e) {
+      // Upstash unreachable (DNS, timeout, network, auth, …): log once and
+      // fail open with the in-memory limiter rather than failing the request.
+      markRedisBroken("request failed", e);
+    }
+  }
+
+  // Fallback: in-memory (local dev, no Upstash env, or Upstash unavailable)
   return memoryRateLimit(key, limit, windowMs);
 }
 

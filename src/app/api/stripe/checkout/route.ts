@@ -3,12 +3,18 @@ import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-if (!STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY env var");
-}
+let stripeClient: Stripe | null = null;
 
-const stripe = new Stripe(STRIPE_SECRET_KEY);
+// Lazy, memoized Stripe client. Never constructed at module scope: a missing
+// STRIPE_SECRET_KEY must surface as a JSON 500 from the handler, not as a
+// framework HTML error page from a module-level throw.
+function getStripe(): Stripe | null {
+  if (stripeClient) return stripeClient;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) return null;
+  stripeClient = new Stripe(key);
+  return stripeClient;
+}
 
 export async function POST(req: Request) {
   // Rate limit: 5 checkout sessions per IP per minute
@@ -54,8 +60,24 @@ export async function POST(req: Request) {
     const flatPriceId = plan === "yearly" ? yearlyPriceId : monthlyPriceId;
 
     if (!flatPriceId) {
+      const missingVar =
+        plan === "yearly"
+          ? "PRICE_YEARLY or NEXT_PUBLIC_STRIPE_PRICE_YEARLY"
+          : "PRICE_MONTHLY or NEXT_PUBLIC_STRIPE_PRICE_MONTHLY";
       return Response.json(
-        { error: "Missing PRICE env var for selected plan" },
+        {
+          error: `Checkout isn't configured — missing Stripe price ID for the ${plan} plan (expected ${missingVar}).`,
+        },
+        { status: 500 }
+      );
+    }
+
+    const stripe = getStripe();
+    if (!stripe) {
+      return Response.json(
+        {
+          error: "Checkout isn't configured — the server is missing STRIPE_SECRET_KEY.",
+        },
         { status: 500 }
       );
     }
@@ -89,9 +111,9 @@ export async function POST(req: Request) {
     });
 
     return Response.json({ url: session.url });
-  } catch (e: any) {
+  } catch (e) {
     return Response.json(
-      { error: e?.message ?? "Server error" },
+      { error: e instanceof Error ? e.message : "Server error" },
       { status: 500 }
     );
   }
