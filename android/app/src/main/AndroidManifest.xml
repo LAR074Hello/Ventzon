@@ -22,6 +22,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep link back into the app after native OAuth (Google via
+                 Supabase). Mirrors the iOS CFBundleURLTypes entry in
+                 ios/App/App/Info.plist, which registers the same
+                 com.ventzon.app scheme. Capacitor's appUrlOpen event only
+                 fires on Android when the OS can resolve the custom scheme
+                 to this activity - without this filter the Custom Tab
+                 dead-ends on com.ventzon.app://auth/callback. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.ventzon.app" android:host="auth" />
+            </intent-filter>
+
         </activity>
 
         <provider
