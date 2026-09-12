@@ -5,7 +5,9 @@ android {
     compileSdk = rootProject.ext.compileSdkVersion
     signingConfigs {
         release {
-            storeFile file("/Users/lukerichards/Desktop/ventzon/ventzon-upload-key.jks")
+            // Keystore lives at the repo root. The old absolute path pointed at
+            // a deleted ~/Desktop/ventzon copy and broke `bundleRelease`.
+            storeFile file("$rootDir/../ventzon-upload-key.jks")
             storePassword "ventzon2026"
             keyAlias "ventzon"
             keyPassword "ventzon2026"
@@ -15,8 +17,8 @@ android {
         applicationId "com.ventzon.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
