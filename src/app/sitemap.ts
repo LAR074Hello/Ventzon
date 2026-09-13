@@ -12,5 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/privacy-policy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/content-policy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/child-safety`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 }
