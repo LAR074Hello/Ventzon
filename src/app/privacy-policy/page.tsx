@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="mt-4 text-[14px] font-light text-fog-500">
-          Effective date: May 23, 2026
+          Effective date: September 12, 2026
         </p>
 
         <div className="mt-12 space-y-6">
@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
             <p>
               Ventzon (&ldquo;we,&rdquo; &ldquo;us,&rdquo; &ldquo;our&rdquo;)
               operates a customer loyalty rewards platform that helps local
-              businesses run loyalty programs. This includes our iOS app and
+              businesses run loyalty programs. This includes our mobile apps and
               web-based check-in experience. This policy explains what data we
               collect, why we collect it, and how we protect it.
             </p>
@@ -92,19 +92,44 @@ export default function PrivacyPolicyPage() {
                 platform. Stored as a one-way hash (scrypt); we cannot read
                 your PIN.
               </li>
+              <li>
+                <span className="font-normal text-fog-100">Location</span>{" "}
+                — with your permission, your device&rsquo;s approximate and
+                precise coordinates are sent to our servers to work out how far
+                away nearby places are and to center the map. They are used to
+                answer that request and are not stored in our database. You can
+                decline location and still browse.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">
+                  Push notification token
+                </span>{" "}
+                — if you allow notifications, we store the device token your
+                platform issues (APNs on iOS, FCM on Android) so we can deliver
+                them. It is linked to your account and shared with our push
+                provider, OneSignal. You can turn notifications off at any time.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">
+                  Content you post
+                </span>{" "}
+                — the posts, photos, videos, and comments you create, plus the
+                likes, saves, and follows you make. Posts you publish are public
+                to other Ventzon users.
+              </li>
             </ul>
             <p>
-              We do not collect payment information, precise location data, or
-              device identifiers from customers.
+              We do not collect or store your payment card details. Merchant
+              subscription payments are handled entirely by Stripe.
             </p>
           </Section>
 
           <Section title="How you opt in">
             <p>
-              You may create a Ventzon account by registering with your email
-              address or by signing in with Google via the iOS app or website.
-              You may also check in at a participating shop by scanning a QR
-              code and entering your phone number.
+              You may create a Ventzon account with your email address and a
+              password, or by signing in with Google or Apple via the app or
+              website. You may also check in at a participating shop by
+              scanning a QR code and entering your phone number.
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
@@ -160,26 +185,60 @@ export default function PrivacyPolicyPage() {
             </p>
           </Section>
 
-          <Section title="Aggregated analytics">
+          <Section title="Aggregated insights for merchants">
             <p>
-              Ventzon may generate and share <span className="font-normal text-fog-100">aggregated, anonymized analytics</span> derived from platform activity — such as visit frequency trends, customer retention rates, foot traffic patterns by business category, and neighborhood-level activity data. This information does not identify any individual customer and cannot be used to do so.
+              A merchant sees summary figures for{" "}
+              <span className="font-normal text-fog-100">their own shop only</span>{" "}
+              — how many check-ins happened this week versus last, which day of
+              the week is quietest, and how many customers have not been back in
+              a while. These are counts and trends; a merchant cannot identify
+              you from them.
             </p>
             <p>
-              These aggregated insights may be shared with or licensed to third parties including commercial real estate firms, market research companies, financial institutions, and brands for purposes such as location analysis, market research, and consumer behavior research.
+              When we generate a written insight or promotional copy for a
+              merchant, those summary figures and the shop&rsquo;s own name are
+              sent to our AI provider, Anthropic. No customer names, email
+              addresses, or phone numbers are included.
             </p>
             <p>
-              At no point is your name, email address, phone number, or any other personally identifiable information included in these reports.
+              We do not sell or license your personal data, and we do not
+              include it in anything a merchant sees.
             </p>
           </Section>
 
           <Section title="Third-party services">
-            <p>We use the following services to operate the platform:</p>
+            <p>
+              We use the following processors to operate the platform. Each
+              receives only what it needs to do its job, and none of them may
+              use your data for their own marketing.
+            </p>
             <ul className="list-disc space-y-2 pl-5">
+              <li>
+                <span className="font-normal text-fog-100">Supabase</span> —
+                account authentication, database, and file storage. Data is
+                encrypted at rest and in transit.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">Sentry</span> —
+                crash reporting and performance monitoring. Receives error
+                details and the state of the page when an error happens, so we
+                can diagnose it.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">OneSignal</span> —
+                push notification delivery. Receives your device token and the
+                notification contents, solely to deliver them.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">Resend</span> —
+                transactional email. Receives the recipient address and the
+                message we send.
+              </li>
               <li>
                 <span className="font-normal text-fog-100">Google</span> —
                 for optional Sign in with Google authentication. If you choose
-                to sign in with Google, your name and email address are shared
-                with us by Google in accordance with{" "}
+                it, your name and email address are shared with us by Google in
+                accordance with{" "}
                 <a
                   href="https://policies.google.com/privacy"
                   target="_blank"
@@ -191,20 +250,38 @@ export default function PrivacyPolicyPage() {
                 .
               </li>
               <li>
-                <span className="font-normal text-fog-100">Supabase</span> —
-                for secure account and data storage. Data is encrypted at rest
-                and in transit.
-              </li>
-              <li>
-                <span className="font-normal text-fog-100">OneSignal</span> —
-                for delivering push notifications to the Ventzon app.
-                Device tokens are shared with OneSignal solely for
-                notification delivery.
+                <span className="font-normal text-fog-100">Apple</span> — for
+                optional Sign in with Apple. If you choose it, Apple shares an
+                account identifier and, on your first sign-in, your name and
+                email address.
               </li>
               <li>
                 <span className="font-normal text-fog-100">Stripe</span> —
                 for processing merchant subscription payments. Ventzon does not
                 handle or store merchant payment card data.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">Anthropic</span> —
+                generates merchant insights and promotional copy from the
+                summary shop figures described above. No customer names, email
+                addresses, or phone numbers are sent.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">CARTO</span> and{" "}
+                <span className="font-normal text-fog-100">OpenStreetMap</span>{" "}
+                — map tiles and address lookup. These requests carry your IP
+                address and the map area you are viewing, along with merchant
+                addresses we look up.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">Upstash</span> —
+                rate limiting. Receives your IP address and the route being
+                called, so we can block abuse.
+              </li>
+              <li>
+                <span className="font-normal text-fog-100">Vercel</span> —
+                hosting and delivery. Receives standard request information
+                (including your IP address) as our infrastructure provider.
               </li>
             </ul>
           </Section>
@@ -212,9 +289,15 @@ export default function PrivacyPolicyPage() {
           <Section title="Data retention">
             <p>
               We retain your account data for as long as your account is
-              active. If you request account deletion, we will remove your data
-              within 30 days. Message logs may be retained for up to 90 days
-              for delivery troubleshooting.
+              active. When you delete your account from Settings, we remove your
+              profile, posts, photos, comments, likes, and follows, and delete
+              your stored media.
+            </p>
+            <p>
+              Email and push delivery logs are kept for up to 90 days for
+              troubleshooting. Our hosting provider keeps standard server
+              request logs, which can include the coordinates in a nearby or map
+              request, for the period needed to run and secure the service.
             </p>
           </Section>
 
