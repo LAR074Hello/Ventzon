@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { MONTHLY_PRICE, ANNUAL_PRICE } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Pricing — Ventzon",
   description:
-    "$30/month for a complete digital loyalty program. Includes QR code check-ins, customer analytics, push notifications, and email campaigns. Flat — no per-redemption fees.",
+    `$${MONTHLY_PRICE}/month for a complete digital loyalty program. Includes QR code check-ins, customer analytics, push notifications, and email campaigns. Flat — no per-redemption fees.`,
   openGraph: {
     title: "Pricing — Ventzon",
     description:
-      "$30/month or $300/year. No hardware, no setup fees. Cancel anytime.",
+      `$${MONTHLY_PRICE}/month or $${ANNUAL_PRICE}/year. No hardware, no setup fees. Cancel anytime.`,
   },
 };
 

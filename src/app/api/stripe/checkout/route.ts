@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { slugify } from "@/lib/merchant-shop";
+import { STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY } from "@/lib/pricing";
 
 export const runtime = "nodejs";
 
@@ -57,19 +58,19 @@ export async function POST(req: Request) {
     }
 
     // ── Pro plan: flat only ──
+    // Price IDs come from the single source of truth (src/lib/pricing.ts),
+    // which reads the two NEXT_PUBLIC_STRIPE_PRICE_* vars. Nothing else.
     const plan = planRaw === "yearly" ? "yearly" : "monthly";
-    const monthlyPriceId =
-      process.env.PRICE_MONTHLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY;
-    const yearlyPriceId =
-      process.env.PRICE_YEARLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY;
+    const monthlyPriceId = STRIPE_PRICE_MONTHLY;
+    const yearlyPriceId = STRIPE_PRICE_YEARLY;
 
     const flatPriceId = plan === "yearly" ? yearlyPriceId : monthlyPriceId;
 
     if (!flatPriceId) {
       const missingVar =
         plan === "yearly"
-          ? "PRICE_YEARLY or NEXT_PUBLIC_STRIPE_PRICE_YEARLY"
-          : "PRICE_MONTHLY or NEXT_PUBLIC_STRIPE_PRICE_MONTHLY";
+          ? "NEXT_PUBLIC_STRIPE_PRICE_YEARLY"
+          : "NEXT_PUBLIC_STRIPE_PRICE_MONTHLY";
       return Response.json(
         {
           error: `Checkout isn't configured — missing Stripe price ID for the ${plan} plan (expected ${missingVar}).`,

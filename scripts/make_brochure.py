@@ -163,7 +163,7 @@ pdf.section_label("Get Started")
 
 pdf.set_font("Helvetica", "B", 22)
 pdf.set_text_color(0, 0, 0)
-pdf.cell(0, 10, "$25 / month", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+pdf.cell(0, 10, "$35 / month", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 pdf.set_font("Helvetica", size=10)
 pdf.set_text_color(100, 100, 100)
 pdf.cell(0, 6, "No setup fees. No contracts. Cancel anytime.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)

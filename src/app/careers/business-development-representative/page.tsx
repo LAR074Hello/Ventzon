@@ -2,10 +2,11 @@ import Link from "next/link";
 import { ArrowRight, MapPin, Clock, DollarSign } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
+import { ANNUAL_PRICE, formatSignupCommission, formatRecurringCommission } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Business Development Representative Intern — Ventzon Careers",
-  description: "Student internship: earn 50% of every plan you sell — $150 per annual signup, $15/mo recurring. Grow Ventzon on campus and in your city. 1099, uncapped.",
+  description: `Student internship: earn 50% of every plan you sell — ${formatSignupCommission()} per annual signup, ${formatRecurringCommission()}/mo recurring. Grow Ventzon on campus and in your city. 1099, uncapped.`,
 };
 
 export default function BDRPage() {
@@ -129,7 +130,7 @@ export default function BDRPage() {
           <div>
             <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">COMPENSATION</p>
             <p className="mt-5 text-[14px] font-light leading-relaxed text-fog-200">
-              This is a <span className="text-fog-100">50% commission internship (1099) with uncapped earning potential</span> — you earn half of every plan you sell. That&apos;s <span className="text-fog-100">$150 per annual signup</span> (50% of the $300/year plan) and <span className="text-fog-100">$15/month recurring</span> on monthly plans, for as long as that business stays on Ventzon.
+              This is a <span className="text-fog-100">50% commission internship (1099) with uncapped earning potential</span> — you earn half of every plan you sell. That&apos;s <span className="text-fog-100">{formatSignupCommission()} per annual signup</span> (50% of the {`$${ANNUAL_PRICE}`}/year plan) and <span className="text-fog-100">{formatRecurringCommission()}/month recurring</span> on monthly plans, for as long as that business stays on Ventzon.
             </p>
             <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
               On-target earnings are <span className="text-fog-100">$1,000–$3,000/month</span> for solid performers, and top reps earn more.
@@ -137,8 +138,8 @@ export default function BDRPage() {
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 { label: "50%", detail: "Of every plan you sell — uncapped" },
-                { label: "$150", detail: "Per annual signup (50% of the $300/yr plan)" },
-                { label: "$15/mo", detail: "Recurring on monthly plans, for as long as they stay" },
+                { label: formatSignupCommission(), detail: `Per annual signup (50% of the $${ANNUAL_PRICE}/yr plan)` },
+                { label: `${formatRecurringCommission()}/mo`, detail: "Recurring on monthly plans, for as long as they stay" },
               ].map(({ label, detail }) => (
                 <div key={label} className="rounded-xl border border-[#222] bg-night-900 p-5">
                   <p className="text-[20px] font-light text-fog-100">{label}</p>
