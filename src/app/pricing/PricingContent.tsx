@@ -147,8 +147,41 @@ export default function PricingContent({
     })();
   }, [shop, isOnboarding, supabase]);
 
+  // Small, low-key promo code field under the checkout button.
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ code: string; description: string } | null>(null);
+  const [promoChecking, setPromoChecking] = useState(false);
+  const [promoError, setPromoError] = useState("");
+
+  async function applyPromo(e: React.FormEvent) {
+    e.preventDefault();
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoChecking(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/stripe/promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.valid) {
+        setPromoApplied({ code: code.toUpperCase(), description: String(json.description ?? "") });
+      } else {
+        setPromoApplied(null);
+        setPromoError(res.status === 429 ? "Too many tries. Wait a minute." : "That code isn't valid.");
+      }
+    } catch {
+      setPromoError("Couldn't check that code. Try again.");
+    } finally {
+      setPromoChecking(false);
+    }
+  }
+
   async function startCheckout(plan: "monthly" | "yearly") {
-    let payload: { shop_name?: string; shop?: string; plan: string };
+    let payload: { shop_name?: string; shop?: string; plan: string; promo_code?: string };
     if (isOnboarding) {
       const name = onboardingName.trim();
       if (!name) {
@@ -163,6 +196,8 @@ export default function PricingContent({
       }
       payload = { shop, plan };
     }
+
+    if (promoApplied) payload.promo_code = promoApplied.code;
 
     setLoading(plan);
     setError("");
@@ -458,6 +493,55 @@ export default function PricingContent({
                 >
                   Create an account
                 </Link>
+              )}
+
+              {/* Promo code: deliberately quiet */}
+              {(isOnboarding || hasShop) && (
+                <div className="mt-4 text-center">
+                  {promoApplied ? (
+                    <p className="text-[11px] font-light text-fog-300">
+                      {promoApplied.code} applied. {promoApplied.description}{" "}
+                      <button
+                        type="button"
+                        onClick={() => { setPromoApplied(null); setPromoInput(""); }}
+                        className="text-fog-500 underline underline-offset-2 hover:text-fog-300"
+                      >
+                        Remove
+                      </button>
+                    </p>
+                  ) : promoOpen ? (
+                    <form onSubmit={applyPromo} className="mx-auto flex max-w-[220px] items-center gap-2">
+                      <input
+                        autoFocus
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value)}
+                        placeholder="Code"
+                        aria-label="Promo code"
+                        autoCapitalize="characters"
+                        autoComplete="off"
+                        className="min-w-0 flex-1 rounded-full border border-night-700 bg-transparent px-3 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-100 outline-none placeholder:text-fog-500 focus:border-fog-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={promoChecking || !promoInput.trim()}
+                        className="text-[11px] font-light text-fog-500 hover:text-fog-100 disabled:opacity-40"
+                      >
+                        {promoChecking ? "…" : "Apply"}
+                      </button>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPromoOpen(true)}
+                      className="text-[11px] font-light text-fog-500/70 hover:text-fog-300"
+                    >
+                      Have a promo code?
+                    </button>
+                  )}
+                  {promoError && !promoApplied && (
+                    <p className="mt-1.5 text-[11px] font-light text-red-400">{promoError}</p>
+                  )}
+                </div>
               )}
             </div>
           </ScrollReveal>

@@ -5,6 +5,7 @@ import { slugify } from "@/lib/merchant-shop";
 import { STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY } from "@/lib/pricing";
 import { cookies } from "next/headers";
 import { FOUNDING_COOKIE, FOUNDING_PROMO_CODE, isValidFoundingMarker } from "@/lib/founding";
+import { findActivePromotionCode } from "@/lib/promo";
 
 export const runtime = "nodejs";
 
@@ -44,6 +45,7 @@ export async function POST(req: Request) {
     const shopName = String(body.shop_name ?? "").trim();
     const shopSlugInput = String(body.shop_slug ?? body.shop ?? "").trim();
     const planRaw = String(body.plan ?? "monthly").trim().toLowerCase();
+    const promoInput = String(body.promo_code ?? "").trim();
 
     const origin =
       req.headers.get("origin") ||
@@ -98,31 +100,30 @@ export async function POST(req: Request) {
       planInterval = "monthly";
     }
 
-    // ── Founding-shop offer (private link only) ──
-    // Shops that came through the private founding link get the FOUNDING
-    // promotion code applied automatically and aren't asked for a card.
-    // Everyone else gets the normal paid checkout with no promo-code box.
+    // ── Promo codes ──
+    // A merchant can type a code into the small "Have a promo code?" field on
+    // the pricing page, or arrive through the private founding link (signed
+    // cookie). Either way the code is applied on the server and, when it
+    // brings the total to $0, Stripe doesn't ask for a card. Checkout itself
+    // shows no promo box.
     const cookieStore = await cookies();
-    const isFounding = isValidFoundingMarker(cookieStore.get(FOUNDING_COOKIE)?.value);
+    const viaFoundingLink = isValidFoundingMarker(cookieStore.get(FOUNDING_COOKIE)?.value);
+    const codeToApply = promoInput || (viaFoundingLink ? FOUNDING_PROMO_CODE : "");
     let offerFields: Pick<
       Stripe.Checkout.SessionCreateParams,
       "discounts" | "payment_method_collection"
     > = {};
-    if (isFounding) {
-      const promos = await stripe.promotionCodes.list({
-        code: FOUNDING_PROMO_CODE,
-        active: true,
-        limit: 1,
-      });
-      const promo = promos.data[0];
+    if (codeToApply) {
+      const promo = await findActivePromotionCode(stripe, codeToApply);
       if (!promo) {
-        // Never fall through to a paid checkout for someone promised free.
+        // Never fall through to a paid checkout for someone expecting a discount.
         return Response.json(
           {
-            error:
-              "The founding-shop offer isn't available right now. Please contact Luke at lukerichards@ventzon.com.",
+            error: promoInput
+              ? "That promo code isn't valid or has expired."
+              : "The founding-shop offer isn't available right now. Please contact Luke at lukerichards@ventzon.com.",
           },
-          { status: 409 }
+          { status: 400 }
         );
       }
       offerFields = {
