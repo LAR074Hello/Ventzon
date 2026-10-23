@@ -1,7 +1,7 @@
 // src/app/pricing/PricingContent.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -74,6 +74,13 @@ export default function PricingContent({
   const isOnboarding = !shopFromQuery && shopNameFromQuery.trim().length > 0;
 
   const [shop, setShop] = useState(shopFromQuery);
+  // Display-only flag set by the private founding link (/founding/<slug>).
+  // The real check happens server-side in checkout, against a signed cookie.
+  const isFounding = useSyncExternalStore(
+    () => () => {},
+    () => /(?:^|;\s*)vz_founding_ui=1(?:;|$)/.test(document.cookie),
+    () => false
+  );
   const [shopName, setShopName] = useState<string | null>(null);
   const [onboardingName, setOnboardingName] = useState(shopNameFromQuery.trim());
   const [editingName, setEditingName] = useState(false);
@@ -235,6 +242,11 @@ export default function PricingContent({
             <br className="hidden sm:block" />
             No per-redemption fees, no surprises.
           </p>
+          {isFounding && (
+            <p className="mx-auto mt-8 max-w-lg rounded-2xl border border-fog-500/40 px-5 py-3 text-sm font-light text-white">
+              Founding shop offer: your first 12 months are free. No card needed.
+            </p>
+          )}
         </div>
       </section>
 

@@ -3,6 +3,8 @@ import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { slugify } from "@/lib/merchant-shop";
 import { STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY } from "@/lib/pricing";
+import { cookies } from "next/headers";
+import { FOUNDING_COOKIE, FOUNDING_PROMO_CODE, isValidFoundingMarker } from "@/lib/founding";
 
 export const runtime = "nodejs";
 
@@ -96,6 +98,39 @@ export async function POST(req: Request) {
       planInterval = "monthly";
     }
 
+    // ── Founding-shop offer (private link only) ──
+    // Shops that came through the private founding link get the FOUNDING
+    // promotion code applied automatically and aren't asked for a card.
+    // Everyone else gets the normal paid checkout with no promo-code box.
+    const cookieStore = await cookies();
+    const isFounding = isValidFoundingMarker(cookieStore.get(FOUNDING_COOKIE)?.value);
+    let offerFields: Pick<
+      Stripe.Checkout.SessionCreateParams,
+      "discounts" | "payment_method_collection"
+    > = {};
+    if (isFounding) {
+      const promos = await stripe.promotionCodes.list({
+        code: FOUNDING_PROMO_CODE,
+        active: true,
+        limit: 1,
+      });
+      const promo = promos.data[0];
+      if (!promo) {
+        // Never fall through to a paid checkout for someone promised free.
+        return Response.json(
+          {
+            error:
+              "The founding-shop offer isn't available right now. Please contact Luke at lukerichards@ventzon.com.",
+          },
+          { status: 409 }
+        );
+      }
+      offerFields = {
+        discounts: [{ promotion_code: promo.id }],
+        payment_method_collection: "if_required",
+      };
+    }
+
     const isOnboarding = shopName.length > 0;
     if (isOnboarding) {
       // ── New onboarding: NO shop row exists yet ──
@@ -120,11 +155,7 @@ export async function POST(req: Request) {
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
-        // Founding-shop promo codes (e.g. a 100%-off-for-12-months coupon)
-        // are entered on Stripe's hosted page. When a code brings the total
-        // to $0, Stripe skips collecting a card, so "no card needed" is true.
-        allow_promotion_codes: true,
-        payment_method_collection: "if_required",
+        ...offerFields,
         line_items: [{ price: flatPriceId, quantity: 1 }],
         success_url: `${origin}/merchant/dashboard?checkout=success`,
         cancel_url: `${origin}/pricing?shop_name=${encodeURIComponent(
@@ -146,8 +177,7 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      allow_promotion_codes: true,
-      payment_method_collection: "if_required",
+      ...offerFields,
       line_items: [{ price: flatPriceId, quantity: 1 }],
       success_url: `${origin}/merchant/${encodeURIComponent(shopSlug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
