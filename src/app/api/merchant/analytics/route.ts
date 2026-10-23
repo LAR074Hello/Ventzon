@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { placeIdForSlug } from "@/lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,9 @@ export async function GET(req: Request) {
       .trim()
       .toLowerCase();
     const period = String(url.searchParams.get("period") ?? "30d").trim();
+    // Optional calendar month (YYYY-MM) for the monthly report. Overrides period.
+    const monthParam = String(url.searchParams.get("month") ?? "").trim();
+    const month = /^\d{4}-(0[1-9]|1[0-2])$/.test(monthParam) ? monthParam : null;
 
     if (!shop) {
       return NextResponse.json({ error: "Missing shop" }, { status: 400 });
@@ -87,10 +91,21 @@ export async function GET(req: Request) {
 
     // Calculate date range
     const now = new Date();
-    const endDate = now.toISOString().slice(0, 10);
+    let endDate = now.toISOString().slice(0, 10);
     let startDate: string;
+    // Length of the window in days when it's a fixed window (used for the
+    // "vs previous period" comparison). null for all-time.
+    let windowDays: number | null = PERIOD_DAYS[period] ?? null;
 
-    if (period === "all") {
+    if (month) {
+      const [y, m] = month.split("-").map(Number);
+      const first = new Date(Date.UTC(y, m - 1, 1));
+      const last = new Date(Date.UTC(y, m, 0));
+      startDate = first.toISOString().slice(0, 10);
+      const lastStr = last.toISOString().slice(0, 10);
+      if (lastStr < endDate) endDate = lastStr;
+      windowDays = last.getUTCDate();
+    } else if (period === "all") {
       startDate = shopRow.created_at
         ? new Date(shopRow.created_at).toISOString().slice(0, 10)
         : "2020-01-01";
@@ -358,7 +373,7 @@ export async function GET(req: Request) {
       customers_pct_change: number | null;
     } = { checkins_pct_change: null, customers_pct_change: null };
 
-    const periodDays = PERIOD_DAYS[period];
+    const periodDays = windowDays;
     if (periodDays) {
       const prevEndDate = new Date(startDate + "T00:00:00");
       prevEndDate.setDate(prevEndDate.getDate() - 1);
@@ -490,6 +505,80 @@ export async function GET(req: Request) {
       };
     }
 
+    // ── Your shop on Ventzon (the consumer app) ──
+    // Counts only, never who: followers, followers who haven't visited yet,
+    // posts tagging the shop, and likes/saves/comments on those posts.
+    let onVentzon: {
+      followers: number;
+      new_followers: number;
+      followers_not_visited: number;
+      posts: number;
+      posters: number;
+      likes: number;
+      saves: number;
+      comments: number;
+    } | null = null;
+    try {
+      const { data: followRows } = await supabase
+        .from("customer_follows")
+        .select("email, created_at")
+        .eq("shop_slug", shop)
+        .limit(50000);
+      const follows = followRows ?? [];
+      const { data: memberRows } = await supabase
+        .from("customers")
+        .select("email, last_checkin_date")
+        .eq("shop_slug", shop)
+        .not("email", "is", null)
+        .limit(100000);
+      const visitedEmails = new Set(
+        (memberRows ?? [])
+          .filter((r) => r.last_checkin_date)
+          .map((r) => String(r.email).toLowerCase())
+      );
+
+      const placeId = await placeIdForSlug(supabase, shop);
+      const tagFilter = placeId
+        ? `shop_slug.eq.${shop},place_id.eq.${placeId}`
+        : `shop_slug.eq.${shop}`;
+      const { data: postRows } = await supabase
+        .from("posts")
+        .select("id, author_email, created_at")
+        .or(tagFilter)
+        .eq("hidden", false)
+        .gte("created_at", `${startDate}T00:00:00Z`)
+        .lte("created_at", `${endDate}T23:59:59Z`)
+        .limit(5000);
+      const posts = postRows ?? [];
+      const postIds = posts.map((p) => p.id as string);
+
+      const countFor = async (table: string, extra?: (q: any) => any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (postIds.length === 0) return 0;
+        let q = supabase.from(table).select("id", { count: "exact", head: true }).in("post_id", postIds);
+        if (extra) q = extra(q);
+        const { count } = await q;
+        return count ?? 0;
+      };
+
+      onVentzon = {
+        followers: follows.length,
+        new_followers: follows.filter((f) => {
+          const d = String(f.created_at ?? "").slice(0, 10);
+          return d >= startDate && d <= endDate;
+        }).length,
+        followers_not_visited: follows.filter(
+          (f) => f.email && !visitedEmails.has(String(f.email).toLowerCase())
+        ).length,
+        posts: posts.length,
+        posters: new Set(posts.map((p) => String(p.author_email ?? ""))).size,
+        likes: await countFor("post_likes"),
+        saves: await countFor("post_saves"),
+        comments: await countFor("post_comments", (q) => q.eq("hidden", false)),
+      };
+    } catch (e) {
+      console.warn("[analytics] on-ventzon metrics failed:", e instanceof Error ? e.message : e);
+    }
+
     // Top 5 customers by total visits
     const { data: topCustomerRows } = await supabase
       .from("customers")
@@ -535,6 +624,8 @@ export async function GET(req: Request) {
       reward_mode: rewardMode,
       spend,
       last_promo: lastPromo,
+      on_ventzon: onVentzon,
+      month,
     });
   } catch (err) {
     return NextResponse.json(

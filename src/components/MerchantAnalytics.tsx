@@ -3,6 +3,7 @@
 import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import {
   ResponsiveContainer,
   LineChart,
@@ -77,6 +78,16 @@ type AnalyticsResponse = {
     came_back: number;
     window_days: number;
     window_complete: boolean;
+  } | null;
+  on_ventzon?: {
+    followers: number;
+    new_followers: number;
+    followers_not_visited: number;
+    posts: number;
+    posters: number;
+    likes: number;
+    saves: number;
+    comments: number;
   } | null;
 };
 
@@ -449,7 +460,17 @@ export default function MerchantAnalytics({
             Performance
           </h2>
         </div>
-        <PeriodPills value={period} onChange={setPeriod} />
+        <div className="flex flex-wrap items-center gap-3">
+          {!mockData && (
+            <Link
+              href={`/merchant/${encodeURIComponent(shopSlug)}/report`}
+              className="text-xs font-medium text-muted transition-colors hover:text-primary"
+            >
+              Monthly report
+            </Link>
+          )}
+          <PeriodPills value={period} onChange={setPeriod} />
+        </div>
       </div>
 
       {error && (
@@ -581,6 +602,54 @@ export default function MerchantAnalytics({
               </CardAction>
             }
           />
+        </div>
+      )}
+
+      {/* ── Your shop on Ventzon: app activity only Ventzon can see ── */}
+      {!loading && data?.on_ventzon && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-subtle bg-surface-raised">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4 sm:px-6">
+            <SectionLabel>Your shop on Ventzon</SectionLabel>
+            <p className="text-[11px] text-muted">People finding you in the Ventzon app</p>
+          </div>
+          <div className="mt-3 grid grid-cols-2 divide-subtle border-t border-subtle sm:grid-cols-4 sm:divide-x">
+            {[
+              {
+                label: "Followers",
+                value: formatCount(data.on_ventzon.followers),
+                sub:
+                  data.on_ventzon.new_followers > 0
+                    ? `+${formatCount(data.on_ventzon.new_followers)} ${periodCaption.toLowerCase()}`
+                    : "Follow you in the app",
+              },
+              {
+                label: "Haven't visited yet",
+                value: formatCount(data.on_ventzon.followers_not_visited),
+                sub: "Followers with no check-in",
+              },
+              {
+                label: "Posts about you",
+                value: formatCount(data.on_ventzon.posts),
+                sub:
+                  data.on_ventzon.posters > 0
+                    ? `By ${formatCount(data.on_ventzon.posters)} ${data.on_ventzon.posters === 1 ? "person" : "people"}`
+                    : periodCaption,
+              },
+              {
+                label: "Likes and saves",
+                value: formatCount(data.on_ventzon.likes + data.on_ventzon.saves),
+                sub: `${formatCount(data.on_ventzon.comments)} comments`,
+              },
+            ].map((m) => (
+              <div key={m.label} className="border-subtle px-4 py-3 sm:px-5 [&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:border-b-0">
+                <p className="text-2xs font-medium uppercase tracking-caps text-muted">{m.label}</p>
+                <p className="mt-1 text-lg font-semibold leading-none tracking-tight text-primary tabular-nums">
+                  {m.value}
+                </p>
+                <p className="mt-1 text-[11px] text-muted">{m.sub}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
