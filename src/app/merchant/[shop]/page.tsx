@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LogOut, Sparkles, RefreshCw, Check, Medal, GraduationCap, Siren, HeartHandshake } from "lucide-react";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
+import type { CampaignAudience, CampaignGoal } from "@/components/MerchantAnalytics";
 
 // Community Rewards (Veterans/Students/Seniors/etc boost multipliers) is
 // built and working but hidden from the dashboard for now — flip to true
@@ -251,6 +252,7 @@ function MerchantShopPage() {
   // AI Promo Writer
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiGoal, setAiGoal] = useState("slow_day");
+  const [campaignTarget, setCampaignTarget] = useState<CampaignAudience>("all");
   const [aiDetails, setAiDetails] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiOptions, setAiOptions] = useState<string[]>([]);
@@ -298,6 +300,7 @@ function MerchantShopPage() {
   // Manual check-in modal
   const [showManualCheckin, setShowManualCheckin] = useState(false);
   const [manualContact, setManualContact] = useState("");
+  const [manualAmount, setManualAmount] = useState("");
   const [manualLoading, setManualLoading] = useState(false);
   const [manualResult, setManualResult] = useState<any>(null);
   const [manualError, setManualError] = useState("");
@@ -719,6 +722,7 @@ function MerchantShopPage() {
         body: JSON.stringify({
           shop_slug: shopSlug,
           contact: manualContact.trim(),
+          amount: manualAmount.trim() || null,
         }),
       });
       const json = await safeJson(res);
@@ -726,6 +730,7 @@ function MerchantShopPage() {
       else {
         setManualResult(json);
         setManualContact("");
+        setManualAmount("");
         // Refresh customer list if open
         if (customersLoaded) loadCustomers(1);
       }
@@ -766,7 +771,12 @@ function MerchantShopPage() {
       const res = await fetch("/api/merchant/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop_slug: shopSlug, subject: campaignSubject, body: campaignBody }),
+        body: JSON.stringify({
+          shop_slug: shopSlug,
+          subject: campaignSubject,
+          body: campaignBody,
+          target: campaignTarget,
+        }),
       });
       const json = await safeJson(res);
       if (!res.ok) throw new Error(json.error ?? "Failed to send");
@@ -829,6 +839,22 @@ function MerchantShopPage() {
     } finally {
       setAiGenerating(false);
     }
+  }
+
+  /* ── Analytics card actions ── */
+  function scrollToSection(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function startCampaign(audience: CampaignAudience, goal: CampaignGoal) {
+    setCampaignTarget(audience);
+    setAiGoal(goal);
+    setCampaignMsg("");
+    setCampaignError("");
+    scrollToSection("campaigns-section");
+    setAiOptions([]);
+    setAiError("");
+    setShowAIModal(true);
   }
 
   function pickAIOption(text: string) {
@@ -1923,13 +1949,23 @@ function MerchantShopPage() {
                 {settingsSection}
               </>
             )}
-            {paid && <MerchantAnalytics shopSlug={shopSlug} />}
+            {paid && (
+              <MerchantAnalytics
+                shopSlug={shopSlug}
+                onStartCampaign={startCampaign}
+                onEditReward={() => scrollToSection("settings-section")}
+                onShowCustomers={() => {
+                  scrollToSection("customers-section");
+                  if (!customersLoaded) loadCustomers(1);
+                }}
+              />
+            )}
 
             {/* ============================================================
                 CUSTOMERS
                 ============================================================ */}
             {paid && (
-              <section className="mt-10">
+              <section id="customers-section" className="mt-10 scroll-mt-6">
                 
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -2130,6 +2166,19 @@ function MerchantShopPage() {
                         placeholder="Phone (e.g. 5551234567) or email"
                         className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none placeholder:text-muted focus:border-strong"
                       />
+                      <div>
+                        <input
+                          value={manualAmount}
+                          onChange={e => setManualAmount(e.target.value)}
+                          inputMode="decimal"
+                          placeholder="Purchase amount, optional (e.g. 12.50)"
+                          aria-label="Purchase amount in dollars, optional"
+                          className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none placeholder:text-muted focus:border-strong"
+                        />
+                        <p className="mt-1.5 text-[11px] text-muted">
+                          Adding the amount powers average spend in your analytics.
+                        </p>
+                      </div>
                       {manualError && (
                         <p className="text-xs text-danger">{manualError}</p>
                       )}
@@ -2231,18 +2280,31 @@ function MerchantShopPage() {
                 campaign) is a future feature — today the dashboard can
                 only send. */}
             {paid && (
-              <section className="mt-10">
+              <section id="campaigns-section" className="mt-10 scroll-mt-6">
                 
                 <div>
                   <p className="text-2xs font-medium uppercase tracking-caps text-muted">EMAIL CAMPAIGNS</p>
                   <h2 className="mt-3 text-xl font-medium tracking-[-0.01em] text-primary sm:text-2xl">Send to customers</h2>
                   <p className="mt-1 text-sm text-muted">
-                    Sends to all opted-in customers who have an email address on file.
+                    Sends to opted-in customers who have an email address on file.
                   </p>
                 </div>
 
                 <div className="mt-6 rounded-xl border border-subtle p-6 transition-all duration-500 hover:border-strong">
                   <form onSubmit={sendCampaign} className="space-y-4">
+                    <div>
+                      <label htmlFor="campaign-audience" className="block text-2xs font-medium tracking-caps text-muted mb-2">SEND TO</label>
+                      <select
+                        id="campaign-audience"
+                        value={campaignTarget}
+                        onChange={e => setCampaignTarget(e.target.value as CampaignAudience)}
+                        className="w-full rounded-xl border border-subtle bg-surface-raised px-4 py-3 text-sm text-primary outline-none transition-colors focus:border-strong"
+                      >
+                        <option value="all">All customers</option>
+                        <option value="slipping">Slipping away (no visit in 2+ weeks)</option>
+                        <option value="lapsed">Lapsed (no visit in 30+ days)</option>
+                      </select>
+                    </div>
                     <div>
                       <label className="block text-2xs font-medium tracking-caps text-muted mb-2">SUBJECT</label>
                       <input

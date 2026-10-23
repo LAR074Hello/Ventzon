@@ -7,9 +7,10 @@ import { generateUnsubscribeToken } from "@/app/api/unsubscribe/route";
 export const dynamic = "force-dynamic";
 
 // POST /api/merchant/campaigns
-// Body: { shop_slug, subject, body, target?: "all" | "lapsed" }
+// Body: { shop_slug, subject, body, target?: "all" | "lapsed" | "slipping" }
 // Sends an email campaign to opted-in customers with an email address.
-// target="lapsed" restricts to customers with no visit in 30+ days.
+// target="lapsed" restricts to customers with no visit in 30+ days;
+// target="slipping" to customers with no visit in 14+ days.
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +28,8 @@ export async function POST(req: Request) {
     const shopSlug = String(body?.shop_slug ?? "").trim().toLowerCase();
     const subject = String(body?.subject ?? "").trim();
     const message = String(body?.body ?? "").trim();
-    const target: "all" | "lapsed" = body?.target === "lapsed" ? "lapsed" : "all";
+    const target: "all" | "lapsed" | "slipping" =
+      body?.target === "lapsed" ? "lapsed" : body?.target === "slipping" ? "slipping" : "all";
     // win_back mode: auto-generate a rich win-back email, no custom subject/body needed
     const isWinBack = body?.win_back === true;
 
@@ -73,16 +75,17 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10);
+    const gapDays = target === "lapsed" ? 30 : target === "slipping" ? 14 : 0;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - gapDays);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
 
     const targets = (customers ?? []).filter((c) => {
       if (!c.email) return false;
-      if (target === "lapsed") {
-        // Include customers with no check-in in 30+ days (or never checked in)
+      if (gapDays > 0) {
+        // Include customers with no check-in in gapDays+ days (or never checked in)
         if (!c.last_checkin_date) return true;
-        return c.last_checkin_date < thirtyDaysAgoStr;
+        return c.last_checkin_date < cutoffStr;
       }
       return true;
     });
@@ -121,28 +124,20 @@ export async function POST(req: Request) {
       }
     }
 
-    // Log to promotions table (best-effort, non-fatal)
-    try {
-      await supabase.from("promotions").insert({
+    // Log to promotions (best-effort, non-fatal). Production's promotions
+    // shape is name/body/audience/status/sent_at, and status is limited to
+    // draft/approved/rejected, so a sent campaign is "approved" + sent_at.
+    // The analytics route reads the latest sent_at row to show promo results.
+    if (sent > 0) {
+      const { error: logErr } = await supabase.from("promotions").insert({
         shop_slug: shopSlug,
-        body: `${subject}\n\n${message}`,
-        status: "sent",
-        created_by: user.id,
-        sent_count: sent,
+        name: isWinBack ? `Come-back email (${target})` : subject,
+        body: isWinBack ? `We miss you at ${shopName}` : message,
+        audience: target,
+        status: "approved",
         sent_at: new Date().toISOString(),
       });
-    } catch {
-      // Table may not have sent_count / sent_at columns — that's fine
-      try {
-        await supabase.from("promotions").insert({
-          shop_slug: shopSlug,
-          body: `${subject}\n\n${message}`,
-          status: "sent",
-          created_by: user.id,
-        });
-      } catch {
-        // Non-fatal
-      }
+      if (logErr) console.warn("[campaigns] promotion log failed:", logErr.message);
     }
 
     return NextResponse.json({ ok: true, sent, failed });
@@ -182,10 +177,10 @@ export async function GET(req: Request) {
 
     const { data: campaigns } = await supabase
       .from("promotions")
-      .select("id, body, status, created_at")
+      .select("id, name, body, audience, status, sent_at, created_at")
       .eq("shop_slug", shopSlug)
-      .eq("status", "sent")
-      .order("created_at", { ascending: false })
+      .not("sent_at", "is", null)
+      .order("sent_at", { ascending: false })
       .limit(20);
 
     return NextResponse.json({ campaigns: campaigns ?? [] });
