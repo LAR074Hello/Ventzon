@@ -120,6 +120,11 @@ export async function POST(req: Request) {
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
+        // Founding-shop promo codes (e.g. a 100%-off-for-12-months coupon)
+        // are entered on Stripe's hosted page. When a code brings the total
+        // to $0, Stripe skips collecting a card, so "no card needed" is true.
+        allow_promotion_codes: true,
+        payment_method_collection: "if_required",
         line_items: [{ price: flatPriceId, quantity: 1 }],
         success_url: `${origin}/merchant/dashboard?checkout=success`,
         cancel_url: `${origin}/pricing?shop_name=${encodeURIComponent(
@@ -141,6 +146,8 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
+      allow_promotion_codes: true,
+      payment_method_collection: "if_required",
       line_items: [{ price: flatPriceId, quantity: 1 }],
       success_url: `${origin}/merchant/${encodeURIComponent(shopSlug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(
