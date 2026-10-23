@@ -8,6 +8,7 @@ import Parallax from "@/components/Parallax";
 import PricingSection from "@/components/PricingSection";
 import SiteFooter from "@/components/SiteFooter";
 import HeroScroll from "@/components/HeroScroll";
+import { MONTHLY_PRICE } from "@/lib/pricing";
 
 /* ═══════════════════════════════════════════════════════════════════
    Device frames on this page show real app screenshots from
@@ -85,7 +86,7 @@ const SHOP_BENEFITS = [
   },
   {
     title: "Rewards at one flat price",
-    body: "Set a visit goal and a reward in minutes. $30/month flat — no per-redemption fees, no surprises.",
+    body: `Set a visit goal and a reward in minutes. $${MONTHLY_PRICE}/month flat — no per-redemption fees, no surprises.`,
   },
 ];
 

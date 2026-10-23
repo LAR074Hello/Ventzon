@@ -1,13 +1,14 @@
 // src/app/pricing/PricingContent.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Check, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import Divider from "@/components/Divider";
 import SiteFooter from "@/components/SiteFooter";
+import { MONTHLY_PRICE, ANNUAL_PRICE, ANNUAL_SAVINGS } from "@/lib/pricing";
 
 /* Render comparison cells: true/false become lucide Check/X icons, strings render as text. */
 function YesNoCell({ value, dim = false }: { value: string | boolean; dim?: boolean }) {
@@ -37,8 +38,8 @@ const proFeatures = [
 
 const faqs = [
   {
-    q: "What does the $30/month cover?",
-    a: "The $30 operational fee covers everything — your shop listing, QR code, stamp tracking, analytics, customer list, CSV export, manual stamp tool, and email campaigns.",
+    q: `What does the $${MONTHLY_PRICE}/month cover?`,
+    a: `The $${MONTHLY_PRICE} operational fee covers everything — your shop listing, QR code, stamp tracking, analytics, customer list, CSV export, manual stamp tool, and email campaigns.`,
   },
   {
     q: "How do customers get notified?",
@@ -50,7 +51,7 @@ const faqs = [
   },
   {
     q: "Is yearly billing worth it?",
-    a: "At $300/year vs $360 billed monthly, you save $60 — that's 2 months free.",
+    a: `At $${ANNUAL_PRICE}/year vs $${MONTHLY_PRICE * 12} billed monthly, you save $${ANNUAL_SAVINGS} — that's 2 months free.`,
   },
 ];
 
@@ -73,6 +74,13 @@ export default function PricingContent({
   const isOnboarding = !shopFromQuery && shopNameFromQuery.trim().length > 0;
 
   const [shop, setShop] = useState(shopFromQuery);
+  // Display-only flag set by the private founding link (/founding/<slug>).
+  // The real check happens server-side in checkout, against a signed cookie.
+  const isFounding = useSyncExternalStore(
+    () => () => {},
+    () => /(?:^|;\s*)vz_founding_ui=1(?:;|$)/.test(document.cookie),
+    () => false
+  );
   const [shopName, setShopName] = useState<string | null>(null);
   const [onboardingName, setOnboardingName] = useState(shopNameFromQuery.trim());
   const [editingName, setEditingName] = useState(false);
@@ -139,8 +147,41 @@ export default function PricingContent({
     })();
   }, [shop, isOnboarding, supabase]);
 
+  // Small, low-key promo code field under the checkout button.
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ code: string; description: string } | null>(null);
+  const [promoChecking, setPromoChecking] = useState(false);
+  const [promoError, setPromoError] = useState("");
+
+  async function applyPromo(e: React.FormEvent) {
+    e.preventDefault();
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoChecking(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/stripe/promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.valid) {
+        setPromoApplied({ code: code.toUpperCase(), description: String(json.description ?? "") });
+      } else {
+        setPromoApplied(null);
+        setPromoError(res.status === 429 ? "Too many tries. Wait a minute." : "That code isn't valid.");
+      }
+    } catch {
+      setPromoError("Couldn't check that code. Try again.");
+    } finally {
+      setPromoChecking(false);
+    }
+  }
+
   async function startCheckout(plan: "monthly" | "yearly") {
-    let payload: { shop_name?: string; shop?: string; plan: string };
+    let payload: { shop_name?: string; shop?: string; plan: string; promo_code?: string };
     if (isOnboarding) {
       const name = onboardingName.trim();
       if (!name) {
@@ -155,6 +196,8 @@ export default function PricingContent({
       }
       payload = { shop, plan };
     }
+
+    if (promoApplied) payload.promo_code = promoApplied.code;
 
     setLoading(plan);
     setError("");
@@ -230,10 +273,15 @@ export default function PricingContent({
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
-            $30/month, flat &mdash; everything included.
+            {`$${MONTHLY_PRICE}/month`}, flat &mdash; everything included.
             <br className="hidden sm:block" />
             No per-redemption fees, no surprises.
           </p>
+          {isFounding && (
+            <p className="mx-auto mt-8 max-w-lg rounded-2xl border border-fog-500/40 px-5 py-3 text-sm font-light text-white">
+              Founding shop offer: your first 12 months are free. No card needed.
+            </p>
+          )}
         </div>
       </section>
 
@@ -392,7 +440,7 @@ export default function PricingContent({
 
               <div className="mt-6">
                 <span className="text-5xl font-light tracking-tight text-fog-100">
-                  {billingPeriod === "yearly" ? "$300" : "$30"}
+                  {billingPeriod === "yearly" ? `$${ANNUAL_PRICE}` : `$${MONTHLY_PRICE}`}
                 </span>
                 <span className="ml-1 text-lg font-light text-fog-600">
                   {billingPeriod === "yearly" ? "/yr" : "/mo"}
@@ -401,11 +449,11 @@ export default function PricingContent({
 
               {billingPeriod === "yearly" ? (
                 <p className="mt-2 text-[11px] font-light tracking-[0.05em] text-emerald-500">
-                  Save $60 vs monthly &mdash; that&apos;s 2 months free
+                  Save {`$${ANNUAL_SAVINGS}`} vs monthly &mdash; that&apos;s 2 months free
                 </p>
               ) : (
                 <p className="mt-2 text-[11px] font-light text-fog-500">
-                  or $300/yr and save $60
+                  or {`$${ANNUAL_PRICE}`}/yr and save {`$${ANNUAL_SAVINGS}`}
                 </p>
               )}
 
@@ -445,6 +493,55 @@ export default function PricingContent({
                 >
                   Create an account
                 </Link>
+              )}
+
+              {/* Promo code: deliberately quiet */}
+              {(isOnboarding || hasShop) && (
+                <div className="mt-4 text-center">
+                  {promoApplied ? (
+                    <p className="text-[11px] font-light text-fog-300">
+                      {promoApplied.code} applied. {promoApplied.description}{" "}
+                      <button
+                        type="button"
+                        onClick={() => { setPromoApplied(null); setPromoInput(""); }}
+                        className="text-fog-500 underline underline-offset-2 hover:text-fog-300"
+                      >
+                        Remove
+                      </button>
+                    </p>
+                  ) : promoOpen ? (
+                    <form onSubmit={applyPromo} className="mx-auto flex max-w-[220px] items-center gap-2">
+                      <input
+                        autoFocus
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value)}
+                        placeholder="Code"
+                        aria-label="Promo code"
+                        autoCapitalize="characters"
+                        autoComplete="off"
+                        className="min-w-0 flex-1 rounded-full border border-night-700 bg-transparent px-3 py-1.5 text-[11px] font-light tracking-[0.1em] text-fog-100 outline-none placeholder:text-fog-500 focus:border-fog-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={promoChecking || !promoInput.trim()}
+                        className="text-[11px] font-light text-fog-500 hover:text-fog-100 disabled:opacity-40"
+                      >
+                        {promoChecking ? "…" : "Apply"}
+                      </button>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPromoOpen(true)}
+                      className="text-[11px] font-light text-fog-500/70 hover:text-fog-300"
+                    >
+                      Have a promo code?
+                    </button>
+                  )}
+                  {promoError && !promoApplied && (
+                    <p className="mt-1.5 text-[11px] font-light text-red-400">{promoError}</p>
+                  )}
+                </div>
               )}
             </div>
           </ScrollReveal>
@@ -491,7 +588,7 @@ export default function PricingContent({
               One flat rate. No fine print.
             </h2>
             <p className="mx-auto mt-5 max-w-lg text-[15px] font-light text-fog-500">
-              Everything is in the $30/month &mdash; rewards, analytics, the customer list. Here&rsquo;s what that looks like when a customer comes back.
+              Everything is in the {`$${MONTHLY_PRICE}/month`} &mdash; rewards, analytics, the customer list. Here&rsquo;s what that looks like when a customer comes back.
             </p>
           </ScrollReveal>
 
@@ -519,7 +616,7 @@ export default function PricingContent({
                 </div>
                 <div className="rounded-xl border border-night-700 p-5">
                   <p className="text-[10px] font-light tracking-[0.2em] text-fog-500">YOU PAY VENTZON</p>
-                  <p className="mt-2 text-3xl font-light text-white">$30</p>
+                  <p className="mt-2 text-3xl font-light text-white">{`$${MONTHLY_PRICE}`}</p>
                   <p className="mt-1 text-[12px] font-light text-fog-500">per month, flat</p>
                 </div>
                 <div className="rounded-xl border border-night-700 p-5">
@@ -559,7 +656,7 @@ export default function PricingContent({
             </div>
 
             {[
-              { feature: "Monthly fee", ventzon: "$30", square: "paid", punch: "$0" },
+              { feature: "Monthly fee", ventzon: `$${MONTHLY_PRICE}`, square: "paid", punch: "$0" },
               { feature: "Per-redemption fees", ventzon: "$0", square: "included", punch: "$0" },
               { feature: "Customer data & analytics", ventzon: true, square: true, punch: false },
               { feature: "Digital stamp tracking", ventzon: true, square: true, punch: false },

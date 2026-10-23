@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, MessageCircle, Smartphone, Store, Star, ShieldCheck } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
+import { MONTHLY_PRICE, ANNUAL_PRICE, ANNUAL_SAVINGS } from "@/lib/pricing";
 
 type FAQ = { q: string; a: string };
 
@@ -49,7 +50,7 @@ const customerFaqs: FAQ[] = [
 const merchantFaqs: FAQ[] = [
   {
     q: "How does billing work?",
-    a: "Ventzon Pro is $30/month or $300/year (save $60), flat — no per-redemption fees, no setup fees. Cancel anytime.",
+    a: `Ventzon Pro is $${MONTHLY_PRICE}/month or $${ANNUAL_PRICE}/year (save $${ANNUAL_SAVINGS}), flat — no per-redemption fees, no setup fees. Cancel anytime.`,
   },
   {
     q: "Do I need any hardware or a POS system?",
@@ -81,7 +82,7 @@ const merchantFaqs: FAQ[] = [
   },
   {
     q: "Is there a free trial?",
-    a: "We don't currently offer a free trial, but the $30/month plan has no long-term commitment — cancel anytime within the first month if it's not a fit.",
+    a: `We don't currently offer a free trial, but the $${MONTHLY_PRICE}/month plan has no long-term commitment — cancel anytime within the first month if it's not a fit.`,
   },
 ];
 

@@ -2,6 +2,10 @@ import Stripe from "stripe";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { slugify } from "@/lib/merchant-shop";
+import { STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY } from "@/lib/pricing";
+import { cookies } from "next/headers";
+import { FOUNDING_COOKIE, FOUNDING_PROMO_CODE, isValidFoundingMarker } from "@/lib/founding";
+import { findActivePromotionCode } from "@/lib/promo";
 
 export const runtime = "nodejs";
 
@@ -41,6 +45,7 @@ export async function POST(req: Request) {
     const shopName = String(body.shop_name ?? "").trim();
     const shopSlugInput = String(body.shop_slug ?? body.shop ?? "").trim();
     const planRaw = String(body.plan ?? "monthly").trim().toLowerCase();
+    const promoInput = String(body.promo_code ?? "").trim();
 
     const origin =
       req.headers.get("origin") ||
@@ -57,19 +62,19 @@ export async function POST(req: Request) {
     }
 
     // ── Pro plan: flat only ──
+    // Price IDs come from the single source of truth (src/lib/pricing.ts),
+    // which reads the two NEXT_PUBLIC_STRIPE_PRICE_* vars. Nothing else.
     const plan = planRaw === "yearly" ? "yearly" : "monthly";
-    const monthlyPriceId =
-      process.env.PRICE_MONTHLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY;
-    const yearlyPriceId =
-      process.env.PRICE_YEARLY || process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY;
+    const monthlyPriceId = STRIPE_PRICE_MONTHLY;
+    const yearlyPriceId = STRIPE_PRICE_YEARLY;
 
     const flatPriceId = plan === "yearly" ? yearlyPriceId : monthlyPriceId;
 
     if (!flatPriceId) {
       const missingVar =
         plan === "yearly"
-          ? "PRICE_YEARLY or NEXT_PUBLIC_STRIPE_PRICE_YEARLY"
-          : "PRICE_MONTHLY or NEXT_PUBLIC_STRIPE_PRICE_MONTHLY";
+          ? "NEXT_PUBLIC_STRIPE_PRICE_YEARLY"
+          : "NEXT_PUBLIC_STRIPE_PRICE_MONTHLY";
       return Response.json(
         {
           error: `Checkout isn't configured — missing Stripe price ID for the ${plan} plan (expected ${missingVar}).`,
@@ -93,6 +98,38 @@ export async function POST(req: Request) {
       planInterval = "annual";
     } else if (flatPriceId === monthlyPriceId) {
       planInterval = "monthly";
+    }
+
+    // ── Promo codes ──
+    // A merchant can type a code into the small "Have a promo code?" field on
+    // the pricing page, or arrive through the private founding link (signed
+    // cookie). Either way the code is applied on the server and, when it
+    // brings the total to $0, Stripe doesn't ask for a card. Checkout itself
+    // shows no promo box.
+    const cookieStore = await cookies();
+    const viaFoundingLink = isValidFoundingMarker(cookieStore.get(FOUNDING_COOKIE)?.value);
+    const codeToApply = promoInput || (viaFoundingLink ? FOUNDING_PROMO_CODE : "");
+    let offerFields: Pick<
+      Stripe.Checkout.SessionCreateParams,
+      "discounts" | "payment_method_collection"
+    > = {};
+    if (codeToApply) {
+      const promo = await findActivePromotionCode(stripe, codeToApply);
+      if (!promo) {
+        // Never fall through to a paid checkout for someone expecting a discount.
+        return Response.json(
+          {
+            error: promoInput
+              ? "That promo code isn't valid or has expired."
+              : "The founding-shop offer isn't available right now. Please contact Luke at lukerichards@ventzon.com.",
+          },
+          { status: 400 }
+        );
+      }
+      offerFields = {
+        discounts: [{ promotion_code: promo.id }],
+        payment_method_collection: "if_required",
+      };
     }
 
     const isOnboarding = shopName.length > 0;
@@ -119,11 +156,7 @@ export async function POST(req: Request) {
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
-        // Founding-shop promo codes (e.g. a 100%-off-for-12-months coupon)
-        // are entered on Stripe's hosted page. When a code brings the total
-        // to $0, Stripe skips collecting a card, so "no card needed" is true.
-        allow_promotion_codes: true,
-        payment_method_collection: "if_required",
+        ...offerFields,
         line_items: [{ price: flatPriceId, quantity: 1 }],
         success_url: `${origin}/merchant/dashboard?checkout=success`,
         cancel_url: `${origin}/pricing?shop_name=${encodeURIComponent(
@@ -145,8 +178,7 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      allow_promotion_codes: true,
-      payment_method_collection: "if_required",
+      ...offerFields,
       line_items: [{ price: flatPriceId, quantity: 1 }],
       success_url: `${origin}/merchant/${encodeURIComponent(shopSlug)}?checkout=success`,
       cancel_url: `${origin}/merchant/subscribe?shop=${encodeURIComponent(

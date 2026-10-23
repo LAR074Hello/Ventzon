@@ -38,15 +38,15 @@ export async function GET() {
     const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active");
     const activeFree = myShops.filter(s => s.plan_type !== "pro" && s.subscription_status === "active");
 
-    // Commission this month — flat 50%: $150 in month one for annual signups,
-    // $15/mo recurring for monthly (or unknown); $0 for free shops.
+    // Commission this month — flat 50%: $175 in month one for annual signups,
+    // $17.50/mo recurring for monthly (or unknown); $0 for free shops.
     const commissionThisMonth = activePro.reduce(
       (sum, s) => sum + calcMerchantCommission(true, isInFirstMonth(s.rep_claimed_at ?? s.created_at), s.plan_interval),
       0
     );
 
-    // All-time commission estimate — annual signups pay $150 in month one then
-    // $15/mo; monthly (or NULL) pay $15/mo only. Use rep_claimed_at, fall back
+    // All-time commission estimate — annual signups pay $175 in month one then
+    // $17.50/mo; monthly (or NULL) pay $17.50/mo only. Use rep_claimed_at, fall back
     // to shop created_at.
     const now = new Date();
     let allTimeCommission = 0;
