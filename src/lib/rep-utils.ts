@@ -1,5 +1,17 @@
 // Shared rep portal utilities
 
+import {
+  MONTHLY_PRICE,
+  ANNUAL_PRICE,
+  COMMISSION_RATE,
+  SIGNUP_COMMISSION,
+  RECURRING_COMMISSION,
+} from "@/lib/pricing";
+
+// Commission values are derived from plan pricing in src/lib/pricing.ts.
+// Re-exported so existing call sites keep working.
+export { COMMISSION_RATE, SIGNUP_COMMISSION, RECURRING_COMMISSION };
+
 export const ADMIN_EMAILS = ["lukerichards@ventzon.com", "lukerichardsschool@gmail.com"];
 
 export function isAdmin(email: string | null | undefined): boolean {
@@ -8,18 +20,15 @@ export function isAdmin(email: string | null | undefined): boolean {
 }
 
 // Commission constants — flat 50% of every plan sold (approved 2026-08):
-//  • Monthly ($30/mo) → $15/mo recurring for as long as the shop stays subscribed
-//  • Annual ($300/yr) → $150 per signup, then $15/mo recurring
+//  • Monthly ($35/mo) → $17.50/mo recurring for as long as the shop stays subscribed
+//  • Annual ($350/yr) → $175 per signup, then $17.50/mo recurring
 //  • Uncapped; free shops earn $0
 //
 // shops.plan_interval ('monthly' | 'annual' | NULL) decides the first-month
-// credit: annual → $150 signup commission; monthly or NULL → $15/mo only.
+// credit: annual → $175 signup commission; monthly or NULL → $17.50/mo only.
 // NULL is the safe default — it never over-credits (see calcMerchantCommission).
-export const MONTHLY_FLAT = 30;            // Pro plan $/month
-export const ANNUAL_FLAT = 300;            // Pro plan $/year
-export const COMMISSION_RATE = 0.5;        // flat 50% of every plan sold
-export const SIGNUP_COMMISSION = ANNUAL_FLAT * COMMISSION_RATE;   // $150 per annual signup
-export const RECURRING_COMMISSION = MONTHLY_FLAT * COMMISSION_RATE; // $15/mo recurring
+export const MONTHLY_FLAT = MONTHLY_PRICE;            // Pro plan $/month
+export const ANNUAL_FLAT = ANNUAL_PRICE;              // Pro plan $/year
 
 // A shop is in its first/signup month when its active service started within the
 // last 30 days. `startIso` is rep_claimed_at, falling back to shop created_at
@@ -36,7 +45,7 @@ export function calcMerchantCommission(
   planInterval: string | null | undefined
 ): number {
   if (!isPro) return 0;
-  // Annual signup → $150 signup commission in month one, then $15/mo recurring.
-  // Monthly (or NULL/unknown — never over-credit) → $15/mo only, no signup bonus.
+  // Annual signup → $175 signup commission in month one, then $17.50/mo recurring.
+  // Monthly (or NULL/unknown — never over-credit) → $17.50/mo only, no signup bonus.
   return planInterval === "annual" && isFirstMonth ? SIGNUP_COMMISSION : RECURRING_COMMISSION;
 }

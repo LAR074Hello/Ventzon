@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, MapPin, Clock, DollarSign, TrendingUp } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 import type { Metadata } from "next";
+import { ANNUAL_PRICE, formatSignupCommission, formatRecurringCommission } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Careers — Ventzon",
@@ -76,7 +77,7 @@ export default function CareersPage() {
               <div>
                 <p className="text-[11px] font-light tracking-[0.3em] text-fog-300">ABOUT THE ROLE</p>
                 <p className="mt-4 text-[14px] font-light leading-relaxed text-fog-200">
-                  A student internship where you&apos;re the face of Ventzon in your city — grow our user base on campus and around the area, sign up local businesses, and earn 50% of every plan you sell: $150 per annual signup, $15/mo recurring on monthly plans. Uncapped.
+                  A student internship where you&apos;re the face of Ventzon in your city — grow our user base on campus and around the area, sign up local businesses, and earn 50% of every plan you sell: {formatSignupCommission()} per annual signup, {formatRecurringCommission()}/mo recurring on monthly plans. Uncapped.
                 </p>
                 <p className="mt-3 text-[14px] font-light leading-relaxed text-fog-200">
                   An entrepreneurial, flexible role for someone who wants real sales and marketing experience at an early-stage startup, on their own schedule.
@@ -107,8 +108,8 @@ export default function CareersPage() {
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {[
                     { label: "50%", detail: "Of every plan you sell — uncapped" },
-                    { label: "$150", detail: "Per annual signup (50% of the $300/yr plan)" },
-                    { label: "$15/mo", detail: "Recurring on monthly plans, for as long as they stay" },
+                    { label: formatSignupCommission(), detail: `Per annual signup (50% of the $${ANNUAL_PRICE}/yr plan)` },
+                    { label: `${formatRecurringCommission()}/mo`, detail: "Recurring on monthly plans, for as long as they stay" },
                   ].map(({ label, detail }) => (
                     <div key={label} className="rounded-xl border border-[#222] p-4">
                       <p className="text-[18px] font-light text-fog-100">{label}</p>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DollarSign, Store, TrendingUp, ArrowRight, LogOut, Plus, X, Trash2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { MONTHLY_PRICE, ANNUAL_PRICE, formatSignupCommission, formatRecurringCommission } from "@/lib/pricing";
 
 type Stats = {
   totalMerchants: number;
@@ -268,8 +269,8 @@ export default function RepHomePage() {
           <p className="text-[11px] font-light tracking-[0.3em] text-[#555]">HOW YOU EARN</p>
           <div className="mt-4 space-y-3">
             {[
-              { label: "Annual plan", value: "$150", detail: "50% of the $300/yr plan — per signup" },
-              { label: "Monthly plan", value: "$15/mo", detail: "50% of the $30/mo plan — recurring for as long as they stay" },
+              { label: "Annual plan", value: formatSignupCommission(), detail: `50% of the $${ANNUAL_PRICE}/yr plan — per signup` },
+              { label: "Monthly plan", value: `${formatRecurringCommission()}/mo`, detail: `50% of the $${MONTHLY_PRICE}/mo plan — recurring for as long as they stay` },
               { label: "Free shops", value: "$0", detail: "Commission starts when they go pro" },
             ].map(({ label, value, detail }) => (
               <div key={label} className="flex items-center justify-between">

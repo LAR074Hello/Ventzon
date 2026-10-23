@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LogOut, Sparkles, RefreshCw, Check, Medal, GraduationCap, Siren, HeartHandshake } from "lucide-react";
 import MerchantAnalytics from "@/components/MerchantAnalytics";
+import { MONTHLY_PRICE } from "@/lib/pricing";
 
 // Community Rewards (Veterans/Students/Seniors/etc boost multipliers) is
 // built and working but hidden from the dashboard for now — flip to true
@@ -2622,7 +2623,7 @@ function MerchantShopPage() {
                       </span>
                       <span className="text-sm text-muted">
                         {billingData.plan_type === "pro"
-                          ? "$30/mo flat — no per-redemption fees"
+                          ? `$${MONTHLY_PRICE}/mo flat — no per-redemption fees`
                           : `${billingData.rewards_this_month} reward${billingData.rewards_this_month === 1 ? "" : "s"} this month → ${billingData.estimated_charge}`}
                       </span>
                     </div>

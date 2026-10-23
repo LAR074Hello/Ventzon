@@ -6,14 +6,14 @@
  * as NULL. The database cannot know which plan a merchant bought — that lives
  * on the Stripe subscription (items[].price.recurring.interval). This script
  * asks Stripe for each subscribed shop's interval and stores it, so the rep
- * commission logic (src/lib/rep-utils.ts) credits annual signups ($150 in
- * month one, then $15/mo) and monthly signups ($15/mo only) correctly.
+ * commission logic (src/lib/rep-utils.ts) credits annual signups ($175 in
+ * month one, then $17.50/mo) and monthly signups ($17.50/mo only) correctly.
  *
  * SAFETY. Purely informational — it only writes the plan_interval column and
  * never touches commission or payout records. Shops whose subscription can't
  * be resolved (missing stripe_subscription_id, price mismatch, Stripe error)
- * are left NULL, which src/lib/rep-utils.ts treats as the safe $15/mo monthly
- * treatment. It NEVER credits a $150 signup commission retroactively.
+ * are left NULL, which src/lib/rep-utils.ts treats as the safe $17.50/mo monthly
+ * treatment. It NEVER credits a $175 signup commission retroactively.
  *
  * EXECUTION (production):
  *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... STRIPE_SECRET_KEY=... \
@@ -95,7 +95,7 @@ async function main() {
 
   console.log(`${monthly} shop(s) → 'monthly' (${APPLY ? "applied" : "would be applied"}).`);
   console.log(`${annual} shop(s) → 'annual' (${APPLY ? "applied" : "would be applied"}).`);
-  console.log(`${skipped} shop(s) left NULL — safe $15/mo monthly treatment, no retroactive $150 credits.`);
+  console.log(`${skipped} shop(s) left NULL — safe $17.50/mo monthly treatment, no retroactive $175 credits.`);
   if (!APPLY) console.log("Dry run — re-run with --apply to write plan_interval.");
 }
 

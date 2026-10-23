@@ -1,4 +1,5 @@
 import { BookOpen, MessageSquare, Zap, HelpCircle } from "lucide-react";
+import { MONTHLY_PRICE, ANNUAL_PRICE, ANNUAL_SAVINGS } from "@/lib/pricing";
 
 const sections = [
   {
@@ -12,7 +13,7 @@ const sections = [
     items: [
       { q: "\"We already have a loyalty program\"", a: "That's great — Ventzon replaces paper punch cards and works automatically. No manual tracking, no lost cards, and you get to see who your regulars actually are." },
       { q: "\"We're too busy right now\"", a: "Totally understand. Setup takes 5 minutes and I can do it while you serve customers. You don't need to stop what you're doing." },
-      { q: "\"How much does it cost?\"", a: "$30/month — or $300/year if they want to save $60. Flat — no per-redemption fees." },
+      { q: "\"How much does it cost?\"", a: `$${MONTHLY_PRICE}/month — or $${ANNUAL_PRICE}/year if they want to save $${ANNUAL_SAVINGS}. Flat — no per-redemption fees.` },
       { q: "\"We're not very tech savvy\"", a: "That's exactly who this is built for. There's nothing to install — just a QR code you print and put on your counter. Customers do the rest." },
     ],
   },

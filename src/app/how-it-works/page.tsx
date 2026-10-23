@@ -9,6 +9,7 @@ import Divider from "@/components/Divider";
 import FadeImage from "@/components/FadeImage";
 import Parallax from "@/components/Parallax";
 import SiteFooter from "@/components/SiteFooter";
+import { MONTHLY_PRICE } from "@/lib/pricing";
 
 /* Editorial photos — licensed, self-hosted in /public/site-images.
    Portrait files are cropped 4:5 for the Parallax cards; the *-wide
@@ -87,7 +88,7 @@ const merchantSteps = [
   {
     number: "03",
     title: "Rewards at one flat price",
-    body: "When you're ready, set a visit goal and a reward. Customers earn it by showing up — $30/month flat, no per-redemption fees.",
+    body: `When you're ready, set a visit goal and a reward. Customers earn it by showing up — $${MONTHLY_PRICE}/month flat, no per-redemption fees.`,
   },
 ];
 

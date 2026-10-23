@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import SiteFooter from "@/components/SiteFooter";
+import { MONTHLY_PRICE, ANNUAL_PRICE } from "@/lib/pricing";
 
 const steps = [
   {
@@ -19,7 +20,7 @@ const steps = [
   {
     number: "03",
     title: "Choose a plan and subscribe",
-    body: "Pick monthly ($30/month) or yearly ($300/year — two months free) and enter your card. It's a flat $30/month — no per-redemption fees, no surprise charges.",
+    body: `Pick monthly ($${MONTHLY_PRICE}/month) or yearly ($${ANNUAL_PRICE}/year — two months free) and enter your card. It's a flat $${MONTHLY_PRICE}/month — no per-redemption fees, no surprise charges.`,
   },
   {
     number: "04",

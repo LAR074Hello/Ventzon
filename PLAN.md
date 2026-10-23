@@ -1,4 +1,8 @@
 # Billing & Spend Tracking Implementation Plan
+> **Superseded (2026-10):** the per-redemption ("$1 per reward") fee was
+> eliminated. Ventzon Pro is now a flat $35/month or $350/year with no
+> per-redemption fees. This document is kept for history only.
+
 
 ## Summary
 

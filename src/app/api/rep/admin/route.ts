@@ -45,8 +45,8 @@ export async function GET() {
       const myShops = shopsByRep[rep.id] ?? [];
       const activePro = myShops.filter(s => s.plan_type === "pro" && s.subscription_status === "active").length;
 
-      // Flat 50% commission: annual signups pay $150 in month one then $15/mo;
-      // monthly (or unknown/NULL) pay $15/mo only; free shops pay $0.
+      // Flat 50% commission: annual signups pay $175 in month one then $17.50/mo;
+      // monthly (or unknown/NULL) pay $17.50/mo only; free shops pay $0.
       const commissionThisMonth = myShops.reduce((sum, s) => {
         const isPro = s.plan_type === "pro" && s.subscription_status === "active";
         return sum + calcMerchantCommission(isPro, isInFirstMonth(s.rep_claimed_at ?? s.created_at), s.plan_interval);
