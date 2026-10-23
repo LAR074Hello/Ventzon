@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { checkPushPermission, requestPushPermission } from "@/lib/push-client";
 import { stripImageMetadata } from "@/lib/strip-exif";
+import AudiencePrompt from "../../components/AudiencePrompt";
 import {
   LogOut, User, ChevronRight, Trophy, Share2, Bell,
   Trash2, Pencil, Check, X, Camera, Mail, HelpCircle, FileText,
@@ -136,6 +137,14 @@ export default function ProfilePage() {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [emailNotif, setEmailNotif] = useState(true);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [editingAudience, setEditingAudience] = useState(false);
+  const [audienceEligible, setAudienceEligible] = useState(false);
+  useEffect(() => {
+    fetch("/api/customer/audience-profile", { cache: "no-store" })
+      .then((r) => (r.ok ? safeJson(r) : null))
+      .then((j) => setAudienceEligible(Boolean(j?.eligible)))
+      .catch(() => {});
+  }, []);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -740,6 +749,25 @@ export default function ProfilePage() {
           ))}
         </div>
       </div>
+
+      {/* ── PERSONALIZE ── */}
+      {audienceEligible && (
+        <div className="mb-6">
+          <SectionLabel title="Personalize" />
+          <div className="overflow-hidden rounded-card border border-subtle mx-5">
+            <SettingsRow
+              icon={Sparkles}
+              label="Your interests"
+              value="Edit"
+              onClick={() => setEditingAudience(true)}
+            />
+          </div>
+          <p className="mt-2 px-5 text-xs leading-relaxed text-muted">
+            Shapes your feed. Places only see totals, never your answers.
+          </p>
+        </div>
+      )}
+      {editingAudience && <AudiencePrompt mode="edit" onClose={() => setEditingAudience(false)} />}
 
       {/* ── NOTIFICATIONS ── */}
       <div className="mb-6">

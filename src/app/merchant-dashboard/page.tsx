@@ -10,6 +10,7 @@ import MerchantAnalytics from "@/components/MerchantAnalytics";
 import SiteFooter from "@/components/SiteFooter";
 import {
   analyticsMock,
+  audienceMock,
   previewOverview,
   previewCustomers,
   previewCampaign,
@@ -142,7 +143,7 @@ function HeroDashboard() {
 function AnalyticsScreen() {
   return (
     <div className="merchant-dark w-full text-primary">
-      <MerchantAnalytics shopSlug="northside-coffee" mockData={analyticsMock} />
+      <MerchantAnalytics shopSlug="northside-coffee" mockData={analyticsMock} mockAudience={audienceMock} />
     </div>
   );
 }
@@ -309,16 +310,24 @@ const OWNER_QUESTIONS = [
     a: "Visits by day and hour show your rush and your slow spots, so you know exactly when a promotion would help.",
   },
   {
-    q: "Is my reward working?",
-    a: "Track rewards earned and redeemed. If nobody reaches the reward, you'll see it and can make it easier to earn.",
-  },
-  {
     q: "Did my promotion bring people back?",
     a: "After every email, see how many customers who got it came back within a week. No more guessing.",
   },
   {
+    q: "Who are my customers?",
+    a: "Age range, interests and what people come in for, from customers who choose to share it. Shown as totals, never as individuals.",
+  },
+  {
+    q: "How did the visit go?",
+    a: "Customers can leave an optional thumbs up or down after checking in. You see the percentage and anonymous notes.",
+  },
+  {
+    q: "How did my month go?",
+    a: "A one-page monthly report in plain English, ready to print or save as a PDF.",
+  },
+  {
     q: "Who's finding me on Ventzon?",
-    a: "Followers, posts about your shop, likes and saves from locals in the Ventzon app, including followers who haven't visited yet.",
+    a: "How many locals viewed your page in the Ventzon app and came in within a week, plus followers, posts and saves.",
   },
 ];
 
@@ -446,7 +455,7 @@ export default function MerchantDashboardPage() {
             Each answer comes with a button to act on it.
           </p>
         </ScrollReveal>
-        <div className="mx-auto mt-16 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-16 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {OWNER_QUESTIONS.map((item, i) => (
             <ScrollReveal key={item.q} delay={((i % 3) + 1) as 1 | 2 | 3}>
               <div className="h-full rounded-2xl bg-night-800 p-6 shadow-warm">

@@ -1,3 +1,4 @@
+import { preferredCategories } from "@/lib/audience";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
@@ -160,6 +161,7 @@ export async function GET(req: Request) {
     // Viewer personalization: followed creators, followed shops, progress.
     const followedAuthors = new Set<string>();
     const followedShops = new Set<string>();
+    const likedCategories = new Set<string>();
     const progressMap: Record<string, { visits: number; goal: number }> = {};
     if (viewerEmail) {
       const [{ data: uf }, { data: sf }, { data: memberships }] = await Promise.all([
@@ -168,6 +170,18 @@ export async function GET(req: Request) {
         admin.from("customers").select("shop_slug, visits").eq("email", viewerEmail),
       ]);
       for (const f of uf ?? []) followedAuthors.add(f.followee_email);
+      // Interests from the optional audience profile nudge matching places
+      // up. Fails open if the columns don't exist yet.
+      try {
+        const { data: prof } = await admin
+          .from("customer_profiles")
+          .select("interests")
+          .eq("email", viewerEmail)
+          .maybeSingle();
+        for (const c of preferredCategories((prof as { interests?: string[] } | null)?.interests)) {
+          likedCategories.add(c);
+        }
+      } catch {}
       for (const f of sf ?? []) followedShops.add(f.shop_slug);
       for (const m of memberships ?? []) {
         progressMap[m.shop_slug] = {
@@ -214,6 +228,8 @@ export async function GET(req: Request) {
       let score = -ageHours;
       if (followedAuthors.has(p.author_email)) score += 72;
       if (followedShops.has(p.shop_slug!)) score += 24;
+      // A nudge, not a filter: about half a day of freshness.
+      if (place?.category && likedCategories.has(place.category)) score += 12;
       if (hasLoc && shop?.latitude != null && shop?.longitude != null) {
         const dist = haversineMiles(lat, lng, shop.latitude, shop.longitude);
         score += Math.max(0, 24 - dist);

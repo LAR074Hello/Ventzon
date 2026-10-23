@@ -89,7 +89,96 @@ type AnalyticsResponse = {
     saves: number;
     comments: number;
   } | null;
+  views?: {
+    views: number;
+    unique_viewers: number;
+    viewed_then_visited: number;
+    sources: { source: string; count: number }[];
+  } | null;
+  ratings?: {
+    count: number;
+    positive_pct: number | null;
+    notes: { text: string; date: string }[];
+    min_to_show: number;
+  } | null;
 };
+
+export type AudienceData =
+  | { available: false; respondents: number; needed: number }
+  | {
+      available: true;
+      respondents: number;
+      age: { label: string; pct: number }[];
+      interests: { label: string; pct: number }[];
+      going_out_for: { label: string; pct: number }[];
+      food: { label: string; pct: number }[];
+      price: { label: string; pct: number }[];
+      areas: { label: string; pct: number }[];
+      neighborhood: string | null;
+      standouts: { label: string; times: number }[];
+    };
+
+function ShareBars({ title, items }: { title: string; items: { label: string; pct: number }[] }) {
+  if (!items.length) return null;
+  return (
+    <div>
+      <p className="text-2xs font-medium uppercase tracking-caps text-muted">{title}</p>
+      <div className="mt-2.5 space-y-2">
+        {items.map((it) => (
+          <div key={it.label}>
+            <div className="flex items-baseline justify-between gap-3 text-xs">
+              <span className="text-secondary">{it.label}</span>
+              <span className="tabular-nums text-muted">{it.pct}%</span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-sunken">
+              <div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(2, it.pct)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AudiencePanel({ audience }: { audience: AudienceData }) {
+  return (
+    <div className="mt-4 rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <SectionLabel>Your audience</SectionLabel>
+        <p className="text-[11px] text-muted">
+          {audience.available
+            ? `From ${audience.respondents} customers who shared their interests. Totals only.`
+            : "From customers who choose to share their interests. Totals only."}
+        </p>
+      </div>
+      {!audience.available ? (
+        <p className="mt-3 text-sm text-muted">
+          Appears once {audience.needed} customers have filled in their optional profile ({audience.respondents} so far).
+        </p>
+      ) : (
+        <>
+          {audience.standouts.length > 0 && audience.neighborhood && (
+            <p className="mt-3 text-sm leading-relaxed text-secondary">
+              Compared with other Ventzon users in {audience.neighborhood}, your customers are{" "}
+              {audience.standouts
+                .map((s) => `${s.times}x more likely to be into ${s.label.toLowerCase()}`)
+                .join(", and ")}
+              .
+            </p>
+          )}
+          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ShareBars title="Age" items={audience.age} />
+            <ShareBars title="Top interests" items={audience.interests} />
+            <ShareBars title="They come in for" items={audience.going_out_for} />
+            <ShareBars title="Food and drink" items={audience.food} />
+            <ShareBars title="Price comfort" items={audience.price} />
+            <ShareBars title="Where they live" items={audience.areas} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export type CampaignAudience = "all" | "slipping" | "lapsed";
 export type CampaignGoal = "slow_day" | "win_back" | "appreciation";
@@ -358,12 +447,14 @@ function Panel({
 export default function MerchantAnalytics({
   shopSlug,
   mockData,
+  mockAudience,
   onStartCampaign,
   onEditReward,
   onShowCustomers,
 }: {
   shopSlug: string;
   mockData?: AnalyticsResponse;
+  mockAudience?: AudienceData;
   /** Opens the campaign composer for an audience, with an AI draft goal. */
   onStartCampaign?: (audience: CampaignAudience, goal: CampaignGoal) => void;
   onEditReward?: () => void;
@@ -374,6 +465,17 @@ export default function MerchantAnalytics({
   const [loading, setLoading] = useState(!mockData);
   const [error, setError] = useState("");
   const chart = useChartTokens();
+  const [audience, setAudience] = useState<AudienceData | null>(mockAudience ?? null);
+
+  useEffect(() => {
+    if (mockAudience || !shopSlug) return;
+    let cancelled = false;
+    fetch(`/api/merchant/audience?shop=${encodeURIComponent(shopSlug)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? safeJson(r) : null))
+      .then((j) => { if (!cancelled && j && typeof j.available === "boolean") setAudience(j as AudienceData); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [shopSlug, mockAudience]);
 
   const fetchAnalytics = useCallback(async () => {
     if (!shopSlug) return;
@@ -650,6 +752,73 @@ export default function MerchantAnalytics({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── Page views: who looked at you in the app, and who then came in ── */}
+      {!loading && data?.views && (
+        <div className="mt-4 rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <SectionLabel>Shop page views</SectionLabel>
+            <p className="text-[11px] text-muted">People who opened your page in the Ventzon app, {periodCaption.toLowerCase()}</p>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary">{formatCount(data.views.views)}</p>
+              <p className="mt-1.5 text-[11px] text-muted">Views</p>
+            </div>
+            <div>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary">{formatCount(data.views.unique_viewers)}</p>
+              <p className="mt-1.5 text-[11px] text-muted">People</p>
+            </div>
+            <div>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary">{formatCount(data.views.viewed_then_visited)}</p>
+              <p className="mt-1.5 text-[11px] text-muted">Visited within 7 days</p>
+            </div>
+          </div>
+          {data.views.sources.length > 0 && (
+            <p className="mt-3 text-[11px] text-muted">
+              From {data.views.sources.map((x) => `${x.source} ${formatCount(x.count)}`).join(" · ")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {audience && <AudiencePanel audience={audience} />}
+
+      {/* ── Visit ratings: optional, anonymous ── */}
+      {!loading && data?.ratings && (
+        <div className="mt-4 rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <SectionLabel>How visits went</SectionLabel>
+            <p className="text-[11px] text-muted">Optional thumbs up or down after a check-in. Anonymous.</p>
+          </div>
+          {data.ratings.positive_pct === null ? (
+            <p className="mt-3 text-sm text-muted">
+              Shows once {data.ratings.min_to_show} customers have rated a visit ({data.ratings.count} so far, {periodCaption.toLowerCase()}).
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-5 sm:grid-cols-[auto_1fr]">
+              <div>
+                <p className="text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary">
+                  {data.ratings.positive_pct}%
+                </p>
+                <p className="mt-1.5 text-xs text-muted">
+                  positive, from {formatCount(data.ratings.count)} ratings
+                </p>
+              </div>
+              {data.ratings.notes.length > 0 && (
+                <ul className="space-y-2 sm:border-l sm:border-subtle sm:pl-5">
+                  {data.ratings.notes.map((n, i) => (
+                    <li key={i} className="text-sm leading-relaxed text-secondary">
+                      &ldquo;{n.text}&rdquo;
+                      <span className="ml-2 text-[11px] text-muted">{formatDateLabel(n.date)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       )}
 

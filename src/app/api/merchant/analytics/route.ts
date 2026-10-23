@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { placeIdForSlug } from "@/lib/places";
+import { RATINGS_MIN_TO_SHOW } from "@/lib/visit-rating";
 
 export const dynamic = "force-dynamic";
 
@@ -579,6 +580,117 @@ export async function GET(req: Request) {
       console.warn("[analytics] on-ventzon metrics failed:", e instanceof Error ? e.message : e);
     }
 
+    // ── Page views in the Ventzon app ──
+    // Views (one per signed-in person per day), unique viewers, where they
+    // came from, and how many viewers checked in within 7 days of viewing.
+    let views: {
+      views: number;
+      unique_viewers: number;
+      viewed_then_visited: number;
+      sources: { source: string; count: number }[];
+    } | null = null;
+    try {
+      const placeIdForViews = await placeIdForSlug(supabase, shop);
+      const viewFilter = placeIdForViews
+        ? `shop_slug.eq.${shop},place_id.eq.${placeIdForViews}`
+        : `shop_slug.eq.${shop}`;
+      const { data: viewRows, error: viewErr } = await supabase
+        .from("place_views")
+        .select("viewer_id, view_date, source")
+        .or(viewFilter)
+        .gte("view_date", startDate)
+        .lte("view_date", endDate)
+        .limit(50000);
+      if (!viewErr) {
+        const vr = viewRows ?? [];
+        const firstView: Record<string, string> = {};
+        const sourceCounts: Record<string, number> = {};
+        for (const v of vr) {
+          const id = String(v.viewer_id);
+          const d = String(v.view_date);
+          if (!firstView[id] || d < firstView[id]) firstView[id] = d;
+          sourceCounts[String(v.source ?? "other")] = (sourceCounts[String(v.source ?? "other")] ?? 0) + 1;
+        }
+        // viewer profile → email → this shop's customer row → check-ins
+        const viewerIds = Object.keys(firstView);
+        let visited = 0;
+        if (viewerIds.length) {
+          const { data: profs } = await supabase
+            .from("customer_profiles")
+            .select("id, email")
+            .in("id", viewerIds.slice(0, 1000));
+          const emailToViewer: Record<string, string> = {};
+          for (const p of profs ?? []) emailToViewer[String(p.email).toLowerCase()] = String(p.id);
+          const emails = Object.keys(emailToViewer);
+          if (emails.length) {
+            const { data: custs } = await supabase
+              .from("customers")
+              .select("id, email")
+              .eq("shop_slug", shop)
+              .in("email", emails);
+            const custToViewer: Record<string, string> = {};
+            for (const c of custs ?? []) custToViewer[String(c.id)] = emailToViewer[String(c.email).toLowerCase()];
+            const seen = new Set<string>();
+            for (const row of allCheckins || []) {
+              const viewer = custToViewer[row.customer_id as string];
+              if (!viewer || seen.has(viewer)) continue;
+              const fv = firstView[viewer];
+              const limit = new Date(fv + "T00:00:00Z");
+              limit.setUTCDate(limit.getUTCDate() + 7);
+              const cd = row.checkin_date as string;
+              if (cd >= fv && cd <= limit.toISOString().slice(0, 10)) seen.add(viewer);
+            }
+            visited = seen.size;
+          }
+        }
+        views = {
+          views: vr.length,
+          unique_viewers: viewerIds.length,
+          viewed_then_visited: visited,
+          sources: Object.entries(sourceCounts)
+            .map(([source, count]) => ({ source, count }))
+            .sort((a, b) => b.count - a.count),
+        };
+      }
+    } catch {}
+
+    // ── Visit ratings (optional thumbs up/down after a check-in) ──
+    // Anonymous: notes are shown without names, and nothing at all until
+    // there are enough ratings that no one can be singled out.
+    let ratings: {
+      count: number;
+      positive_pct: number | null;
+      notes: { text: string; date: string }[];
+      min_to_show: number;
+    } | null = null;
+    try {
+      const { data: ratingRows, error: ratingErr } = await supabase
+        .from("visit_ratings")
+        .select("rating, note, created_at")
+        .eq("shop_slug", shop)
+        .gte("created_at", `${startDate}T00:00:00Z`)
+        .lte("created_at", `${endDate}T23:59:59Z`)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+      if (!ratingErr) {
+        const rs = ratingRows ?? [];
+        const enough = rs.length >= RATINGS_MIN_TO_SHOW;
+        ratings = {
+          count: rs.length,
+          positive_pct: enough
+            ? Math.round((rs.filter((r) => r.rating === 1).length / rs.length) * 100)
+            : null,
+          notes: enough
+            ? rs
+                .filter((r) => r.note)
+                .slice(0, 5)
+                .map((r) => ({ text: String(r.note), date: String(r.created_at).slice(0, 10) }))
+            : [],
+          min_to_show: RATINGS_MIN_TO_SHOW,
+        };
+      }
+    } catch {}
+
     // Top 5 customers by total visits
     const { data: topCustomerRows } = await supabase
       .from("customers")
@@ -625,6 +737,8 @@ export async function GET(req: Request) {
       spend,
       last_promo: lastPromo,
       on_ventzon: onVentzon,
+      ratings,
+      views,
       month,
     });
   } catch (err) {

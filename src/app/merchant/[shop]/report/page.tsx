@@ -28,6 +28,8 @@ type Report = {
   spend?: { avg_ticket: number | null; visits_with_amount: number; loyal_avg_ticket: number | null; other_avg_ticket: number | null };
   last_promo?: { name: string | null; sent_at: string; reached: number; came_back: number; window_days: number } | null;
   on_ventzon?: { followers: number; new_followers: number; followers_not_visited: number; posts: number; likes: number; saves: number } | null;
+  views?: { views: number; unique_viewers: number; viewed_then_visited: number } | null;
+  ratings?: { count: number; positive_pct: number | null } | null;
 };
 
 const DAY_FULL: Record<string, string> = {
@@ -198,6 +200,12 @@ export default function MonthlyReportPage() {
               />
               {data.spend?.avg_ticket != null && (
                 <Stat label="Average spend" value={money(data.spend.avg_ticket)} sub={`From ${n(data.spend.visits_with_amount)} visits with an amount`} />
+              )}
+              {data.views && (
+                <Stat label="Page views" value={n(data.views.views)} sub={`${n(data.views.viewed_then_visited)} visited within 7 days`} />
+              )}
+              {data.ratings?.positive_pct != null && (
+                <Stat label="Positive visits" value={`${data.ratings.positive_pct}%`} sub={`From ${n(data.ratings.count)} ratings`} />
               )}
               {data.on_ventzon && (
                 <>

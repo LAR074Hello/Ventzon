@@ -79,6 +79,16 @@ export async function DELETE() {
         await supabase.from("posts").delete().eq("author_email", email);
       } catch {}
 
+      // Visit ratings (keyed by their customer rows) and page views (keyed
+      // by their profile id) — removed before those rows are deleted below.
+      try {
+        const { data: custRows } = await supabase.from("customers").select("id").eq("email", email);
+        const custIds = (custRows ?? []).map((r: { id: string }) => r.id);
+        if (custIds.length) await supabase.from("visit_ratings").delete().in("customer_id", custIds);
+        const { data: prof } = await supabase.from("customer_profiles").select("id").eq("email", email).maybeSingle();
+        if (prof?.id) await supabase.from("place_views").delete().eq("viewer_id", prof.id);
+      } catch {}
+
       // Their activity on other people's content
       const cleanups: Array<[string, string, string]> = [
         ["post_likes", "email", email],

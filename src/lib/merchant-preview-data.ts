@@ -121,6 +121,26 @@ export const analyticsMock = {
     window_days: 7,
     window_complete: true,
   },
+  views: {
+    views: 1240,
+    unique_viewers: 892,
+    viewed_then_visited: 137,
+    sources: [
+      { source: "feed", count: 611 },
+      { source: "map", count: 402 },
+      { source: "search", count: 158 },
+      { source: "share", count: 69 },
+    ],
+  },
+  ratings: {
+    count: 86,
+    positive_pct: 91,
+    notes: [
+      { text: "Line was long at 8am and only one register open.", date: "2026-08-02" },
+      { text: "Oat milk was out again.", date: "2026-07-27" },
+    ],
+    min_to_show: 5,
+  },
   on_ventzon: {
     followers: 184,
     new_followers: 23,
@@ -163,4 +183,48 @@ export const previewCampaign = {
   subject: "Double stamps this weekend",
   message:
     "Bring a friend this Saturday and both of you earn an extra stamp toward your reward.",
+};
+
+/** Sample audience profile for the marketing page (labeled sample data). */
+export const audienceMock = {
+  available: true as const,
+  respondents: 214,
+  age: [
+    { label: "25-34", pct: 46 },
+    { label: "18-24", pct: 27 },
+    { label: "35-44", pct: 18 },
+    { label: "45-54", pct: 6 },
+  ],
+  interests: [
+    { label: "Coffee", pct: 71 },
+    { label: "Fitness", pct: 38 },
+    { label: "Brunch", pct: 34 },
+    { label: "Books", pct: 22 },
+    { label: "Pets", pct: 19 },
+  ],
+  going_out_for: [
+    { label: "Study or work", pct: 44 },
+    { label: "Quick bite", pct: 31 },
+    { label: "Treat yourself", pct: 17 },
+  ],
+  food: [
+    { label: "Coffee lover", pct: 62 },
+    { label: "Plant-based options", pct: 21 },
+    { label: "Vegetarian", pct: 12 },
+  ],
+  price: [
+    { label: "Mid-range", pct: 58 },
+    { label: "Budget", pct: 29 },
+    { label: "Splurge", pct: 13 },
+  ],
+  areas: [
+    { label: "Williamsburg", pct: 41 },
+    { label: "Greenpoint", pct: 22 },
+    { label: "Bushwick", pct: 14 },
+  ],
+  neighborhood: "Williamsburg",
+  standouts: [
+    { label: "Fitness", times: 2.1 },
+    { label: "Books", times: 1.6 },
+  ],
 };
