@@ -258,50 +258,6 @@ function QRPanel() {
   );
 }
 
-/* ── Growth mockup — numbers derived from the sample source ── */
-function GrowthBand() {
-  const totalCheckins = previewSum(analyticsMock.checkins);
-  const stats = [
-    {
-      label: "Check-ins",
-      value: totalCheckins.toLocaleString("en-US"),
-      caption: "Last 30 days",
-    },
-    {
-      label: "Rewards redeemed",
-      value: analyticsMock.rewards_redeemed_period.toLocaleString("en-US"),
-      caption: `${analyticsMock.rewards_earned_period.toLocaleString("en-US")} earned in period`,
-    },
-    {
-      label: "Retention",
-      value: `${analyticsMock.retention_rate}%`,
-      caption: "Customers who returned",
-    },
-    {
-      label: "Loyal regulars",
-      value: analyticsMock.loyal_count.toLocaleString("en-US"),
-      caption: "Have earned a reward",
-    },
-  ];
-  return (
-    <div className="merchant-dark rounded-xl border border-subtle bg-surface-raised p-6 text-primary sm:p-8">
-      <p className="text-2xs font-medium uppercase tracking-caps text-muted">
-        Last 30 days
-      </p>
-      <div className="mt-6 grid gap-x-10 gap-y-7 sm:grid-cols-2">
-        {stats.map((s) => (
-          <div key={s.label}>
-            <p className="text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary sm:text-4xl">
-              {s.value}
-            </p>
-            <p className="mt-1.5 text-xs text-muted">{s.caption}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function CampaignCard() {
   return (
     <div className="merchant-dark rounded-xl border border-subtle bg-surface-raised p-6 text-primary sm:p-8">
@@ -338,6 +294,98 @@ function CampaignCard() {
 }
 
 
+/* ── The questions an owner actually asks, each answered on the dashboard ── */
+const OWNER_QUESTIONS = [
+  {
+    q: "Who are my regulars?",
+    a: "See how many customers have earned a reward, how often they come back, and what they spend compared with everyone else.",
+  },
+  {
+    q: "Who's slipping away?",
+    a: "Ventzon flags customers who haven't been back in two weeks, so you can send a come-back offer before they're gone.",
+  },
+  {
+    q: "When am I busy, and when am I not?",
+    a: "Visits by day and hour show your rush and your slow spots, so you know exactly when a promotion would help.",
+  },
+  {
+    q: "Is my reward working?",
+    a: "Track rewards earned and redeemed. If nobody reaches the reward, you'll see it and can make it easier to earn.",
+  },
+  {
+    q: "Did my promotion bring people back?",
+    a: "After every email, see how many customers who got it came back within a week. No more guessing.",
+  },
+  {
+    q: "Who's finding me on Ventzon?",
+    a: "Followers, posts about your shop, likes and saves from locals in the Ventzon app, including followers who haven't visited yet.",
+  },
+];
+
+function PromoResultCard() {
+  const p = analyticsMock.last_promo;
+  return (
+    <div className="merchant-dark rounded-xl border border-subtle bg-surface-raised p-6 text-primary sm:p-8">
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-2xs font-medium uppercase tracking-caps text-muted">
+          Promotion results
+        </p>
+        <span className="rounded-md border border-subtle px-2 py-0.5 text-2xs font-medium uppercase tracking-caps text-muted">
+          7 days after sending
+        </span>
+      </div>
+      <p className="mt-6 font-display text-xl font-medium tracking-tight text-primary">
+        &ldquo;{p.name}&rdquo;
+      </p>
+      <p className="mt-1 text-xs text-muted">Sent to customers slipping away</p>
+      <div className="mt-6 grid grid-cols-2 gap-6 border-t border-subtle pt-5">
+        <div>
+          <p className="text-3xl font-semibold leading-none tracking-tight tabular-nums">{p.reached}</p>
+          <p className="mt-1.5 text-xs text-muted">Customers it went to</p>
+        </div>
+        <div>
+          <p className="text-3xl font-semibold leading-none tracking-tight tabular-nums">{p.came_back}</p>
+          <p className="mt-1.5 text-xs text-muted">Came back within a week</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MonthlyReportCard() {
+  const visits = previewSum(analyticsMock.checkins);
+  const lines = [
+    `${visits.toLocaleString("en-US")} visits from ${analyticsMock.new_vs_returning.total.toLocaleString("en-US")} customers, up ${analyticsMock.period_vs_previous.checkins_pct_change}% from last month.`,
+    `${analyticsMock.new_vs_returning.new} new customers and ${analyticsMock.new_vs_returning.returning} returning.`,
+    "Saturday was your busiest day, mostly in the morning rush. Monday was the slowest.",
+    `Your promotion brought back ${analyticsMock.last_promo.came_back} of ${analyticsMock.last_promo.reached} customers within 7 days.`,
+  ];
+  return (
+    <div className="rounded-xl bg-white p-6 text-neutral-900 shadow-warm sm:p-8">
+      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500">Monthly report</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight">{previewOverview.shopName}</p>
+      <p className="text-sm text-neutral-500">July 2026</p>
+      <div className="mt-5 space-y-1.5 border-t border-neutral-200 pt-5">
+        {lines.map((l) => (
+          <p key={l} className="text-[15px] leading-relaxed text-neutral-800">{l}</p>
+        ))}
+      </div>
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        {[
+          { label: "Regulars", value: String(analyticsMock.loyal_count) },
+          { label: "Avg spend", value: `$${analyticsMock.spend.avg_ticket.toFixed(2)}` },
+          { label: "Followers", value: String(analyticsMock.on_ventzon.followers) },
+        ].map((m) => (
+          <div key={m.label} className="rounded-lg border border-neutral-200 p-3">
+            <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-neutral-500">{m.label}</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums">{m.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function MerchantDashboardPage() {
   return (
     <main className="marketing min-h-screen bg-night-950 text-fog-100">
@@ -349,11 +397,12 @@ export default function MerchantDashboardPage() {
             EXAMPLE SCREENS
           </p>
           <h1 className="animate-fade-in anim-delay-400 mt-8 font-display text-4xl font-light tracking-[0.01em] text-fog-100 opacity-0 sm:text-5xl lg:text-6xl">
-            Your shop, in numbers.
+            Know your customers.
           </h1>
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
-            Every check-in, every reward, every return — on one quiet
-            screen.
+            Ventzon turns every visit into customer analytics: who your
+            regulars are, who&rsquo;s slipping away, when you&rsquo;re busy,
+            and what actually brings people back.
           </p>
           <div className="animate-fade-in-up anim-delay-800 mt-12 flex flex-col items-center justify-center gap-4 opacity-0 sm:flex-row">
             <Link
@@ -382,19 +431,46 @@ export default function MerchantDashboardPage() {
         </div>
       </section>
 
-      {/* ══ ACT I — know your regulars ══ */}
+      {/* ══ THE QUESTIONS — what the analytics answer ══ */}
+      <section className="relative px-6 py-24 sm:py-32">
+        <Divider className="mx-auto mb-16 max-w-xs" />
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
+            CUSTOMER ANALYTICS
+          </p>
+          <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl">
+            The questions every owner asks, answered.
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
+            Every check-in adds to a clear picture of your customer base.
+            Each answer comes with a button to act on it.
+          </p>
+        </ScrollReveal>
+        <div className="mx-auto mt-16 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {OWNER_QUESTIONS.map((item, i) => (
+            <ScrollReveal key={item.q} delay={((i % 3) + 1) as 1 | 2 | 3}>
+              <div className="h-full rounded-2xl bg-night-800 p-6 shadow-warm">
+                <h3 className="font-display text-lg font-medium text-fog-100">{item.q}</h3>
+                <p className="mt-2.5 text-[14px] font-light leading-[1.7] text-fog-300">{item.a}</p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ ACT I — the dashboard ══ */}
       <section className="relative px-6 py-28 sm:py-40">
         <Divider className="mx-auto mb-16 max-w-xs" />
         <ScrollReveal className="mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-            KNOW YOUR REGULARS
+            YOUR DASHBOARD
           </p>
           <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl">
-            Know which customers keep coming back.
+            All of it, on one screen.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
-            Who returns, when they return, and what finally brings them
-            back — visible at a glance.
+            Regulars, retention, busy times, rewards, promotion results and
+            your reach in the Ventzon app, updated with every visit.
           </p>
         </ScrollReveal>
 
@@ -424,12 +500,82 @@ export default function MerchantDashboardPage() {
       </section>
 
 
+      {/* ══ ACT IV — act on it, and prove it worked ══ */}
+      <section className="relative px-6 py-28 sm:py-40">
+        <Divider className="mx-auto mb-16 max-w-xs" />
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
+            ACT ON IT
+          </p>
+          <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl">
+            Send the right offer, then see if it worked.
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
+            Email customers who are slipping away, or fill your slowest day.
+            A week later, Ventzon shows how many came back.
+          </p>
+        </ScrollReveal>
+
+        <div className="mx-auto mt-20 grid max-w-5xl items-stretch gap-6 lg:grid-cols-2">
+          <ScrollReveal>
+            <CampaignCard />
+          </ScrollReveal>
+          <ScrollReveal delay={2}>
+            <PromoResultCard />
+          </ScrollReveal>
+        </div>
+        <ExampleNote />
+      </section>
+
+      {/* ══ ACT V — the monthly report ══ */}
+      <section className="relative px-6 py-28 sm:py-40">
+        <Divider className="mx-auto mb-16 max-w-xs" />
+        <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
+          <ScrollReveal>
+            <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
+              MONTHLY REPORT
+            </p>
+            <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl">
+              Your month, in plain English.
+            </h2>
+            <p className="mt-6 text-[15px] font-light leading-[1.8] text-fog-300">
+              A one-page summary of how your month went: visits, new and
+              returning customers, your busiest day and what your promotions
+              did. Print it or save it as a PDF to share with a partner or
+              your team.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={2}>
+            <MonthlyReportCard />
+          </ScrollReveal>
+        </div>
+        <ExampleNote />
+      </section>
+
+      {/* ══ PRIVACY — honest, specific commitments ══ */}
+      <section className="relative px-6 py-24 sm:py-32">
+        <ScrollReveal className="mx-auto max-w-3xl rounded-[2rem] bg-night-800 p-8 shadow-warm sm:p-10">
+          <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
+            YOUR CUSTOMERS&rsquo; TRUST
+          </p>
+          <h2 className="mt-5 font-display text-2xl font-light tracking-[0.01em] text-fog-100 sm:text-3xl">
+            Insights without being creepy.
+          </h2>
+          <ul className="mt-6 space-y-3 text-[15px] font-light leading-[1.7] text-fog-300">
+            <li>Customers choose to join by scanning your QR code.</li>
+            <li>You see your own customers only. Other shops never see your data.</li>
+            <li>What you learn from the Ventzon app is shown as totals, never as who someone is.</li>
+            <li>Ventzon never sells customer data.</li>
+          </ul>
+        </ScrollReveal>
+      </section>
+
       {/* ══ ACT II — reward loyalty automatically ══ */}
       <section className="relative px-6 py-28 sm:py-40">
         <Divider className="mx-auto mb-16 max-w-xs" />
         <ScrollReveal className="mx-auto max-w-3xl text-center">
           <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-            REWARD LOYALTY
+            SET UP IN MINUTES
           </p>
           <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl">
             Reward loyalty automatically.
@@ -475,37 +621,11 @@ export default function MerchantDashboardPage() {
         </div>
       </section>
 
-      {/* ══ ACT IV — measure growth ══ */}
-      <section className="relative px-6 py-28 sm:py-40">
-        <Divider className="mx-auto mb-16 max-w-xs" />
-        <ScrollReveal className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-            MEASURE GROWTH
-          </p>
-          <h2 className="mt-6 font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl">
-            Measure growth with confidence.
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
-            The trend is yours to read — and yours to act on.
-          </p>
-        </ScrollReveal>
-
-        <div className="mx-auto mt-20 grid max-w-5xl items-stretch gap-6 lg:grid-cols-[1.2fr_1fr]">
-          <ScrollReveal>
-            <GrowthBand />
-          </ScrollReveal>
-          <ScrollReveal delay={2}>
-            <CampaignCard />
-          </ScrollReveal>
-        </div>
-        <ExampleNote />
-      </section>
-
       {/* ══ CTA ══ */}
       <section className="px-6 py-32 text-center sm:py-44">
         <ScrollReveal className="mx-auto max-w-2xl">
           <h2 className="font-display text-3xl font-light tracking-[0.01em] text-fog-100 sm:text-4xl lg:text-5xl">
-            Your regulars are out there.
+            Start knowing your customers.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[15px] font-light leading-[1.8] text-fog-300">
             Set up your shop in minutes. No hardware, no contracts, no

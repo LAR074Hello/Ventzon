@@ -26,13 +26,13 @@ function YesNoCell({ value, dim = false }: { value: string | boolean; dim?: bool
 /* ------------------------------------------------------------------ */
 
 const proFeatures = [
-  "QR code + join page",
-  "Unlimited customer check-ins",
-  "Custom reward goal (2–12 visits)",
-  "Analytics dashboard",
-  "Customer list & CSV export",
-  "Manual stamp tool",
-  "Email campaigns",
+  "Customer analytics dashboard",
+  "Regulars, retention and customers slipping away",
+  "Busy times and promotion results",
+  "Monthly report you can print or share",
+  "Email campaigns to the customers you choose",
+  "QR code, join page and custom rewards",
+  "Unlimited check-ins and CSV export",
   "Cancel anytime",
 ];
 
@@ -273,8 +273,9 @@ export default function PricingContent({
           </h1>
 
           <p className="animate-fade-in-up anim-delay-600 mx-auto mt-8 max-w-xl text-base font-light leading-[1.8] text-fog-300 opacity-0 sm:text-lg">
-            {`$${MONTHLY_PRICE}/month`}, flat &mdash; everything included.
+            Customer analytics, rewards and promotions.
             <br className="hidden sm:block" />
+            {` $${MONTHLY_PRICE}/month`}, flat &mdash; everything included.
             No per-redemption fees, no surprises.
           </p>
           {isFounding && (

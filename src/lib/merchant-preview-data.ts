@@ -105,6 +105,32 @@ export const analyticsMock = {
   period_vs_previous: { checkins_pct_change: 12, customers_pct_change: 8 },
   lifecycle: { new: 214, returning: 428, loyal: 96 },
   reward_mode: "stamps" as const,
+  spend: {
+    avg_ticket: 8.75,
+    total: 3141.25,
+    visits_with_amount: 359,
+    loyal_avg_ticket: 11.4,
+    other_avg_ticket: 7.2,
+  },
+  last_promo: {
+    name: "Double stamps this Tuesday",
+    audience: "slipping",
+    sent_at: "2026-07-28T15:00:00Z",
+    reached: 58,
+    came_back: 14,
+    window_days: 7,
+    window_complete: true,
+  },
+  on_ventzon: {
+    followers: 184,
+    new_followers: 23,
+    followers_not_visited: 61,
+    posts: 37,
+    posters: 29,
+    likes: 412,
+    saves: 96,
+    comments: 54,
+  },
 };
 
 /** The dashboard top — shown in the hero mockup. */
