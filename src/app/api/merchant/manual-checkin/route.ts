@@ -15,6 +15,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const shopSlug = String(body.shop_slug ?? "").trim().toLowerCase();
     const contact = String(body.contact ?? "").trim().toLowerCase();
+    // Optional purchase amount (USD) entered by staff. Never blocks a check-in:
+    // anything missing, non-numeric, or out of range is simply not recorded.
+    const rawAmount = Number(String(body.amount ?? "").replace(/[^0-9.]/g, ""));
+    const amount =
+      Number.isFinite(rawAmount) && rawAmount > 0 && rawAmount < 10000
+        ? Math.round(rawAmount * 100) / 100
+        : null;
 
     if (!shopSlug || !contact) {
       return NextResponse.json({ error: "Missing shop_slug or contact" }, { status: 400 });
@@ -60,7 +67,7 @@ export async function POST(req: Request) {
     // Find or create customer
     let query = supabase
       .from("customers")
-      .select("id, visits, last_checkin_date")
+      .select("id, visits, last_checkin_date, total_spend")
       .eq("shop_slug", shopSlug);
     if (email) query = query.eq("email", email);
     else query = query.eq("phone", phone!);
@@ -88,11 +95,18 @@ export async function POST(req: Request) {
 
       const { error } = await supabase
         .from("customers")
-        .update({ visits: newBalance, last_checkin_date: today, last_seen_at: new Date().toISOString() })
+        .update({
+          visits: newBalance,
+          last_checkin_date: today,
+          last_seen_at: new Date().toISOString(),
+          ...(amount != null
+            ? { total_spend: Math.round((Number(existing.total_spend ?? 0) + amount) * 100) / 100 }
+            : {}),
+        })
         .eq("id", existing.id);
       if (error) throw error;
 
-      await recordCheckin(supabase, shopSlug, existing.id, today);
+      await recordCheckin(supabase, shopSlug, existing.id, today, amount);
       if (hitGoal) await recordReward(supabase, shopSlug, existing.id, today);
 
       return NextResponse.json({
@@ -120,13 +134,14 @@ export async function POST(req: Request) {
           last_checkin_date: today,
           first_seen_at: new Date().toISOString(),
           last_seen_at: new Date().toISOString(),
+          ...(amount != null ? { total_spend: amount } : {}),
         })
         .select("id")
         .single();
       if (error) throw error;
 
       if (inserted?.id) {
-        await recordCheckin(supabase, shopSlug, inserted.id, today);
+        await recordCheckin(supabase, shopSlug, inserted.id, today, amount);
         if (hitGoal) await recordReward(supabase, shopSlug, inserted.id, today);
       }
 
@@ -149,7 +164,13 @@ export async function POST(req: Request) {
 
 // Record a checkins row (non-fatal). A unique (customer_id, checkin_date)
 // index enforces one foot-traffic row per day.
-async function recordCheckin(supabase: any, shopSlug: string, customerId: string, date: string) {
+async function recordCheckin(
+  supabase: any,
+  shopSlug: string,
+  customerId: string,
+  date: string,
+  amount: number | null = null
+) {
   try {
     // Same helper as the public QR path, so both write shop_slug and
     // place_id together — see src/lib/places.ts.
@@ -157,6 +178,7 @@ async function recordCheckin(supabase: any, shopSlug: string, customerId: string
       shopSlug,
       customerId,
       checkinDate: date,
+      amount,
     });
   } catch {
     /* non-fatal */

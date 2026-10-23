@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { computeAudience, audienceSummary } from "@/lib/audience-aggregate";
 
 const GOAL_LABELS: Record<string, string> = {
   slow_day: "Slow day traffic boost",
@@ -72,6 +73,13 @@ export async function POST(req: Request) {
 
     const goalLabel = GOAL_LABELS[goalKey] ?? goalKey;
 
+    // Who actually comes in (totals only), so drafts fit the audience.
+    let audienceLine = "";
+    try {
+      const summary = audienceSummary(await computeAudience(supabase, shopSlug));
+      if (summary) audienceLine = ` Audience: ${summary}.`;
+    } catch {}
+
     // Call Anthropic
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -87,7 +95,7 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "user",
-            content: `Goal: ${goalLabel}. Additional details: ${details || "none"}. Store type: ${storeType}.`,
+            content: `Goal: ${goalLabel}. Additional details: ${details || "none"}. Store type: ${storeType}.${audienceLine}`,
           },
         ],
       }),

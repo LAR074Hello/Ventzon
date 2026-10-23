@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, ThumbsUp, ThumbsDown } from "lucide-react";
 import { safeJson } from "@/lib/safe-json";
 
 /* ── Types ── */
@@ -22,7 +22,76 @@ type CheckinResponse = {
   remaining: number;
   reset: boolean;
   message: string;
+  rate_token?: string | null;
+  customer?: { id: string } | null;
 };
+
+/* ── Optional visit rating ──
+   Small and skippable. Fades away on its own after a few seconds if
+   ignored, so it never holds up the line. The stamp is already saved. */
+function RatePrompt({ shopSlug, customerId, token }: { shopSlug: string; customerId: string; token: string }) {
+  const [state, setState] = useState<"ask" | "note" | "done" | "hidden">("ask");
+  const [note, setNote] = useState("");
+  const [touched, setTouched] = useState(false);
+
+  useEffect(() => {
+    if (touched) return;
+    const id = window.setTimeout(() => setState((s) => (s === "ask" ? "hidden" : s)), 10000);
+    return () => window.clearTimeout(id);
+  }, [touched]);
+
+  async function send(rating: 1 | -1, withNote?: string) {
+    setState("done");
+    try {
+      await fetch("/api/join/rate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_slug: shopSlug, customer_id: customerId, token, rating, note: withNote ?? "" }),
+      });
+    } catch {}
+  }
+
+  if (state === "hidden") return null;
+  if (state === "done") {
+    return <p className="mt-6 text-[12px] font-light text-fog-500">Thanks for the feedback.</p>;
+  }
+  if (state === "note") {
+    return (
+      <div className="mt-6 text-left">
+        <label htmlFor="rate-note" className="text-[12px] font-light text-fog-300">
+          Anything they should know? (optional, anonymous)
+        </label>
+        <textarea
+          id="rate-note"
+          value={note}
+          onChange={(e) => setNote(e.target.value.slice(0, 280))}
+          rows={2}
+          className="mt-2 w-full resize-none rounded-lg border border-night-700 bg-transparent px-3 py-2 text-[13px] font-light text-fog-100 outline-none focus:border-fog-500"
+        />
+        <div className="mt-2 flex justify-end gap-4">
+          <button type="button" onClick={() => send(-1)} className="text-[12px] font-light text-fog-500">Skip</button>
+          <button type="button" onClick={() => send(-1, note)} className="text-[12px] font-light text-fog-100">Send</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-6 flex items-center justify-center gap-3" onPointerDown={() => setTouched(true)}>
+      <span className="text-[12px] font-light text-fog-500">How was it?</span>
+      <button type="button" aria-label="Good visit" onClick={() => send(1)}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-night-700 text-fog-300 transition-colors hover:border-fog-500 hover:text-fog-100">
+        <ThumbsUp className="h-4 w-4" />
+      </button>
+      <button type="button" aria-label="Not great" onClick={() => setState("note")}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-night-700 text-fog-300 transition-colors hover:border-fog-500 hover:text-fog-100">
+        <ThumbsDown className="h-4 w-4" />
+      </button>
+      <button type="button" onClick={() => setState("hidden")} className="text-[12px] font-light text-fog-600">
+        Skip
+      </button>
+    </div>
+  );
+}
 
 /* ── Helpers ── */
 function normalizePhone(raw: string) {
@@ -349,6 +418,10 @@ function CustomerJoinPage() {
                 <p className="mt-4 text-[11px] font-light text-fog-600">
                   1 check-in per day &middot; Progress resets after redeem
                 </p>
+              )}
+
+              {result.rate_token && result.customer?.id && (
+                <RatePrompt shopSlug={shopSlug} customerId={result.customer.id} token={result.rate_token} />
               )}
 
               {/* Done button */}

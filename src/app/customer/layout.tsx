@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Home, Trophy, User, ScanLine, Map, Bell } from "lucide-react";
 import Onboarding, { useOnboarding } from "./components/Onboarding";
 import AgeGate from "./components/AgeGate";
+import AudiencePrompt, { useAudiencePrompt } from "./components/AudiencePrompt";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { checkPushPermission, registerDevicePush } from "@/lib/push-client";
 import { flushPendingReferral, stashReferralCode } from "@/lib/referral-client";
@@ -83,6 +84,9 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const { show: showOnboarding, finish: finishOnboarding } = useOnboarding();
   const supabase = createSupabaseBrowserClient();
   const [readyCount, setReadyCount] = useState(0);
+  const [signedIn, setSignedIn] = useState(false);
+  // Optional audience setup: after the intro slides, signed-in adults only.
+  const audience = useAudiencePrompt(signedIn && !showOnboarding);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
 
   // Runs for signed-out users too — the status bar is wrong on every screen,
@@ -94,6 +98,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
+        setSignedIn(true);
         registerPushNotifications();
         // Any pending referral code (e.g. landed via a shared link and signed
         // in without the auth page in the session) is attributed here. The API
@@ -165,6 +170,9 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
           (email, Apple, Google) must have a recorded age first. */}
       <AgeGate />
       {showOnboarding && <Onboarding onFinish={finishOnboarding} />}
+      {!showOnboarding && audience.show && !hideNav && (
+        <AudiencePrompt mode="setup" onClose={audience.close} />
+      )}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: hideNav ? 0 : "calc(80px + env(safe-area-inset-bottom))" }}>
         {children}
       </div>

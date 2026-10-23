@@ -137,6 +137,29 @@ export default function CustomerShopPage() {
   const params = useParams<{ shop: string }>();
   const router = useRouter();
   const shopSlug = String(params?.shop ?? "").toLowerCase();
+
+  // Page-view analytics for the shop owner (counts only). Where the visit
+  // came from is read from the previous in-app page.
+  useEffect(() => {
+    if (!shopSlug) return;
+    let source = "other";
+    try {
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      const sameApp = ref && ref.origin === window.location.origin;
+      const path = sameApp ? ref.pathname : "";
+      if (!ref) source = "share";
+      else if (path.startsWith("/customer/map")) source = "map";
+      else if (path.startsWith("/customer/explore") && ref.search.includes("q=")) source = "search";
+      else if (path.startsWith("/customer/explore") || path.startsWith("/customer/home")) source = "feed";
+      else if (!sameApp) source = "share";
+    } catch {}
+    fetch("/api/customer/place-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: shopSlug, source }),
+      keepalive: true,
+    }).catch(() => {});
+  }, [shopSlug]);
   const supabase = createSupabaseBrowserClient();
 
   const [settings, setSettings] = useState<ShopSettings | null>(null);

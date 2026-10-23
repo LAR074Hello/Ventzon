@@ -6,6 +6,7 @@ import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { sendPushToDeviceTokens } from "@/lib/push";
 import { normalizeMode, earnedForCheckin, applyReward } from "@/lib/reward";
 import { writeCheckin } from "@/lib/places";
+import { canRate, signRatingToken } from "@/lib/visit-rating";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -422,9 +423,15 @@ export async function POST(req: Request) {
       }
     }
 
+    // Optional, skippable visit rating: a signed token only when eligible.
+    const rateToken = (await canRate(supabase, customer.id, shop_slug))
+      ? signRatingToken(customer.id, shop_slug, today)
+      : null;
+
     return NextResponse.json(
       {
         ok: true,
+        rate_token: rateToken,
         status: hitGoal ? "reward" : "progress",
         visits: displayBalance,
         goal,

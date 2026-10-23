@@ -3,6 +3,7 @@
 import { safeJson } from "@/lib/safe-json";
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import {
   ResponsiveContainer,
   LineChart,
@@ -62,7 +63,144 @@ type AnalyticsResponse = {
   };
   lifecycle: { new: number; returning: number; loyal: number };
   reward_mode?: "stamps" | "points";
+  spend?: {
+    avg_ticket: number | null;
+    total: number;
+    visits_with_amount: number;
+    loyal_avg_ticket: number | null;
+    other_avg_ticket: number | null;
+  };
+  last_promo?: {
+    name: string | null;
+    audience: string;
+    sent_at: string;
+    reached: number;
+    came_back: number;
+    window_days: number;
+    window_complete: boolean;
+  } | null;
+  on_ventzon?: {
+    followers: number;
+    new_followers: number;
+    followers_not_visited: number;
+    posts: number;
+    posters: number;
+    likes: number;
+    saves: number;
+    comments: number;
+  } | null;
+  views?: {
+    views: number;
+    unique_viewers: number;
+    viewed_then_visited: number;
+    sources: { source: string; count: number }[];
+  } | null;
+  ratings?: {
+    count: number;
+    positive_pct: number | null;
+    notes: { text: string; date: string }[];
+    min_to_show: number;
+  } | null;
 };
+
+export type AudienceData =
+  | { available: false; respondents: number; needed: number }
+  | {
+      available: true;
+      respondents: number;
+      age: { label: string; pct: number }[];
+      interests: { label: string; pct: number }[];
+      going_out_for: { label: string; pct: number }[];
+      food: { label: string; pct: number }[];
+      price: { label: string; pct: number }[];
+      areas: { label: string; pct: number }[];
+      neighborhood: string | null;
+      standouts: { label: string; times: number }[];
+    };
+
+function ShareBars({ title, items }: { title: string; items: { label: string; pct: number }[] }) {
+  if (!items.length) return null;
+  return (
+    <div>
+      <p className="text-2xs font-medium uppercase tracking-caps text-muted">{title}</p>
+      <div className="mt-2.5 space-y-2">
+        {items.map((it) => (
+          <div key={it.label}>
+            <div className="flex items-baseline justify-between gap-3 text-xs">
+              <span className="text-secondary">{it.label}</span>
+              <span className="tabular-nums text-muted">{it.pct}%</span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-sunken">
+              <div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(2, it.pct)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AudiencePanel({ audience }: { audience: AudienceData }) {
+  return (
+    <div className="mt-4 rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <SectionLabel>Your audience</SectionLabel>
+        <p className="text-[11px] text-muted">
+          {audience.available
+            ? `From ${audience.respondents} customers who shared their interests. Totals only.`
+            : "From customers who choose to share their interests. Totals only."}
+        </p>
+      </div>
+      {!audience.available ? (
+        <p className="mt-3 text-sm text-muted">
+          Appears once {audience.needed} customers have filled in their optional profile ({audience.respondents} so far).
+        </p>
+      ) : (
+        <>
+          {audience.standouts.length > 0 && audience.neighborhood && (
+            <p className="mt-3 text-sm leading-relaxed text-secondary">
+              Compared with other Ventzon users in {audience.neighborhood}, your customers are{" "}
+              {audience.standouts
+                .map((s) => `${s.times}x more likely to be into ${s.label.toLowerCase()}`)
+                .join(", and ")}
+              .
+            </p>
+          )}
+          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ShareBars title="Age" items={audience.age} />
+            <ShareBars title="Top interests" items={audience.interests} />
+            <ShareBars title="They come in for" items={audience.going_out_for} />
+            <ShareBars title="Food and drink" items={audience.food} />
+            <ShareBars title="Price comfort" items={audience.price} />
+            <ShareBars title="Where they live" items={audience.areas} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export type CampaignAudience = "all" | "slipping" | "lapsed";
+export type CampaignGoal = "slow_day" | "win_back" | "appreciation";
+
+// Below this many customers the question cards would be guessing, so the
+// dashboard shows progress toward the first insights instead.
+const INSIGHTS_MIN_CUSTOMERS = 10;
+
+const DAY_FULL: Record<string, string> = {
+  Mon: "Monday",
+  Tue: "Tuesday",
+  Wed: "Wednesday",
+  Thu: "Thursday",
+  Fri: "Friday",
+  Sat: "Saturday",
+  Sun: "Sunday",
+};
+
+function formatMoney(n: number | null | undefined): string {
+  if (n === null || n === undefined || !Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
 
 const PERIODS = [
   { value: "1d", label: "1D" },
@@ -245,6 +383,48 @@ function PeriodPills({
   );
 }
 
+function CardAction({
+  onClick,
+  children,
+}: {
+  onClick?: () => void;
+  children: ReactNode;
+}) {
+  if (!onClick) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-4 inline-flex min-h-[36px] items-center self-start rounded-full border border-strong px-3.5 py-1.5 text-2xs font-medium tracking-caps text-secondary transition-colors duration-300 hover:bg-primary hover:text-inverse"
+    >
+      {children}
+    </button>
+  );
+}
+
+function QuestionCard({
+  question,
+  value,
+  line,
+  action,
+}: {
+  question: string;
+  value: string;
+  line: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+      <SectionLabel>{question}</SectionLabel>
+      <p className="mt-2 text-3xl font-semibold leading-none tracking-tight text-primary tabular-nums">
+        {value}
+      </p>
+      <p className="mt-2 flex-1 text-xs leading-relaxed text-muted">{line}</p>
+      {action}
+    </div>
+  );
+}
+
 function Panel({
   className = "",
   children,
@@ -267,15 +447,35 @@ function Panel({
 export default function MerchantAnalytics({
   shopSlug,
   mockData,
+  mockAudience,
+  onStartCampaign,
+  onEditReward,
+  onShowCustomers,
 }: {
   shopSlug: string;
   mockData?: AnalyticsResponse;
+  mockAudience?: AudienceData;
+  /** Opens the campaign composer for an audience, with an AI draft goal. */
+  onStartCampaign?: (audience: CampaignAudience, goal: CampaignGoal) => void;
+  onEditReward?: () => void;
+  onShowCustomers?: () => void;
 }) {
   const [period, setPeriod] = useState("30d");
   const [data, setData] = useState<AnalyticsResponse | null>(mockData ?? null);
   const [loading, setLoading] = useState(!mockData);
   const [error, setError] = useState("");
   const chart = useChartTokens();
+  const [audience, setAudience] = useState<AudienceData | null>(mockAudience ?? null);
+
+  useEffect(() => {
+    if (mockAudience || !shopSlug) return;
+    let cancelled = false;
+    fetch(`/api/merchant/audience?shop=${encodeURIComponent(shopSlug)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? safeJson(r) : null))
+      .then((j) => { if (!cancelled && j && typeof j.available === "boolean") setAudience(j as AudienceData); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [shopSlug, mockAudience]);
 
   const fetchAnalytics = useCallback(async () => {
     if (!shopSlug) return;
@@ -340,6 +540,19 @@ export default function MerchantAnalytics({
   const busyTotal = dayOfWeek.reduce((s, d) => s + d.count, 0);
   const periodCaption = PERIOD_CAPTION[period] ?? "In period";
 
+  // ── Question cards ──
+  const loyalCount = data?.loyal_count ?? 0;
+  const spend = data?.spend;
+  const lastPromo = data?.last_promo ?? null;
+  const slipping = atRisk + lapsed;
+  const slowDay =
+    busyTotal > 0 && dayOfWeek.length
+      ? dayOfWeek.reduce((a, b) => (b.count < a.count ? b : a), dayOfWeek[0])
+      : null;
+  const showCards = !loading && totalUnique >= INSIGHTS_MIN_CUSTOMERS;
+  const showProgress = !loading && !error && totalUnique < INSIGHTS_MIN_CUSTOMERS;
+  const progressPct = Math.min(100, Math.round((totalUnique / INSIGHTS_MIN_CUSTOMERS) * 100));
+
   return (
     <section className="mt-12">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -349,12 +562,263 @@ export default function MerchantAnalytics({
             Performance
           </h2>
         </div>
-        <PeriodPills value={period} onChange={setPeriod} />
+        <div className="flex flex-wrap items-center gap-3">
+          {!mockData && (
+            <Link
+              href={`/merchant/${encodeURIComponent(shopSlug)}/report`}
+              className="text-xs font-medium text-muted transition-colors hover:text-primary"
+            >
+              Monthly report
+            </Link>
+          )}
+          <PeriodPills value={period} onChange={setPeriod} />
+        </div>
       </div>
 
       {error && (
         <div className="mt-4 rounded-lg border border-danger/30 px-4 py-3 text-sm text-danger">
           {error}
+        </div>
+      )}
+
+      {/* ── At a glance: five owner questions, each with one action ── */}
+      {showProgress && (
+        <div className="mt-5 rounded-xl border border-subtle bg-surface-raised p-5 sm:p-6">
+          <SectionLabel>At a glance</SectionLabel>
+          <p className="mt-1.5 text-sm font-semibold tracking-tight text-primary">
+            Your first insights appear after {INSIGHTS_MIN_CUSTOMERS} customers check in
+          </p>
+          <div
+            className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-sunken"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={INSIGHTS_MIN_CUSTOMERS}
+            aria-valuenow={totalUnique}
+          >
+            <div
+              className="h-full rounded-full bg-accent transition-[width] duration-700"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-muted tabular-nums">
+            {totalUnique} of {INSIGHTS_MIN_CUSTOMERS} customers so far. Keep the QR code
+            by the register and ask every customer to scan it.
+          </p>
+        </div>
+      )}
+
+      {showCards && (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <QuestionCard
+            question="Your regulars"
+            value={formatCount(loyalCount)}
+            line={
+              loyalCount > 0 ? (
+                <>
+                  {loyalCount === 1 ? "1 customer has" : `${formatCount(loyalCount)} customers have`}{" "}
+                  earned a reward.
+                  {spend?.loyal_avg_ticket != null && spend?.other_avg_ticket != null && (
+                    <>
+                      {" "}They spend {formatMoney(spend.loyal_avg_ticket)} a visit vs.{" "}
+                      {formatMoney(spend.other_avg_ticket)} for everyone else.
+                    </>
+                  )}
+                </>
+              ) : (
+                "No one has earned a reward yet. Your first regulars are on their way."
+              )
+            }
+            action={<CardAction onClick={onShowCustomers}>See customers</CardAction>}
+          />
+          <QuestionCard
+            question="Slipping away"
+            value={formatCount(slipping)}
+            line={
+              slipping > 0
+                ? `${slipping === 1 ? "1 customer hasn't" : `${formatCount(slipping)} customers haven't`} been back in 2 to 8 weeks.`
+                : "Everyone has visited in the last two weeks."
+            }
+            action={
+              slipping > 0 ? (
+                <CardAction
+                  onClick={onStartCampaign ? () => onStartCampaign("slipping", "win_back") : undefined}
+                >
+                  Send a come-back email
+                </CardAction>
+              ) : undefined
+            }
+          />
+          <QuestionCard
+            question="Your busy times"
+            value={peakDay && busyTotal > 0 ? DAY_FULL[peakDay.day] ?? peakDay.day : "—"}
+            line={
+              busyTotal > 0 ? (
+                <>
+                  Your busiest day{peakBlock && peakBlock.count > 0 ? `, mostly in the ${peakBlock.label.toLowerCase()}` : ""}.
+                  {slowDay && ` ${DAY_FULL[slowDay.day] ?? slowDay.day} is your slowest.`}
+                </>
+              ) : (
+                `No check-ins in this period.`
+              )
+            }
+            action={
+              slowDay ? (
+                <CardAction
+                  onClick={onStartCampaign ? () => onStartCampaign("all", "slow_day") : undefined}
+                >
+                  Promote your slow day
+                </CardAction>
+              ) : undefined
+            }
+          />
+          <QuestionCard
+            question="Is your reward working?"
+            value={redemptionRate !== null ? `${redemptionRate}%` : "—"}
+            line={
+              rewardsEarnedPeriod > 0
+                ? `${formatCount(rewardsEarnedPeriod - rewardsPending)} of ${formatCount(rewardsEarnedPeriod)} rewards earned (${periodCaption.toLowerCase()}) were used.`
+                : `No rewards earned (${periodCaption.toLowerCase()}). A closer reward gets people coming back sooner.`
+            }
+            action={<CardAction onClick={onEditReward}>Change reward</CardAction>}
+          />
+          <QuestionCard
+            question="Did your promo work?"
+            value={lastPromo ? formatCount(lastPromo.came_back) : "—"}
+            line={
+              lastPromo ? (
+                <>
+                  {formatCount(lastPromo.came_back)} of {formatCount(lastPromo.reached)} customers it
+                  went to came back within {lastPromo.window_days} days
+                  {lastPromo.name ? <> of &ldquo;{lastPromo.name}&rdquo;</> : null}.
+                  {!lastPromo.window_complete && " Still counting."}
+                </>
+              ) : (
+                "You haven't sent a promotion yet. Results show up here a week after you send one."
+              )
+            }
+            action={
+              <CardAction
+                onClick={onStartCampaign ? () => onStartCampaign("all", "appreciation") : undefined}
+              >
+                {lastPromo ? "Send another" : "Send a promotion"}
+              </CardAction>
+            }
+          />
+        </div>
+      )}
+
+      {/* ── Your shop on Ventzon: app activity only Ventzon can see ── */}
+      {!loading && data?.on_ventzon && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-subtle bg-surface-raised">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4 sm:px-6">
+            <SectionLabel>Your shop on Ventzon</SectionLabel>
+            <p className="text-[11px] text-muted">People finding you in the Ventzon app</p>
+          </div>
+          <div className="mt-3 grid grid-cols-2 divide-subtle border-t border-subtle sm:grid-cols-4 sm:divide-x">
+            {[
+              {
+                label: "Followers",
+                value: formatCount(data.on_ventzon.followers),
+                sub:
+                  data.on_ventzon.new_followers > 0
+                    ? `+${formatCount(data.on_ventzon.new_followers)} ${periodCaption.toLowerCase()}`
+                    : "Follow you in the app",
+              },
+              {
+                label: "Haven't visited yet",
+                value: formatCount(data.on_ventzon.followers_not_visited),
+                sub: "Followers with no check-in",
+              },
+              {
+                label: "Posts about you",
+                value: formatCount(data.on_ventzon.posts),
+                sub:
+                  data.on_ventzon.posters > 0
+                    ? `By ${formatCount(data.on_ventzon.posters)} ${data.on_ventzon.posters === 1 ? "person" : "people"}`
+                    : periodCaption,
+              },
+              {
+                label: "Likes and saves",
+                value: formatCount(data.on_ventzon.likes + data.on_ventzon.saves),
+                sub: `${formatCount(data.on_ventzon.comments)} comments`,
+              },
+            ].map((m) => (
+              <div key={m.label} className="border-subtle px-4 py-3 sm:px-5 [&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:border-b-0">
+                <p className="text-2xs font-medium uppercase tracking-caps text-muted">{m.label}</p>
+                <p className="mt-1 text-lg font-semibold leading-none tracking-tight text-primary tabular-nums">
+                  {m.value}
+                </p>
+                <p className="mt-1 text-[11px] text-muted">{m.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Page views: who looked at you in the app, and who then came in ── */}
+      {!loading && data?.views && (
+        <div className="mt-4 rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <SectionLabel>Shop page views</SectionLabel>
+            <p className="text-[11px] text-muted">People who opened your page in the Ventzon app, {periodCaption.toLowerCase()}</p>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary">{formatCount(data.views.views)}</p>
+              <p className="mt-1.5 text-[11px] text-muted">Views</p>
+            </div>
+            <div>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary">{formatCount(data.views.unique_viewers)}</p>
+              <p className="mt-1.5 text-[11px] text-muted">People</p>
+            </div>
+            <div>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary">{formatCount(data.views.viewed_then_visited)}</p>
+              <p className="mt-1.5 text-[11px] text-muted">Visited within 7 days</p>
+            </div>
+          </div>
+          {data.views.sources.length > 0 && (
+            <p className="mt-3 text-[11px] text-muted">
+              From {data.views.sources.map((x) => `${x.source} ${formatCount(x.count)}`).join(" · ")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {audience && <AudiencePanel audience={audience} />}
+
+      {/* ── Visit ratings: optional, anonymous ── */}
+      {!loading && data?.ratings && (
+        <div className="mt-4 rounded-xl border border-subtle bg-surface-raised p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <SectionLabel>How visits went</SectionLabel>
+            <p className="text-[11px] text-muted">Optional thumbs up or down after a check-in. Anonymous.</p>
+          </div>
+          {data.ratings.positive_pct === null ? (
+            <p className="mt-3 text-sm text-muted">
+              Shows once {data.ratings.min_to_show} customers have rated a visit ({data.ratings.count} so far, {periodCaption.toLowerCase()}).
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-5 sm:grid-cols-[auto_1fr]">
+              <div>
+                <p className="text-3xl font-semibold leading-none tracking-tight tabular-nums text-primary">
+                  {data.ratings.positive_pct}%
+                </p>
+                <p className="mt-1.5 text-xs text-muted">
+                  positive, from {formatCount(data.ratings.count)} ratings
+                </p>
+              </div>
+              {data.ratings.notes.length > 0 && (
+                <ul className="space-y-2 sm:border-l sm:border-subtle sm:pl-5">
+                  {data.ratings.notes.map((n, i) => (
+                    <li key={i} className="text-sm leading-relaxed text-secondary">
+                      &ldquo;{n.text}&rdquo;
+                      <span className="ml-2 text-[11px] text-muted">{formatDateLabel(n.date)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       )}
 

@@ -73,20 +73,20 @@ function ProductBlock({
    ═══════════════════════════════════════════════════════════════════ */
 const SHOP_BENEFITS = [
   {
-    title: "On the map from day one",
-    body: "Your shop is listed the moment you create it — on the map, in search, and in the feed. No hardware, no counter space, no setup fee.",
+    title: "Know your customers",
+    body: "Every check-in builds a picture of your customer base: who your regulars are, how often they come back, and who hasn't been in for a while.",
   },
   {
-    title: "Verified visits, not guesses",
-    body: "A check-in means a real person walked in. A post carrying a verified visit is the strongest recommendation a local can make — and it names your shop.",
+    title: "Know what works",
+    body: "See your busiest and slowest hours, whether your reward is actually being used, and how many customers each promotion brought back.",
   },
   {
-    title: "A customer list that builds itself",
-    body: "Every check-in becomes a name, an email, a visit count. You own the list; it grows while you run your business.",
+    title: "See who finds you",
+    body: "Your shop is on the Ventzon map from day one. Track followers, posts about you, and locals who saved your shop but haven't visited yet.",
   },
   {
-    title: "Rewards at one flat price",
-    body: `Set a visit goal and a reward in minutes. $${MONTHLY_PRICE}/month flat — no per-redemption fees, no surprises.`,
+    title: "One flat price",
+    body: `Analytics, rewards and promotions for $${MONTHLY_PRICE}/month flat. No hardware, no per-redemption fees, no surprises.`,
   },
 ];
 
@@ -189,11 +189,11 @@ export default function HomePage() {
           <ScrollReveal className="mx-auto max-w-3xl text-center">
             <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">For shop owners</p>
             <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em] text-fog-100">
-              Your shop, discovered by people who actually show up.
+              Know your customers. Bring them back.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.7] text-fog-300">
-              Ventzon is where a local place gets found, visited, and talked
-              about — by the people in its own neighborhood.
+              Ventzon gives local shops the customer analytics big chains
+              have, and gets them found by people in their own neighborhood.
             </p>
           </ScrollReveal>
 
@@ -222,7 +222,7 @@ export default function HomePage() {
               href="/merchant-dashboard"
               className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm hover:bg-maroon-hover"
             >
-              See the merchant dashboard
+              See the analytics
               <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
           </ScrollReveal>

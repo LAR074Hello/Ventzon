@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { placeIdForSlug } from "@/lib/places";
+import { RATINGS_MIN_TO_SHOW } from "@/lib/visit-rating";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,9 @@ export async function GET(req: Request) {
       .trim()
       .toLowerCase();
     const period = String(url.searchParams.get("period") ?? "30d").trim();
+    // Optional calendar month (YYYY-MM) for the monthly report. Overrides period.
+    const monthParam = String(url.searchParams.get("month") ?? "").trim();
+    const month = /^\d{4}-(0[1-9]|1[0-2])$/.test(monthParam) ? monthParam : null;
 
     if (!shop) {
       return NextResponse.json({ error: "Missing shop" }, { status: 400 });
@@ -87,10 +92,21 @@ export async function GET(req: Request) {
 
     // Calculate date range
     const now = new Date();
-    const endDate = now.toISOString().slice(0, 10);
+    let endDate = now.toISOString().slice(0, 10);
     let startDate: string;
+    // Length of the window in days when it's a fixed window (used for the
+    // "vs previous period" comparison). null for all-time.
+    let windowDays: number | null = PERIOD_DAYS[period] ?? null;
 
-    if (period === "all") {
+    if (month) {
+      const [y, m] = month.split("-").map(Number);
+      const first = new Date(Date.UTC(y, m - 1, 1));
+      const last = new Date(Date.UTC(y, m, 0));
+      startDate = first.toISOString().slice(0, 10);
+      const lastStr = last.toISOString().slice(0, 10);
+      if (lastStr < endDate) endDate = lastStr;
+      windowDays = last.getUTCDate();
+    } else if (period === "all") {
       startDate = shopRow.created_at
         ? new Date(shopRow.created_at).toISOString().slice(0, 10)
         : "2020-01-01";
@@ -106,7 +122,7 @@ export async function GET(req: Request) {
     // counts per customer (visits reset to 0 every time goal is reached).
     const { data: allCheckins, error: checkinsErr } = await supabase
       .from("checkins")
-      .select("customer_id, checkin_date, created_at")
+      .select("customer_id, checkin_date, created_at, amount")
       .eq("shop_slug", shop)
       .order("checkin_date", { ascending: true })
       .order("created_at", { ascending: true })
@@ -358,7 +374,7 @@ export async function GET(req: Request) {
       customers_pct_change: number | null;
     } = { checkins_pct_change: null, customers_pct_change: null };
 
-    const periodDays = PERIOD_DAYS[period];
+    const periodDays = windowDays;
     if (periodDays) {
       const prevEndDate = new Date(startDate + "T00:00:00");
       prevEndDate.setDate(prevEndDate.getDate() - 1);
@@ -397,6 +413,283 @@ export async function GET(req: Request) {
       else if (visits > 1) lifecycle.returning++;
       else lifecycle.new++;
     }
+
+    // ── Spend per visit (optional amount entered by staff) ──
+    // Only check-ins with a recorded amount count, so the figures stay honest
+    // while most visits have no amount. Loyal = earned at least one reward.
+    let spendSum = 0;
+    let spendCount = 0;
+    const spendByCustomer: Record<string, { sum: number; count: number }> = {};
+    for (const row of allCheckins || []) {
+      const date = row.checkin_date as string;
+      const amt = row.amount == null ? null : Number(row.amount);
+      if (amt == null || !Number.isFinite(amt) || amt <= 0) continue;
+      if (date < startDate || date > endDate) continue;
+      spendSum += amt;
+      spendCount++;
+      const cid = row.customer_id as string;
+      const e = (spendByCustomer[cid] ||= { sum: 0, count: 0 });
+      e.sum += amt;
+      e.count++;
+    }
+    let loyalSum = 0, loyalCount2 = 0, otherSum = 0, otherCount = 0;
+    for (const [cid, e] of Object.entries(spendByCustomer)) {
+      if ((customerVisits[cid] || 0) >= goal) { loyalSum += e.sum; loyalCount2 += e.count; }
+      else { otherSum += e.sum; otherCount += e.count; }
+    }
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const spend = {
+      avg_ticket: spendCount > 0 ? round2(spendSum / spendCount) : null,
+      total: round2(spendSum),
+      visits_with_amount: spendCount,
+      loyal_avg_ticket: loyalCount2 > 0 ? round2(loyalSum / loyalCount2) : null,
+      other_avg_ticket: otherCount > 0 ? round2(otherSum / otherCount) : null,
+    };
+
+    // ── Last promotion result ──
+    // Who the promotion reached is reconstructed from check-in history at
+    // send time (no recipients table): "lapsed" = last visit 30+ days before
+    // sending, "slipping" = 14+ days, otherwise everyone who had joined.
+    // "Came back" = checked in within 7 days after it was sent.
+    const PROMO_WINDOW_DAYS = 7;
+    let lastPromo: {
+      name: string | null;
+      audience: string;
+      sent_at: string;
+      reached: number;
+      came_back: number;
+      window_days: number;
+      window_complete: boolean;
+    } | null = null;
+    const { data: promoRow } = await supabase
+      .from("promotions")
+      .select("name, audience, sent_at")
+      .eq("shop_slug", shop)
+      .not("sent_at", "is", null)
+      .order("sent_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (promoRow?.sent_at) {
+      const sentAt = new Date(promoRow.sent_at as string);
+      const sentDay = sentAt.toISOString().slice(0, 10);
+      const windowEnd = new Date(sentAt);
+      windowEnd.setDate(windowEnd.getDate() + PROMO_WINDOW_DAYS);
+      const windowEndDay = windowEnd.toISOString().slice(0, 10);
+      const audience = String(promoRow.audience ?? "all");
+      const minGapDays = audience === "lapsed" ? 30 : audience === "slipping" ? 14 : 0;
+      const cutoff = new Date(sentAt);
+      cutoff.setDate(cutoff.getDate() - minGapDays);
+      const cutoffDay = cutoff.toISOString().slice(0, 10);
+
+      const lastBefore: Record<string, string> = {};
+      const cameBack = new Set<string>();
+      for (const row of allCheckins || []) {
+        const date = row.checkin_date as string;
+        const cid = row.customer_id as string;
+        if (date < sentDay) {
+          if (!lastBefore[cid] || date > lastBefore[cid]) lastBefore[cid] = date;
+        } else if (date <= windowEndDay) {
+          cameBack.add(cid);
+        }
+      }
+      const reachedIds = Object.entries(lastBefore)
+        .filter(([, last]) => minGapDays === 0 || last < cutoffDay)
+        .map(([cid]) => cid);
+      lastPromo = {
+        name: (promoRow.name as string | null) ?? null,
+        audience,
+        sent_at: promoRow.sent_at as string,
+        reached: reachedIds.length,
+        came_back: reachedIds.filter((cid) => cameBack.has(cid)).length,
+        window_days: PROMO_WINDOW_DAYS,
+        window_complete: Date.now() >= windowEnd.getTime(),
+      };
+    }
+
+    // ── Your shop on Ventzon (the consumer app) ──
+    // Counts only, never who: followers, followers who haven't visited yet,
+    // posts tagging the shop, and likes/saves/comments on those posts.
+    let onVentzon: {
+      followers: number;
+      new_followers: number;
+      followers_not_visited: number;
+      posts: number;
+      posters: number;
+      likes: number;
+      saves: number;
+      comments: number;
+    } | null = null;
+    try {
+      const { data: followRows } = await supabase
+        .from("customer_follows")
+        .select("email, created_at")
+        .eq("shop_slug", shop)
+        .limit(50000);
+      const follows = followRows ?? [];
+      const { data: memberRows } = await supabase
+        .from("customers")
+        .select("email, last_checkin_date")
+        .eq("shop_slug", shop)
+        .not("email", "is", null)
+        .limit(100000);
+      const visitedEmails = new Set(
+        (memberRows ?? [])
+          .filter((r) => r.last_checkin_date)
+          .map((r) => String(r.email).toLowerCase())
+      );
+
+      const placeId = await placeIdForSlug(supabase, shop);
+      const tagFilter = placeId
+        ? `shop_slug.eq.${shop},place_id.eq.${placeId}`
+        : `shop_slug.eq.${shop}`;
+      const { data: postRows } = await supabase
+        .from("posts")
+        .select("id, author_email, created_at")
+        .or(tagFilter)
+        .eq("hidden", false)
+        .gte("created_at", `${startDate}T00:00:00Z`)
+        .lte("created_at", `${endDate}T23:59:59Z`)
+        .limit(5000);
+      const posts = postRows ?? [];
+      const postIds = posts.map((p) => p.id as string);
+
+      const countFor = async (table: string, extra?: (q: any) => any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (postIds.length === 0) return 0;
+        let q = supabase.from(table).select("id", { count: "exact", head: true }).in("post_id", postIds);
+        if (extra) q = extra(q);
+        const { count } = await q;
+        return count ?? 0;
+      };
+
+      onVentzon = {
+        followers: follows.length,
+        new_followers: follows.filter((f) => {
+          const d = String(f.created_at ?? "").slice(0, 10);
+          return d >= startDate && d <= endDate;
+        }).length,
+        followers_not_visited: follows.filter(
+          (f) => f.email && !visitedEmails.has(String(f.email).toLowerCase())
+        ).length,
+        posts: posts.length,
+        posters: new Set(posts.map((p) => String(p.author_email ?? ""))).size,
+        likes: await countFor("post_likes"),
+        saves: await countFor("post_saves"),
+        comments: await countFor("post_comments", (q) => q.eq("hidden", false)),
+      };
+    } catch (e) {
+      console.warn("[analytics] on-ventzon metrics failed:", e instanceof Error ? e.message : e);
+    }
+
+    // ── Page views in the Ventzon app ──
+    // Views (one per signed-in person per day), unique viewers, where they
+    // came from, and how many viewers checked in within 7 days of viewing.
+    let views: {
+      views: number;
+      unique_viewers: number;
+      viewed_then_visited: number;
+      sources: { source: string; count: number }[];
+    } | null = null;
+    try {
+      const placeIdForViews = await placeIdForSlug(supabase, shop);
+      const viewFilter = placeIdForViews
+        ? `shop_slug.eq.${shop},place_id.eq.${placeIdForViews}`
+        : `shop_slug.eq.${shop}`;
+      const { data: viewRows, error: viewErr } = await supabase
+        .from("place_views")
+        .select("viewer_id, view_date, source")
+        .or(viewFilter)
+        .gte("view_date", startDate)
+        .lte("view_date", endDate)
+        .limit(50000);
+      if (!viewErr) {
+        const vr = viewRows ?? [];
+        const firstView: Record<string, string> = {};
+        const sourceCounts: Record<string, number> = {};
+        for (const v of vr) {
+          const id = String(v.viewer_id);
+          const d = String(v.view_date);
+          if (!firstView[id] || d < firstView[id]) firstView[id] = d;
+          sourceCounts[String(v.source ?? "other")] = (sourceCounts[String(v.source ?? "other")] ?? 0) + 1;
+        }
+        // viewer profile → email → this shop's customer row → check-ins
+        const viewerIds = Object.keys(firstView);
+        let visited = 0;
+        if (viewerIds.length) {
+          const { data: profs } = await supabase
+            .from("customer_profiles")
+            .select("id, email")
+            .in("id", viewerIds.slice(0, 1000));
+          const emailToViewer: Record<string, string> = {};
+          for (const p of profs ?? []) emailToViewer[String(p.email).toLowerCase()] = String(p.id);
+          const emails = Object.keys(emailToViewer);
+          if (emails.length) {
+            const { data: custs } = await supabase
+              .from("customers")
+              .select("id, email")
+              .eq("shop_slug", shop)
+              .in("email", emails);
+            const custToViewer: Record<string, string> = {};
+            for (const c of custs ?? []) custToViewer[String(c.id)] = emailToViewer[String(c.email).toLowerCase()];
+            const seen = new Set<string>();
+            for (const row of allCheckins || []) {
+              const viewer = custToViewer[row.customer_id as string];
+              if (!viewer || seen.has(viewer)) continue;
+              const fv = firstView[viewer];
+              const limit = new Date(fv + "T00:00:00Z");
+              limit.setUTCDate(limit.getUTCDate() + 7);
+              const cd = row.checkin_date as string;
+              if (cd >= fv && cd <= limit.toISOString().slice(0, 10)) seen.add(viewer);
+            }
+            visited = seen.size;
+          }
+        }
+        views = {
+          views: vr.length,
+          unique_viewers: viewerIds.length,
+          viewed_then_visited: visited,
+          sources: Object.entries(sourceCounts)
+            .map(([source, count]) => ({ source, count }))
+            .sort((a, b) => b.count - a.count),
+        };
+      }
+    } catch {}
+
+    // ── Visit ratings (optional thumbs up/down after a check-in) ──
+    // Anonymous: notes are shown without names, and nothing at all until
+    // there are enough ratings that no one can be singled out.
+    let ratings: {
+      count: number;
+      positive_pct: number | null;
+      notes: { text: string; date: string }[];
+      min_to_show: number;
+    } | null = null;
+    try {
+      const { data: ratingRows, error: ratingErr } = await supabase
+        .from("visit_ratings")
+        .select("rating, note, created_at")
+        .eq("shop_slug", shop)
+        .gte("created_at", `${startDate}T00:00:00Z`)
+        .lte("created_at", `${endDate}T23:59:59Z`)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+      if (!ratingErr) {
+        const rs = ratingRows ?? [];
+        const enough = rs.length >= RATINGS_MIN_TO_SHOW;
+        ratings = {
+          count: rs.length,
+          positive_pct: enough
+            ? Math.round((rs.filter((r) => r.rating === 1).length / rs.length) * 100)
+            : null,
+          notes: enough
+            ? rs
+                .filter((r) => r.note)
+                .slice(0, 5)
+                .map((r) => ({ text: String(r.note), date: String(r.created_at).slice(0, 10) }))
+            : [],
+          min_to_show: RATINGS_MIN_TO_SHOW,
+        };
+      }
+    } catch {}
 
     // Top 5 customers by total visits
     const { data: topCustomerRows } = await supabase
@@ -441,6 +734,12 @@ export async function GET(req: Request) {
       period_vs_previous: periodVsPrevious,
       lifecycle,
       reward_mode: rewardMode,
+      spend,
+      last_promo: lastPromo,
+      on_ventzon: onVentzon,
+      ratings,
+      views,
+      month,
     });
   } catch (err) {
     return NextResponse.json(
