@@ -4,7 +4,7 @@ import { MONTHLY_PRICE, ANNUAL_PRICE } from "@/lib/pricing";
 export const metadata: Metadata = {
   title: "Pricing — Ventzon",
   description:
-    `$${MONTHLY_PRICE}/month for a complete digital loyalty program. Includes QR code check-ins, customer analytics, push notifications, and email campaigns. Flat — no per-redemption fees.`,
+    `$${MONTHLY_PRICE}/month for customer analytics, rewards and promotions: regulars, customers slipping away, busy hours, audience, promotion results and a monthly report. Flat — no per-redemption fees.`,
   openGraph: {
     title: "Pricing — Ventzon",
     description:

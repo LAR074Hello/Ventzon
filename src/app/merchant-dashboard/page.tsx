@@ -34,28 +34,6 @@ function ExampleNote() {
   );
 }
 
-function SampleStat({
-  label,
-  value,
-  caption,
-}: {
-  label: string;
-  value: string;
-  caption: string;
-}) {
-  return (
-    <div className="bg-surface-raised px-5 py-4 sm:px-6 sm:py-5">
-      <p className="text-2xs font-medium uppercase tracking-caps text-muted">
-        {label}
-      </p>
-      <p className="mt-1.5 text-2xl font-semibold leading-none tracking-tight tabular-nums text-primary sm:text-3xl">
-        {value}
-      </p>
-      <p className="mt-2 text-xs text-muted">{caption}</p>
-    </div>
-  );
-}
-
 function SampleHeader({
   title,
   meta,
@@ -91,46 +69,57 @@ function statusChip(status: string) {
   return `${base} ${tones[status] ?? tones.ACTIVE}`;
 }
 
-/* ── Hero mockup — the redesigned dashboard top ──
-   Natural-height panel: no frame, no h-full/flex filler, so the card
-   ends just below the insight strip. */
-function HeroDashboard() {
+/* ── Hero mockup: the analytics answers, front and centre ──
+   Mirrors the dashboard's question cards plus the audience line, so the
+   first thing an owner sees is what they'll learn about their customers. */
+function HeroInsights() {
+  const m = analyticsMock;
+  const cards = [
+    {
+      q: "Your regulars",
+      v: String(m.loyal_count),
+      line: `They spend $${m.spend.loyal_avg_ticket.toFixed(2)} a visit vs. $${m.spend.other_avg_ticket.toFixed(2)} for everyone else.`,
+      action: "See customers",
+    },
+    {
+      q: "Slipping away",
+      v: String(m.at_risk_count + m.lapsed_count),
+      line: "Customers who haven't been back in 2 to 8 weeks.",
+      action: "Send a come-back email",
+    },
+    {
+      q: "Your busy times",
+      v: "Saturday",
+      line: "Busiest in the morning rush. Monday is your slowest.",
+      action: "Promote your slow day",
+    },
+    {
+      q: "Did your promo work?",
+      v: String(m.last_promo.came_back),
+      line: `${m.last_promo.came_back} of ${m.last_promo.reached} customers came back within a week.`,
+      action: "Send another",
+    },
+  ];
   return (
     <div className="merchant-dark overflow-hidden rounded-xl border border-subtle bg-surface text-primary">
-      <SampleHeader
-        title={previewOverview.shopName}
-        meta={previewOverview.meta}
-        chip="EXAMPLE"
-      />
-      <div className="grid grid-cols-2 gap-px bg-subtle sm:grid-cols-4">
-        <SampleStat
-          label="Total members"
-          value={previewOverview.totalCustomers}
-          caption="All-time loyalty members"
-        />
-        <SampleStat
-          label="New members today"
-          value={previewOverview.newMembersToday}
-          caption="Joined since midnight"
-        />
-        <SampleStat
-          label="Check-ins today"
-          value={previewOverview.checkinsToday}
-          caption="Visits recorded since midnight"
-        />
-        <SampleStat
-          label="Reward goal"
-          value={previewOverview.rewardGoal}
-          caption="Visits to earn a reward"
-        />
+      <SampleHeader title={previewOverview.shopName} meta="Analytics · last 30 days" chip="EXAMPLE" />
+      <div className="grid gap-px bg-subtle sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((c) => (
+          <div key={c.q} className="flex flex-col bg-surface-raised p-5">
+            <p className="text-2xs font-medium uppercase tracking-caps text-muted">{c.q}</p>
+            <p className="mt-2 text-3xl font-semibold leading-none tracking-tight tabular-nums">{c.v}</p>
+            <p className="mt-2 flex-1 text-xs leading-relaxed text-muted">{c.line}</p>
+            <span className="mt-4 inline-flex self-start rounded-full border border-strong px-3 py-1.5 text-2xs font-medium tracking-caps text-secondary">
+              {c.action}
+            </span>
+          </div>
+        ))}
       </div>
-
       <div className="border-t border-subtle bg-surface-raised px-5 py-4 sm:px-6">
-        <p className="text-2xs font-medium uppercase tracking-caps text-muted">
-          This week&rsquo;s insight
-        </p>
+        <p className="text-2xs font-medium uppercase tracking-caps text-muted">Your audience</p>
         <p className="mt-1.5 text-sm leading-relaxed text-secondary">
-          {previewOverview.insight}
+          Mostly 25-34, into coffee, fitness and brunch. Compared with others nearby, your
+          customers are 2.1x more likely to be into fitness.
         </p>
       </div>
     </div>
@@ -432,7 +421,7 @@ export default function MerchantDashboardPage() {
 
         {/* The dashboard, large */}
         <div className="relative z-10 mx-auto mt-14 max-w-6xl sm:mt-16">
-          <HeroDashboard />
+          <HeroInsights />
           <p className="mx-auto mt-6 max-w-xl text-center text-[12px] font-light leading-relaxed text-fog-600">
             Example screen — sample data shown. Once your shop is live,
             this dashboard shows your own numbers.

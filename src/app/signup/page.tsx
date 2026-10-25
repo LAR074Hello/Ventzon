@@ -91,7 +91,7 @@ export default function SignupPage() {
           Create your account
         </h1>
         <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-500">
-          Set up your merchant account to launch your loyalty rewards program.
+          Set up your shop to see who your customers are, when they come in, and what brings them back.
         </p>
 
         {/* Form */}

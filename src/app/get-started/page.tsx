@@ -107,7 +107,8 @@ export default function GetStartedPage() {
         </h1>
         <p className="mt-4 text-[15px] font-light leading-relaxed text-fog-500">
           This is the name your customers will see when they check in.
-          You&rsquo;ll set your reward offer and goal in the dashboard after subscribing.
+          After that you&rsquo;ll set your reward, and your customer analytics
+          start filling in with the first check-in.
         </p>
 
         {/* Card */}

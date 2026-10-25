@@ -65,12 +65,20 @@ const merchantFaqs: FAQ[] = [
     a: "Yes. You can set the number of visits required (2-12), write a custom deal title (e.g. 'Free coffee after 8 visits'), and add deal details customers will see in the app.",
   },
   {
+    q: "What customer analytics do I get?",
+    a: "Your dashboard answers the questions owners ask most: who your regulars are, who hasn't been back in two weeks, your busiest and slowest days and hours, whether your reward is being used, and how many customers each promotion brought back. You also see how many people viewed your shop in the Ventzon app and came in within a week, an audience profile (age range and interests, from customers who choose to share them), optional visit ratings, and a printable monthly report.",
+  },
+  {
     q: "How do I see who my customers are?",
-    a: "Your dashboard includes a full Customer List with every member's name, email, visit count, and join date. You can also export the list as a CSV for use in other tools.",
+    a: "Your Customer List shows each member's phone or email (whichever they joined with), visit count, and join date, and you can export it as a CSV. Audience details like age range and interests are only ever shown as totals, never per person.",
+  },
+  {
+    q: "Is my customers' data private?",
+    a: "Yes. Customers choose to join by scanning your QR code. You see your own customers only, and other shops never see your data. Anything that comes from the Ventzon app, like interests or page views, is shown as totals with a minimum group size, so no one can be singled out. Ventzon never sells customer data.",
   },
   {
     q: "What are email campaigns?",
-    a: "Pro merchants can send promotional emails to their entire customer list directly from the dashboard. Use them for limited-time offers, new menu items, or event announcements.",
+    a: "Send promotional emails from your dashboard to all customers, to customers slipping away (no visit in 2+ weeks), or to lapsed customers (30+ days). A week later, your dashboard shows how many came back.",
   },
   {
     q: "What happens when a customer redeems a reward?",

@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Merchant Dashboard — Ventzon",
+  title: "Customer Analytics for Local Shops — Ventzon",
   description:
-    "Every check-in, every reward, every return — on one quiet screen. See how the Ventzon merchant dashboard helps local shops know their regulars and grow.",
+    "Know your customers. See who your regulars are, who's slipping away, your busiest hours, your audience, and how many people each promotion brings back. $35/month, flat.",
+  openGraph: {
+    title: "Know your customers — Ventzon for shops",
+    description:
+      "Customer analytics for local shops: regulars, customers slipping away, busy hours, audience, and promotion results.",
+  },
 };
 
 export default function MerchantDashboardLayout({

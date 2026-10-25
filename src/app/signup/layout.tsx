@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Create Account — Ventzon",
-  description: "Create a free Ventzon account to set up loyalty rewards for your business.",
+  description: "Create a Ventzon account for your business: customer analytics, rewards and promotions in one place.",
   openGraph: {
     title: "Create Account — Ventzon",
-    description: "Start building customer loyalty with Ventzon. Sign up free.",
+    description: "Know your customers and bring them back. Create your Ventzon account.",
   },
 };
 
