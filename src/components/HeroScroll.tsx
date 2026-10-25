@@ -83,7 +83,7 @@ export default function HeroScroll() {
               style={{ opacity: subOpacity, y: subY }}
               className="mx-auto mt-7 max-w-xl text-lg font-light leading-[1.7] tracking-[0.01em] text-white/85"
             >
-              Find real places. See who&rsquo;s actually there.
+              Customer analytics for local shops, powered by rewards customers love.
             </motion.p>
           </div>
         </section>
@@ -108,7 +108,7 @@ export default function HeroScroll() {
               transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
               className="mx-auto mt-8 max-w-4xl font-display text-[clamp(2rem,4.5vw,3.5rem)] font-light leading-[1.12] tracking-[0.02em] text-white"
             >
-              Real places. Verified visits. Posts you can trust.
+              Shops get the insight. Customers get the rewards.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -117,10 +117,10 @@ export default function HeroScroll() {
               transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="mx-auto mt-8 max-w-xl text-[17px] font-light leading-[1.75] text-fog-300"
             >
-              Ventzon is a local social app for people who care where they go.
-              Discover what&rsquo;s actually worth the trip, check in when you&rsquo;re
-              there, and share it with proof &mdash; so the places worth going to
-              get found by the people who&rsquo;ll love them.
+              Ventzon is customer analytics for local shops, built into a rewards
+              app people actually want to use. Customers earn rewards and discover
+              great places nearby. Shops learn who their customers are and what
+              brings them back. Everyone knows the deal.
             </motion.p>
           </div>
         </section>

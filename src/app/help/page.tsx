@@ -208,7 +208,7 @@ export default function HelpPage() {
         <div className="mx-auto grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             { label: "Open the app", href: "/customer/explore", icon: Smartphone },
-            { label: "How it works", href: "/how-it-works", icon: Star },
+            { label: "How it works", href: "/#how-it-works", icon: Star },
             { label: "For shops", href: "/app", icon: Store },
             { label: "Privacy policy", href: "/privacy-policy", icon: ShieldCheck },
           ].map(({ label, href, icon: Icon }) => (

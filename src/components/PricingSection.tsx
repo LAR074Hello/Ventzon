@@ -5,12 +5,12 @@ import { MONTHLY_PRICE, ANNUAL_PRICE, ANNUAL_SAVINGS } from "@/lib/pricing";
 
 /* What a shop actually gets — every line is a real, shipped feature. */
 const INCLUDED = [
-  "QR code + join page for your counter",
-  "Unlimited customer check-ins",
-  "A customer list of names and emails you own",
-  "Rewards you set — goal and reward, in minutes",
-  "Automated emails and push when a reward is near",
-  "Analytics: who's returning, who's drifting",
+  "Customer analytics: regulars, who's slipping away, busy hours",
+  "Your audience, page views and promotion results",
+  "A monthly report you can print or share",
+  "Rewards you set, with a QR code for your counter",
+  "Email campaigns to the customers you choose",
+  "Unlimited check-ins and a customer list you can export",
 ];
 
 /**
@@ -30,8 +30,8 @@ export default function PricingSection() {
             One flat price.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[17px] font-light leading-[1.75] text-fog-300">
-            Everything a loyalty program needs, for one simple fee. No hardware,
-            no per-redemption charges, no contracts.
+            Customer analytics, rewards and promotions for one simple fee. No
+            hardware, no per-redemption charges, no contracts.
           </p>
         </ScrollReveal>
 

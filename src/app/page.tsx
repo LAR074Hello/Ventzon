@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -8,7 +9,18 @@ import Parallax from "@/components/Parallax";
 import PricingSection from "@/components/PricingSection";
 import SiteFooter from "@/components/SiteFooter";
 import HeroScroll from "@/components/HeroScroll";
-import { MONTHLY_PRICE } from "@/lib/pricing";
+import AnalyticsPreview from "@/components/AnalyticsPreview";
+
+export const metadata: Metadata = {
+  title: "Ventzon — Customer analytics for local shops, powered by rewards",
+  description:
+    "Customers earn rewards and discover great places nearby. Shops learn who their customers are, when they come in, and what brings them back.",
+  openGraph: {
+    title: "Ventzon — Know your customers. Reward them for coming back.",
+    description:
+      "Customer analytics for local shops, built into a rewards app people actually want to use.",
+  },
+};
 
 /* ═══════════════════════════════════════════════════════════════════
    Device frames on this page show real app screenshots from
@@ -16,217 +28,158 @@ import { MONTHLY_PRICE } from "@/lib/pricing";
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════════
-   ProductBlock — the GlossGenius alternating rhythm: numbered eyebrow +
-   big headline on one side, editorial photo with a device frame
-   overlapping its bottom corner on the other.
+   How the three parts fit together — one loop, said plainly.
    ═══════════════════════════════════════════════════════════════════ */
-function ProductBlock({
-  number,
-  title,
-  body,
-  photo,
-  photoAlt,
-  flip = false,
-  children,
-}: {
-  number: string;
-  title: React.ReactNode;
-  body: string;
-  photo: string;
-  photoAlt: string;
-  flip?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="px-6 py-28 sm:py-40">
-      <div className="mx-auto grid max-w-7xl items-center gap-20 lg:grid-cols-2 lg:gap-28">
-        <ScrollReveal className={flip ? "lg:order-2" : ""}>
-          <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">{number}</p>
-          <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em] text-fog-100">
-            {title}
-          </h2>
-          <p className="mt-6 max-w-md text-[17px] leading-[1.7] text-fog-300">{body}</p>
-        </ScrollReveal>
-        <ScrollReveal delay={2} className={flip ? "lg:order-1" : ""}>
-          <div className="relative mx-auto max-w-md">
-            <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
-              <FadeImage
-                src={photo}
-                alt={photoAlt}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            </Parallax>
-            <div className={`absolute -bottom-14 ${flip ? "right-2" : "left-2"}`}>
-              <DeviceFrame className={flip ? "-rotate-3" : "rotate-3"}>{children}</DeviceFrame>
-            </div>
-          </div>
-        </ScrollReveal>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Merchant benefits — soft rounded cards, no hard borders, warm shadows.
-   The four arguments for a shop, made in plain words.
-   ═══════════════════════════════════════════════════════════════════ */
-const SHOP_BENEFITS = [
+const LOOP = [
   {
-    title: "Know your customers",
-    body: "Every check-in builds a picture of your customer base: who your regulars are, how often they come back, and who hasn't been in for a while.",
+    n: "01",
+    title: "Customers earn rewards",
+    body: "They scan a shop's QR code to check in and earn toward a reward. No paper cards, nothing to lose.",
   },
   {
-    title: "Know what works",
-    body: "See your busiest and slowest hours, whether your reward is actually being used, and how many customers each promotion brought back.",
+    n: "02",
+    title: "Every visit becomes insight",
+    body: "The shop sees its regulars, its busy hours, who's slipping away, and what actually brings people back.",
   },
   {
-    title: "See who finds you",
-    body: "Your shop is on the Ventzon map from day one. Track followers, posts about you, and locals who saved your shop but haven't visited yet.",
-  },
-  {
-    title: "One flat price",
-    body: `Analytics, rewards and promotions for $${MONTHLY_PRICE}/month flat. No hardware, no per-redemption fees, no surprises.`,
+    n: "03",
+    title: "Locals discover the shop",
+    body: "In the Ventzon app, people find places nearby through friends' posts, each one backed by a verified visit.",
   },
 ];
 
+const SHOP_QUESTIONS = [
+  "Who are my regulars, and what do they spend?",
+  "Who hasn't been back in two weeks?",
+  "When am I busy, and when am I not?",
+  "Did my last promotion bring anyone back?",
+];
 
 export default function HomePage() {
   return (
     <main className="marketing bg-night-950 text-fog-100">
-      {/* ══ HERO — pinned video, cinematic scroll into the statement ══ */}
+      {/* ══ HERO — pinned video, then the one-sentence explanation ══ */}
       <HeroScroll />
 
-      {/* ══ ACT 1 — for the people who go ══ */}
-      <section className="px-6 pb-8 pt-28 sm:pt-40">
+      {/* ══ HOW IT FITS TOGETHER ══ */}
+      <section id="how-it-works" className="scroll-mt-24 px-6 py-28 sm:py-36">
         <ScrollReveal className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">
-            For the people who go
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">How it works</p>
           <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em]">
-            A better way to find good places.
+            One loop. Everyone gets something.
           </h2>
         </ScrollReveal>
+        <div className="mx-auto mt-16 grid max-w-6xl gap-6 md:grid-cols-3">
+          {LOOP.map((step, i) => (
+            <ScrollReveal key={step.n} delay={(i + 1) as 1 | 2 | 3}>
+              <div className="h-full rounded-[2rem] bg-night-800 p-8 shadow-warm">
+                <p className="text-[13px] font-medium tracking-[0.25em] text-maroon-300">{step.n}</p>
+                <h3 className="mt-4 font-display text-[22px] font-medium text-fog-100">{step.title}</h3>
+                <p className="mt-3 text-[15px] leading-[1.7] text-fog-300">{step.body}</p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
       </section>
 
-      {/* ══ PRODUCT — 01 / 02 / 03, alternating ══ */}
-      <ProductBlock
-        number="01"
-        title="Find places worth going to"
-        body="See what people are actually sharing around you — the places they go, and who is really there. No ads, no algorithm, no listings you’ve never heard of."
-        photo="/site-images/photo-terrace.jpg"
-        photoAlt="A terrace restaurant above the sea at dusk"
-      >
-        <FadeImage
-          src="/site-images/app-explore.png"
-          alt="The Ventzon explore map showing places nearby"
-          className="h-full w-full object-cover object-top"
-        />
-      </ProductBlock>
-
-      <ProductBlock
-        number="02"
-        title="Check in. Prove you were there."
-        body="Check in once you’re there and your post carries a verified visit badge — proof you were really there, not a review from someone who never showed up."
-        photo="/site-images/photo-checkin.jpg"
-        photoAlt="Scanning a QR code at a shop counter"
-        flip
-      >
-        <FadeImage
-          src="/site-images/app-checkin.png"
-          alt="The check-in confirmation in the Ventzon app"
-          className="h-full w-full object-cover object-top"
-        />
-      </ProductBlock>
-
-      <ProductBlock
-        number="03"
-        title="The feed fills with what’s actually good"
-        body="Friends and locals post about the places they go. Over time the feed fills with what’s worth the trip — and where a shop runs a reward, you earn it just for visiting."
-        photo="/site-images/photo-taverna.jpg"
-        photoAlt="A seaside taverna with tables by the water"
-      >
-        <FadeImage
-          src="/site-images/app-feed.png"
-          alt="The Ventzon home feed"
-          className="h-full w-full object-cover object-top"
-        />
-      </ProductBlock>
-
-
-      {/* Download CTA — end of Act 1 */}
-      <section className="px-6 pb-28 pt-10 text-center sm:pb-40">
-        <ScrollReveal>
+      {/* ══ FOR SHOPS — the analytics, shown not told ══ */}
+      <section className="px-6 py-28 sm:py-36">
+        <Divider className="mx-auto mb-16 max-w-xs" />
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">For shop owners</p>
+          <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em]">
+            Know your customers. Bring them back.
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.7] text-fog-300">
+            The customer analytics big chains have, for the shop on the corner.
+          </p>
+        </ScrollReveal>
+        <ScrollReveal delay={2} className="mx-auto mt-14 max-w-6xl">
+          <AnalyticsPreview />
+        </ScrollReveal>
+        <div className="mx-auto mt-12 grid max-w-3xl gap-3 sm:grid-cols-2">
+          {SHOP_QUESTIONS.map((q) => (
+            <p key={q} className="rounded-2xl bg-night-800 px-5 py-4 text-[15px] text-fog-200">
+              {q}
+            </p>
+          ))}
+        </div>
+        <ScrollReveal className="mt-12 text-center">
           <Link
-            href="/customer/explore"
-            className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-white px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-black shadow-warm hover:bg-cream"
+            href="/business"
+            className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm hover:bg-maroon-hover"
           >
-            Open the app
+            See everything shops get
             <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
           </Link>
-          <p className="mt-6 text-sm text-fog-500">Free for customers · no download required</p>
         </ScrollReveal>
       </section>
 
-      {/* ══ PIVOT — from the person to the place ══ */}
-      <section className="relative overflow-hidden px-6 py-36 sm:py-48">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(90,30,36,0.14),transparent)]" />
-        <Divider className="relative mx-auto mb-16 max-w-xs" />
-        <ScrollReveal className="relative mx-auto max-w-2xl text-center">
-          <p className="font-display text-[clamp(1.5rem,3vw,2.25rem)] font-normal leading-[1.3] tracking-[0.01em] text-fog-100">
-            And if you&rsquo;re the one behind the counter &mdash;
-          </p>
-          <p className="mt-6 text-[16px] font-light leading-[1.8] text-fog-300">
-            Ventzon turns the people who already walk in into customers who come back.
-          </p>
-        </ScrollReveal>
-      </section>
-
-      {/* ══ ACT 2 — FOR SHOPS ══ */}
-      <section className="px-6 py-32 sm:py-44">
+      {/* ══ FOR CUSTOMERS — compact ══ */}
+      <section className="px-6 py-28 sm:py-36">
         <Divider className="mx-auto mb-16 max-w-xs" />
-        <div className="mx-auto max-w-7xl">
-          <ScrollReveal className="mx-auto max-w-3xl text-center">
-            <p className="text-[13px] font-medium uppercase tracking-[0.25em] text-fog-500">For shop owners</p>
-            <h2 className="mt-5 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em] text-fog-100">
-              Know your customers. Bring them back.
+        <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 lg:gap-24">
+          <ScrollReveal>
+            <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-fog-500">For customers</p>
+            <h2 className="mt-6 font-display text-[clamp(1.75rem,3.5vw,3rem)] font-normal leading-[1.12] tracking-[0.01em]">
+              Rewards at the places you already love.
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-[17px] leading-[1.7] text-fog-300">
-              Ventzon gives local shops the customer analytics big chains
-              have, and gets them found by people in their own neighborhood.
-            </p>
-          </ScrollReveal>
-
-          <div className="mt-16 grid gap-6 sm:grid-cols-2">
-            {SHOP_BENEFITS.map((b, i) => (
-              <ScrollReveal key={b.title} delay={(i % 2) === 1 ? 2 : 1}>
-                <div className="h-full rounded-[2rem] bg-night-800 p-8 shadow-warm transition-all duration-700 ease-luxe hover:-translate-y-1 hover:shadow-warm-lg hover:ring-1 hover:ring-white/10">
-                  <h3 className="font-display text-[22px] font-medium tracking-[0em] text-fog-100">{b.title}</h3>
-                  <p className="mt-3 text-[15px] leading-[1.7] text-fog-300">{b.body}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-
-          {/* Early-shop line — honest, works in any city */}
-          <ScrollReveal delay={2} className="mx-auto mt-16 max-w-2xl rounded-[2rem] bg-maroon-900 p-8 text-center">
-            <p className="text-[15px] leading-[1.7] text-maroon-300">
-              <span className="font-semibold">Metro by metro.</span> The first
-              shops in your neighborhood shape how discovery works there &mdash;
-              and they&rsquo;re the first thing locals see when they open the map.
-            </p>
-          </ScrollReveal>
-
-          <ScrollReveal className="mt-12 text-center">
+            <ol className="mt-8 space-y-5">
+              {[
+                ["Discover", "See where friends and locals actually go, on a map and in your feed."],
+                ["Check in", "Scan at the counter. Your posts carry a verified visit badge."],
+                ["Earn", "Collect toward rewards automatically. Free, no paper cards."],
+              ].map(([t, d], i) => (
+                <li key={t} className="flex gap-4">
+                  <span className="mt-0.5 font-display text-lg text-maroon-300">{i + 1}</span>
+                  <div>
+                    <p className="text-[17px] font-medium text-fog-100">{t}</p>
+                    <p className="mt-1 text-[15px] leading-[1.7] text-fog-300">{d}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
             <Link
-              href="/merchant-dashboard"
-              className="group btn-pill inline-flex items-center gap-2.5 rounded-full bg-maroon px-9 py-4 text-[15px] font-medium tracking-[0.15em] text-white shadow-warm hover:bg-maroon-hover"
+              href="/customer/explore"
+              className="group btn-pill mt-10 inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-3.5 text-[14px] font-medium tracking-[0.15em] text-black shadow-warm hover:bg-cream"
             >
-              See the analytics
+              Open the app
               <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
           </ScrollReveal>
+          <ScrollReveal delay={2}>
+            <div className="relative mx-auto max-w-md">
+              <Parallax className="aspect-[4/5] w-full rounded-[2.6rem]">
+                <FadeImage
+                  src="/site-images/photo-checkin.jpg"
+                  alt="Scanning a QR code at a shop counter"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </Parallax>
+              <div className="absolute -bottom-14 right-2">
+                <DeviceFrame className="-rotate-3">
+                  <FadeImage
+                    src="/site-images/app-feed.png"
+                    alt="The Ventzon home feed"
+                    className="h-full w-full object-cover object-top"
+                  />
+                </DeviceFrame>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
+      </section>
+
+      {/* ══ TRUST — what happens with the data, plainly ══ */}
+      <section className="px-6 pb-28 pt-16 sm:pb-36">
+        <ScrollReveal className="mx-auto max-w-3xl rounded-[2rem] bg-maroon-900 p-8 text-center sm:p-10">
+          <p className="text-[15px] leading-[1.8] text-maroon-300">
+            <span className="font-semibold">Fair to everyone.</span> Customers choose to join.
+            Shops see their own customers, and anything from the app only as totals.
+            Ventzon never sells customer data.
+          </p>
+        </ScrollReveal>
       </section>
 
       {/* ══ PRICING — the shop owner's decision ══ */}
@@ -245,7 +198,7 @@ export default function HomePage() {
           <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
               <h2 className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-normal leading-[1.12] tracking-[0.01em] text-white">
-                See what&rsquo;s near you.
+                For the places you love, and the people who run them.
               </h2>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
@@ -256,10 +209,10 @@ export default function HomePage() {
                   <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
                 </Link>
                 <Link
-                  href="/app"
+                  href="/business"
                   className="text-[15px] font-medium text-white/90 underline decoration-white/40 underline-offset-8 transition-colors duration-300 hover:text-white"
                 >
-                  For shops
+                  I run a shop
                 </Link>
               </div>
               <p className="mt-8 text-sm text-white/70">Free for customers &middot; no download</p>

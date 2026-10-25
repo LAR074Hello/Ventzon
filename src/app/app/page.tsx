@@ -388,7 +388,7 @@ export default function CustomerAppPage() {
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 ease-luxe group-hover:translate-x-1" />
             </Link>
             <Link
-              href="/how-it-works"
+              href="/#how-it-works"
               className="text-[12px] font-light tracking-[0.15em] text-fog-300 transition-colors duration-500 hover:text-fog-100"
             >
               How it works

@@ -27,7 +27,7 @@ export default function SiteFooter() {
         </Link>
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[13px] font-medium text-fog-300">
           <Link
-            href="/how-it-works"
+            href="/#how-it-works"
             className="transition-colors duration-300 ease-luxe hover:text-fog-100"
           >
             How it works
