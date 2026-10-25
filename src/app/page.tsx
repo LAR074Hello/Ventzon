@@ -189,12 +189,12 @@ export default function HomePage() {
       <section className="px-6 pb-8">
         <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem]">
           <FadeImage
-            src="/site-images/photo-pool-wide.jpg"
-            alt="A pool terrace above the sea at sunset"
+            src="/site-images/photo-counter-wide.jpg"
+            alt="Two shop owners looking at their dashboard at the counter"
             loading="lazy"
             className="h-[480px] w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-night-950/85 via-night-950/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-night-950/90 via-night-950/55 to-night-950/20" />
           <div className="absolute inset-x-0 bottom-0 p-8 text-center sm:p-14">
             <ScrollReveal>
               <h2 className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-normal leading-[1.12] tracking-[0.01em] text-white">

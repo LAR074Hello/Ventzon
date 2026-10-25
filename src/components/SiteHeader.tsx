@@ -8,7 +8,6 @@ import { ChevronDown, LogOut } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 const navLinks = [
-  { href: "/#how-it-works", label: "How it works" },
   { href: "/app", label: "Customer app" },
   { href: "/business", label: "For shops" },
   { href: "/pricing", label: "Pricing" },

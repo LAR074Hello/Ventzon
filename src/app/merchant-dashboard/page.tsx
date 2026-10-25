@@ -498,10 +498,10 @@ export default function MerchantDashboardPage() {
       <section className="relative px-6 py-24 sm:py-32">
         <ScrollReveal className="mx-auto max-w-3xl rounded-[2rem] bg-night-800 p-8 shadow-warm sm:p-10">
           <p className="text-[11px] font-light tracking-[0.5em] text-fog-500">
-            YOUR CUSTOMERS&rsquo; TRUST
+            PRIVACY
           </p>
           <h2 className="mt-5 font-display text-2xl font-light tracking-[0.01em] text-fog-100 sm:text-3xl">
-            Insights without being creepy.
+            Customer data, handled responsibly.
           </h2>
           <ul className="mt-6 space-y-3 text-[15px] font-light leading-[1.7] text-fog-300">
             <li>Customers choose to join by scanning your QR code.</li>
