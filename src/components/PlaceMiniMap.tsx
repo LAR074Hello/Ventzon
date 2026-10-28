@@ -11,6 +11,8 @@
  * invitation. For a place nobody has posted about, *where it is* is the most
  * useful thing the page can say.
  */
+
+import { cartoTileUrl } from "@/lib/map-tiles";
 const TILE = 256;
 
 function tileX(lon: number, z: number) {
@@ -60,7 +62,7 @@ export default function PlaceMiniMap({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={`${dx}:${dy}`}
-                src={`https://a.basemaps.cartocdn.com/${style}/${zoom}/${tx}/${ty}.png`}
+                src={cartoTileUrl(style, zoom, tx, ty)}
                 alt=""
                 width={TILE}
                 height={TILE}

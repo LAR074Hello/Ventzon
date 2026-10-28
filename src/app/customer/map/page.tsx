@@ -7,6 +7,7 @@ import { Locate, X, ChevronRight } from "lucide-react";
 import { haversineMiles } from "@/lib/geo";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
+import { cartoTileTemplate } from "@/lib/map-tiles";
 
 type ShopPin = {
   slug: string;
@@ -124,7 +125,7 @@ export default function MapPage() {
       const lightTheme =
         document.documentElement.getAttribute("data-theme") !== "dark";
       L.tileLayer(
-        `https://{s}.basemaps.cartocdn.com/${lightTheme ? "light_all" : "dark_all"}/{z}/{x}/{y}{r}.png`,
+        cartoTileTemplate(lightTheme ? "light_all" : "dark_all"),
         { subdomains: "abcd", maxZoom: 19 }
       ).addTo(map);
 
