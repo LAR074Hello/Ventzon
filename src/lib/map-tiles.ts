@@ -11,7 +11,9 @@
  * PRE-LAUNCH: watch monthly tile requests in the CARTO key dashboard; above
  * 1M/month needs a paid plan or a self-hosted tile source.
  */
-const KEY = process.env.NEXT_PUBLIC_CARTO_KEY ?? "";
+// Public by design and referrer-restricted to ventzon.com / *.ventzon.com in
+// the CARTO dashboard, so it lives in the code; the env var can override it.
+const KEY = process.env.NEXT_PUBLIC_CARTO_KEY || "cb1_50n7_1_7c82c73387ae4a0518a81965";
 
 export type CartoStyle = "light_all" | "dark_all";
 
